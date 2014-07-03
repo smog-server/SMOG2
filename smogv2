@@ -1257,24 +1257,30 @@ sub setContactParams
 
 sub printCitation
 {
+    my $citationFile = "";
+    ## CHECK FOR .citation meta file ##
+    if($coarseFolder && -e "$coarseFolder/.citation")
+    {
+      open(CITE,"$coarseFolder/.citation");
+      $citationFile = join("",<CITE>);
+      close(CITE);
+    }
+    elsif(-e "$inputFolder/.citation")
+    {
+      open(CITE,"$inputFolder/.citation");
+      $citationFile = join("",<CITE>);
+      close(CITE);
+    }
+    else{$citationFile = "";}
+       
+
 print "\n************************\n";
 print "******* CITATION *******";
 print "\n************************\n";
-print 'SMOGV2 & Shadow is part of  http://smog-server.org
-Direct questions to: info@smog-server.org
-Work utilizing SMOGV2 should cite:
-
-Noel JK, Whitford PC, Sanbonmatsu KY & Onuchic JN (2010)
-SMOG@ctbp: simplified deployment of structure-based models in GROMACS.
-Nucleic Acids Research, 38, W657‚Äì61. DOI: 10.1093/nar/gkq498
-
-Work using the Shadow contact map should cite:
-
-Noel, JK, Whitford PC & Onuchic JN (2012)
-The shadow map: a general contact definition for capturing the
-dynamics of biomolecular folding and function.
-Journal of Physical Chemistry B 116, 8692‚Äì8702.
-';
+print "SMOGV2 & Shadow is part of  http://smog-server.org\n
+Direct questions to: info\@smog-server.org\n
+For citation please visit: http://www.smog-server.org/refs.html\n
+$citationFile\n";
 print "***************************************************\n";
 
 
