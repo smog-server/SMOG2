@@ -1457,7 +1457,7 @@ sub allAtom
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	print "Done\n";
 	## CALL SHADOW/PARSE CONTACTS ##
-	print "Finding contacts via shadow algorithm...";
+	print "Finding contacts ...";
 	
 	
 	my $SCMparams = setContactParams();
