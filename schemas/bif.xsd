@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<!-- ATOM TYPE -->
+<xs:complexType name="atomType">
+    <xs:simpleContent>
+    <xs:extension base="xs:string">
+      <xs:attribute name="bType" type="xs:string" use="required"/>
+      <xs:attribute name="nbType" type="xs:string" use="required"/>
+      <xs:attribute name="pairType" type="xs:string" use="required"/>
+    </xs:extension>
+    </xs:simpleContent>
+</xs:complexType>
+
+<!-- ATOM TYPE -->
+<xs:complexType name="atomTypeSimple">
+    <xs:simpleContent>
+    <xs:extension base="xs:string">
+    </xs:extension>
+    </xs:simpleContent>
+</xs:complexType>
+
+<!-- BOND TYPE -->
+<xs:complexType name="bondType">
+  <xs:element name="atom" type="atomTypeSimple" minOccues="2" maxOccurs="2"/>
+  <xs:attribute name="energyGroup" type="xs:string" use="required"/>
+</xs:complexType>
+
+
+<!-- IMPROPER TYPE -->
+<xs:complexType name="improperType">
+   <xs:element name="atom" type="atomTypeSimple" minOccues="4" maxOccurs="4"/>
+</xs:complexType>
+
+
+<!-- ATOMS TYPE -->
+<xs:complexType name="atomsType">
+    <xs:element name="atom" type="atomType" maxOccurs="unbounded"/>
+</xs:complexType>
+<!-- BONDS TYPE -->
+<xs:complexType name="bondsType">
+    <xs:element name="bond" type="bondType" maxOccurs="unbounded"
+minOccurs="0"/>
+</xs:complexType>
+<!-- BONDS TYPE -->
+<xs:complexType name="impropersType">
+    <xs:element name="improper" type="improperType" maxOccurs="unbounded"
+minOccurs="0"/>
+</xs:complexType>
+
+<!-- RESIDUE TYPE -->
+<xs:complexType name="residueType">
+  <xs:sequence>
+    <xs:element name="atoms" type="atomsType"/>
+    <xs:element name="bonds" type="bondsType" minOccurs="0"/>
+    <xs:element name="impropers" type="impropersType" minOccurs="0"/>
+  </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="xs:string" use="required"/>
+    <xs:attribute name="atomCount" type="xs:nonNegativeInteger" use="optional"/>
+
+</xs:complexType>
+
+
+<!-- CONNECTION TYPE -->
+<xs:complexType name="connectionType">
+  <xs:sequence>
+    <xs:element name="bond" type="bondType" minOccurs="1" maxOccurs="1"/>
+    <xs:element name="improper" type="improperType" minOccurs="0" maxOccurs="1"/>
+  </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="resTypeA" type="xs:string" use="required"/>
+    <xs:attribute name="resTypeB" type="xs:string" use="required"/>
+</xs:complexType>
+
+<!-- RESIDUES TYPE -->
+<xs:complexType name="residuesType">
+    <xs:element name="residue" type="residueType" maxOccurs="unbounded"/>
+</xs:complexType>
+<!-- CONNECTIONS TYPE -->
+<xs:complexType name="connectionsType">
+    <xs:element name="connection" type="connectionType" maxOccurs="unbounded"/>
+</xs:complexType>
+<!-- BIF TYPE -->
+<xs:complexType name="bifType">
+  <xs:sequence>
+    <xs:element name="residues" type="residuesType"/>
+    <xs:element name="connections" type="connectionsType"/>
+  </xs:sequence>
+</xs:complexType>
+
+<!-- BIF SCHEMA -->
+<xs:element name="bif" type="bifType"/>
+
+</xs:schema>

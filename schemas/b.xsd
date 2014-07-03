@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<!-- BOOLEAN TYPE -->
+<xs:simpleType name="booleanType">
+    <xs:restriction base="xs:integer">
+    <xs:pattern value="1|0"/>
+    </xs:restriction>
+</xs:simpleType>
+
+<!-- funcTypeC TYPE -->
+<xs:simpleType name="funcTypeTypeC">
+    <xs:restriction base="xs:string">
+    <xs:pattern value=".*\(.*\)"/>
+    </xs:restriction>
+</xs:simpleType>
+
+<!-- btype TYPE -->
+<xs:complexType name="bTypeType">
+    <xs:element name="bType" value="xs:string"/>
+</xs:complexType>
+
+<!-- funcC TYPE -->
+<xs:complexType name="funcTypeC">
+    <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
+    <xs:attribute name="contactGroup" type="xs:string" use="required"/>
+</xs:complexType>
+
+
+<!--bond TYPE -->
+<xs:complexType name="bondType">
+    <xs:element name="bType" type="bTypeType" minOccur="2" maxOccur="2"/>
+     <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
+</xs:complexType>
+
+<!--angle TYPE -->
+<xs:complexType name="angleType">
+    <xs:element name="bType" type="bTypeType" minOccur="3" maxOccur="3"/>
+     <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
+</xs:complexType>
+
+<!--dihedral TYPE -->
+<xs:complexType name="dihedralType">
+    <xs:element name="bType" type="bTypeType" minOccur="4" maxOccur="4"/>
+    <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
+    <xs:attribute name="energyGroup" type="xs:string" use="required"/> 
+</xs:complexType>
+
+<!--improper TYPE -->
+<xs:complexType name="improperType">
+    <xs:element name="bType" type="bTypeType" minOccur="4" maxOccur="4"/>
+    <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
+</xs:complexType>
+
+<!--bonds TYPE -->
+<xs:complexType name="bondsType">
+   <xs:element name="bond" type="bondType" minOccurs="1" maxOccurs="unbounded"/>
+</xs:complexType>
+
+<!--angles TYPE -->
+<xs:complexType name="anglesType">
+   <xs:element name="angle" type="angleType" minOccurs="1" maxOccurs="unbounded"/>
+</xs:complexType>
+
+<!--dihedrals TYPE -->
+<xs:complexType name="dihedralsType">
+   <xs:element name="dihedral" type="dihedralType" minOccurs="1" maxOccurs="unbounded"/>
+</xs:complexType>
+
+
+<!--impropers TYPE -->
+<xs:complexType name="impropersType">
+   <xs:element name="improper" type="improperType" minOccurs="1" maxOccurs="unbounded"/>
+</xs:complexType>
+
+
+<!-- B TYPE -->
+<xs:complexType name="bTypes">
+  <xs:sequence>
+    <xs:element name="bonds" type="bondsType"/>
+    <xs:element name="angles" type="anglesType"/>
+    <xs:element name="dihedrals" type="dihedralsType"/>
+    <xs:element name="impropers" type="impropersType" minOccurs="0"/>
+  </xs:sequence>
+</xs:complexType>
+
+<!-- nb SCHEMA -->
+<xs:element name="b" type="bTypes"/>
+
+</xs:schema>

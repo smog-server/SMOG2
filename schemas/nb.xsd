@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<!-- BOOLEAN TYPE -->
+<xs:simpleType name="booleanType">
+    <xs:restriction base="xs:integer">
+    <xs:pattern value="1|0"/>
+    </xs:restriction>
+</xs:simpleType>
+
+<!-- funcTypeC TYPE -->
+<xs:simpleType name="funcTypeTypeC">
+    <xs:restriction base="xs:string">
+    <xs:pattern value=".*\(.*\)"/>
+    </xs:restriction>
+</xs:simpleType>
+
+
+<!-- nbtype TYPE -->
+<xs:complexType name="nbTypeType">
+    <xs:element name="nbType" value="xs:string"/>
+</xs:complexType>
+
+
+<!--nonbond TYPE -->
+<xs:complexType name="nonbondType">
+    <xs:element name="nbType" type="nbTypeType"/>
+    <xs:attribute name="mass" type="xs:decimal" use="required"/>
+    <xs:attribute name="charge" type="xs:double" use="required"/>
+    <xs:attribute name="ptype" type="xs:string" use="required"/>
+    <xs:attribute name="c6" type="xs:double" use="required"/>
+    <xs:attribute name="c12" type="xs:double" use="required"/>
+</xs:complexType>
+
+
+<!--contacts TYPE -->
+<xs:complexType name="contactType">
+    <xs:element name="nbType" type="nbTypeType" minOccurs="2" maxOccurs="2"/>
+    <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
+    <xs:attribute name="contactGroup" type="xs:string" use="required"/>
+</xs:complexType>
+
+
+<!--pairs TYPE -->
+<xs:complexType name="pairType">
+    <xs:element name="nbType" type="nbTypeType" minOccur="2" maxOccur="2"/>
+    <xs:attribute name="func" type="funcTypeTypeC"/>
+</xs:complexType>
+
+<!--defauts TYPE -->
+<xs:complexType name="defaultsType">
+    <xs:attribute name="gen-pairs" type="booleanType" use="required"/>
+</xs:complexType>
+
+
+<!-- NB TYPE -->
+<xs:complexType name="nbTypes">
+  <xs:sequence>
+    <xs:element name="defaults" type="defaultsType"/>
+    <xs:element name="nonbond" type="nonbondType" maxOccurs="unbounded"/>
+    <xs:element name="contact" type="contactType" maxOccurs="unbounded"/>
+    <xs:element name="pair" type="pairType" maxOccurs="unbounded" minOccurs="0"/>
+  </xs:sequence>
+</xs:complexType>
+
+<!-- nb SCHEMA -->
+<xs:element name="nb" type="nbTypes"/>
+
+</xs:schema>

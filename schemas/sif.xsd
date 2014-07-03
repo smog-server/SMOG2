@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<!-- energyGroup TYPE -->
+<xs:complexType name="energyGroupType">
+    <xs:attribute name="residueType" type="xs:string" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="intraRelativeStrength" type="xs:decimal"/>
+    <xs:attribute name="normalize" type="booleanType" use="required"/>
+</xs:complexType>
+
+
+<!-- contactGroup TYPE -->
+<xs:complexType name="contactGroupType">
+    <xs:attribute name="residueType" type="xs:string" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="intraRelativeStrength" type="xs:decimal"/>
+    <xs:attribute name="normalize" type="booleanType" use="required"/>
+</xs:complexType>
+
+
+<!-- contactScalingType -->
+<xs:complexType name="contactScalingType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="resTypeA" type="xs:string" use="required"/>
+    <xs:attribute name="resTypeB" type="xs:string" use="required"/>
+    <xs:attribute name="scale" type="xs:string" use="required"/>
+    <xs:attribute name="deltaMin" type="xs:positiveInteger" use="required"/>
+    <xs:attribute name="deltaMax" type="xs:positiveInteger" use="required"/>
+    <xs:attribute name="atomList" type="xs:string" use="required"/>
+</xs:complexType>
+
+
+<!-- Contacts TYPE -->
+<xs:complexType name="contactsType">
+    <xs:attribute name="method" type="xs:string" use="required"/>
+    <xs:attribute name="contactDistance" type="xs:decimal" use="required"/>
+    <xs:attribute name="shadowRadius" type="xs:decimal" use="optional"/>
+    <xs:element name="contactScaling" type="contactScalingType" minOccurs="0" maxOccurs="unbounded"/>
+</xs:complexType>
+
+
+<!-- groupRatio TYPE -->
+<xs:complexType name="groupRatioType">
+    <xs:attribute name="contacts" type="xs:decimal" use="required"/>
+    <xs:attribute name="dihedrals" type="xs:decimal" use="required"/>
+</xs:complexType>
+
+
+<!-- BOOLEAN TYPE -->
+<xs:simpleType name="booleanType">
+    <xs:restriction base="xs:integer">
+    <xs:pattern value="1|0"/>
+    </xs:restriction>
+</xs:simpleType>
+
+
+<!-- DIRECTIVE TYPE -->
+<xs:simpleType name="directiveType">
+    <xs:restriction base="xs:string">
+    <xs:pattern value="contacts|bonds|angles|pairs|dihedrals"/>
+    </xs:restriction>
+</xs:simpleType>
+
+<!--FUNCTION TYPE -->
+<xs:complexType name="functionType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="directive" type="directiveType" use="required"/>
+    <xs:attribute name="fType" type="xs:nonNegativeInteger" use="required"/>
+</xs:complexType>
+
+ <!-- GROUPS TYPE -->
+ <xs:complexType name="groupsType">
+      <xs:sequence>
+      <xs:element name="energyGroup" type="energyGroupType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="contactGroup" type="contactGroupType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="groupRatios" type="groupRatioType" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+  </xs:complexType>
+
+<!--bondsThresholdType -->
+<xs:complexType name="bondsThresholdType">
+    <xs:attribute name="shortBond" type="xs:decimal" use="required"/>
+    <xs:attribute name="longBond" type="xs:decimal" use="required"/>
+</xs:complexType>
+
+<!-- anglesThresholdType -->
+<xs:complexType name="anglesThresholdType">
+    <xs:attribute name="smallAngles" type="xs:decimal" use="required"/>
+</xs:complexType>
+
+<!-- contactsThreshold -->
+<xs:complexType name="contactsThresholdType">
+    <xs:attribute name="shortContacts" type="xs:decimal" use="required"/>
+</xs:complexType>
+
+
+<!-- SETTINGS TYPE -->
+<xs:complexType name="settingsType">
+    <xs:sequence>
+    <xs:element name="Groups" type="groupsType"/>
+    <xs:element name="Contacts" type="contactsType"/>
+    <xs:element name="bondsThreshold" type="bondsThresholdType"/>
+    <xs:element name="anglesThreshold" type="anglesThresholdType"/>
+    <xs:element name="contactsThreshold" type="contactsThresholdType"/>
+    </xs:sequence>
+</xs:complexType>
+<!-- FUNCTIONS TYPE -->
+<xs:complexType name="functionsType">
+    <xs:element name="function" type="functionType" maxOccurs="unbounded"/>
+</xs:complexType>
+
+
+<!-- SIF TYPE -->
+<xs:complexType name="sifType">
+  <xs:sequence>
+    <xs:element name="functions" type="functionsType"/>
+    <xs:element name="settings" type="settingsType"/>
+  </xs:sequence>
+</xs:complexType>
+
+<!-- BIF SCHEMA -->
+<xs:element name="sif" type="sifType"/>
+
+</xs:schema>
