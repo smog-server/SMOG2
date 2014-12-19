@@ -48,6 +48,8 @@ our $totalAtoms;
 our $contactPDL;
 our %allAtoms;
 
+our %extContacts;
+
 
 ###########################
 ## CLEAR VARIABLE MEMORY ##
@@ -82,6 +84,7 @@ sub parseATOM
   my $atomCounter=0;my $singleFlag = 1;
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=0;
+  my $pdbResidueIndex=0; my $interiorPdbResidueIndex=0;
   my %indexMap;my $lineNumber = 0;
   my $PDB; 
  
@@ -143,19 +146,17 @@ sub parseATOM
 		$outLength = length($record);
 	    ## OBTAIN RESIDUE NAME ##
 		$residue = substr($record,17,4);
-		
 		$residue =~ s/^\s+|\s+$//g;
-
-		
-                if(!exists $residues{$residue}){confess "\nPDB PARSE ERROR: \"$residue\" doesn't exist in .bif at line $lineNumber\n";}
+        $pdbResidueIndex = substr($record,22,4); 
+        if(!exists $residues{$residue}){confess "\nPDB PARSE ERROR: \"$residue\" doesn't exist in .bif at line $lineNumber\n";}
 
 
 		$resCount = scalar(keys(%{$residues{$residue}->{"atoms"}}));
-	        seek($PDB, -$outLength, 1); # place the same line back onto the filehandle
+	    seek($PDB, -$outLength, 1); # place the same line back onto the filehandle
 	
 	    ## Incr local residue index ## 
 	    $residueIndex++;
-             $lineNumber--;
+        $lineNumber--;
 	    ## Parse residue hash ##
 	     my %uniqueAtom;
 		for($i=0;$i<$resCount;$i++)
@@ -166,8 +167,10 @@ sub parseATOM
 			{confess("PDB PARSE ERROR\n Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber\n");}
 			$interiorResidue = substr($record,17,4);
 			$interiorResidue =~ s/^\s+|\s+$//g;
+            $interiorPdbResidueIndex = substr($record,22,4);  
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
-			if($interiorResidue !~ /$residue/)
+			if($interiorResidue !~ /$residue/
+            || $pdbResidueIndex != $interiorPdbResidueIndex)
 			{
 			$residueIndex--;$lineNumber--;
 			confess "\nPDB PARSE ERROR\nThere must be missing atoms in residue $residue at line $lineNumber. $residue at $lineNumber must have been truncated, because the next entry is $interiorResidue\n";
@@ -258,12 +261,12 @@ sub parseATOM
 
 
 #########################################################################
-# parseBONDLines(\@pdbLines,\%hashRef):extract x, y, and z coordinates, #
-# serial number and element symbol from PDB ATOM record type. 	   #
+# parseExternalContacts($filename)
 ####################################################################
-sub parseBONDLines
+sub parseExternalContacts
 {
-  my($atoma,$atomb) = @_;
+  my($file) = @_;
+
   
 
 
