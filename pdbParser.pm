@@ -96,6 +96,8 @@ sub parseATOM
   ## LOOP THROUGH EACH LINE ##
  while(my $record = <$PDB>)
  {
+ 
+ my @impAtoms = ();
  $lineNumber++;
  ## IF END LINE ##
  if($record =~ m/^END/) 
@@ -104,6 +106,7 @@ sub parseATOM
  if($record =~ m/^BOND/)
  {
     chomp($record);
+   
     my($trig,$atoma,$atomb,$eG) = split(/\s+/,$record);
     my $idxA = $indexMap{$atoma};
     my $idxB = $indexMap{$atomb};
@@ -121,7 +124,17 @@ sub parseATOM
     print "\nNOTE:";
     print "Generating ad-hoc BOND between atoms $atoma,$atomb\n";
     $connPDL{$counter}=$union;
-    connCreateInteractions([$resA,$resB],$sizeA,$counter,-1,$atomA,$atomB,$eG); 
+    ## Check if improper directive is present ##
+    if($record =~ m/IMPROPER/)
+    {
+     my($left,$right) = split(/IMPROPER/,$record);
+     $right =~ s/^\s+|\s+$//g;
+     @impAtoms = split(/\s+/,$right);
+     print "IMPROPER DETECTED @impAtoms\n";
+    }
+    
+    
+    connCreateInteractionsBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
  }
 
 	## IF TER LINE  ##
@@ -173,7 +186,7 @@ sub parseATOM
             || $pdbResidueIndex != $interiorPdbResidueIndex)
 			{
 			$residueIndex--;$lineNumber--;
-			confess "\nPDB PARSE ERROR\nThere must be missing atoms in residue $residue at line $lineNumber. $residue at $lineNumber must have been truncated, because the next entry is $interiorResidue\n";
+            confess "\nPDB PARSE ERROR\nThere must be missing atoms in residue $residue at line $lineNumber. $residue at $lineNumber must have been truncated, because the next entry is $interiorResidue\n";
 			}
 			
 			$x = substr($record, 30, 8);
@@ -190,7 +203,8 @@ sub parseATOM
 			{confess("\nPDB PARSE ERROR: $atom is a duplicate in $residue at line $lineNumber\n");} 	
                 	else {$uniqueAtom{$atom}=1;}
 			if(!exists $residues{$residue}){confess "\nPDB PARSE ERROR: \"$residue\" doesn't exist in .bif at line $lineNumber";}
-			if(!exists $residues{$residue}->{"atoms"}->{$atom}){confess "\nPDB PARSE ERROR:$atom doesn't exists in .bif declaration of $residue at line $lineNumber.\n\n";}			
+			if(!exists $residues{$residue}->{"atoms"}->{$atom}){	
+                confess "\nPDB PARSE ERROR:$atom doesn't exists in .bif declaration of $residue at line $lineNumber.\n\n";}			
 			
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
@@ -434,11 +448,14 @@ sub getEnergyGroup
 	my($residuea,$residueb,$atoma,$atomb) = @_;
 	my $residueIn=$residuea;
 	my $residueTypea;my $residueTypeb;
+	
+	
  	## If Bond is internal ##
- 	if(!($atoma =~/(.*)\?/ ^ $atomb =~/(.*)\?/))
+ 	if(($atoma =~/(.*)\?/ && $atomb =~/(.*)\?/)
+ 	|| ($atoma !~/(.*)\?/ && $atomb !~/(.*)\?/))
 	{
+	 
 		$residueIn = $residueb if($atoma =~ /\?/|| $atomb =~ /\?/);
-		
 		$atoma =~ s/\?//;$atomb =~ s/\?//;
 		if(exists $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"})
 			{return $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"};}
@@ -608,6 +625,173 @@ sub coarseCreateInteractions {
 }
 
 
+sub returnBondTypeFromIndex
+{
+  my($idx) = @_;
+  my $residue = $allAtoms{$idx}->[5];
+  my $atom = $allAtoms{$idx}->[3];
+  return $residues{$residue}->{"atoms"}->{$atom}->{"bType"};
+}
+sub returnAtomFromIndex
+{
+  my($idx) = @_;
+  return $allAtoms{$idx}->[3];
+}
+sub returnResidueIndexFromIndex
+{
+  my($idx) = @_;
+  return $allAtoms{$idx}->[2];
+}
+
+sub appendImpropersBOND
+{
+
+ 	my($resA,$resB,$resIDA,$resIDB,$sizeA,$ips,$tempArr) = @_;
+ 	  my ($a,$b,$c,$d) = @{$ips};
+ 	my $ta=returnBondTypeFromIndex($a);
+ 	my $tb=returnBondTypeFromIndex($b);
+ 	my $tc=returnBondTypeFromIndex($c);
+ 	my $td=returnBondTypeFromIndex($d);
+ 	my $iia = returnAtomFromIndex($a);
+ 	my $iib = returnAtomFromIndex($b);
+ 	my $iic = returnAtomFromIndex($c);
+ 	my $iid = returnAtomFromIndex($d);
+	my($ia)= (returnResidueIndexFromIndex($a)==$resIDA ? (getAtomAbsoluteIndex($resA,$iia)) 
+	: ($sizeA+getAtomAbsoluteIndex($resB,$iia)));
+ 	my($ib)= (returnResidueIndexFromIndex($b)==$resIDA ? (getAtomAbsoluteIndex($resA,$iib)) 
+	: ($sizeA+getAtomAbsoluteIndex($resB,$iib)));
+	my($ic)= (returnResidueIndexFromIndex($c)==$resIDA ? (getAtomAbsoluteIndex($resA,$iic)) 
+	: ($sizeA+getAtomAbsoluteIndex($resB,$iic)));
+	my($id)= (returnResidueIndexFromIndex($d)==$resIDA ? (getAtomAbsoluteIndex($resA,$iid)) 
+	: ($sizeA+getAtomAbsoluteIndex($resB,$iid)));
+ 	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
+ 	## [x,y,z,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
+ 	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);
+  	
+}
+
+
+
+
+sub connCreateInteractionsBOND
+{
+
+    my($consecResiduesH,$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$bEG,$imp) = @_;
+	my @consecResidues = @{$consecResiduesH};
+	my $residue = $consecResidues[1];
+
+
+    ## AD-HOC BONDS ##
+	my($angH,$diheH,$adjList,$bondStrA,$bondStrB)=createConnection($consecResiduesH,0,$atomA,$atomB);
+
+	## BOND ##
+	my ($ia,$ta) = (getAtomAbsoluteIndex($consecResidues[0],$bondStrA)
+							,getAtomBType($consecResidues[0],$bondStrA));
+	my ($ib,$tb) = ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$bondStrB)
+							,getAtomBType($consecResidues[1],$bondStrB));
+	
+	
+	my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");
+	
+    $connBondFunctionals{$counter}=pdl($ia,$ib,$if);
+			
+	## ANGLES ##
+	my @tempArr;
+	foreach my $angs(@{$angH})
+	{
+		my($a,$b,$c) = split("-",$angs);
+		my $ia;my $ib;my $ic;
+		my $ta;my $tb;my $tc;
+		($ia,$ta) = ($a =~ /(.*)\?/ )
+			? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+			: (getAtomAbsoluteIndex($consecResidues[0],$a),getAtomBType($consecResidues[0],$a));
+				
+		($ib,$tb) = ($b =~ /(.*)\?/)
+			? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+			: (getAtomAbsoluteIndex($consecResidues[0],$b),getAtomBType($consecResidues[0],$b));
+				
+		($ic,$tc) = ($c =~ /(.*)\?/) 
+			? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+			: (getAtomAbsoluteIndex($consecResidues[0],$c),getAtomBType($consecResidues[0],$c));
+				
+			
+        my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
+        push(@tempArr,pdl($ia,$ib,$ic,$if));
+
+	}
+        if(@tempArr)
+        {$connAngleFunctionals{$counter} = cat(@tempArr);}
+        else{#warn("PDB PARSE WARN:: There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);}
+        }
+		@tempArr = ();
+			
+			
+			
+			
+	## DIHEDRALS ##
+	foreach my $dihes(@{$diheH})
+	{
+		my($a,$b,$c,$d) = split("-",$dihes);
+		my $ia;my $ib;my $ic;my $id;
+		my $ta;my $tb;my $tc;my $td;
+		my $eG;
+		
+		($ia,$ta) = ($a =~ /(.*)\?/)
+			? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+			: (getAtomAbsoluteIndex($consecResidues[0],$a),getAtomBType($consecResidues[0],$a));
+				
+		($ib,$tb) = ($b =~ /(.*)\?/ )
+			? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+			: (getAtomAbsoluteIndex($consecResidues[0],$b),getAtomBType($consecResidues[0],$b));
+				
+		($ic,$tc) = ($c =~ /(.*)\?/ )
+			? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+			: (getAtomAbsoluteIndex($consecResidues[0],$c),getAtomBType($consecResidues[0],$c));
+			
+		($id,$td) = ($d =~ /(.*)\?/) 
+			? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+			: (getAtomAbsoluteIndex($consecResidues[0],$d),getAtomBType($consecResidues[0],$d));
+		
+		
+		#if($consecResidues[0] eq "ASN" && $consecResidues[1] eq "NAG"
+		#&& $b !~ /(.*)\?/ && $c !~ /(.*)\?/)
+		#{
+		#if($bEG=~ m/^$/){confess "HI";}
+		#confess("$ia,$ib,$ic,$id,$if,1,$bEG, $consecResidues[0],$consecResidues[1] $b $c");
+		#}
+		
+		
+		if(!$bEG || ($b =~/.*\?/ && $c =~/.*\?/)|| ($b !~/.*\?/ && $c !~/.*\?/))
+		{$eG=getEnergyGroup($consecResidues[0],$consecResidues[1],$b,$c);}
+		else{$eG=$bEG;}
+		my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
+		
+		
+		
+		$eG = $eGRevTable{$eG};
+		
+		
+		
+		## [x,y,z,func,countDihedrals,energyGroup]
+		push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);	
+		
+	}
+	     
+	   
+		## Manually add Improper dihedrals ##
+		if(scalar(@{$imp})!=0){
+		appendImpropersBOND($consecResidues[0],$consecResidues[1],$resAIdx,$resBIdx,$sizeA,$imp,\@tempArr);
+		}
+		##CALL getSetDiheCounts####
+		##getSetDiheCounts(\@tempArr);
+		
+        if(@tempArr)
+        {$connDiheFunctionals{$counter} = pdl(@tempArr);}
+        else{#warn("PDB PARSE WARN:: There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
+            }
+				@tempArr = ();
+}
+
 
 sub connCreateInteractions
 {
@@ -687,12 +871,25 @@ sub connCreateInteractions
 			? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
 			: (getAtomAbsoluteIndex($consecResidues[0],$d),getAtomBType($consecResidues[0],$d));
 		
-		if(!$bEG){$eG=getEnergyGroup($consecResidues[0],$consecResidues[1],$b,$c);}
+		
+		#if($consecResidues[0] eq "ASN" && $consecResidues[1] eq "NAG"
+		#&& $b !~ /(.*)\?/ && $c !~ /(.*)\?/)
+		#{
+		#if($bEG=~ m/^$/){confess "HI";}
+		#confess("$ia,$ib,$ic,$id,$if,1,$bEG, $consecResidues[0],$consecResidues[1] $b $c");
+		#}
+		
+		
+		if(!$bEG || ($b =~/.*\?/ && $c =~/.*\?/)|| ($b !~/.*\?/ && $c !~/.*\?/))
+		{$eG=getEnergyGroup($consecResidues[0],$consecResidues[1],$b,$c);}
 		else{$eG=$bEG;}
 		my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
 		
 		
+		
 		$eG = $eGRevTable{$eG};
+		
+		
 		
 		## [x,y,z,func,countDihedrals,energyGroup]
 		push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);	
@@ -891,7 +1088,8 @@ sub connWildcardMatchDihes
 		if($matchScore >= $saveScore)
 		{$saveScore = $matchScore;$funct = $diheHandle->{$matches};}
 	}
-	if(!defined $funct || $funct eq ""){confess("\nINTERACTION GENERATE ERROR\n There is no function for bType combination $a-$b-$c-$d. Check .b file\n");}
+	if(!defined $funct || $funct eq ""){confess("\nINTERACTION GENERATE ERROR\n There is no function for bType combination $a-$b-$c-$d
+	with energyGroup=$eG. Check .b file\n");}
 	return $funct;
 }
 
