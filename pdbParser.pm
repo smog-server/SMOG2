@@ -427,7 +427,7 @@ sub getAtomAbsoluteIndex
 {
  my($residue,$atom) = @_;
  if(!exists $residues{$residue}){confess "$residue wasn't defined in bif";}
-	if(!exists $residues{$residue}->{"atoms"}->{$atom}){confess "$atom wasn't defined in $residue in the bif";}
+ if(!exists $residues{$residue}->{"atoms"}->{$atom}){confess "$atom wasn't defined in $residue in the bif";}
  return $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 
 }
@@ -630,6 +630,10 @@ sub returnBondTypeFromIndex
   my($idx) = @_;
   my $residue = $allAtoms{$idx}->[5];
   my $atom = $allAtoms{$idx}->[3];
+  if(!$residue || !$atom)
+  {confess("Error finding the residue for atom $idx. Perhaps your indices are wrong?\n");}
+  if(!$residues{$residue}->{"atoms"}->{$atom})
+  	{confess("$atom is not part of $residue\n");}
   return $residues{$residue}->{"atoms"}->{$atom}->{"bType"};
 }
 sub returnAtomFromIndex
@@ -656,6 +660,15 @@ sub appendImpropersBOND
  	my $iib = returnAtomFromIndex($b);
  	my $iic = returnAtomFromIndex($c);
  	my $iid = returnAtomFromIndex($d);
+ 	if(returnResidueIndexFromIndex($a)!=$resIDA && returnResidueIndexFromIndex($a)!=$resIDB)
+ 	{confess("Ad-hoc Improper Create Error: Atom $a is part of neither residue $resIDA or $resIDB\n");}
+ 	if(returnResidueIndexFromIndex($b)!=$resIDA && returnResidueIndexFromIndex($b)!=$resIDB)
+ 	{confess("Ad-hoc Improper Create Error: Atom $b is part of neither residue $resIDA or $resIDB\n");}
+ 	if(returnResidueIndexFromIndex($c)!=$resIDA && returnResidueIndexFromIndex($c)!=$resIDB)
+ 	{confess("Ad-hoc Improper Create Error: Atom $c is part of neither residue $resIDA or $resIDB\n");}
+ 	if(returnResidueIndexFromIndex($d)!=$resIDA && returnResidueIndexFromIndex($d)!=$resIDB)
+ 	{confess("Ad-hoc Improper Create Error: Atom $d is part of neither residue $resIDA or $resIDB\n");}
+ 	
 	my($ia)= (returnResidueIndexFromIndex($a)==$resIDA ? (getAtomAbsoluteIndex($resA,$iia)) 
 	: ($sizeA+getAtomAbsoluteIndex($resB,$iia)));
  	my($ib)= (returnResidueIndexFromIndex($b)==$resIDA ? (getAtomAbsoluteIndex($resA,$iib)) 
