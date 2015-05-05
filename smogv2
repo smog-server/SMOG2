@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/perl -w
 #####################################################################
 # calculate.pl: Do the calculation necessary for the values
 # Author: Mohit Raghunathan													
