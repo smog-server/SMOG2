@@ -10,7 +10,7 @@
 	</nonbond>
 	
     <!-- CONTACTSGAUSSIAN -->
-    <contact func="sbm_contacts_Gaussian(1,0.167772160e-04,0.05,?)" contactGroup="c">
+    <contact func="sbm_contacts_6-10(1,?,?)" contactGroup="c">
     <nbType>*</nbType>
     <nbType>*</nbType>
     </contact>
