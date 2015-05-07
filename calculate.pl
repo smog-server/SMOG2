@@ -1229,20 +1229,14 @@ sub printCitation
 print "\n************************\n";
 print "******* CITATION *******";
 print "\n************************\n";
-print 'SMOGV2 & Shadow is part of  http://smog-server.org
+print 'SMOGV2 & Shadow is part of the smog-server.org resource.
 Direct questions to: info@smog-server.org
-Work utilizing SMOGV2 should cite:
+We kindly ask that publications resulting from use of SMOG2 cite:
 
-Noel JK, Whitford PC, Sanbonmatsu KY & Onuchic JN (2010)
+Noel JK, et al. (2010) 
 SMOG@ctbp: simplified deployment of structure-based models in GROMACS.
-Nucleic Acids Research, 38, W657‚Äì61. DOI: 10.1093/nar/gkq498
+Nucleic Acids Research, 38, W657-61. DOI: 10.1093/nar/gkq498
 
-Work using the Shadow contact map should cite:
-
-Noel, JK, Whitford PC & Onuchic JN (2012)
-The shadow map: a general contact definition for capturing the
-dynamics of biomolecular folding and function.
-Journal of Physical Chemistry B 116, 8692‚Äì8702.
 ';
 print "***************************************************\n";
 
