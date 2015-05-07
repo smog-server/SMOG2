@@ -304,7 +304,7 @@
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="null_a">
+				<bond energyGroup="bb_a">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
