@@ -1,7 +1,7 @@
 #!/bin/bash
-#echo "INSTALLING SMOGV2"
+#echo "Configuring SMOGV2"
 #echo
-#echo "NOTE: MAKE SURE YOU HAVE INSTALLED XML::Simple, Data::Dumper, Exporter and perl PDL"
+#echo "NOTE: MAKE SURE YOU HAVE INSTALLED String::Util XML::Simple, Data::Dumper, Exporter and perl PDL"
 #echo
 #echo "SETTING UP PROPER ENVIRONMENTAL VARIABLES"
 curPath=$1
