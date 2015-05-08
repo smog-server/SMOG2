@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #echo "Configuring SMOGV2"
 #echo
