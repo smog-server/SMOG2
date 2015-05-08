@@ -718,7 +718,7 @@ sub calculateContacts
 			## DIHE TO CONTACT SCALING ##
 			## DIHEDRAL TO CONTACT RATIO IS GLOBAL IRREGARDLESS OF RESIDE TYPE ##
 			$totalStrength = $termRatios->{"interRelativeTotal"};
-			$diheTotal = $termRatios->{"energyRelative"};
+			$diheTotal = $termRatios->{"dihedralRelative"};
 			$contactLeftOver = $numAtom - $numAtom*($diheTotal/$totalStrength);
 			$contactLeftOver = $contactLeftOver/$count;
    			$multFactor = $contactLeftOver;

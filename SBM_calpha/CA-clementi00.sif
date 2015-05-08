@@ -28,7 +28,7 @@
  <!-- Global Contacts Settings -->
 	<contactGroup residueType="mixed" name="c" intraRelativeStrength="1" normalize="0"/>
 
- <!-- Contact/Dihedral Group ratio -->
+ <!-- Contact/Dihedral Group ratio: This is only used if normalization is turned on-->
        <groupRatios contacts="1" dihedrals="1"/>
 
 </Groups>

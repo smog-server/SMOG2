@@ -518,7 +518,7 @@ sub connCalculateDihedralsHelper
 		my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
 		my $atomi4 = sclr(slice($inputPDL,"3:3,$atom4,:"));
 
-		## $eG >=0 dihedral is proper dihedral of any functional format
+		## $eG >=0 dihedral is proper dihedral of any functional form
         if($eG >= 0)
 		{
 	 	    #print $OUTPUT dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD);
@@ -718,7 +718,7 @@ sub calculateContacts
 			## DIHE TO CONTACT SCALING ##
 			## DIHEDRAL TO CONTACT RATIO IS GLOBAL IRREGARDLESS OF RESIDE TYPE ##
 			$totalStrength = $termRatios->{"interRelativeTotal"};
-			$diheTotal = $termRatios->{"energyRelative"};
+			$diheTotal = $termRatios->{"dihedralRelative"};
 			$contactLeftOver = $numAtom - $numAtom*($diheTotal/$totalStrength);
 			$contactLeftOver = $contactLeftOver/$count;
    			$multFactor = $contactLeftOver;
@@ -1605,8 +1605,8 @@ sub coarseGrain
 	createDihedralAngleFunctionals();
         
 	###############
-    ## PARSE PDB ##
-    ###############
+    	## PARSE PDB ##
+    	###############
 	print "Coarse Graining system.....";
 	parseATOMCoarse($inputPDB);
 	catPDL();

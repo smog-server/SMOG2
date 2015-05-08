@@ -87,7 +87,7 @@ sub getSetDiheCounts
 }
 
 ##
-# Set the dihedral strength through renormalization.
+# Set the dihedral strength through normalization.
 sub setRatios	
 {
  my($diheFunctHandle,$inputPDL,$atomNum,$atomTypes) = @_;
@@ -116,15 +116,15 @@ sub adjustFactorsHelper1
  	{
 	my($a,$b,$c,$d,$func,$count,$eG) = $diheArr->slice("0:6,$i:$i")->list;
 	## Convert from relative index to absolute indexing ##
+    	$a = sclr(slice($inputPDL,"3:3,$a,:"));
 	$b = sclr(slice($inputPDL,"3:3,$b,:"));
 	$c = sclr(slice($inputPDL,"3:3,$c,:"));
-    $a = sclr(slice($inputPDL,"3:3,$a,:"));
 	$d = sclr(slice($inputPDL,"3:3,$d,:"));
-    my $resTypea = $atomTypes->{$a}->[1];
+    	my $resTypea = $atomTypes->{$a}->[1];
 	my $resTypeb = $atomTypes->{$b}->[1];
 	my $resTypec = $atomTypes->{$c}->[1];
-    my $resTyped = $atomTypes->{$d}->[1];
-    my $resTypeUse;
+    	my $resTyped = $atomTypes->{$d}->[1];
+    	my $resTypeUse;
 
  	if(!$resTypeb || !$resTypec) {confess "Atom $b or $c doesn't have a residue type\n";}
 
