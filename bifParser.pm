@@ -292,7 +292,7 @@ $termRatios->{"cintraRelativeTotal"} = $total;
 ## contact/dihe relative Scale ##
 $termRatios->{"contactRelative"} = $groupRatios->{"contacts"};
 ## dihe/contact relative Scale ##
-$termRatios->{"energyRelative"} = $groupRatios->{"dihedrals"};
+$termRatios->{"dihedralRelative"} = $groupRatios->{"dihedrals"};
 ## Sum of total global scaling ##
 $termRatios->{"interRelativeTotal"} = $groupRatios->{"contacts"}+$groupRatios->{"dihedrals"};
 

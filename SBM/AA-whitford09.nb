@@ -7,7 +7,7 @@
    <nbType>Y</nbType>
  </nonbond>	
  <!-- CONTACTS -->
-  <contact func="sbm_contacts_LJ(?,?,?)" contactGroup="c">
+  <contact func="sbm_contacts_6-12(?,?,?)" contactGroup="c">
     <nbType>*</nbType>
     <nbType>*</nbType>
   </contact>

@@ -9,10 +9,10 @@
 	<function name="sbm_planarRigid" directive="dihedrals" fType="2"/>
 	<function name="sbm_angles" directive="angles" fType="1"/>
 	<function name="sbm_bonds" directive="bonds" fType="1"/>
-    <function name="sbm_bonds_6" directive="bonds" fType="6"/>
-    <function name="sbm_contacts_LJ" directive="pairs" fType="1"/>
+    	<function name="sbm_bonds_6" directive="bonds" fType="6"/>
+    	<function name="sbm_contacts_6-12" directive="pairs" fType="1"/>
+	<function name="sbm_contacts_10-12" directive="pairs" fType="2"/>
 	<function name="sbm_contacts_Gaussian" directive="pairs" fType="3" />
-	<function name="sbm_pairs" directive="pairs" fType="1"/>
 </functions>
 <!-- HAMILTONIAN SETTINGS -->
 <settings>
