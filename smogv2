@@ -560,10 +560,13 @@ sub dihedralOutput
 	if($paramArr[0] =~ /^\?$/){$paramArr[0] = $values;}
  	elsif($paramArr[0] =~ /\?\*(.*)/){$paramArr[0]=$values*eval($1);}
 
+	print "ins $paramArr[1] $ratio eval($1)\n";
 	## If dihedral kd is normalized or has scaling&normalize ##
 	if($paramArr[1] =~ /^\?$/){$paramArr[1]=$ratio;} ##? has to be consistent with normalization##
  	elsif($paramArr[1] =~ /\?\*(.*)/){$paramArr[1]=eval($1)*$ratio;}
  	else{$paramArr[1]*=$ratio;} ## Simple scaling ##
+
+	print "$paramArr[1] $ratio eval($1)\n";
  
 	### MINOR KLUDGE TO FIX RIGID/IMPROPER DIHEDRALS BEING OFF BY +-180 ###
 	if($fType == 2)
