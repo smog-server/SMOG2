@@ -1,0 +1,5276 @@
+<?xml version='1.0'?>
+<bif>
+	<residues>
+<!-- LIGANDS -->
+								<!--ADDING-LIGANDS-->
+
+<!--GLUCOSE-->
+		<residue name="GLC" type="ligand">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">C1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O6</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>O4</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C4</atom>
+					<atom>C3</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C2</atom>
+					<atom>O2</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C2</atom>
+					<atom>C3</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C2</atom>
+					<atom>C1</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C3</atom>
+					<atom>O3</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C6</atom>
+					<atom>O6</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C6</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C5</atom>
+					<atom>O5</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>O5</atom>
+					<atom>C1</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C1</atom>
+					<atom>O1</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C2</atom>
+					<atom>C3</atom>
+					<atom>C1</atom>
+					<atom>O2</atom>
+				</improper>
+				<improper>
+					<atom>C3</atom>
+					<atom>C2</atom>
+					<atom>C4</atom>
+					<atom>O3</atom>
+				</improper>
+				<improper>
+					<atom>O4</atom>
+					<atom>C3</atom>
+					<atom>C5</atom>
+					<atom>C4</atom>
+				</improper>
+				<improper>
+					<atom>C5</atom>
+					<atom>C4</atom>
+					<atom>O5</atom>
+					<atom>C6</atom>
+				</improper>
+				<improper>
+					<atom>O1</atom>
+					<atom>C2</atom>
+					<atom>O5</atom>
+					<atom>C1</atom>
+				</improper>
+			</impropers>
+		</residue>	
+
+
+
+
+<!--ADP-->
+		<residue name="ADP" type="ligand" atomCount="0">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">PA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1A</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2A</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3A</atom>
+				<atom bType="X" nbType="Y" pairType="Z">PB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1B</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2B</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3B</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N9</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C8</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N7</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="lig">
+					<atom>N6</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C6</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C6</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>N1</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C2</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>N3</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C5</atom>
+					<atom>N7</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C4</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>N7</atom>
+					<atom>C8</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C8</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>N9</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C1*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C2*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>C5*</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>O5*</atom>
+					<atom>PA</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>PA</atom>
+					<atom>O1A</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>PA</atom>
+					<atom>O2A</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>PA</atom>
+					<atom>O3A</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>O3A</atom>
+					<atom>PB</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>PB</atom>
+					<atom>O1B</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>PB</atom>
+					<atom>O2B</atom>
+				</bond>
+				<bond energyGroup="lig">
+					<atom>PB</atom>
+					<atom>O3B</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>N9</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>C1*</atom>
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+					<atom>C3*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+					<atom>C4*</atom>
+				</improper>
+				<improper>
+					<atom>O4*</atom>
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+					<atom>C5*</atom>
+				</improper>
+			</impropers>
+		</residue>
+		<!-- AMINO RESIDUES -->
+
+
+
+
+<!--ALANINE-->
+		<residue name="ALA" type="amino" atomCount="5">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--ALANINE-TERMINAL-->
+		<residue name="ALAT" type="amino" atomCount="6">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+		
+<!--THREONINE-->
+		<residue name="THR" type="amino" atomCount="7">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OG1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>OG1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+				<improper>
+					<atom>CA</atom>
+					<atom>CB</atom>
+					<atom>OG1</atom>
+					<atom>CG2</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+<!--THREONINE-JianPENG-->
+		<residue name="THRJ" type="amino" atomCount="5">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+            </atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+
+
+<!--THREONINE-TERMINAL-->
+		<residue name="THRT" type="amino" atomCount="8">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OG1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>OG1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+				<improper>
+					<atom>CA</atom>
+					<atom>CB</atom>
+					<atom>OG1</atom>
+					<atom>CG2</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+
+<!--PHENYLALANINE-->
+		<residue name="PHE" type="amino" atomCount="11">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CZ</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD1</atom>
+					<atom>CE1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE1</atom>
+					<atom>CZ</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD2</atom>
+					<atom>CE2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE2</atom>
+					<atom>CZ</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--PHENYLALANINE-TERMINAL-->
+		<residue name="PHET" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CZ</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD1</atom>
+					<atom>CE1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE1</atom>
+					<atom>CZ</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD2</atom>
+					<atom>CE2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE2</atom>
+					<atom>CZ</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+		
+<!--VALINE-->
+		<residue name="VAL" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+				<improper>
+					<atom>CA</atom>
+					<atom>CB</atom>
+					<atom>CG1</atom>
+					<atom>CG2</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--VALINE-TERMINAL-->
+		<residue name="VALT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+				<improper>
+					<atom>CA</atom>
+					<atom>CB</atom>
+					<atom>CG1</atom>
+					<atom>CG2</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+<!--METHIONINE-->
+		<residue name="MET" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">SD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>SD</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>SD</atom>
+					<atom>CE</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--METHIONINE NTERMINUS-->
+		<residue name="METN" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">SD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>SD</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>SD</atom>
+					<atom>CE</atom>
+				</bond>
+			</bonds>
+		</residue>
+
+
+<!--METHIONINE-TERMINAL-->
+		<residue name="METT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">SD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>SD</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>SD</atom>
+					<atom>CE</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+
+<!--METHISTIDINE-->
+	<residue name="HMS" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">ND1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE1</atom>
+                <atom bType="X" nbType="Y" pairType="Z">NE2</atom>
+             	<atom bType="X" nbType="Y" pairType="Z">CM</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>ND1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD2</atom>
+					<atom>NE2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>NE2</atom>
+					<atom>CE1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>ND1</atom>
+					<atom>CE1</atom>
+                </bond>
+               <bond energyGroup="pr_a">
+					<atom>NE2</atom>
+					<atom>CM</atom>
+				</bond>
+
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+		
+<!--HISTIDINE-->
+	<residue name="HIS" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">ND1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NE2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>ND1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD2</atom>
+					<atom>NE2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>NE2</atom>
+					<atom>CE1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>ND1</atom>
+					<atom>CE1</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+
+<!--HISTIDINE-TERMINAL-->
+	<residue name="HIST" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">ND1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NE2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>ND1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD2</atom>
+					<atom>NE2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>NE2</atom>
+					<atom>CE1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>ND1</atom>
+					<atom>CE1</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+		
+<!--GLUTAMIC ACID-->
+		<residue name="GLU" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OE2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>OE1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>OE2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--GLUTAMIC ACID-TERMINAL-->
+		<residue name="GLUT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OE2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>OE1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>OE2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+		
+<!--CYSTEINE-->
+		<residue name="CYS" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">SG</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>SG</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--CYSTEINE-TERMINAL-->
+		<residue name="CYST" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">SG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>SG</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+		
+<!--GLYCINE-->
+		<residue name="GLY" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+			</bonds>
+			<impropers>
+				<improper></improper>
+			</impropers>
+		</residue>
+
+		
+<!--GLYCINE-TERMINAL-->
+		<residue name="GLYT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+			</bonds>
+			<impropers>
+				<improper></improper>
+			</impropers>
+		</residue>		
+		
+
+<!--ASPARTIC ACID-->
+		<residue name="ASP" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OD2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>OD1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>OD2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--ASPARTIC ACID-TERMINAL-->
+		<residue name="ASPT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OD2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>OD1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>OD2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>		
+
+
+	
+<!--TYROSINE-->
+		<residue name="TYR" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CZ</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OH</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD1</atom>
+					<atom>CE1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD2</atom>
+					<atom>CE2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE1</atom>
+					<atom>CZ</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE2</atom>
+					<atom>CZ</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CZ</atom>
+					<atom>OH</atom>
+				</bond>
+			</bonds>
+			<impropers>
+			<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+			</improper>
+			</impropers>
+		</residue>
+
+
+<!--TYROSINE-TERMINAL-->
+		<residue name="TYRT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CZ</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OH</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD1</atom>
+					<atom>CE1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD2</atom>
+					<atom>CE2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE1</atom>
+					<atom>CZ</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE2</atom>
+					<atom>CZ</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CZ</atom>
+					<atom>OH</atom>
+				</bond>
+			</bonds>
+			<impropers>
+			<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+			</improper>
+			</impropers>
+		</residue>	
+
+
+<!--LEUCINE-->
+		<residue name="LEU" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+				<improper>
+					<atom>CB</atom>
+					<atom>CG</atom>
+					<atom>CD1</atom>
+					<atom>CD2</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+<!--LEUCINE-TERMINAL-->
+		<residue name="LEUT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+				<improper>
+					<atom>CB</atom>
+					<atom>CG</atom>
+					<atom>CD1</atom>
+					<atom>CD2</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+<!--ISOLEUCINE-->
+		<residue name="ILE" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD1</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG2</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG1</atom>
+					<atom>CD1</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+				<improper>
+					<atom>CA</atom>
+					<atom>CB</atom>
+					<atom>CG1</atom>
+					<atom>CG2</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--ISOLEUCINE-->
+		<residue name="ILET" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG2</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG1</atom>
+					<atom>CD1</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+				<improper>
+					<atom>CA</atom>
+					<atom>CB</atom>
+					<atom>CG1</atom>
+					<atom>CG2</atom>
+				</improper>
+			</impropers>
+		</residue>
+		
+<!--ASPARGINE-->
+		<residue name="ASN" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">ND2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>OD1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>ND2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+<!--ASPARGINE-TERMINAL-->
+		<residue name="ASNT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">ND2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>OD1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>ND2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--SERINE-->
+		<residue name="SER" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OG</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>OG</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>	
+
+<!--ARGININE-->		
+<residue name="ARG" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NE</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CZ</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NH1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NH2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>NE</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>NE</atom>
+					<atom>CZ</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CZ</atom>
+					<atom>NH1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CZ</atom>
+					<atom>NH2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+
+<!--ARGININE-TERMINAL-->		
+<residue name="ARGT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NE</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CZ</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NH1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NH2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>NE</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>NE</atom>
+					<atom>CZ</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CZ</atom>
+					<atom>NH1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CZ</atom>
+					<atom>NH2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+<!--GLUTAMINE-->
+		<residue name="GLN" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NE2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>OE1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>NE2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+<!--GLUTAMINE-TERMINAL-->
+		<residue name="GLNT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NE2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>OE1</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>NE2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--PROLINE-->
+		<residue name="PRO" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="pr_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="pr_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD</atom>
+					<atom>N</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+<!--PROLINE-TERMINAL-->
+		<residue name="PROT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="pr_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="pr_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD</atom>
+					<atom>N</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+		
+<!--LYSINE-->
+		<residue name="LYS" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NZ</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>CE</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CE</atom>
+					<atom>NZ</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+<!--LYSINE-TERMINAL-->
+		<residue name="LYST" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NZ</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CG</atom>
+					<atom>CD</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CD</atom>
+					<atom>CE</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CE</atom>
+					<atom>NZ</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--TRYPTOPHAN-->
+		<residue name="TRP" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CZ2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CZ3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CH2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD2</atom>
+					<atom>CE3</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE3</atom>
+					<atom>CZ3</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CZ3</atom>
+					<atom>CH2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD2</atom>
+					<atom>CE2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE2</atom>
+					<atom>CZ2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CZ2</atom>
+					<atom>CH2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD1</atom>
+					<atom>NE1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>NE1</atom>
+					<atom>CE2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+			<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+
+
+<!--TRYPTOPHAN-TERMINAL-->
+		<residue name="TRPT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CD2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">NE1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CE3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CZ2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CZ3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CH2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>CG</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CG</atom>
+					<atom>CD2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD2</atom>
+					<atom>CE3</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE3</atom>
+					<atom>CZ3</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CZ3</atom>
+					<atom>CH2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD2</atom>
+					<atom>CE2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CE2</atom>
+					<atom>CZ2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CZ2</atom>
+					<atom>CH2</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>CD1</atom>
+					<atom>NE1</atom>
+				</bond>
+				<bond energyGroup="pr_a">
+					<atom>NE1</atom>
+					<atom>CE2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+			<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>	
+
+	
+<!--ALANINE-TERMINAL-->
+		<residue name="ALT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>
+<!--SERINE-TERMINAL-->
+	<residue name="SERT" type="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">N</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OG</atom>
+				<atom bType="X" nbType="Y" pairType="Z">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>OG</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>	
+
+
+										<!-- NUCLEIC RESIDUES -->
+
+<!--RNA A-->
+		<residue name="A" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N9</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C8</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N7</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N9</atom>
+					<atom>C8</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C8</atom>
+					<atom>N7</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N7</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N9</atom>
+					<atom>C4</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>O2*</atom>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>C3*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N9</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--RNA A5-->
+		<residue name="A5" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N9</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C8</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N7</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O3P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N9</atom>
+					<atom>C8</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C8</atom>
+					<atom>N7</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N7</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N9</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>O2*</atom>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>C3*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N9</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--RNA G-->
+		<residue name="G" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N9</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C8</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N7</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N9</atom>
+					<atom>C8</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C8</atom>
+					<atom>N7</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N7</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>O6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N9</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>O2*</atom>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>C3*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N9</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--RNA G5-->
+		<residue name="G5" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N9</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C8</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N7</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O3P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N9</atom>
+					<atom>C8</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C8</atom>
+					<atom>N7</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N7</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>O6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N9</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>O2*</atom>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>C3*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N9</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--RNA U-->
+		<residue name="U" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>O4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>O2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>O2*</atom>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>C3*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N1</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--RNA U5-->
+		<residue name="U5" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O3P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>O4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>O2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>O2*</atom>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>C3*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N1</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--RNA C-->
+		<residue name="C" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>O2</atom>
+					<atom>C2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>O2*</atom>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>C3*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N1</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--RNA C5-->
+		<residue name="C5" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O3P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>O2</atom>
+					<atom>C2</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>O2*</atom>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>C3*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N1</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--DNA A-->
+		<residue name="DA" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N9</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C8</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N7</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N9</atom>
+					<atom>C8</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C8</atom>
+					<atom>N7</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N7</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N9</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--DNA A5-->
+		<residue name="DA5" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N9</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C8</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N7</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O3P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N9</atom>
+					<atom>C8</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C8</atom>
+					<atom>N7</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N7</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N9</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--DNA G-->
+		<residue name="DG" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N9</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C8</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N7</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N9</atom>
+					<atom>C8</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C8</atom>
+					<atom>N7</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N7</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>O6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N9</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--DNA G5-->
+		<residue name="DG5" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N9</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C8</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N7</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O3P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N9</atom>
+					<atom>C8</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C8</atom>
+					<atom>N7</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N7</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>O6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N9</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--DNA T-->
+		<residue name="DT" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C7</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C7</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>O4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N1</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N1</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--DNA T5-->
+		<residue name="DT5" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C7</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O3P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C7</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>O4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N1</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N1</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--DNA C-->
+		<residue name="DC" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N1</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N1</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--DNA C5-->
+		<residue name="DC5" type="nucleic">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O1P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3P</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O4*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O3*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C1*</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N1</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C6</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C5</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N4</atom>
+				<atom bType="X" nbType="Y" pairType="Z">N3</atom>
+				<atom bType="X" nbType="Y" pairType="Z">C2</atom>
+				<atom bType="X" nbType="Y" pairType="Z">O2</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O1P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O2P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O3P</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>P</atom>
+					<atom>O5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_n">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_n">
+					<atom>C1*</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N1</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C6</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C5</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N4</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C4</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>N3</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="pr_n">
+					<atom>C2</atom>
+					<atom>N1</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N1</atom>
+				</improper>
+			</impropers>
+		</residue>
+</residues>
+<!-- CONNECTIONS -->
+
+	<!-- NUCLEIC/NUCLEIC -->
+	<connections>
+		<connection name="nucleic-nucleic" resTypeA="nucleic" resTypeB="nucleic">
+			<bond energyGroup="bb_n" >
+				<atom>O3*</atom>
+				<atom>P</atom>
+			</bond>
+		</connection>
+		
+		
+		<!-- AMINO/AMINO -->
+			<connection name="amino-amino" resTypeA="amino" resTypeB="amino">
+			<bond energyGroup="r_a" >
+				<atom>C</atom>
+				<atom>N</atom>
+			</bond>
+		<improper>
+					<atom>O</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N?</atom>
+		</improper>
+		</connection>
+
+	</connections>
+</bif>
