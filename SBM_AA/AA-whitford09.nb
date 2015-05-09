@@ -1,0 +1,15 @@
+<?xml version='1.0'?>
+<nb>
+ <!-- DEFAULTS -->
+ <defaults gen-pairs="0"/>
+ <!-- GENERAL NONBONDS -->
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.0"  c12="5.96046e-10">
+   <nbType>Y</nbType>
+ </nonbond>	
+ <!-- CONTACTS -->
+  <contact func="sbm_contacts_6-12(?,?,?)" contactGroup="c">
+    <nbType>*</nbType>
+    <nbType>*</nbType>
+  </contact>
+</nb>
+
