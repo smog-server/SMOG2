@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+#
 ##
 ## HELPS TO REALIGN RESIDUE NUMBERS AND ATOM INCIDES IN PDB
 ##
@@ -19,7 +21,7 @@ while(my $line = <FILE>)
  $line = sprintf "$atom  %5d %4s %-3s  %4d    %8.3f%8.3f%8.3f\n",$splits[1],$splits[2],$splits[3],$splits[5],$splits[6],$splits[7],$splits[8];
 										##$serial_n,$atom_name, $res_name, $seq_n, $ins_code, @coords
 	$atomCounter++;	
-	print $line;
+	print OUTPUT "$line";
  #$splits[1]=$atomCounter;print @splits,"\n";
 
 	
