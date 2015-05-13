@@ -3,6 +3,8 @@
 # USAGE ./adjustPDB <pdb> <map file> <output file>
 use strict;
 use warnings;
+#use Getopt::Long;
+#use Carp;
 my %map;
 
 ## VARS: ##
@@ -57,11 +59,11 @@ while(my $line = <MAP>)
   $map{$entries[0]}{"tail"} = $entries[2];
 }
 
-## Returns 1 if a residue is a RNA or DNA, else returns zero. ##
+## Returns 1 if residue is a RNA or DNA, else returns zero. ##
 sub isRNA{
 	my($resName) = @_;
-	if ($resName eq "U" || $resName eq "G" || $resName eq "A" || $resName eq "C" ||
-		$resName eq "DU" || $resName eq "DG" || $resName eq "DA" || $resName eq "DC"){
+	my %RNAlist=("U",1,"U5",1,"G",1,"G5",1,"A",1,"A5",1,"C",1,"C5",1,"MIA",1);
+	if ($RNAlist{$resName}){
 			return 1;
 	}
 	return 0;
