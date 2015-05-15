@@ -372,7 +372,9 @@ sub angleOutput
 	
 	## Check angles threshold ##
 	 if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"})
-	 	 {confess("ERROR: ANGLES between atom $i $j $k exceeded angles threshold with value $paramArr[0]\n");}
+	 	 {confess("ERROR: ANGLES between atom $i $j $k lower than angles threshold with value $paramArr[0]\n");}
+	 if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"})
+	 	 {confess("ERROR: ANGLES between atom $i $j $k greater than angles threshold with value $paramArr[0]\n");}
 	
  ## Format output <i j k function p1 p2 ... pn>
  foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}

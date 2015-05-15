@@ -56,7 +56,7 @@ atomList="N1 N2 N3 N4 N5 N6 N7 N8 N9 C1 C2 C3 C4 C5 C6 C7 C8 C9 O1 O2 O3 O4 O5 O
 </Contacts>
 
 <bondsThreshold shortBond="0.08" longBond="0.2"/>
-<anglesThreshold smallAngles="5"/>
+<anglesThreshold smallAngles="90" largeAngles="140"/>
 <contactsThreshold shortContacts="0.1"/> 
 
 </settings>
