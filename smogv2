@@ -1,8 +1,7 @@
 #!/usr/bin/perl -w
 #####################################################################
-# calculate.pl: Do the calculation necessary for the values
-# Author: Mohit Raghunathan													
-# Date: May 2012															 
+# smogv2: Do the calculation necessary for the values
+# Authors: Mohit Raghunathan, Jeff Noel, Mariana Levi, Paul Whitford													
 #####################################################################
 
 #####################
@@ -46,6 +45,17 @@ my $numContacts = 0;
 my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $contactRes = ""; ## Duplicate ##
 my $softTerm=0; ## Boolean to for soft termination
+
+if(-e $topFile){
+ print "$topFile exists. This is the name used for meta files by SMOG2.  Please move/rename file\n";
+ die;
+}
+if(-e $groFile){
+ print "$groFile exists. This is the name used for meta files by SMOG2.  Please move/rename file\n";
+ die;
+}
+
+
 
 #####################
 ## CALCULATE BONDS ##
@@ -1092,7 +1102,13 @@ sub convertPDBToGroNdx
  	my $chainCounter = 1;
  	my %chainHash;
 	my $resNumPrev=1;my $resCounter=1;
+	my $boundflag=0;
+	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
  	open(PDB,$inputPDB); ## INPUT PDB
+	if(-e "meta.Gro"){
+		print "meta.Gro is a reserved file name.  It appears to already exist.  Please move and try again\n";
+		die;
+	}
 	open(GRO,">tempGro");
 	while($line=<PDB>)
 	{
@@ -1103,7 +1119,7 @@ sub convertPDBToGroNdx
          {
 		$atomName = substr($line, 12, 4);
 		$atomName =~ s/^\s+|\s+$//g;
-		$resName = substr($line,17,4);
+		$resName = substr($line,17,3);
 		$resName =~ s/^\s+|\s+$//g;
         if(!exists $residues{$resName}->{"atoms"}->{$atomName})
 		{next;}
@@ -1112,6 +1128,22 @@ sub convertPDBToGroNdx
 		$y = substr($line, 38, 8);$y*=0.10;
 		$z = substr($line, 46, 8);$z*=0.10;
 		
+		if($boundflag == 0){
+			$xmin=$x;
+			$xmax=$x;
+			$ymin=$y;
+			$ymax=$y;
+			$zmin=$z;
+			$zmax=$z;
+			$boundflag=1;
+		}else{
+			if($x > $xmax){$xmax=$x;}
+			if($x < $xmin){$xmin=$x;}
+			if($y > $ymax){$ymax=$y;}
+			if($y < $ymin){$ymin=$y;}
+			if($z > $zmax){$zmax=$z;}
+			if($z < $zmin){$zmin=$z;}
+		}
 	
 	 	$chain = substr($line,21,1);
   		if($chain eq " ") {$chain = $chainCounter;}
@@ -1138,6 +1170,11 @@ sub convertPDBToGroNdx
 
 	}
 
+## default box size if 1nm larger than system size in each direction
+	my $xrange=($xmax-$xmin)+1.0;
+	my $yrange=($ymax-$ymin)+1.0;
+	my $zrange=($zmax-$zmin)+1.0;
+
  ## ADJUST GRO FILE ##
 	close(PDB);
 	close(GRO);open(GROIN,"tempGro");
@@ -1145,6 +1182,7 @@ sub convertPDBToGroNdx
 	print GRO "SMOGV2\n";
 	print GRO $counter,"\n";
 	while(<GROIN>) { print GRO $_;}
+#	print GRO "$xrange $yrange $zrange\n";
 	close(GRO); close(GROIN);
 	unlink("tempGro");
 	
