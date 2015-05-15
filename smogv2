@@ -1109,7 +1109,7 @@ sub convertPDBToGroNdx
 		print "meta.Gro is a reserved file name.  It appears to already exist.  Please move and try again\n";
 		die;
 	}
-	open(GRO,">tempGro");
+	open(GRO,">meta.Gro");
 	while($line=<PDB>)
 	{
 		
@@ -1177,14 +1177,14 @@ sub convertPDBToGroNdx
 
  ## ADJUST GRO FILE ##
 	close(PDB);
-	close(GRO);open(GROIN,"tempGro");
+	close(GRO);open(GROIN,"meta.Gro");
 	open(GRO,">$outputGRO");
 	print GRO "SMOGV2\n";
 	print GRO $counter,"\n";
 	while(<GROIN>) { print GRO $_;}
 	print GRO "$xrange $yrange $zrange\n";
 	close(GRO); close(GROIN);
-	unlink("tempGro");
+	unlink("meta.Gro");
 	
  ## CREATE NDX FILE ##
  open(NDX,">$outputNDX");
