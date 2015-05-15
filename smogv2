@@ -35,8 +35,8 @@ my $OUTPUT;
 my $help;my $inputPDB; my $inputFolder;
 my $ignH;my $ignChainContact=0;my $ignHContacts;
 my $ignAllContacts=0;
-my $topFile = "temp.top";
-my $groFile = "temp.gro";
+my $topFile = "smog.top";
+my $groFile = "smog.gro";
 my $DCAFile = "";
 my $shadowFile = "shadow.contacts";
 my $ndxFile = "temp.ndx";
@@ -1119,7 +1119,7 @@ sub convertPDBToGroNdx
          {
 		$atomName = substr($line, 12, 4);
 		$atomName =~ s/^\s+|\s+$//g;
-		$resName = substr($line,17,3);
+		$resName = substr($line,17,4);
 		$resName =~ s/^\s+|\s+$//g;
         if(!exists $residues{$resName}->{"atoms"}->{$atomName})
 		{next;}
@@ -1171,9 +1171,9 @@ sub convertPDBToGroNdx
 	}
 
 ## default box size if 1nm larger than system size in each direction
-	my $xrange=($xmax-$xmin)+1.0;
-	my $yrange=($ymax-$ymin)+1.0;
-	my $zrange=($zmax-$zmin)+1.0;
+	my $xrange=($xmax-$xmin)+2.0;
+	my $yrange=($ymax-$ymin)+2.0;
+	my $zrange=($zmax-$zmin)+2.0;
 
  ## ADJUST GRO FILE ##
 	close(PDB);
@@ -1182,7 +1182,7 @@ sub convertPDBToGroNdx
 	print GRO "SMOGV2\n";
 	print GRO $counter,"\n";
 	while(<GROIN>) { print GRO $_;}
-#	print GRO "$xrange $yrange $zrange\n";
+	print GRO "$xrange $yrange $zrange\n";
 	close(GRO); close(GROIN);
 	unlink("tempGro");
 	
