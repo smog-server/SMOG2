@@ -28,7 +28,7 @@ on usage, extensions and bugs to info@smog-server.org.
 Before using SMOG2, you need to configure your settings.
 This is a relatively simple two-step process.
 
-1) SMOG2 is based on Perl, and requires the following 
+1) SMOG2 is written in Perl, and requires the following 
 modules to be available (available through cpan):
 
 String::Util
