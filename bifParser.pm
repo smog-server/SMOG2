@@ -337,7 +337,7 @@ my $anglesThreshold = $data->{"settings"}->[0]->{"anglesThreshold"}->[0];
 my $contactsThreshold = $data->{"settings"}->[0]->{"contactsThreshold"}->[0];
 $interactionThreshold->{"bonds"}={"shortBond"=>$bondsThreshold->{"shortBond"},
 								  "longBond"=>$bondsThreshold->{"longBond"}};
-$interactionThreshold->{"angles"}={"smallAngles"=>$anglesThreshold->{"smallAngles"}};
+$interactionThreshold->{"angles"}={"smallAngles"=>$anglesThreshold->{"smallAngles"},"largeAngles"=>$anglesThreshold->{"largeAngles"}};
 $interactionThreshold->{"contacts"}={"shortContacts"=>$contactsThreshold->{"shortContacts"}};
 
 }
