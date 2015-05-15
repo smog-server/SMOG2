@@ -1,8 +1,7 @@
 #!/usr/bin/perl -w
 #####################################################################
-# calculate.pl: Do the calculation necessary for the values
-# Author: Mohit Raghunathan													
-# Date: May 2012															 
+# smogv2: Do the calculation necessary for the values
+# Authors: Mohit Raghunathan, Jeff Noel, Mariana Levi, Paul Whitford													
 #####################################################################
 
 #####################
@@ -36,8 +35,8 @@ my $OUTPUT;
 my $help;my $inputPDB; my $inputFolder;
 my $ignH;my $ignChainContact=0;my $ignHContacts;
 my $ignAllContacts=0;
-my $topFile = "temp.top";
-my $groFile = "temp.gro";
+my $topFile = "smog.top";
+my $groFile = "smog.gro";
 my $DCAFile = "";
 my $shadowFile = "shadow.contacts";
 my $ndxFile = "temp.ndx";
@@ -46,6 +45,7 @@ my $numContacts = 0;
 my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $contactRes = ""; ## Duplicate ##
 my $softTerm=0; ## Boolean to for soft termination
+
 
 #####################
 ## CALCULATE BONDS ##
@@ -1092,8 +1092,14 @@ sub convertPDBToGroNdx
  	my $chainCounter = 1;
  	my %chainHash;
 	my $resNumPrev=1;my $resCounter=1;
+	my $boundflag=0;
+	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
  	open(PDB,$inputPDB); ## INPUT PDB
-	open(GRO,">tempGro");
+	if(-e "meta.Gro"){
+		print "meta.Gro is a reserved file name.  It appears to already exist.  Please move and try again\n";
+		die;
+	}
+	open(GRO,">meta.Gro");
 	while($line=<PDB>)
 	{
 		
@@ -1112,6 +1118,22 @@ sub convertPDBToGroNdx
 		$y = substr($line, 38, 8);$y*=0.10;
 		$z = substr($line, 46, 8);$z*=0.10;
 		
+		if($boundflag == 0){
+			$xmin=$x;
+			$xmax=$x;
+			$ymin=$y;
+			$ymax=$y;
+			$zmin=$z;
+			$zmax=$z;
+			$boundflag=1;
+		}else{
+			if($x > $xmax){$xmax=$x;}
+			if($x < $xmin){$xmin=$x;}
+			if($y > $ymax){$ymax=$y;}
+			if($y < $ymin){$ymin=$y;}
+			if($z > $zmax){$zmax=$z;}
+			if($z < $zmin){$zmin=$z;}
+		}
 	
 	 	$chain = substr($line,21,1);
   		if($chain eq " ") {$chain = $chainCounter;}
@@ -1138,15 +1160,21 @@ sub convertPDBToGroNdx
 
 	}
 
+## default box size if 1nm larger than system size in each direction
+	my $xrange=($xmax-$xmin)+2.0;
+	my $yrange=($ymax-$ymin)+2.0;
+	my $zrange=($zmax-$zmin)+2.0;
+
  ## ADJUST GRO FILE ##
 	close(PDB);
-	close(GRO);open(GROIN,"tempGro");
+	close(GRO);open(GROIN,"meta.Gro");
 	open(GRO,">$outputGRO");
 	print GRO "SMOGV2\n";
 	print GRO $counter,"\n";
 	while(<GROIN>) { print GRO $_;}
+	print GRO "$xrange $yrange $zrange\n";
 	close(GRO); close(GROIN);
-	unlink("tempGro");
+	unlink("meta.Gro");
 	
  ## CREATE NDX FILE ##
  open(NDX,">$outputNDX");
