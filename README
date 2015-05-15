@@ -1,5 +1,6 @@
 ########################################################
-                  README for SMOG2
+
+                   README for SMOG2
 
 SMOG2 is a standalone software package for generating
 structure-based models, as provided by the 
@@ -16,7 +17,7 @@ to modify the source code.
 We encourage everyone to provide feedback/suggestions
 on usage, extensions and bugs to info@smog-server.org.
 
-    Jeffrey Noel, Jose Onuchic and Paul Whitford
+      Jeffrey Noel, Jose Onuchic and Paul Whitford
 ########################################################
 
 
