@@ -7,7 +7,7 @@
 curPath=$1
 #echo "Setting Vars to $curPath"
 export PATH=$PATH:$curPath
-export PERLLIB=$PERLLIB:$curPath
+export PERLLIB=$PERLLIB:$curPath/modules
 export SMOG_PATH=$curPath
 #echo "DONE INSTALLING"
 
