@@ -168,7 +168,7 @@ sub adjustInputFile(){
 					if ($aName eq "OP1"){$aName="O1P"};
 					if ($aName eq "OP2"){$aName="O2P"};
 					if ($aName eq "OP3"){$aName="O3P"};
-					if ($aName eq "CG"){$aName="CG1"};
+					#if ($aName eq "CG"){$aName="CG1"};
 					my $ind = $residue[$i]->{"atomIndex"};
 					my $x = $residue[$i]->{"x"};
 					my $y = $residue[$i]->{"y"};
