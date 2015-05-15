@@ -46,16 +46,6 @@ my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $contactRes = ""; ## Duplicate ##
 my $softTerm=0; ## Boolean to for soft termination
 
-if(-e $topFile){
- print "$topFile exists. This is the name used for meta files by SMOG2.  Please move/rename file\n";
- die;
-}
-if(-e $groFile){
- print "$groFile exists. This is the name used for meta files by SMOG2.  Please move/rename file\n";
- die;
-}
-
-
 
 #####################
 ## CALCULATE BONDS ##
