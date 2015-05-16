@@ -970,7 +970,7 @@ sub calculateAtomTypes
 	my($uniqeHandle) = @_;
 	my $formattedString = "";	
 	print $OUTPUT "\n [ atomtypes ] \n";
-	print $OUTPUT ";name  mass     charge   ptype c6       c12\n";
+	print $OUTPUT "; name mass   charge ptype c6            c12\n";
 	
 	## OBTAIN UNIQUE ATOM TYPES ##
 	my %obtained;my $nbtype ="";
@@ -993,7 +993,7 @@ sub calculateAtomTypes
 		if(!$c6 || !$c12 || !$ptype || !$mass || !$charge)
 		{confess("Nonbond Params at atom types not set for nbType $nbtype\n");}
 		
-		$formattedString = sprintf("%6s  $mass  $charge  $ptype %13.5e%13.5e",$nbtype,$c6,$c12);
+		$formattedString = sprintf("  %-4s %-6.3f %-5.3f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
 		print $OUTPUT $formattedString,"\n";
 		$obtained{$nbtype}=1;
 	}
@@ -1044,10 +1044,10 @@ sub calculateAtoms
 
 sub printDefaultParamsHeader
 {
-	print $OUTPUT "; SBMV2 FOR GROMACS/NAMD\n";
+	print $OUTPUT "; Structure-based \"SMOG\" model for use with GROMACS, or NAMD\n";
 	print $OUTPUT "\n[ defaults ]\n";
-	print $OUTPUT ";nbfunc comb-rule gen-pairs\n";
-	print $OUTPUT "           1           1 no\n";
+	print $OUTPUT "; nbfunc comb-rule gen-pairs\n";
+	print $OUTPUT "  1      1         no\n";
 
 }
 
@@ -1055,20 +1055,20 @@ sub printMoleculeTypes
 {
 
 	print $OUTPUT "\n[ moleculetype ]\n";
-	print $OUTPUT ";name   nrexcl\n";
-	print $OUTPUT "Macromolecule           3\n";
+	print $OUTPUT "; name            nrexcl\n";
+	print $OUTPUT "  Macromolecule   3\n";
 
 }
 
 sub printDefaultParamsFooter
 {
 	print $OUTPUT "\n[ system ]\n";
- 	print $OUTPUT ";name\n";
- 	print $OUTPUT "Macromolecule\n";
+ 	print $OUTPUT "; name\n";
+ 	print $OUTPUT "  Macromolecule\n";
 
  	print $OUTPUT "\n[ molecules ]\n";
- 	print $OUTPUT ";name   #molec\n";
- 	print $OUTPUT "Macromolecule   1\n";
+ 	print $OUTPUT "; name            #molec\n";
+ 	print $OUTPUT "  Macromolecule   1\n";
 
 
 
