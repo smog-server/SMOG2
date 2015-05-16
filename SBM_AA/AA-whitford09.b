@@ -7,8 +7,8 @@
 	<bType>*</bType>
     </bond>
 	<bond func="sbm_bonds_6(?,200)">
-	<bType>M</bType>
-    <bType>M</bType>
+	<bType>MG</bType>
+    	<bType>MG</bType>
 </bond>
 </bonds>
 
@@ -48,12 +48,6 @@
 	<bType>*</bType>
 	</dihedral>
 																	<!-- AMINO DIHEDRALS -->
-	<dihedral func="sbm_dihedrals_null()" energyGroup="null_a">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
 	<dihedral func="sbm_dihedrals(?,?,1)+sbm_dihedrals(?*3,?*0.5,3)" energyGroup="bb_a">
 	<bType>*</bType>
 	<bType>*</bType>
