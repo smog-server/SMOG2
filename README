@@ -56,8 +56,10 @@ you add this line to your .bashrc file.
 If your configuration step completes successfully, 
 running smog2 can be quite simple.  
 
+Note: config.bash defines SMOG_PATH.
+
 For the C-alpha model:
-$SMOG_PATH/smogv2 -i <PDBFILE> -tCG $SMOG_PATH/SBM_CA -contactRes $SMOG_PATH/SBM_AA 
+$SMOG_PATH/smogv2 -i <PDBFILE> -tCG $SMOG_PATH/SBM_calpha -contactRes $SMOG_PATH/SBM_AA 
 
 where <PDBFILE> is the the system for which you would 
 like to generate a SMOG model.
