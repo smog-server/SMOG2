@@ -1,0 +1,76 @@
+########################################################
+
+                   README for SMOG2
+
+SMOG2 is a standalone software package for generating
+structure-based models, as provided by the 
+smog-server.org webserver. These models may be used to
+perform simulations using Gromacs, or NAMD.
+
+This distribution of SMOG2 includes two versions of 
+SMOG models, the C-alpha model (Clementi et al JMB 2000)
+and the all-atom model (Whitford et al. Proteins 2009).
+The software is written such that you may also design
+your own form of structure-based models without having
+to modify the source code.
+
+We encourage everyone to provide feedback/suggestions
+on usage, extensions and bugs to info@smog-server.org.
+
+      Jeffrey Noel, Jose Onuchic and Paul Whitford
+########################################################
+
+
+########################################################
+
+		  CONFIGURING SMOG2
+
+Before using SMOG2, you need to configure your settings.
+This is a relatively simple two-step process.
+
+1) SMOG2 is written in Perl, and requires the following 
+modules to be available (available through cpan):
+
+String::Util
+XML::Simple
+Data::Dumper
+Exporter
+perl PDL
+
+2) Once the modules are installed, you need to run the
+configure script for SMOG2:
+
+source config.bash <SMOG2_DIR>
+
+SMOG2_DIR is the location of the smogv2 executable.
+If you used smog2 frequently, it is recommended that 
+you add this line to your .bashrc file.
+
+########################################################
+
+
+########################################################
+
+			USAGE
+
+If your configuration step completes successfully, 
+running smog2 can be quite simple.  
+
+Note: config.bash defines SMOG_PATH.
+
+For the C-alpha model:
+$SMOG_PATH/smogv2 -i <PDBFILE> -tCG $SMOG_PATH/SBM_calpha -contactRes $SMOG_PATH/SBM_AA 
+
+where <PDBFILE> is the the system for which you would 
+like to generate a SMOG model.
+
+To run the All-atom model: 
+$SMOG_PATH/smogv2 -i <PDBFILE> -tAA $SMOG_PATH/SBM_CA  
+
+For a list of all supported flags and options, type:
+$SMOG_PATH/smogv2 --help
+
+For more advanced usage of SMOG2, please consult the
+SMOG2 manual.
+
+########################################################
