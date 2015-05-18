@@ -7,18 +7,18 @@
 <!--GLUCOSE-->
 		<residue name="GLC" type="ligand">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">C1</atom>
-				<atom bType="1" nbType="1" pairType="1">O1</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">O2</atom>
-				<atom bType="1" nbType="1" pairType="1">C3</atom>
-				<atom bType="1" nbType="1" pairType="1">O3</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
-				<atom bType="1" nbType="1" pairType="1">O4</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">O5</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">O6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O6</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -111,33 +111,33 @@
 <!--ADP-->
 		<residue name="ADP" type="ligand" atomCount="0">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">PA</atom>
-				<atom bType="1" nbType="1" pairType="1">O1A</atom>
-				<atom bType="1" nbType="1" pairType="1">O2A</atom>
-				<atom bType="1" nbType="1" pairType="1">O3A</atom>
-				<atom bType="1" nbType="1" pairType="1">PB</atom>
-				<atom bType="1" nbType="1" pairType="1">O1B</atom>
-				<atom bType="1" nbType="1" pairType="1">O2B</atom>
-				<atom bType="1" nbType="1" pairType="1">O3B</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">O2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N9</atom>
-				<atom bType="1" nbType="1" pairType="1">C8</atom>
-				<atom bType="1" nbType="1" pairType="1">N7</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">N6</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">PA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1A</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2A</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3A</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">PB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1B</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2B</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3B</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N9</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C8</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
 				<bond energyGroup="lig">
@@ -292,11 +292,11 @@
 <!--ALANINE-->
 		<residue name="ALA" type="amino" atomCount="5">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -331,12 +331,12 @@
 <!--ALANINE-TERMINAL-->
 		<residue name="ALAT" type="amino" atomCount="6">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -379,13 +379,13 @@
 <!--THREONINE-->
 		<residue name="THR" type="amino" atomCount="7">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">OG1</atom>
-				<atom bType="1" nbType="1" pairType="1">CG2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OG1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -435,11 +435,11 @@
 <!--THREONINE-JianPENG-->
 		<residue name="THRJ" type="amino" atomCount="5">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
             </atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -477,14 +477,14 @@
 <!--THREONINE-TERMINAL-->
 		<residue name="THRT" type="amino" atomCount="8">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">OG1</atom>
-				<atom bType="1" nbType="1" pairType="1">CG2</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OG1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -539,17 +539,17 @@
 <!--PHENYLALANINE-->
 		<residue name="PHE" type="amino" atomCount="11">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD1</atom>
-				<atom bType="1" nbType="1" pairType="1">CD2</atom>
-				<atom bType="1" nbType="1" pairType="1">CE1</atom>
-				<atom bType="1" nbType="1" pairType="1">CE2</atom>
-				<atom bType="1" nbType="1" pairType="1">CZ</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CZ</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -612,18 +612,18 @@
 <!--PHENYLALANINE-TERMINAL-->
 		<residue name="PHET" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD1</atom>
-				<atom bType="1" nbType="1" pairType="1">CD2</atom>
-				<atom bType="1" nbType="1" pairType="1">CE1</atom>
-				<atom bType="1" nbType="1" pairType="1">CE2</atom>
-				<atom bType="1" nbType="1" pairType="1">CZ</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CZ</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -692,13 +692,13 @@
 <!--VALINE-->
 		<residue name="VAL" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG1</atom>
-				<atom bType="1" nbType="1" pairType="1">CG2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -747,14 +747,14 @@
 <!--VALINE-TERMINAL-->
 		<residue name="VALT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG1</atom>
-				<atom bType="1" nbType="1" pairType="1">CG2</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -808,14 +808,14 @@
 <!--METHIONINE-->
 		<residue name="MET" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">SD</atom>
-				<atom bType="1" nbType="1" pairType="1">CE</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">SD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -863,13 +863,13 @@
 <!--METHIONINE NTERMINUS-->
 		<residue name="METN" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">SD</atom>
-				<atom bType="1" nbType="1" pairType="1">CE</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">SD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -905,15 +905,15 @@
 <!--METHIONINE-TERMINAL-->
 		<residue name="METT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">SD</atom>
-				<atom bType="1" nbType="1" pairType="1">CE</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">SD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -966,17 +966,17 @@
 <!--METHISTIDINE-->
 	<residue name="HMS" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">ND1</atom>
-				<atom bType="1" nbType="1" pairType="1">CD2</atom>
-				<atom bType="1" nbType="1" pairType="1">CE1</atom>
-                		<atom bType="1" nbType="1" pairType="1">NE2</atom>
-             			<atom bType="1" nbType="1" pairType="1">CM</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">ND1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE1</atom>
+                		<atom bType="B_1" nbType="NB_1" pairType="P_1">NE2</atom>
+             			<atom bType="B_1" nbType="NB_1" pairType="P_1">CM</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1042,16 +1042,16 @@
 <!--HISTIDINE-->
 	<residue name="HIS" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">ND1</atom>
-				<atom bType="1" nbType="1" pairType="1">CD2</atom>
-				<atom bType="1" nbType="1" pairType="1">CE1</atom>
-				<atom bType="1" nbType="1" pairType="1">NE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">ND1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NE2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1112,17 +1112,17 @@
 <!--HISTIDINE-TERMINAL-->
 	<residue name="HIST" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">ND1</atom>
-				<atom bType="1" nbType="1" pairType="1">CD2</atom>
-				<atom bType="1" nbType="1" pairType="1">CE1</atom>
-				<atom bType="1" nbType="1" pairType="1">NE2</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">ND1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1186,15 +1186,15 @@
 <!--GLUTAMIC ACID-->
 		<residue name="GLU" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD</atom>
-				<atom bType="1" nbType="1" pairType="1">OE1</atom>
-				<atom bType="1" nbType="1" pairType="1">OE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OE2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1245,16 +1245,16 @@
 <!--GLUTAMIC ACID-TERMINAL-->
 		<residue name="GLUT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD</atom>
-				<atom bType="1" nbType="1" pairType="1">OE1</atom>
-				<atom bType="1" nbType="1" pairType="1">OE2</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1309,12 +1309,12 @@
 <!--CYSTEINE-->
 		<residue name="CYS" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">SG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">SG</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1353,13 +1353,13 @@
 <!--CYSTEINE-TERMINAL-->
 		<residue name="CYST" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">SG</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">SG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1402,10 +1402,10 @@
 <!--GLYCINE-->
 		<residue name="GLY" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1432,11 +1432,11 @@
 <!--GLYCINE-TERMINAL-->
 		<residue name="GLYT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1467,14 +1467,14 @@
 <!--ASPARTIC ACID-->
 		<residue name="ASP" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">OD1</atom>
-				<atom bType="1" nbType="1" pairType="1">OD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OD2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1521,15 +1521,15 @@
 <!--ASPARTIC ACID-TERMINAL-->
 		<residue name="ASPT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">OD1</atom>
-				<atom bType="1" nbType="1" pairType="1">OD2</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1582,18 +1582,18 @@
 <!--TYROSINE-->
 		<residue name="TYR" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD1</atom>
-				<atom bType="1" nbType="1" pairType="1">CD2</atom>
-				<atom bType="1" nbType="1" pairType="1">CE1</atom>
-				<atom bType="1" nbType="1" pairType="1">CE2</atom>
-				<atom bType="1" nbType="1" pairType="1">CZ</atom>
-				<atom bType="1" nbType="1" pairType="1">OH</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CZ</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OH</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1661,19 +1661,19 @@
 <!--TYROSINE-TERMINAL-->
 		<residue name="TYRT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD1</atom>
-				<atom bType="1" nbType="1" pairType="1">CD2</atom>
-				<atom bType="1" nbType="1" pairType="1">CE1</atom>
-				<atom bType="1" nbType="1" pairType="1">CE2</atom>
-				<atom bType="1" nbType="1" pairType="1">CZ</atom>
-				<atom bType="1" nbType="1" pairType="1">OH</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CZ</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OH</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1745,14 +1745,14 @@
 <!--LEUCINE-->
 		<residue name="LEU" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD1</atom>
-				<atom bType="1" nbType="1" pairType="1">CD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1806,15 +1806,15 @@
 <!--LEUCINE-TERMINAL-->
 		<residue name="LEUT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD1</atom>
-				<atom bType="1" nbType="1" pairType="1">CD2</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1872,14 +1872,14 @@
 <!--ISOLEUCINE-->
 		<residue name="ILE" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG1</atom>
-				<atom bType="1" nbType="1" pairType="1">CG2</atom>
-				<atom bType="1" nbType="1" pairType="1">CD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD1</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1932,15 +1932,15 @@
 <!--ISOLEUCINE-->
 		<residue name="ILET" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG1</atom>
-				<atom bType="1" nbType="1" pairType="1">CG2</atom>
-				<atom bType="1" nbType="1" pairType="1">CD1</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -1997,14 +1997,14 @@
 <!--ASPARGINE-->
 		<residue name="ASN" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">OD1</atom>
-				<atom bType="1" nbType="1" pairType="1">ND2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">ND2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2052,15 +2052,15 @@
 <!--ASPARGINE-TERMINAL-->
 		<residue name="ASNT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">OD1</atom>
-				<atom bType="1" nbType="1" pairType="1">ND2</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">ND2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2111,12 +2111,12 @@
 <!--SERINE-->
 		<residue name="SER" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">OG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OG</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2155,17 +2155,17 @@
 <!--ARGININE-->		
 <residue name="ARG" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD</atom>
-				<atom bType="1" nbType="1" pairType="1">NE</atom>
-				<atom bType="1" nbType="1" pairType="1">CZ</atom>
-				<atom bType="1" nbType="1" pairType="1">NH1</atom>
-				<atom bType="1" nbType="1" pairType="1">NH2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NE</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CZ</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NH1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NH2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2226,18 +2226,18 @@
 <!--ARGININE-TERMINAL-->		
 <residue name="ARGT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD</atom>
-				<atom bType="1" nbType="1" pairType="1">NE</atom>
-				<atom bType="1" nbType="1" pairType="1">CZ</atom>
-				<atom bType="1" nbType="1" pairType="1">NH1</atom>
-				<atom bType="1" nbType="1" pairType="1">NH2</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NE</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CZ</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NH1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NH2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2301,15 +2301,15 @@
 <!--GLUTAMINE-->
 		<residue name="GLN" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD</atom>
-				<atom bType="1" nbType="1" pairType="1">OE1</atom>
-				<atom bType="1" nbType="1" pairType="1">NE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NE2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2361,16 +2361,16 @@
 <!--GLUTAMINE-TERMINAL-->
 		<residue name="GLNT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD</atom>
-				<atom bType="1" nbType="1" pairType="1">OE1</atom>
-				<atom bType="1" nbType="1" pairType="1">NE2</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2425,13 +2425,13 @@
 <!--PROLINE-->
 		<residue name="PRO" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2477,14 +2477,14 @@
 <!--PROLINE-TERMINAL-->
 		<residue name="PROT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2536,15 +2536,15 @@
 <!--LYSINE-->
 		<residue name="LYS" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD</atom>
-				<atom bType="1" nbType="1" pairType="1">CE</atom>
-				<atom bType="1" nbType="1" pairType="1">NZ</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NZ</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2596,16 +2596,16 @@
 <!--LYSINE-TERMINAL-->
 		<residue name="LYST" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD</atom>
-				<atom bType="1" nbType="1" pairType="1">CE</atom>
-				<atom bType="1" nbType="1" pairType="1">NZ</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NZ</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2660,20 +2660,20 @@
 <!--TRYPTOPHAN-->
 		<residue name="TRP" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD1</atom>
-				<atom bType="1" nbType="1" pairType="1">CD2</atom>
-				<atom bType="1" nbType="1" pairType="1">NE1</atom>
-				<atom bType="1" nbType="1" pairType="1">CE2</atom>
-				<atom bType="1" nbType="1" pairType="1">CE3</atom>
-				<atom bType="1" nbType="1" pairType="1">CZ2</atom>
-				<atom bType="1" nbType="1" pairType="1">CZ3</atom>
-				<atom bType="1" nbType="1" pairType="1">CH2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CZ2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CZ3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CH2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2754,21 +2754,21 @@
 <!--TRYPTOPHAN-TERMINAL-->
 		<residue name="TRPT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">CG</atom>
-				<atom bType="1" nbType="1" pairType="1">CD1</atom>
-				<atom bType="1" nbType="1" pairType="1">CD2</atom>
-				<atom bType="1" nbType="1" pairType="1">NE1</atom>
-				<atom bType="1" nbType="1" pairType="1">CE2</atom>
-				<atom bType="1" nbType="1" pairType="1">CE3</atom>
-				<atom bType="1" nbType="1" pairType="1">CZ2</atom>
-				<atom bType="1" nbType="1" pairType="1">CZ3</atom>
-				<atom bType="1" nbType="1" pairType="1">CH2</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">NE1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CZ2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CZ3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CH2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2852,12 +2852,12 @@
 <!--ALANINE-TERMINAL-->
 		<residue name="ALT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2895,13 +2895,13 @@
 <!--SERINE-TERMINAL-->
 	<residue name="SERT" type="amino">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">N</atom>
-				<atom bType="1" nbType="1" pairType="1">CA</atom>
-				<atom bType="1" nbType="1" pairType="1">C</atom>
-				<atom bType="1" nbType="1" pairType="1">O</atom>
-				<atom bType="1" nbType="1" pairType="1">CB</atom>
-				<atom bType="1" nbType="1" pairType="1">OG</atom>
-				<atom bType="1" nbType="1" pairType="1">OXT</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -2947,28 +2947,28 @@
 <!--RNA A-->
 		<residue name="A" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">O2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N9</atom>
-				<atom bType="1" nbType="1" pairType="1">C8</atom>
-				<atom bType="1" nbType="1" pairType="1">N7</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">N6</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N9</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C8</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -3101,29 +3101,29 @@
 <!--RNA A5-->
 		<residue name="A5" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O3P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">O2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N9</atom>
-				<atom bType="1" nbType="1" pairType="1">C8</atom>
-				<atom bType="1" nbType="1" pairType="1">N7</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">N6</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N9</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C8</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -3260,29 +3260,29 @@
 <!--RNA G-->
 		<residue name="G" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">O2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N9</atom>
-				<atom bType="1" nbType="1" pairType="1">C8</atom>
-				<atom bType="1" nbType="1" pairType="1">N7</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">O6</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">N2</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N9</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C8</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -3419,30 +3419,30 @@
 <!--RNA G5-->
 		<residue name="G5" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O3P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">O2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N9</atom>
-				<atom bType="1" nbType="1" pairType="1">C8</atom>
-				<atom bType="1" nbType="1" pairType="1">N7</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">O6</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">N2</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N9</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C8</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -3583,26 +3583,26 @@
 <!--RNA U-->
 		<residue name="U" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">O2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
-				<atom bType="1" nbType="1" pairType="1">O4</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">O2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -3723,27 +3723,27 @@
 <!--RNA U5-->
 		<residue name="U5" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O3P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">O2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
-				<atom bType="1" nbType="1" pairType="1">O4</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">O2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -3868,26 +3868,26 @@
 <!--RNA C-->
 		<residue name="C" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">O2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
-				<atom bType="1" nbType="1" pairType="1">N4</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">O2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -4008,27 +4008,27 @@
 <!--RNA C5-->
 		<residue name="C5" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O3P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">O2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
-				<atom bType="1" nbType="1" pairType="1">N4</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">O2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -4153,27 +4153,27 @@
 <!--DNA A-->
 		<residue name="DA" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N9</atom>
-				<atom bType="1" nbType="1" pairType="1">C8</atom>
-				<atom bType="1" nbType="1" pairType="1">N7</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">N6</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N9</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C8</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -4292,28 +4292,28 @@
 <!--DNA A5-->
 		<residue name="DA5" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O3P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N9</atom>
-				<atom bType="1" nbType="1" pairType="1">C8</atom>
-				<atom bType="1" nbType="1" pairType="1">N7</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">N6</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N9</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C8</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -4436,28 +4436,28 @@
 <!--DNA G-->
 		<residue name="DG" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N9</atom>
-				<atom bType="1" nbType="1" pairType="1">C8</atom>
-				<atom bType="1" nbType="1" pairType="1">N7</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">O6</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">N2</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N9</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C8</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -4580,29 +4580,29 @@
 <!--DNA G5-->
 		<residue name="DG5" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O3P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N9</atom>
-				<atom bType="1" nbType="1" pairType="1">C8</atom>
-				<atom bType="1" nbType="1" pairType="1">N7</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">O6</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">N2</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N9</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C8</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -4729,26 +4729,26 @@
 <!--DNA T-->
 		<residue name="DT" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C7</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
-				<atom bType="1" nbType="1" pairType="1">O4</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">O2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -4859,27 +4859,27 @@
 <!--DNA T5-->
 		<residue name="DT5" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O3P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C7</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
-				<atom bType="1" nbType="1" pairType="1">O4</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">O2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -4994,25 +4994,25 @@
 <!--DNA C-->
 		<residue name="DC" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
-				<atom bType="1" nbType="1" pairType="1">N4</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">O2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
@@ -5119,26 +5119,26 @@
 <!--DNA C5-->
 		<residue name="DC5" type="nucleic">
 			<atoms>
-				<atom bType="1" nbType="1" pairType="1">P</atom>
-				<atom bType="1" nbType="1" pairType="1">O1P</atom>
-				<atom bType="1" nbType="1" pairType="1">O2P</atom>
-				<atom bType="1" nbType="1" pairType="1">O3P</atom>
-				<atom bType="1" nbType="1" pairType="1">O5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C5*</atom>
-				<atom bType="1" nbType="1" pairType="1">C4*</atom>
-				<atom bType="1" nbType="1" pairType="1">O4*</atom>
-				<atom bType="1" nbType="1" pairType="1">C3*</atom>
-				<atom bType="1" nbType="1" pairType="1">O3*</atom>
-				<atom bType="1" nbType="1" pairType="1">C2*</atom>
-				<atom bType="1" nbType="1" pairType="1">C1*</atom>
-				<atom bType="1" nbType="1" pairType="1">N1</atom>
-				<atom bType="1" nbType="1" pairType="1">C6</atom>
-				<atom bType="1" nbType="1" pairType="1">C5</atom>
-				<atom bType="1" nbType="1" pairType="1">C4</atom>
-				<atom bType="1" nbType="1" pairType="1">N4</atom>
-				<atom bType="1" nbType="1" pairType="1">N3</atom>
-				<atom bType="1" nbType="1" pairType="1">C2</atom>
-				<atom bType="1" nbType="1" pairType="1">O2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3P</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N4</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2</atom>
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
