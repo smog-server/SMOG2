@@ -68,4 +68,7 @@ $SMOG_PATH/smogv2 -i <PDBFILE> -tAA $SMOG_PATH/SBM_CA
 For a list of all supported flags and options, type:
 $SMOG_PATH/smogv2 --help
 
+For more advanced usage of SMOG2, please consult the
+SMOG2 manual.
+
 ########################################################
