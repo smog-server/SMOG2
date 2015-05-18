@@ -21,13 +21,13 @@
 <!-- DIHEDRALS -->
 <dihedrals>																															
 <!-- AMINO DIHEDRALS -->
-	<dihedral func="sbm_dihedrals(?,1,1)+sbm_dihedrals(?*3,0.5,3)" energyGroup="bb_a">
+	<dihedral func="sbm_dihedrals(?,1,1)+sbm_dihedrals(?,0.5,3)" energyGroup="bb_a">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="sbm_dihedrals(?,1,1)+sbm_dihedrals(?*3,0.5,3)" energyGroup="sc_a">
+	<dihedral func="sbm_dihedrals(?,1,1)+sbm_dihedrals(?,0.5,3)" energyGroup="sc_a">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>

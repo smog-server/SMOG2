@@ -574,7 +574,7 @@ $counter = 0;
 foreach my $inter(@interHandle)
 {
 	my $nbtype;my $pairtype;my $type;
- 	$nbtype = $inter->{"nbType"};$type = "nbType";
+ 	$nbtype = $inter->{"pairType"};$type = "pairType";
 	my $typeA = $inter->{$type}->[0];
 	my $typeB = $inter->{$type}->[1];
 	my $func = $inter->{"func"};
