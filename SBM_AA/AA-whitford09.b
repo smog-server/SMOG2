@@ -23,13 +23,13 @@
 
 <!-- DIHEDRALS -->
 <dihedrals>																		<!-- NUCLEIC DIHEDRALS -->
-	<dihedral func="sbm_dihedrals(?,?,1)+sbm_dihedrals(?*3,?*0.5,3)" energyGroup="bb_n">
+	<dihedral func="sbm_dihedrals(?,?,1)+sbm_dihedrals(?,?*0.5,3)" energyGroup="bb_n">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="sbm_dihedrals(?,?,1)+sbm_dihedrals(?*3,?*0.5,3)" energyGroup="sc_n">
+	<dihedral func="sbm_dihedrals(?,?,1)+sbm_dihedrals(?,?*0.5,3)" energyGroup="sc_n">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
@@ -48,13 +48,13 @@
 	<bType>*</bType>
 	</dihedral>
 																	<!-- AMINO DIHEDRALS -->
-	<dihedral func="sbm_dihedrals(?,?,1)+sbm_dihedrals(?*3,?*0.5,3)" energyGroup="bb_a">
+	<dihedral func="sbm_dihedrals(?,?,1)+sbm_dihedrals(?,?*0.5,3)" energyGroup="bb_a">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="sbm_dihedrals(?,?,1)+sbm_dihedrals(?*3,?*0.5,3)" energyGroup="sc_a">
+	<dihedral func="sbm_dihedrals(?,?,1)+sbm_dihedrals(?,?*0.5,3)" energyGroup="sc_a">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
