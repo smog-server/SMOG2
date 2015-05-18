@@ -8,8 +8,8 @@
  </nonbond>	
  <!-- CONTACTS -->
   <contact func="sbm_contacts_6-12(?,?,?)" contactGroup="c">
-    <nbType>*</nbType>
-    <nbType>*</nbType>
+    <pairType>*</pairType>
+    <pairType>*</pairType>
   </contact>
 </nb>
 

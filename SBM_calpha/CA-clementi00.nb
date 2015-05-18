@@ -11,8 +11,8 @@
 	
     <!-- CONTACTSGAUSSIAN -->
     <contact func="sbm_contacts_10-12(1,?,?)" contactGroup="c">
-    <nbType>*</nbType>
-    <nbType>*</nbType>
+    <pairType>*</pairType>
+    <pairType>*</pairType>
     </contact>
 
 </nb>
