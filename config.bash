@@ -7,7 +7,7 @@
 smog2Path=$1
 #echo "Setting Vars to $curPath"
 export PATH=$PATH:$smog2Path
-export PERLLIB=$PERLLIB:$smog2Path/modules
+export PERLLIB=$smog2Path/modules:$PERLLIB
 export SMOG_PATH=$smog2Path
 #echo "DONE INSTALLING"
 
