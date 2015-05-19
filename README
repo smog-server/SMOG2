@@ -38,13 +38,14 @@ Exporter
 perl PDL
 
 2) Once the modules are installed, you need to run the
-configure script for SMOG2:
+configure script, before running smog2:
 
 source config.bash <SMOG2_DIR>
 
 SMOG2_DIR is the location of the smogv2 executable.
 If you used smog2 frequently, it is recommended that 
-you add this line to your .bashrc file.
+you add this line to your .bashrc file, so that you will
+not need to re-run config.bash every time you use smog2.
 
 ########################################################
 

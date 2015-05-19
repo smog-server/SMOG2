@@ -38,10 +38,12 @@ for(my $i=0;$i<$size;$i++)
 	$b = sclr(slice($inputPDL,"3:3,$b,:"));
 	$c = sclr(slice($inputPDL,"3:3,$c,:"));
 	$d = sclr(slice($inputPDL,"3:3,$d,:"));
-	
-	if(exists $uniqueBonds{"$b-$c--$eG"}){$uniqueBonds{"$b-$c--$eG"}++;}
-	elsif (exists $uniqueBonds{"$c-$b--$eG"}) {$uniqueBonds{"$c-$b--$eG"}++;}
-	else {$uniqueBonds{"$b-$c--$eG"}=1;}
+ ## only count the dihedral if it is not an improper
+        if($eG >= 0){	
+		if(exists $uniqueBonds{"$b-$c--$eG"}){$uniqueBonds{"$b-$c--$eG"}++;}
+		elsif (exists $uniqueBonds{"$c-$b--$eG"}) {$uniqueBonds{"$c-$b--$eG"}++;}
+		else {$uniqueBonds{"$b-$c--$eG"}=1;}
+	}
 }
 
 }
@@ -64,7 +66,11 @@ for(my $i=0;$i<$size;$i++)
 	$count = (exists $uniqueBonds{"$b-$c--$eG"}?
 							$uniqueBonds{"$b-$c--$eG"}
 							:$uniqueBonds{"$c-$b--$eG"});
-	set($diheArr,5,$i,1/$count);
+	if($eG >=0){
+		set($diheArr,5,$i,1/$count);
+	}else{
+		set($diheArr,5,$i,1);
+	}
  }
  
 }
