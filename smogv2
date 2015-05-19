@@ -530,7 +530,7 @@ sub connCalculateDihedralsHelper
 		## Improper dihedral
 		else
 		{
-			#print $OUTPUT dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD);}
+	#		print $OUTPUT dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD);
 			push @{$diheCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'l' => $atomi4, 'v' => dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1)};
  	   }
 
@@ -558,12 +558,14 @@ sub dihedralOutput
 	## 0 DIHEDRAL ##
 	if($fType == 0){return "";}
 	## If dihedral angle is to be native and/or has scaling ##
-	if($paramArr[0] =~ /^\?$/){
-          # Angle will be scaled by multiplicity factor n
+	if($paramArr[0] =~ /^\?$/ && $fType == 1){
+          # Angle will be scaled by multiplicity factor n, if they are cosine functions
           $paramArr[0] = $values*$paramArr[2];}
  	elsif($paramArr[0] =~ /\?\*(.*)/){
           # Angle will be scaled by multiplicity factor given by m*? in .b file
           $paramArr[0]=$values*eval($1);}
+        else{
+	  $paramArr[0] = $values;}
 
 	## If dihedral kd is normalized or has scaling&normalize ##
 	if($paramArr[1] =~ /^\?$/){$paramArr[1]=$ratio;} ##? has to be consistent with normalization##
