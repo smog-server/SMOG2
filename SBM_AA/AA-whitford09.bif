@@ -5264,13 +5264,14 @@
 				<atom>C</atom>
 				<atom>N</atom>
 			</bond>
-		<improper>
-					<atom>O</atom>
-					<atom>CA</atom>
-					<atom>C</atom>
-					<atom>N?</atom>
-		</improper>
-		</connection>
 
+
+                	<improper>
+                        	<atom>O</atom>
+                        	<atom>CA</atom>
+                        	<atom>C</atom>
+                        	<atom>N?</atom>
+                	</improper>
+		</connection>
 	</connections>
 </bif>
