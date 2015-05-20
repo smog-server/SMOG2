@@ -292,7 +292,7 @@ $termRatios->{"cintraRelativeTotal"} = $total;
 ## contact/dihe relative Scale ##
 $termRatios->{"contactRelative"} = $groupRatios->{"contacts"};
 ## dihe/contact relative Scale ##
-$termRatios->{"dihedralRelative"} = $groupRatios->{"dihedrals"};
+$termRatios->{"energyRelative"} = $groupRatios->{"dihedrals"};
 ## Sum of total global scaling ##
 $termRatios->{"interRelativeTotal"} = $groupRatios->{"contacts"}+$groupRatios->{"dihedrals"};
 
@@ -337,7 +337,7 @@ my $anglesThreshold = $data->{"settings"}->[0]->{"anglesThreshold"}->[0];
 my $contactsThreshold = $data->{"settings"}->[0]->{"contactsThreshold"}->[0];
 $interactionThreshold->{"bonds"}={"shortBond"=>$bondsThreshold->{"shortBond"},
 								  "longBond"=>$bondsThreshold->{"longBond"}};
-$interactionThreshold->{"angles"}={"smallAngles"=>$anglesThreshold->{"smallAngles"}};
+$interactionThreshold->{"angles"}={"smallAngles"=>$anglesThreshold->{"smallAngles"},"largeAngles"=>$anglesThreshold->{"largeAngles"}};
 $interactionThreshold->{"contacts"}={"shortContacts"=>$contactsThreshold->{"shortContacts"}};
 
 }
@@ -574,7 +574,7 @@ $counter = 0;
 foreach my $inter(@interHandle)
 {
 	my $nbtype;my $pairtype;my $type;
- 	$nbtype = $inter->{"nbType"};$type = "nbType";
+ 	$nbtype = $inter->{"pairType"};$type = "pairType";
 	my $typeA = $inter->{$type}->[0];
 	my $typeB = $inter->{$type}->[1];
 	my $func = $inter->{"func"};

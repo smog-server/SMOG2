@@ -87,6 +87,7 @@
 <!-- anglesThresholdType -->
 <xs:complexType name="anglesThresholdType">
     <xs:attribute name="smallAngles" type="xs:decimal" use="required"/>
+    <xs:attribute name="largeAngles" type="xs:decimal" use="required"/>
 </xs:complexType>
 
 <!-- contactsThreshold -->
