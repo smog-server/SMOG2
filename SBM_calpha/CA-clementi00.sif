@@ -36,7 +36,7 @@
 <Contacts method="cutoff" contactDistance="6" shadowRadius="1"/>
 
 <bondsThreshold shortBond="0.08" longBond="0.5"/>
-<anglesThreshold smallAngles="5"/>
+<anglesThreshold smallAngles="30" largeAngles="150"/>
 <contactsThreshold shortContacts="0.2"/> 
 
 </settings>

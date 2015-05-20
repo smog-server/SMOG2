@@ -6,13 +6,13 @@
 
 	<!-- GENERAL NONBONDS -->
 	<nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.0"  c12="0.167772160e-04">
-	<nbType>Y</nbType>
+	<nbType>NB_1</nbType>
 	</nonbond>
 	
-    <!-- CONTACTSGAUSSIAN -->
+    <!-- CONTACTS -->
     <contact func="sbm_contacts_10-12(1,?,?)" contactGroup="c">
-    <nbType>*</nbType>
-    <nbType>*</nbType>
+    <pairType>*</pairType>
+    <pairType>*</pairType>
     </contact>
 
 </nb>
