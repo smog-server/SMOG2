@@ -32,7 +32,7 @@ use IPC::Open3;
 my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
-my $help;my $inputPDB; my $inputFolder;
+my $help;my $inputPDB; my $inputFolder="";
 my $ignH;my $ignChainContact=0;my $ignHContacts;
 my $ignAllContacts=0;
 my $topFile = "smog.top";
@@ -1701,12 +1701,7 @@ sub coarseGrain
 ## parse command line options ##
 # -o output top file name, default is temp.top
 # -v verbose option
-if ( @ARGV < 1 ) { #print usage and exit
-usage();
-exit(1);
-}
-
-usage() if ( !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 'tAA=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
+usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 'tAA=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$DCAFile, 'ignH' => \$ignH, 'ignChainContacts' => \$ignChainContact, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
 	 'tCG=s' => \$coarseFolder, 'contactRes=s' => \$contactRes, 'ignHContacts'=>\$ignHContacts,
 	 'softTerm' => \$softTerm, 'ignAllContacts' => \$ignAllContacts)
