@@ -1,7 +1,6 @@
-#!/usr/bin/env perl -w
-###!/usr/bin/perl -w
+#!/usr/bin/perl -w
 #####################################################################
-# smogv2: Do the calculation necessary for the values
+# smogv2: Generate a structure-based model
 # Authors: Mohit Raghunathan, Jeff Noel, Mariana Levi, Paul Whitford													
 #####################################################################
 
