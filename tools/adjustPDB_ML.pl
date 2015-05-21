@@ -3,6 +3,7 @@
 # USAGE ./adjustPDB <pdb> <map file> <output file>
 use strict;
 use warnings;
+use Carp;
 my %map;
 
 ## VARS: ##
@@ -18,6 +19,8 @@ my @residue;
 my @pArr;
 my $loopInd;
 my $prevResTypeRNA;
+
+#@ARGV = ("test.pdb","sbmMap","output.pdb");
 
 ## CHECK INPUT ##
 if(scalar(@ARGV) < 3){
@@ -72,6 +75,8 @@ sub adjustInputFile(){
 	
 	# Read the molecule PDB into an array (for convinience)
 	
+	my $endFlag = 0;
+	
 	$rows=0;
 	while(<OLDPDB>){
 		my $line=$_;
@@ -93,6 +98,7 @@ sub adjustInputFile(){
 		## If end of file: ##
 		if ($pArr[$k] =~ /^END/){
 			print NEWPDB "END\n";
+			$endFlag = 1;
 			last;
 		}
 		
@@ -135,7 +141,7 @@ sub adjustInputFile(){
 				$k++;
 				
 				## Check if next line is END or TER ##
-				if ($pArr[$k] =~ /^END/ || $pArr[$k] =~ /^TER/){
+				if ($k == $rows || $pArr[$k] =~ /^END/ || $pArr[$k] =~ /^TER/){
 					$newResNum = "";
 					$isTail = 1;
 				}	
@@ -151,11 +157,13 @@ sub adjustInputFile(){
 			
 			## Adjust Tail\Head names ##
 			if ($isHead){
-				$resName = $map{$resName}{"head"};
+				my $newResName = $map{$resName}{"head"};
+				$resName = $newResName;
 			}
 			if ($isTail){
 				if (not($prevResTypeRNA)){	#check that it's not an amino-accilated tRNA
-					$resName = $map{$resName}{"tail"};	
+					my $newResName = $map{$resName}{"tail"};
+					$resName = 	$newResName;
 				}
 			}
 			
@@ -185,6 +193,9 @@ sub adjustInputFile(){
 			$prevResTypeRNA = isRNA($resName);
 			undef @residue; 
 		}
+	}
+	if (not($endFlag)){
+		printf NEWPDB "END\n";
 	}
 	close NEWPDB;
 }
