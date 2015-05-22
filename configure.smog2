@@ -1,0 +1,42 @@
+#!/bin/bash
+#echo "Configuring SMOG V 2.Beta"
+#echo
+#echo "NOTE: MAKE SURE YOU HAVE INSTALLED String::Util, XML::Simple, Data::Dumper, Exporter and perl PDL"
+#echo
+#echo "SETTING UP PROPER ENVIRONMENTAL VARIABLES"
+
+
+## You need to set smog2dir and perl4smog.  smog2dir is the main directory of the smog2 package(not the src directory).  perl4smog is the version of perl that you prefer to use.  
+smog2dir=""
+perl4smog=""
+
+
+
+## don't change anything below this line
+
+if [ "$smog2dir" == "" ]
+then
+	echo "You must set smog2dir in the config script.  Configure incomplete."
+	exit
+fi
+
+if [ ! -d $smog2dir ]
+then
+	echo  "Can't find the directory "$smog2dir" (smog2dir).  Configure incomplete."
+	exit
+fi
+
+if [ "$perl4smog" == "" ]
+then
+	echo "You must set perl4smog in the config script.  Configure incomplete."
+	exit
+fi
+
+
+export perl4smog
+alias smog2="$perl4smog $smog2dir/src/smogv2"
+#echo "Setting Vars to $curPath"
+export PERLLIB=$smog2dir/src:$PERLLIB
+export SMOG_PATH=$smog2dir
+#echo "DONE INSTALLING"
+
