@@ -1514,7 +1514,7 @@ sub allAtom
 	
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "Can't find Shadow. Make sure SMOG_PATH is set correctly.\n"}
-    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile  $SCMparams > shadow.log");
+    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams > shadow.log");
 	$numContacts = parseCONTACT($shadowFile,$DCAFile,$ignChainContact,$ignAllContacts,0);
 	print "Done\n";
 
@@ -1614,7 +1614,7 @@ sub coarseGrain
     
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "Can't find Shadow. Make sure SMOG_PATH is set correctly.\n"}
-	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -o $shadowFile $SCMparams  > shadow.log");
+	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams  > shadow.log");
         print "Done\n";	
 	## CLEAR ALL-ATOM MEMORY ##
         clearBifMemory();clearPDBMemory();
