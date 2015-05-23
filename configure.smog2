@@ -35,6 +35,7 @@ fi
 
 export perl4smog
 alias smog2="$perl4smog $smog2dir/src/smogv2"
+export smog_exec="$perl4smog $smog2dir/src/smogv2"
 #echo "Setting Vars to $curPath"
 export PERLLIB=$smog2dir/src:$PERLLIB
 export SMOG_PATH=$smog2dir
