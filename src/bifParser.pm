@@ -435,6 +435,11 @@ foreach my $inter(@interHandle)
 	my $typeB = $inter->{"bType"}->[1];
 	my $func = $inter->{"func"};
 
+	if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
+               exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
+		confess "\n\nERROR: bond type between bType $typeA and bType $typeB defined more than once. Check .b file.\n\n";
+	}
+
 	$interactions->{"bonds"}->{$typeA}->{$typeB} = $func;
 	$interactions->{"bonds"}->{$typeB}->{$typeA} = $func;
 	$funcTable{"bonds"}->{$func} = $counter;
@@ -464,9 +469,15 @@ foreach my $inter(@interHandle)
 		{$eG = $inter->{"rigidGroup"};}
 	
 	my $keyString = "$typeA-$typeB-$typeC-$typeD";
+	if(exists $interactions->{"dihedrals"}->{$eG}->{$keyString}){
+		confess "\n\nERROR: dihedral type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.\n\n";
+	}
+
+
 	$interactions->{"dihedrals"}->{$eG}->{$keyString} = $func;
 	
 	$keyString = "$typeD-$typeC-$typeB-$typeA";
+
 	$interactions->{"dihedrals"}->{$eG}->{$keyString} = $func;
 	
 	$funcTable{"dihedrals"}->{$eG}->{$func} = $counter;
@@ -494,9 +505,15 @@ foreach my $inter(@interHandle)
 	my $func = $inter->{"func"};
 	
 	my $keyString = "$typeA-$typeB-$typeC-$typeD";
+
+	if(exists $interactions->{"impropers"}->{$keyString}){
+		confess "\n\nERROR: improper type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.\n\n";
+	}
+
 	$interactions->{"impropers"}->{$keyString} = $func;
 	
 	$keyString = "$typeD-$typeC-$typeB-$typeA";
+
 	$interactions->{"impropers"}->{$keyString} = $func;
 	
 	$funcTable{"impropers"}->{$func} = $counter;
@@ -518,6 +535,9 @@ foreach my $inter(@interHandle)
 	my $func = $inter->{"func"};
 	my $keyString = "$typeA-$typeB-$typeC";
 	## NOTE THE ORDER OF CENTRAL TYPE LISTED IN XML FILE MATTERS ##
+	if(exists $interactions->{"angles"}->{$keyString}){
+		confess "\n\nERROR: bond angle type between bTypes $typeA-$typeB-$typeC defined more than once. Check .b file.\n\n";
+	}
 	$interactions->{"angles"}->{$keyString} = $func;
 	$keyString = "$typeC-$typeB-$typeA";
 	$interactions->{"angles"}->{$keyString} = $func;
@@ -540,6 +560,9 @@ foreach my $inter(@interHandle)
 	my $typeA = $inter->{"nbType"}->[0];
 	my $func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
 	"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
+	if(exists $interactions->{"nonbonds"}->{$typeA}){
+		confess "\n\nERROR: nonbonded parameters defined mulitple times for nbType $typeA. Check .nb file.\n\n";
+	}
 	$interactions->{"nonbonds"}->{$typeA} = $func;
 	$funcTable{"nonbonds"}->{$func} = $counter;
 	$funcTableRev{"nonbonds"}->{$counter} = $func;
@@ -561,6 +584,9 @@ foreach my $inter(@interHandle)
 	my $typeA = $inter->{$type}->[0];
 	my $typeB = $inter->{$type}->[1];
 	my $func = $inter->{"func"}->[0]->{"func"};
+	if(exists $interactions->{"pairs"}->{$type}->{$typeA}->{$typeB}){
+		confess "\n\nERROR: pairs parameters defined mulitple times for types $typeA-$typeB. Check .nb file.\n\n";
+	}
 	$interactions->{"pairs"}->{$type}->{$typeA}->{$typeB} = $func;
 	$interactions->{"pairs"}->{$type}->{$typeB}->{$typeA} = $func;
 	$funcTable{"pairs"}->{$type}->{$func} = $counter;
@@ -579,6 +605,9 @@ foreach my $inter(@interHandle)
 	my $typeB = $inter->{$type}->[1];
 	my $func = $inter->{"func"};
  	my $cG = $inter->{"contactGroup"};
+	if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
+		confess "\n\nERROR: contact parameters defined mulitple times for types $typeA-$typeB. Check .nb file.\n\n";
+	}
 	$interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB} = $func;
 	$interactions->{"contacts"}->{"func"}->{$typeB}->{$typeA} = $func;
 	$interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{$typeB} = $cG;
@@ -924,7 +953,6 @@ foreach my $res(keys %dihedralAdjList)
 				}else{
 					$matchScoreCount=0;
 				}
-
 				$saveScore = $matchScore;$funct = $angHandle->{$matches};
 			}
 		    }
