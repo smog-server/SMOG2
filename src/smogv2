@@ -1442,9 +1442,9 @@ sub allAtom
         ## PARSE TEMPLATES ##
         #####################
 
-	## parse Bif File ##
+	## parse .bif File ##
 	parseBif();
-	## parse Sif File ##
+	## parse .sif File ##
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();

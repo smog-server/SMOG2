@@ -627,50 +627,40 @@ foreach my $res (keys %residues)
 		
 		($atomA,$atomB) = $bondInfo =~ /(.*)\-(.*)/;
   ## Check if atoms exists in declaration ##
-  if(!exists $residueHandle->{"atoms"}->{"$atomA"}) 
+  	    if(!exists $residueHandle->{"atoms"}->{"$atomA"}) 
 		{confess "$atomA doesn't exists in $res but a bond was defined $bondInfo\n"; }
 		if(!exists $residueHandle->{"atoms"}->{"$atomB"}) 
 		{confess "$atomB doesn't exists in $res but a bond was defined $bondInfo\n"; }
 
-
-
 		$typeA = $residueHandle->{"atoms"}->{"$atomA"}->{"bType"};
 		$typeB = $residueHandle->{"atoms"}->{"$atomB"}->{"bType"};
-
-
 		## WILD CARD MATCHING CONDITIONALS ##
-		
+
 		## If both bond types exists ##
-		if(exists $interactions->{"bonds"}->{$typeA}
-			&& exists $interactions->{"bonds"}->{$typeA}->{$typeB})
+		my $funct="";
+		if( exists $interactions->{"bonds"}->{$typeA}->{$typeB})
 		{$funct = $interactions->{"bonds"}->{$typeA}->{$typeB};}
-		
+			
+		elsif ($typeA ne $typeB && (exists $interactions->{"bonds"}->{$typeA}->{"*"} 
+                                 && exists $interactions->{"bonds"}->{$typeB}->{"*"})){
+			confess "ERROR: Wildcard conflict in bonds $typeA-$typeB. 
+			Both $typeA-\* and $typeB-\* are defined in .b file. Can not unambiguously assign a function...\n";
+ 		}
 		## If typeA exists while TypeB is a wildcard ##
-		elsif (exists $interactions->{"bonds"}->{$typeA}
-			&& !(exists $interactions->{"bonds"}->{$typeA}->{$typeB}))
-		{
-            $funct = $interactions->{"bonds"}->{$typeA}->{"*"};
-            if(!defined $funct || $funct eq "")
-            {$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
-        }
-		
-		## If typeA is a wildcard while TypeB exists ##
-		elsif(!(exists $interactions->{"bonds"}->{$typeA}) &&
-				(exists $interactions->{"bonds"}->{"*"}
-                && exists $interactions->{"bonds"}->{"*"}->{$typeB})
-                )
-		{
-            $funct = $interactions->{"bonds"}->{"*"}->{$typeB};
-             if(!defined $funct || $funct eq "")
-            {$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
-        
-        }
-		
-		## If both types are wildcard ## 
-		else
-		{$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
-		
-		
+		elsif (exists $interactions->{"bonds"}->{$typeA}->{"*"})
+		{$funct = $interactions->{"bonds"}->{$typeA}->{"*"};}
+
+		## If typeB exists while TypeA is a wildcard ##
+		elsif (exists $interactions->{"bonds"}->{$typeB}->{"*"})
+		{$funct = $interactions->{"bonds"}->{$typeB}->{"*"};}
+	
+		if(!defined $funct || $funct eq ""){
+			if(exists $interactions->{"bonds"}->{"*"}->{"*"})
+            		{$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
+		     	else{
+			confess "\n ERROR: Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB\n";
+			}
+		}
 		$indexA = $residueHandle->{"atoms"}->{"$atomA"}->{"index"};
 		$indexB = $residueHandle->{"atoms"}->{"$atomB"}->{"index"};
 		push(@inputString,"$indexA-$indexB"); ## MIGHT CHANGE
@@ -679,12 +669,10 @@ foreach my $res (keys %residues)
 		push(@{$adjList{$atomA}},$atomB);
 		push(@{$adjList{$atomB}},$atomA);
 		
-	}
-	$bondFunctionals{$res} = {"bonds"=>\@inputString,
-							  "functions"=>\@functionString}; 
+	   }
+	$bondFunctionals{$res} = {"bonds"=>\@inputString, "functions"=>\@functionString}; 
 	$dihedralAdjList{$res} = \%adjList;
-}
-
+	}
 }
 
 
@@ -910,23 +898,44 @@ foreach my $res(keys %dihedralAdjList)
 		#print $angHandle->{$atoms[0]}->{$atoms[1]}->{$atoms[2]},"\n";
 		
 		## WILD CARD MATCHING CONDITIONALS ##
-		my $matchScore = 0; my $saveScore = 0; 
+		my $matchScore = 0; my $saveScore = 0; my $matchScoreCount=0; my $symmatch=0;
 		foreach my $matches(keys %{$angHandle})
 		{
 			$matchScore = 0;
-			#print $matches," to ","$a-$b-$c","\n";
 			my ($aM,$bM,$cM) = split("-",$matches);
-			#print "$aM,$bM,$cM,\n";
-			if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
+			unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
 				|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-				|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){next;}
+				|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){
 			if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($matchScore >= $saveScore)
-			{$saveScore = $matchScore;$funct = $angHandle->{$matches};}
+				{
+				if($aM eq $cM || ($aM eq $bM and $bM eq $cM)){
+					$symmatch=1;
+				}else{
+					$symmatch=0;
+				}
+				## this to make sure that the highest scoring angle is unique
+				if($matchScore == $saveScore){
+					if($saveScore != 0){
+					$matchScoreCount++;
+					}
+				}else{
+					$matchScoreCount=0;
+				}
+
+				$saveScore = $matchScore;$funct = $angHandle->{$matches};
+			}
+		    }
 		}
-		
+		my $sym=0;
+		if($a eq $c || ($a eq $b and $b eq $c)){
+			$sym=1;
+		}
+		if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
+			confess "$matchScoreCount,$saveScore,ERROR: Multiple possible angles match $a-$b-$c equally well. Unclear assignment of function type\n";
+		}
 		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
 		my $indexB = $residues{$res}->{"atoms"}->{$atoms[1]}->{"index"};
 		my $indexC = $residues{$res}->{"atoms"}->{$atoms[2]}->{"index"};
