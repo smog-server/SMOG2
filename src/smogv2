@@ -1249,10 +1249,10 @@ sub usage
         	print "-s [file.shadow]: Output .shadow file name\n";
 		print "-n [file.ndx]: Output .ndx file name\n";
 		print "-c [extra.contacts]: Input contact map file\n";
-		print "-ignH: Ignore hydrogens in PDB\n";
-		print "-ignHContacts: Ignore hydrogen contacts\n";
-		print "-ignAllContacts: Ignore all contacts between chains (WARNING)\n";
-		print "-ignChainContacts: Ignore contacts between chains\n";
+#		print "-ignH: Ignore hydrogens in PDB\n";
+#		print "-ignHContacts: Ignore hydrogen contacts\n";
+#		print "-ignAllContacts: Ignore all contacts between chains (WARNING)\n";
+#		print "-ignChainContacts: Ignore contacts between chains\n";
 		print printCitation();
   exit;
 }
