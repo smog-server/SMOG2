@@ -1529,8 +1529,6 @@ sub allAtom
 	print "Done\n";
 	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile,shadow.log\n";
 	close($OUTPUT);
-        print "Press any key to continue...\n";
-	#<STDIN>; ## Wait for user return #
 	printCitation();
 }
 
@@ -1684,8 +1682,6 @@ sub coarseGrain
 	print "Done\n";
 	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile,shadow.log\n";
 	close($OUTPUT);
-	print "Press any key to continue...\n";
-	#<STDIN>; ## Wait for user return ##
 	printCitation();
 
 
