@@ -1017,38 +1017,37 @@ sub connWildcardMatchBond
 {
 	my($typeA,$typeB) = @_;
 	my $funct="";
-    ## If both bond types exists ##
-	if(exists $interactions->{"bonds"}->{$typeA}
-		&& exists $interactions->{"bonds"}->{$typeA}->{$typeB})
-	{$funct = $interactions->{"bonds"}->{$typeA}->{$typeB};}
-		
-	## If typeA exists while TypeB is a wildcard ##
-	elsif (exists $interactions->{"bonds"}->{$typeA}
-		&& !(exists $interactions->{"bonds"}->{$typeA}->{$typeB}))
-	{
-        $funct = $interactions->{"bonds"}->{$typeA}->{"*"};
-        if(!defined $funct || $funct eq "")
-        {$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
-    }
-		
-	## If typeA is a wildcard while TypeB exists ##
-	elsif(!(exists $interactions->{"bonds"}->{$typeA}) &&
-			(exists $interactions->{"bonds"}->{"*"}
-            && exists $interactions->{"bonds"}->{"*"}->{$typeB})
-            )
-	{
-        $funct = $interactions->{"bonds"}->{"*"}->{$typeB};
-        if(!defined $funct || $funct eq "")
-        {$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
 
-    }
-		
-	## If both types are wildcard ## 
-	else
-	{
-        $funct = $interactions->{"bonds"}->{"*"}->{"*"};
-    }
-    if(!defined $funct || $funct eq ""){confess("\nINTERACTION GENERATE ERROR\n There is no function for bType combination $typeA-$typeB. Check .b file\n");}
+
+  ## Check if atoms exists in declaration ##
+
+		## WILD CARD MATCHING CONDITIONALS ##
+
+		## If both bond types exists ##
+		if( exists $interactions->{"bonds"}->{$typeA}->{$typeB})
+		{$funct = $interactions->{"bonds"}->{$typeA}->{$typeB};}
+			
+		elsif ($typeA ne $typeB && (exists $interactions->{"bonds"}->{$typeA}->{"*"} 
+                                 && exists $interactions->{"bonds"}->{$typeB}->{"*"})){
+			confess "ERROR: Wildcard conflict in bonds $typeA-$typeB. 
+			Both $typeA-\* and $typeB-\* are defined in .b file. Can not unambiguously assign a function...\n";
+ 		}
+		## If typeA exists while TypeB is a wildcard ##
+		elsif (exists $interactions->{"bonds"}->{$typeA}->{"*"})
+		{$funct = $interactions->{"bonds"}->{$typeA}->{"*"};}
+
+		## If typeB exists while TypeA is a wildcard ##
+		elsif (exists $interactions->{"bonds"}->{$typeB}->{"*"})
+		{$funct = $interactions->{"bonds"}->{$typeB}->{"*"};}
+	
+		if(!defined $funct || $funct eq ""){
+			if(exists $interactions->{"bonds"}->{"*"}->{"*"})
+            		{$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
+		     	else{
+			confess "\n ERROR: Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB. Check .b file\n";
+			}
+		}
+
     return $funct;
 }
 
