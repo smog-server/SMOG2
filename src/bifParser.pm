@@ -434,12 +434,10 @@ foreach my $inter(@interHandle)
 	my $typeA = $inter->{"bType"}->[0];
 	my $typeB = $inter->{"bType"}->[1];
 	my $func = $inter->{"func"};
-
 	if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
                exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
 		confess "\n\nERROR: bond type between bType $typeA and bType $typeB defined more than once. Check .b file.\n\n";
 	}
-
 	$interactions->{"bonds"}->{$typeA}->{$typeB} = $func;
 	$interactions->{"bonds"}->{$typeB}->{$typeA} = $func;
 	$funcTable{"bonds"}->{$func} = $counter;
@@ -461,8 +459,6 @@ foreach my $inter(@interHandle)
 	my $typeD = $inter->{"bType"}->[3];
 	my $func = $inter->{"func"};
 	my $eG;
-	
-	
 	if(exists $inter->{"energyGroup"})
 		{$eG = $inter->{"energyGroup"};}
 	else
@@ -470,10 +466,8 @@ foreach my $inter(@interHandle)
 	
 	my $keyString = "$typeA-$typeB-$typeC-$typeD";
 	if(exists $interactions->{"dihedrals"}->{$eG}->{$keyString}){
-		confess "\n\nERROR: dihedral type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.\n\n";
+		confess "\n\nERROR: dihedral type between bTypes $typeA-$typeB-$typeC-$typeD and energy group $eG defined more than once. Check .b file.\n\n";
 	}
-
-
 	$interactions->{"dihedrals"}->{$eG}->{$keyString} = $func;
 	
 	$keyString = "$typeD-$typeC-$typeB-$typeA";
@@ -505,11 +499,9 @@ foreach my $inter(@interHandle)
 	my $func = $inter->{"func"};
 	
 	my $keyString = "$typeA-$typeB-$typeC-$typeD";
-
 	if(exists $interactions->{"impropers"}->{$keyString}){
 		confess "\n\nERROR: improper type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.\n\n";
 	}
-
 	$interactions->{"impropers"}->{$keyString} = $func;
 	
 	$keyString = "$typeD-$typeC-$typeB-$typeA";
@@ -621,6 +613,9 @@ foreach my $inter(@interHandle)
 
 ## Obtain default options (ONLY FOR GEN PAIRS) ##
 @interHandle = @{$data->{"defaults"}};
+if(exists $interactions->{"gen-pairs"}){
+	confess "\n\nERROR: default declaration is given multiple times. Check .nb file.\n\n";
+}
 $interactions->{"gen-pairs"} = $interHandle[0]->{"gen-pairs"};
 
 
@@ -882,24 +877,53 @@ foreach my $res(keys %dihedralAdjList)
 		my $eG = getEnergyGroup($res,$res,$atoms[1],$atoms[2]);
 		
 		## WILD CARD MATCHING CONDITIONALS ##
-		my $matchScore = 0; my $saveScore = 0;
+		my $matchScore = 0; my $saveScore = 0;my $matchScoreCount=0; my $symmatch=0;
+		my $Nd=0;
 		foreach my $matches(keys %{$diheHandle->{$eG}})
 		{
+		$Nd++;
 			$matchScore = 0;
 			my ($aM,$bM,$cM,$dM) = split("-",$matches);
-			#print "$aM,$bM,$cM,\n";
-			if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
+			unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
 				|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
 				|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
-				|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){next;}
+				|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){
 			if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($matchScore >= $saveScore)
-			{$saveScore = $matchScore;$funct = $diheHandle->{$eG}->{$matches};}
-		
+			if($matchScore >= $saveScore){
+
+				if(($aM eq $dM and $bM eq $cM) || ($aM eq $bM and $bM eq $cM and $cM eq $dM)){
+					$symmatch=1;
+				}else{
+					$symmatch=0;
+				}
+				## this to make sure that the highest scoring angle is unique
+				if($matchScore == $saveScore){
+					if($saveScore != 0){
+					$matchScoreCount++;
+					}
+				}else{
+					$matchScoreCount=0;
+				}
+				$saveScore = $matchScore;$funct = $diheHandle->{$eG}->{$matches};
+			}
+		    }
 		}
+
+		if($Nd ==0){
+			confess "\n\nERROR: No dihedrals defined in templates for energy group $eG.  Check .b file.\n\n";
+		}
+		
+		my $sym=0;
+		if(($a eq $d and $b eq $c) || ($a eq $b and $b eq $c and $c eq $d)){
+			$sym=1;
+		}
+		if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
+			confess "$sym,$symmatch,$matchScoreCount,$saveScore,ERROR: Multiple possible angles match $a-$b-$c-$d equally well. Unclear assignment of function type\n";
+		}
+
 		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
 		my $indexB = $residues{$res}->{"atoms"}->{$atoms[1]}->{"index"};
 		my $indexC = $residues{$res}->{"atoms"}->{$atoms[2]}->{"index"};

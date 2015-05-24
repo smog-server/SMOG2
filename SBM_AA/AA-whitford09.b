@@ -73,6 +73,13 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
+	<!-- LIGAND DIHEDRALS -->
+        <dihedral func="sbm_rigid(?,10)" energyGroup="lig">
+        <bType>*</bType>
+        <bType>*</bType>
+        <bType>*</bType>
+        <bType>*</bType>
+        </dihedral>
 </dihedrals>
 
 <!-- IMPROPERS -->
