@@ -7,7 +7,7 @@
 	<bType>*</bType>
     </bond>
 	<bond func="sbm_bonds_6(?,200)">
-	<bType>MG</bType>
+	<bType>*</bType>
     	<bType>MG</bType>
 </bond>
 </bonds>
