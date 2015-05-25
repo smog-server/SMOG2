@@ -7,8 +7,8 @@
 
 
 ## You need to set smog2dir and perl4smog.  smog2dir is the main directory of the smog2 package(not the src directory).  perl4smog is the version of perl that you prefer to use.  
-smog2dir=""
-perl4smog=""
+smog2dir="/Users/jknoel/Dropbox/git/smog2"
+perl4smog="/opt/local/bin/perl"
 
 
 
