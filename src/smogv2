@@ -32,20 +32,20 @@ use IPC::Open3;
 my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
-my $help;my $inputPDB; my $inputFolder;
+my $help;my $inputPDB; my $inputFolder="";
 my $ignH;my $ignChainContact=0;my $ignHContacts;
 my $ignAllContacts=0;
 my $topFile = "smog.top";
 my $groFile = "smog.gro";
-my $DCAFile = "";
-my $shadowFile = "shadow.contacts";
-my $ndxFile = "temp.ndx";
+my $ContactFile = "";
+my $shadowFile = "smog.contacts";
+my $ndxFile = "smog.ndx";
 my $mapOpt = "shadow";my $contactOpt = "6 1";
 my $numContacts = 0;
 my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $contactRes = ""; ## Duplicate ##
 my $softTerm=0; ## Boolean to for soft termination
-
+my $CGenabled=0; ## enable coarse-graining
 
 #####################
 ## CALCULATE BONDS ##
@@ -639,6 +639,7 @@ sub calculateContacts
 	my $count;
 	
 	print $OUTPUT "\n\n[ pairs ]\n";
+	print $OUTPUT "; ai aj type, A, B\n";
 	
 	## REMOVE ##
 	my $totalEpsilon=0;
@@ -915,12 +916,16 @@ sub contactFuncParser
 
 sub calculateExclusions
 {
-  my($fileName,$fileName2,$noChainFlag) = @_;
+  my($fileName,$fileName2,$noChainFlag,$ignAllContacts) = @_;
   my $numContacts = 0; my $garbage = 0;
   my $line = "";
   my $type1;my $type2; my $contact1; my $contact2;
   my $dist;
+
+  print $OUTPUT "\n[ exclusions ]\n";
+  print $OUTPUT "; ai	aj\n";
   
+  if($ignAllContacts == 0){
   ## OPEN .contact FILE ##
   unless (open(MYFILE, $fileName)) {
     print "Cannot read from '$fileName'.\nProgram closing.\n";
@@ -928,8 +933,6 @@ sub calculateExclusions
     exit;
   }
  
-  print $OUTPUT "\n[ exclusions ]\n";
-  print $OUTPUT ";ai	aj\n";
   
   while($line = <MYFILE>)
   {
@@ -938,7 +941,7 @@ sub calculateExclusions
     if($noChainFlag && ($allAtoms{$type1}->[4] ne $allAtoms{$type2}->[4])){next;}
     print $OUTPUT $type1,"	",$type2,"\n";
   }
-
+  }
 
    ## NO DCA FILE RETURN ##
    if($fileName2 eq ""){return;}
@@ -947,7 +950,7 @@ sub calculateExclusions
   
   ## OPEN .dca FILE ##
   unless (open(MYFILE1, $fileName2)) {
-    confess "Cannot read from '$fileName2'.\nProgram closing.\n";
+    confess "\n\n ERROR: Cannot read from '$fileName2'.\nProgram closing.\n\n";
   }
   
    ## DCA CONTACTS ARE IN FORM
@@ -986,7 +989,7 @@ sub calculateAtomTypes
 		$nbtype = $uniqeHandle->{$atoms}->[0];
   		if(!$uniqeHandle->{$atoms}->[0])
         {
-          confess("Atom $atoms has no nbType\n");
+          confess("\n\n ERROR: Atom $atoms has no nbType\n\n");
         }
 
 		if(exists $obtained{$nbtype}){next;}
@@ -996,7 +999,7 @@ sub calculateAtomTypes
 		$mass = $interactions->{"nonbonds"}->{$nbtype}->{"mass"};
 		$charge = $interactions->{"nonbonds"}->{$nbtype}->{"charge"};
 		if(!$c6 || !$c12 || !$ptype || !$mass || !$charge)
-		{confess("Nonbond Params at atom types not set for nbType $nbtype\n");}
+		{confess("\n\n ERROR:Nonbond Params at atom types not set for nbType $nbtype\n\n");}
 		
 		$formattedString = sprintf("  %-4s %-6.3f %-5.3f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
 		print $OUTPUT $formattedString,"\n";
@@ -1143,8 +1146,7 @@ sub convertPDBToGroNdx
 			if($z < $zmin){$zmin=$z;}
 		}
 	
-	 	$chain = substr($line,21,1);
-  		if($chain eq " ") {$chain = $chainCounter;}
+  		$chain = $chainCounter;
 		$counter++;$atomNum=$counter;
 		$resNum = substr($line,22,4);
 		$resNum =~ s/^\s+|\s+$//g;
@@ -1238,22 +1240,22 @@ sub usage
   print "********** SMOG2 **********";
   print "\n***************************\n";
   print "Unknown option: @_\n" if ( @_ );
-  print "usage: smogv2 [-o file.top] [-i input.pdb] [-g file.gro] [--help|-?] [-t templateFolder/] [-c extra.contacts] [-ignh]\n";
+  print "usage: smogv2  [-i input.pdb] [-o file.top] [-g file.gro] [--help|-?] [-t templateFolder/] [-c contacts.txt] [-ignh]\n";
 		print "Necessary Inputs\n";		
 		print "-i [input.pdb]: Input pdb to generate Hamiltonian\n";
-		print "-tAA [templateFolder]: Folder containing templates of molecular and interaction definitions (All Atom)\n";
-                print "-tCG [templateFolder]: Folder containing templates of molecular and interaction definitions (Coarse Grain)\n";
-                print "-contactRes [templateFolder]: Folder containing templates for contact resolution\n";
+		print "-t [templateFolder]: Folder containing templates of molecular and interaction definitions\n";
+                print "-CG: enable coarse-graining\n";
+                print "-t_contacts [templateFolder]: Folder containing templates for idetermining native contact map. Only necessary when -CG enabled\n";
 		print "Optional Inputs\n";
-		print "-g [file.gro]: Output .gro file name\n";
-		print "-o [file.top]: Output .top file name\n";
-        print "-s [file.shadow]: Output .shadow file name\n";
-		print "-n [file.ndx]: Output .ndx file name\n";
-		print "-c [extra.contacts]: Input contact map file\n";
-		print "-ignH: Ignore hydrogens in PDB\n";
-		print "-ignHContacts: Ignore hydrogen contacts\n";
-		print "-ignAllContacts: Ignore all contacts between chains (WARNING)\n";
-		print "-ignChainContacts: Ignore contacts between chains\n";
+		print "-g [smog.gro]: Output .gro file name\n";
+		print "-o [smog.top]: Output .top file name\n";
+        	print "-s [smog.shadow]: Output .shadow file name\n";
+		print "-n [smog.ndx]: Output .ndx file name\n";
+		print "-c [contacts.txt]: Input contact map file\n";
+#		print "-ignH: Ignore hydrogens in PDB\n";
+#		print "-ignHContacts: Ignore hydrogen contacts\n";
+#		print "-ignAllContacts: Ignore all contacts between chains (WARNING)\n";
+#		print "-ignChainContacts: Ignore contacts between chains\n";
 		print printCitation();
   exit;
 }
@@ -1287,7 +1289,7 @@ sub setContactParams
 			  return "-m cutoff -c $dist -rd 0 --distance $ignoreHydrogens";
 			
 			}
-			else {confess "Error at contact map method settings. $method is not a supported contactmap method.";}
+			else {confess "\n\n ERROR at contact map method settings. $method is not a supported contactmap method.\n\n";}
 }
 
 
@@ -1349,7 +1351,7 @@ sub determine_optimal_memory {
 
     my $physical;
     if ($os =~ /Win/) {
-        confess("SMOG2 does not run on windows\n");
+        confess("\n\nERROR: SMOG2 does not run on windows\n\n");
     }
     elsif ($os =~/darwin/ or $os =~ /bsd/i) {
         $physical = get_osx_memory($max_memory);
@@ -1386,7 +1388,7 @@ sub get_linux_memory {
 
     close MEM;
 
-    confess("Couldn't parse physical memory from the output of free");
+    confess("\n\nERROR: Couldn't parse physical memory from the output of free\n\n");
 }
 
 sub get_osx_memory {
@@ -1405,7 +1407,7 @@ sub get_osx_memory {
 
     close MEM;
     unless ($total_mem) {
-        confess("Could't parse physical memory from the output of top");
+        confess("\n\nERROR: Couldn't parse physical memory from the output of top\n\n");
     }
 
     return $total_mem;
@@ -1432,20 +1434,20 @@ sub allAtom
 	print "\n************************\n";
         
         ## TEST IF SMOG PATH EXISTS ##
-        if(!$ENV{"SMOG_PATH"}){confess("SMOG_PATH environment variable not set\n");}
+        if(!$ENV{"SMOG_PATH"}){confess("\n\nERROR: SMOG_PATH environment variable not set\n\n");}
 	$| = 1;
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
-        print "Parsing All-Atom Templates.....";
+        print "Parsing All-Atom Templates..... ";
 	parseInputFolder($inputFolder); ## PARSE FOLDER --> FILE
 
 	#####################
         ## PARSE TEMPLATES ##
         #####################
 
-	## parse Bif File ##
+	## parse .bif File ##
 	parseBif();
-	## parse Sif File ##
+	## parse .sif File ##
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
@@ -1459,7 +1461,7 @@ sub allAtom
 	###############
         ## PARSE PDB ##
         ###############
-	print "Parsing .pdb.....";
+	print "Parsing .pdb.....  ";
 	parseATOM($inputPDB);
 	catPDL();
 	print "Done\n";
@@ -1493,7 +1495,7 @@ sub allAtom
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	print "Done\n";
 	## CALL SHADOW/PARSE CONTACTS ##
-	print "Finding contacts ...";
+	print "Starting contacts ...  ";
 	
 	
 	my $SCMparams = setContactParams();
@@ -1513,25 +1515,24 @@ sub allAtom
 	freeMemoryForShadow();
 	
 	if((!exists $ENV{SMOG_PATH}) || 
-		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "Can't find Shadow. Make sure SMOG_PATH is set correctly.\n"}
-    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile  $SCMparams > shadow.log");
-	$numContacts = parseCONTACT($shadowFile,$DCAFile,$ignChainContact,$ignAllContacts,0);
+		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
+	if($ignAllContacts==0){
+	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams > shadow.log");}
+	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
 	print "Done\n";
 
 
-	if($numContacts == 0){confess "There are 0 contacts,check shadow.error log file for possible errors";}
+	if($numContacts == 0){confess "\n\nERROR: There are 0 contacts,check shadow.error log file for possible errors\n\n";}
 	print "NOTE: Total atom count used for normalization is $totalAtoms with $absAtomCount atoms in the system\n";
 	print "Calculating Hamiltonian...";
 	## CALCULATE PAIRS and EXCLUSION ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	calculateExclusions($shadowFile,"",$ignChainContact);
+	calculateExclusions($shadowFile,"",$ignChainContact,$ignAllContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "Done\n";
 	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile,shadow.log\n";
 	close($OUTPUT);
-        print "Press any key to continue...\n";
-	#<STDIN>; ## Wait for user return #
 	printCitation();
 }
 
@@ -1547,7 +1548,7 @@ sub coarseGrain
 	print "\n**********************************\n";
 	$| = 1;
 	## TEST IF SMOG PATH EXISTS ##
-        if(!$ENV{"SMOG_PATH"}){confess("SMOG_PATH environment variable not set\n");}
+        if(!$ENV{"SMOG_PATH"}){confess("\n\nERROR: SMOG_PATH environment variable not set\n\n");}
 
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
@@ -1556,7 +1557,6 @@ sub coarseGrain
 	##############################
         ## PARSE ALL ATOM TEMPLATES ##
         ##############################
-	print "Parsing All-Atom Templates.....";
 	parseInputFolder($inputFolder);
 	## parse Bif File ##
 	parseBif();
@@ -1600,7 +1600,6 @@ sub coarseGrain
 	## CALCULATE DIHEDRALS ##
 	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
 
-        print "Finding coarse grain contacts.....";
         convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	my $SCMparams = setContactParams();
 	my $absAtomCount = keys(%allAtoms);
@@ -1611,15 +1610,17 @@ sub coarseGrain
      print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
      $memoryMax = "-Xmx$memoryMax"."m";
     } 
-    
+        if($ignAllContacts ==0){
+        print "Finding coarse grain contacts.....";
 	if((!exists $ENV{SMOG_PATH}) || 
-		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "Can't find Shadow. Make sure SMOG_PATH is set correctly.\n"}
-	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -o $shadowFile $SCMparams  > shadow.log");
+		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
+	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams  > shadow.log");
         print "Done\n";	
+        }
 	## CLEAR ALL-ATOM MEMORY ##
         clearBifMemory();clearPDBMemory();
 
-    
+ 
 	###################################
         ## PARSE COARSEGRAINED TEMPLATES ##
         ###################################
@@ -1675,18 +1676,16 @@ sub coarseGrain
 	## CALCULATE DIHEDRALS ##
 	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
 
-	$numContacts = parseCONTACT($shadowFile,$DCAFile,$ignChainContact,$ignAllContacts,1);
-	if($numContacts == 0){confess "There are 0 contacts,check shadow.error log file for possible errors";}
+	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,1);
+	if($numContacts == 0){confess "\n\nERROR: There are 0 contacts,check shadow.error log file for possible errors\n\n";}
 	## CALCULATE PAIRS and EXCLUSION ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	calculateExclusions($shadowFile,$DCAFile,$ignChainContact);
+	calculateExclusions($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "Done\n";
 	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile,shadow.log\n";
 	close($OUTPUT);
-	print "Press any key to continue...\n";
-	#<STDIN>; ## Wait for user return ##
 	printCitation();
 
 
@@ -1699,26 +1698,50 @@ sub coarseGrain
 ##################
 
 ## parse command line options ##
-# -o output top file name, default is temp.top
+# -o output top file name, default is smog.top
 # -v verbose option
-if ( @ARGV < 1 ) { #print usage and exit
-usage();
-exit(1);
-}
-
-usage() if ( !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 'tAA=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
-	'c=s' => \$DCAFile, 'ignH' => \$ignH, 'ignChainContacts' => \$ignChainContact, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
-	 'tCG=s' => \$coarseFolder, 'contactRes=s' => \$contactRes, 'ignHContacts'=>\$ignHContacts,
-	 'softTerm' => \$softTerm, 'ignAllContacts' => \$ignAllContacts)
+usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
+	'c=s' => \$ContactFile, 'ignH' => \$ignH, 'ignChainContacts' => \$ignChainContact, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
+	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes,
+	 'softTerm' => \$softTerm)
           or defined $help 
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $contactRes));
 
-## Coarse grain input check ##
-if($contactRes eq "" && $coarseFolder ne "")
-{confess("Please specify a contact resolution when using -tCG option with -contactRes option\n");}
-if($contactRes ne "" && $coarseFolder ne "")
+
+## get variables in order
+# if CG is enabled, then the templates are CG templates
+if($CGenabled != 0){
+	$coarseFolder=$inputFolder;
+}
+
+# if contact templates are provided, and CG is turned on, then use contact templates for first round
+if($contactRes ne "" && $CGenabled != 0)
 {$inputFolder=$contactRes;} 
+
+
+# if a contact file is provided, then don't calculate contacts
+if($ContactFile ne ""){
+	$ignAllContacts=1;
+}
+
+
+## check for compliance
+# if CG is not enabled, but contact templates are provided, stop
+if($CGenabled == 0 && $contactRes ne ""){
+	confess "ERROR: t_contacts only supported when using a CG model.  Did you forget to specify \"-CG\"?\n";
+}
+
+# if contact templates and a contact file are provided, complain
+if($ContactFile ne "" && $contactRes ne "")
+{confess("ERROR: You can only specify a t_contacts directory, or a contact file, not both\n");}
+
+
+# if contact templates are not provided, and contact file is not provided, but CG is turned on, complain
+if($contactRes eq "" && $CGenabled != 0 && $ContactFile eq "")
+{confess("ERROR: You need to specify t_contacts, or provide a contact map, when using coarse-graining\n");}
+
+
 
 ## PreProcessing ##
 ## Check if -ignh option is set ##
@@ -1730,7 +1753,7 @@ stripHydrogen($inputPDB) if defined $ignH;
 
 ## PROCESS All-Atom or Coarse Grain ##
 ## ALL-ATOM ##
-if($coarseFolder eq ""){allAtom($inputFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile);}
+if($CGenabled == 0){allAtom($inputFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile);}
 ## COARSE-GRAIN ## 
 else{coarseGrain($inputFolder,$coarseFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile);}
 ## END ##

@@ -318,7 +318,7 @@ foreach my $k(keys %{$contactScaling})
    my $atomListString = $contactScaling->{$k}->{"atomList"};
    $atomListString = trim($atomListString);
    my @atomList = split(/\s+/,$atomListString);
-   if(scalar(@atomList) == 0){confess("No atom list at contact scaling");}
+   if(scalar(@atomList) == 0){confess("\n\nERROR: No atom list at contact scaling\n\n");}
    my %atomListHash = map {$_=>1} @atomList;
 
    my $A = $contactScaling->{$k}->{"resTypeA"};
@@ -389,7 +389,7 @@ sub intToFunc
  {
 	if(exists $funcTableRev{$interType} && exists $funcTableRev{$interType}->{$int})
 	{return $funcTableRev{$interType}->{$int};}
-	else{confess "NO EXISTENCE OF INTERACTION $interType,$int";}
+	else{confess "\n\nERROR: NO EXISTENCE OF INTERACTION $interType,$int\n\n";}
  }
 
 }
@@ -434,7 +434,10 @@ foreach my $inter(@interHandle)
 	my $typeA = $inter->{"bType"}->[0];
 	my $typeB = $inter->{"bType"}->[1];
 	my $func = $inter->{"func"};
-
+	if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
+               exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
+		confess "\n\nERROR: bond type between bType $typeA and bType $typeB defined more than once. Check .b file.\n\n";
+	}
 	$interactions->{"bonds"}->{$typeA}->{$typeB} = $func;
 	$interactions->{"bonds"}->{$typeB}->{$typeA} = $func;
 	$funcTable{"bonds"}->{$func} = $counter;
@@ -456,17 +459,19 @@ foreach my $inter(@interHandle)
 	my $typeD = $inter->{"bType"}->[3];
 	my $func = $inter->{"func"};
 	my $eG;
-	
-	
 	if(exists $inter->{"energyGroup"})
 		{$eG = $inter->{"energyGroup"};}
 	else
 		{$eG = $inter->{"rigidGroup"};}
 	
 	my $keyString = "$typeA-$typeB-$typeC-$typeD";
+	if(exists $interactions->{"dihedrals"}->{$eG}->{$keyString}){
+		confess "\n\nERROR: dihedral type between bTypes $typeA-$typeB-$typeC-$typeD and energy group $eG defined more than once. Check .b file.\n\n";
+	}
 	$interactions->{"dihedrals"}->{$eG}->{$keyString} = $func;
 	
 	$keyString = "$typeD-$typeC-$typeB-$typeA";
+
 	$interactions->{"dihedrals"}->{$eG}->{$keyString} = $func;
 	
 	$funcTable{"dihedrals"}->{$eG}->{$func} = $counter;
@@ -494,9 +499,13 @@ foreach my $inter(@interHandle)
 	my $func = $inter->{"func"};
 	
 	my $keyString = "$typeA-$typeB-$typeC-$typeD";
+	if(exists $interactions->{"impropers"}->{$keyString}){
+		confess "\n\nERROR: improper type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.\n\n";
+	}
 	$interactions->{"impropers"}->{$keyString} = $func;
 	
 	$keyString = "$typeD-$typeC-$typeB-$typeA";
+
 	$interactions->{"impropers"}->{$keyString} = $func;
 	
 	$funcTable{"impropers"}->{$func} = $counter;
@@ -518,6 +527,9 @@ foreach my $inter(@interHandle)
 	my $func = $inter->{"func"};
 	my $keyString = "$typeA-$typeB-$typeC";
 	## NOTE THE ORDER OF CENTRAL TYPE LISTED IN XML FILE MATTERS ##
+	if(exists $interactions->{"angles"}->{$keyString}){
+		confess "\n\nERROR: bond angle type between bTypes $typeA-$typeB-$typeC defined more than once. Check .b file.\n\n";
+	}
 	$interactions->{"angles"}->{$keyString} = $func;
 	$keyString = "$typeC-$typeB-$typeA";
 	$interactions->{"angles"}->{$keyString} = $func;
@@ -540,6 +552,9 @@ foreach my $inter(@interHandle)
 	my $typeA = $inter->{"nbType"}->[0];
 	my $func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
 	"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
+	if(exists $interactions->{"nonbonds"}->{$typeA}){
+		confess "\n\nERROR: nonbonded parameters defined mulitple times for nbType $typeA. Check .nb file.\n\n";
+	}
 	$interactions->{"nonbonds"}->{$typeA} = $func;
 	$funcTable{"nonbonds"}->{$func} = $counter;
 	$funcTableRev{"nonbonds"}->{$counter} = $func;
@@ -561,6 +576,9 @@ foreach my $inter(@interHandle)
 	my $typeA = $inter->{$type}->[0];
 	my $typeB = $inter->{$type}->[1];
 	my $func = $inter->{"func"}->[0]->{"func"};
+	if(exists $interactions->{"pairs"}->{$type}->{$typeA}->{$typeB}){
+		confess "\n\nERROR: pairs parameters defined mulitple times for types $typeA-$typeB. Check .nb file.\n\n";
+	}
 	$interactions->{"pairs"}->{$type}->{$typeA}->{$typeB} = $func;
 	$interactions->{"pairs"}->{$type}->{$typeB}->{$typeA} = $func;
 	$funcTable{"pairs"}->{$type}->{$func} = $counter;
@@ -579,6 +597,9 @@ foreach my $inter(@interHandle)
 	my $typeB = $inter->{$type}->[1];
 	my $func = $inter->{"func"};
  	my $cG = $inter->{"contactGroup"};
+	if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
+		confess "\n\nERROR: contact parameters defined mulitple times for types $typeA-$typeB. Check .nb file.\n\n";
+	}
 	$interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB} = $func;
 	$interactions->{"contacts"}->{"func"}->{$typeB}->{$typeA} = $func;
 	$interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{$typeB} = $cG;
@@ -592,6 +613,9 @@ foreach my $inter(@interHandle)
 
 ## Obtain default options (ONLY FOR GEN PAIRS) ##
 @interHandle = @{$data->{"defaults"}};
+if(exists $interactions->{"gen-pairs"}){
+	confess "\n\nERROR: default declaration is given multiple times. Check .nb file.\n\n";
+}
 $interactions->{"gen-pairs"} = $interHandle[0]->{"gen-pairs"};
 
 
@@ -627,50 +651,40 @@ foreach my $res (keys %residues)
 		
 		($atomA,$atomB) = $bondInfo =~ /(.*)\-(.*)/;
   ## Check if atoms exists in declaration ##
-  if(!exists $residueHandle->{"atoms"}->{"$atomA"}) 
-		{confess "$atomA doesn't exists in $res but a bond was defined $bondInfo\n"; }
+  	    if(!exists $residueHandle->{"atoms"}->{"$atomA"}) 
+		{confess "\n\nERROR: $atomA doesn't exists in $res but a bond was defined $bondInfo\n\n"; }
 		if(!exists $residueHandle->{"atoms"}->{"$atomB"}) 
-		{confess "$atomB doesn't exists in $res but a bond was defined $bondInfo\n"; }
-
-
+		{confess "\n\nERROR: $atomB doesn't exists in $res but a bond was defined $bondInfo\n\n"; }
 
 		$typeA = $residueHandle->{"atoms"}->{"$atomA"}->{"bType"};
 		$typeB = $residueHandle->{"atoms"}->{"$atomB"}->{"bType"};
-
-
 		## WILD CARD MATCHING CONDITIONALS ##
-		
+
 		## If both bond types exists ##
-		if(exists $interactions->{"bonds"}->{$typeA}
-			&& exists $interactions->{"bonds"}->{$typeA}->{$typeB})
+		my $funct="";
+		if( exists $interactions->{"bonds"}->{$typeA}->{$typeB})
 		{$funct = $interactions->{"bonds"}->{$typeA}->{$typeB};}
-		
+			
+		elsif ($typeA ne $typeB && (exists $interactions->{"bonds"}->{$typeA}->{"*"} 
+                                 && exists $interactions->{"bonds"}->{$typeB}->{"*"})){
+			confess "\n\nERROR: Wildcard conflict in bonds $typeA-$typeB. 
+			Both $typeA-\* and $typeB-\* are defined in .b file. Can not unambiguously assign a function...\n\n";
+ 		}
 		## If typeA exists while TypeB is a wildcard ##
-		elsif (exists $interactions->{"bonds"}->{$typeA}
-			&& !(exists $interactions->{"bonds"}->{$typeA}->{$typeB}))
-		{
-            $funct = $interactions->{"bonds"}->{$typeA}->{"*"};
-            if(!defined $funct || $funct eq "")
-            {$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
-        }
-		
-		## If typeA is a wildcard while TypeB exists ##
-		elsif(!(exists $interactions->{"bonds"}->{$typeA}) &&
-				(exists $interactions->{"bonds"}->{"*"}
-                && exists $interactions->{"bonds"}->{"*"}->{$typeB})
-                )
-		{
-            $funct = $interactions->{"bonds"}->{"*"}->{$typeB};
-             if(!defined $funct || $funct eq "")
-            {$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
-        
-        }
-		
-		## If both types are wildcard ## 
-		else
-		{$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
-		
-		
+		elsif (exists $interactions->{"bonds"}->{$typeA}->{"*"})
+		{$funct = $interactions->{"bonds"}->{$typeA}->{"*"};}
+
+		## If typeB exists while TypeA is a wildcard ##
+		elsif (exists $interactions->{"bonds"}->{$typeB}->{"*"})
+		{$funct = $interactions->{"bonds"}->{$typeB}->{"*"};}
+	
+		if(!defined $funct || $funct eq ""){
+			if(exists $interactions->{"bonds"}->{"*"}->{"*"})
+            		{$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
+		     	else{
+			confess "\n\n ERROR: Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB\n\n";
+			}
+		}
 		$indexA = $residueHandle->{"atoms"}->{"$atomA"}->{"index"};
 		$indexB = $residueHandle->{"atoms"}->{"$atomB"}->{"index"};
 		push(@inputString,"$indexA-$indexB"); ## MIGHT CHANGE
@@ -679,12 +693,10 @@ foreach my $res (keys %residues)
 		push(@{$adjList{$atomA}},$atomB);
 		push(@{$adjList{$atomB}},$atomA);
 		
-	}
-	$bondFunctionals{$res} = {"bonds"=>\@inputString,
-							  "functions"=>\@functionString}; 
+	   }
+	$bondFunctionals{$res} = {"bonds"=>\@inputString, "functions"=>\@functionString}; 
 	$dihedralAdjList{$res} = \%adjList;
-}
-
+	}
 }
 
 
@@ -865,24 +877,53 @@ foreach my $res(keys %dihedralAdjList)
 		my $eG = getEnergyGroup($res,$res,$atoms[1],$atoms[2]);
 		
 		## WILD CARD MATCHING CONDITIONALS ##
-		my $matchScore = 0; my $saveScore = 0;
+		my $matchScore = 0; my $saveScore = 0;my $matchScoreCount=0; my $symmatch=0;
+		my $Nd=0;
 		foreach my $matches(keys %{$diheHandle->{$eG}})
 		{
+		$Nd++;
 			$matchScore = 0;
 			my ($aM,$bM,$cM,$dM) = split("-",$matches);
-			#print "$aM,$bM,$cM,\n";
-			if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
+			unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
 				|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
 				|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
-				|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){next;}
+				|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){
 			if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($matchScore >= $saveScore)
-			{$saveScore = $matchScore;$funct = $diheHandle->{$eG}->{$matches};}
-		
+			if($matchScore >= $saveScore){
+
+				if(($aM eq $dM and $bM eq $cM) || ($aM eq $bM and $bM eq $cM and $cM eq $dM)){
+					$symmatch=1;
+				}else{
+					$symmatch=0;
+				}
+				## this to make sure that the highest scoring angle is unique
+				if($matchScore == $saveScore){
+					if($saveScore != 0){
+					$matchScoreCount++;
+					}
+				}else{
+					$matchScoreCount=0;
+				}
+				$saveScore = $matchScore;$funct = $diheHandle->{$eG}->{$matches};
+			}
+		    }
 		}
+
+		if($Nd ==0){
+			confess "\n\nERROR: No dihedrals defined in templates for energy group $eG.  Check .b file.\n\n";
+		}
+		
+		my $sym=0;
+		if(($a eq $d and $b eq $c) || ($a eq $b and $b eq $c and $c eq $d)){
+			$sym=1;
+		}
+		if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
+			confess "\n\nERROR: Multiple possible angles match $a-$b-$c-$d equally well. Unclear assignment of function type\n\n";
+		}
+
 		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
 		my $indexB = $residues{$res}->{"atoms"}->{$atoms[1]}->{"index"};
 		my $indexC = $residues{$res}->{"atoms"}->{$atoms[2]}->{"index"};
@@ -910,23 +951,43 @@ foreach my $res(keys %dihedralAdjList)
 		#print $angHandle->{$atoms[0]}->{$atoms[1]}->{$atoms[2]},"\n";
 		
 		## WILD CARD MATCHING CONDITIONALS ##
-		my $matchScore = 0; my $saveScore = 0; 
+		my $matchScore = 0; my $saveScore = 0; my $matchScoreCount=0; my $symmatch=0;
 		foreach my $matches(keys %{$angHandle})
 		{
 			$matchScore = 0;
-			#print $matches," to ","$a-$b-$c","\n";
 			my ($aM,$bM,$cM) = split("-",$matches);
-			#print "$aM,$bM,$cM,\n";
-			if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
+			unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
 				|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-				|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){next;}
+				|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){
 			if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 			if($matchScore >= $saveScore)
-			{$saveScore = $matchScore;$funct = $angHandle->{$matches};}
+				{
+				if($aM eq $cM || ($aM eq $bM and $bM eq $cM)){
+					$symmatch=1;
+				}else{
+					$symmatch=0;
+				}
+				## this to make sure that the highest scoring angle is unique
+				if($matchScore == $saveScore){
+					if($saveScore != 0){
+					$matchScoreCount++;
+					}
+				}else{
+					$matchScoreCount=0;
+				}
+				$saveScore = $matchScore;$funct = $angHandle->{$matches};
+			}
+		    }
 		}
-		
+		my $sym=0;
+		if($a eq $c || ($a eq $b and $b eq $c)){
+			$sym=1;
+		}
+		if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
+			confess "\n\nERROR: Multiple possible angles match $a-$b-$c equally well. Unclear assignment of function type\n\n";
+		}
 		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
 		my $indexB = $residues{$res}->{"atoms"}->{$atoms[1]}->{"index"};
 		my $indexC = $residues{$res}->{"atoms"}->{$atoms[2]}->{"index"};

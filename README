@@ -2,7 +2,7 @@
 
                    README for SMOG2
 
-SMOG2 is a standalone software package for generating
+SMOG2 is a downloadable software package for generating
 structure-based models, as provided by the 
 smog-server.org webserver. These models may be used to
 perform simulations using Gromacs, or NAMD.
@@ -18,6 +18,7 @@ We encourage everyone to provide feedback/suggestions
 on usage, extensions and bugs to info@smog-server.org.
 
       Jeffrey Noel, Jose Onuchic and Paul Whitford
+
 ########################################################
 
 
@@ -26,10 +27,10 @@ on usage, extensions and bugs to info@smog-server.org.
 		  CONFIGURING SMOG2
 
 Before using SMOG2, you need to configure your settings.
-This is a relatively simple two-step process.
+This is a relatively simple  process.
 
 1) SMOG2 is written in Perl, and requires the following 
-modules to be available (available through cpan):
+modules to be installed (available through cpan):
 
 String::Util
 XML::Simple
@@ -37,15 +38,36 @@ Data::Dumper
 Exporter
 perl PDL
 
-2) Once the modules are installed, you need to run the
-configure script, before running smog2:
+1a) If you do not have java installed (uncommon), then
+you will have to install it.
 
-source config.bash <SMOG2_DIR>
+2) Once the modules and jave are installed, you need to 
+run the configure script. First, modify configure.smog2  
+Specifically, give values to the following two 
+variables:
 
-SMOG2_DIR is the location of the smogv2 executable.
-If you used smog2 frequently, it is recommended that 
+smog2dir=""
+perl4smog=""
+
+smog2dir is the main smog2 directory (this will have 
+src and share as subdirectories), and perl4smog is the
+version of perl that you prefer to use.  On linux, the
+most common value for perl4smog is be "/usr/bin/perl".  
+
+To finish the configure process, issue the command:
+ 
+source configure.smog2
+
+If you use smog2 frequently, it is recommended that 
 you add this line to your .bashrc file, so that you will
 not need to re-run config.bash every time you use smog2.
+If you do add it to your bashrc, make sure to include
+the full path for configure.smog2.
+
+3) (Optional) It is highly recommended that once smog2
+is configured, that you download and run the smog-check
+suite.  That will verify your configurations are correct
+and that SMOG2 is producing accurate forcefield files.
 
 ########################################################
 
@@ -57,19 +79,19 @@ not need to re-run config.bash every time you use smog2.
 If your configuration step completes successfully, 
 running smog2 can be quite simple.  
 
-Note: config.bash defines SMOG_PATH.
+Note: configure.smog2 defines the alias smog2
 
 For the C-alpha model:
-$SMOG_PATH/smogv2 -i <PDBFILE> -tCG $SMOG_PATH/SBM_calpha -contactRes $SMOG_PATH/SBM_AA 
+smog2 -i <PDBFILE> -t $SMOG_PATH/SBM_calpha -t_contacts $SMOG_PATH/SBM_AA 
 
 where <PDBFILE> is the the system for which you would 
 like to generate a SMOG model.
 
 To run the All-atom model: 
-$SMOG_PATH/smogv2 -i <PDBFILE> -tAA $SMOG_PATH/SBM_CA  
+smog2 -i <PDBFILE> -t $SMOG_PATH/SBM_CA  
 
 For a list of all supported flags and options, type:
-$SMOG_PATH/smogv2 --help
+smog2 --help
 
 For more advanced usage of SMOG2, please consult the
 SMOG2 manual.

@@ -87,10 +87,10 @@ sub parseATOM
   my $pdbResidueIndex=0; my $interiorPdbResidueIndex=0;
   my %indexMap;my $lineNumber = 0;
   my $PDB; 
- 
+  my $LASTRESINDEX; 
   ## OPEN .PDB FILE ##
  unless (open($PDB, $fileName)) {
-    confess "Cannot read from '$fileName'.\nProgram closing.\n";
+    confess "\n\nERROR: Cannot read from '$fileName'.\nProgram closing.\n";
 }
 
   ## LOOP THROUGH EACH LINE ##
@@ -160,8 +160,9 @@ sub parseATOM
 	    ## OBTAIN RESIDUE NAME ##
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
-        $pdbResidueIndex = substr($record,22,4); 
-        if(!exists $residues{$residue}){confess "\nPDB PARSE ERROR: \"$residue\" doesn't exist in .bif at line $lineNumber\n";}
+        $pdbResidueIndex = substr($record,22,5);
+	$pdbResidueIndex =~ s/^\s+|\s+$//g; 
+        if(!exists $residues{$residue}){confess "\n\nPDB PARSE ERROR: \"$residue\" doesn't exist in .bif at line $lineNumber\n";}
 
 
 		$resCount = scalar(keys(%{$residues{$residue}->{"atoms"}}));
@@ -177,10 +178,14 @@ sub parseATOM
             $lineNumber++;
 			$record = <$PDB>;
 			if($record !~ m/^ATOM|^HETATM/)
-			{confess("PDB PARSE ERROR\n Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber\n");}
+			{confess("\n\nPDB PARSE ERROR\n Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber\n");}
 			$interiorResidue = substr($record,17,4);
 			$interiorResidue =~ s/^\s+|\s+$//g;
-            $interiorPdbResidueIndex = substr($record,22,4);  
+            		$interiorPdbResidueIndex = substr($record,22,5);  
+			$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
+			unless($interiorPdbResidueIndex =~ /^\d+$/){;
+				confess "\n\nERROR: Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.\n\n";
+			}
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 			if($interiorResidue !~ /$residue/
             || $pdbResidueIndex != $interiorPdbResidueIndex)
@@ -237,6 +242,7 @@ sub parseATOM
 		   $consecResidues[1] = $residue;
 		   $headFlag = 0;
 		   $linkFlag = 1;
+		   $LASTRESINDEX=$interiorPdbResidueIndex;
 		}		
 		## CONNECT TO N AND N-1 RESIDUE ##
 		elsif(!$headFlag)
@@ -255,6 +261,10 @@ sub parseATOM
 		   @union = ();
 		   @connResA = @connResB;
 		   $headFlag = 0;$linkFlag = 0;
+		   if($interiorPdbResidueIndex-$LASTRESINDEX != 1){
+			confess "\n\nERROR: Residues are not numbered sequentially (residues $consecResidues[0]$LASTRESINDEX and $consecResidues[1]$interiorPdbResidueIndex) in PDB file. \n\n";
+		   }
+		   $LASTRESINDEX=$interiorPdbResidueIndex;
 		}
 		#else {confess "PDB PARSE ERROR";}
 		$tempPDL{$residue}->{$residueIndex}=pdl(@temp);
@@ -313,10 +323,10 @@ sub parseATOMCoarse
   my $atomCounter=0;my $singleFlag = 1;
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=1;
-   
+  my $LASTRESINDEX; 
   ## OPEN .PDB FILE ##
  unless (open(MYFILE, $fileName)) {
-    confess "Cannot read from '$fileName'.\nProgram closing.\n";
+    confess "\n\nERROR: Cannot read from '$fileName'.\nProgram closing.\n";
 }
 
   ## LOOP THROUGH EACH LINE ##
@@ -329,7 +339,7 @@ sub parseATOMCoarse
 			## PREV CHAIN WAS SINGLE ## 
 			if($headFlag == 1)
 			{
-				confess("There is a chain with only one residue. Cannot coarse grain\n");
+				confess("\n\nERROR: There is a chain with only one residue. Cannot coarse grain\n");
 			}
 			## CREATE INTERACTION ##
             coarseCreateInteractions(\@consecResidues,$counter);
@@ -347,7 +357,6 @@ sub parseATOMCoarse
 		$outLength = length($record);
 	 	## OBTAIN RESIDUE NAME ##
 		$residue = substr($record,17,4);
-		
 		$residue =~ s/^\s+|\s+$//g;
 		$resCount = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
 	 	seek(MYFILE, -$outLength, 1); # place the same line back onto the filehandle
@@ -358,17 +367,17 @@ sub parseATOMCoarse
 
 			$interiorResidue = substr($record,17,4);
 			$interiorResidue =~ s/^\s+|\s+$//g;
+
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 			if($interiorResidue !~ /$residue/)
-			{confess "PDB PARSE ERROR\nResidue doesn't conform with coarse grain .bif:: $record";}
+			{confess "\n\nPDB PARSE ERROR\nResidue doesn't conform with coarse grain .bif:: $record";}
 			$atom = substr($record, 12, 4);
 			$atom =~ s/^\s+|\s+$//g;
 			if(!exists $residueBackup{$residue}->{"atoms"}->{$atom})
-			{confess "PDB PARSE ERROR\n$atom doesn't exists in .bif declaration of $residue\n\n";}
+			{confess "\n\nPDB PARSE ERROR\n$atom doesn't exists in .bif declaration of $residue\n\n";}
 			
 			## CHECK IF ATOM IS COARSE GRAINED ##
                         if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
-			
 			$x = substr($record, 30, 8);
 			$y = substr($record, 38, 8);
 			$z = substr($record, 46, 8);
@@ -387,7 +396,7 @@ sub parseATOMCoarse
 			$totalAtoms++;
 		}
 
-		if($i != $resCount){confess "PDB PARSE ERROR\nTotal number of atoms of $residue doesn't match with .bif declaration\n\n";}
+		if($i != $resCount){confess "\n\nPDB PARSE ERROR\nTotal number of atoms of $residue doesn't match with .bif declaration\n\n";}
 		## CONCAT RESIDUE ##
 	  	@union = (@union,@temp);@temp=();
 		push(@consecResidues,$residue);
@@ -405,7 +414,7 @@ sub parseATOMCoarse
 			## ONLY SINGLE RESIDUE IN PDB NO COARSE GRAINING ## 
 			if($headFlag == 1)
 			{
-				confess("There is only a single residue in your system, cannot coarse grain.\n");
+				confess("\n\nERROR: There is only a single residue in your system, cannot coarse grain.\n");
 			}
 }
 
@@ -416,7 +425,7 @@ sub parseATOMCoarse
 sub returnFunction
 {
  my($funcString) = @_;
- if(!exists $functions->{$funcString}){confess "$funcString cannot be found";}
+ if(!exists $functions->{$funcString}){confess "\n\nERROR: $funcString cannot be found\n";}
  return $functions->{$funcString}->{"fType"};
 
 }
@@ -426,8 +435,8 @@ sub returnFunction
 sub getAtomAbsoluteIndex
 {
  my($residue,$atom) = @_;
- if(!exists $residues{$residue}){confess "$residue wasn't defined in bif";}
- if(!exists $residues{$residue}->{"atoms"}->{$atom}){confess "$atom wasn't defined in $residue in the bif";}
+ if(!exists $residues{$residue}){confess "\n\n ERROR: $residue wasn't defined in bif\n";}
+ if(!exists $residues{$residue}->{"atoms"}->{$atom}){confess "\n\n ERROR: $atom wasn't defined in $residue in the bif\n";}
  return $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 
 }
@@ -461,7 +470,7 @@ sub getEnergyGroup
 			{return $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"};}
 		elsif(exists $residues{$residueIn}->{"rigidGroups"}->{"$atoma-$atomb"})
 			{return $residues{$residueIn}->{"rigidGroups"}->{"$atoma-$atomb"};}
-		else{confess("A specified energy group for $residuea:$atoma, $residueb:$atomb doesn't exists");}
+		else{confess("\n\nERROR: A specified energy group for $residuea:$atoma, $residueb:$atomb doesn't exists\n");}
 	}
  	## If Bond is between two residues ##
 	else
@@ -631,9 +640,9 @@ sub returnBondTypeFromIndex
   my $residue = $allAtoms{$idx}->[5];
   my $atom = $allAtoms{$idx}->[3];
   if(!$residue || !$atom)
-  {confess("Error finding the residue for atom $idx. Perhaps your indices are wrong?\n");}
+  {confess("\n\nERROR: Error finding the residue for atom $idx. Perhaps your indices are wrong?\n");}
   if(!$residues{$residue}->{"atoms"}->{$atom})
-  	{confess("$atom is not part of $residue\n");}
+  	{confess("\n\nERROR: $atom is not part of $residue\n");}
   return $residues{$residue}->{"atoms"}->{$atom}->{"bType"};
 }
 sub returnAtomFromIndex
@@ -661,13 +670,13 @@ sub appendImpropersBOND
  	my $iic = returnAtomFromIndex($c);
  	my $iid = returnAtomFromIndex($d);
  	if(returnResidueIndexFromIndex($a)!=$resIDA && returnResidueIndexFromIndex($a)!=$resIDB)
- 	{confess("Ad-hoc Improper Create Error: Atom $a is part of neither residue $resIDA or $resIDB\n");}
+ 	{confess("\n\nERROR: Ad-hoc Improper Create Error: Atom $a is part of neither residue $resIDA or $resIDB\n");}
  	if(returnResidueIndexFromIndex($b)!=$resIDA && returnResidueIndexFromIndex($b)!=$resIDB)
- 	{confess("Ad-hoc Improper Create Error: Atom $b is part of neither residue $resIDA or $resIDB\n");}
+ 	{confess("\n\nERROR: Ad-hoc Improper Create Error: Atom $b is part of neither residue $resIDA or $resIDB\n");}
  	if(returnResidueIndexFromIndex($c)!=$resIDA && returnResidueIndexFromIndex($c)!=$resIDB)
- 	{confess("Ad-hoc Improper Create Error: Atom $c is part of neither residue $resIDA or $resIDB\n");}
+ 	{confess("\n\nERROR: Ad-hoc Improper Create Error: Atom $c is part of neither residue $resIDA or $resIDB\n");}
  	if(returnResidueIndexFromIndex($d)!=$resIDA && returnResidueIndexFromIndex($d)!=$resIDB)
- 	{confess("Ad-hoc Improper Create Error: Atom $d is part of neither residue $resIDA or $resIDB\n");}
+ 	{confess("\n\nERROR: Ad-hoc Improper Create Error: Atom $d is part of neither residue $resIDA or $resIDB\n");}
  	
 	my($ia)= (returnResidueIndexFromIndex($a)==$resIDA ? (getAtomAbsoluteIndex($resA,$iia)) 
 	: ($sizeA+getAtomAbsoluteIndex($resB,$iia)));
@@ -1017,38 +1026,37 @@ sub connWildcardMatchBond
 {
 	my($typeA,$typeB) = @_;
 	my $funct="";
-    ## If both bond types exists ##
-	if(exists $interactions->{"bonds"}->{$typeA}
-		&& exists $interactions->{"bonds"}->{$typeA}->{$typeB})
-	{$funct = $interactions->{"bonds"}->{$typeA}->{$typeB};}
-		
-	## If typeA exists while TypeB is a wildcard ##
-	elsif (exists $interactions->{"bonds"}->{$typeA}
-		&& !(exists $interactions->{"bonds"}->{$typeA}->{$typeB}))
-	{
-        $funct = $interactions->{"bonds"}->{$typeA}->{"*"};
-        if(!defined $funct || $funct eq "")
-        {$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
-    }
-		
-	## If typeA is a wildcard while TypeB exists ##
-	elsif(!(exists $interactions->{"bonds"}->{$typeA}) &&
-			(exists $interactions->{"bonds"}->{"*"}
-            && exists $interactions->{"bonds"}->{"*"}->{$typeB})
-            )
-	{
-        $funct = $interactions->{"bonds"}->{"*"}->{$typeB};
-        if(!defined $funct || $funct eq "")
-        {$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
 
-    }
-		
-	## If both types are wildcard ## 
-	else
-	{
-        $funct = $interactions->{"bonds"}->{"*"}->{"*"};
-    }
-    if(!defined $funct || $funct eq ""){confess("\nINTERACTION GENERATE ERROR\n There is no function for bType combination $typeA-$typeB. Check .b file\n");}
+
+  ## Check if atoms exists in declaration ##
+
+		## WILD CARD MATCHING CONDITIONALS ##
+
+		## If both bond types exists ##
+		if( exists $interactions->{"bonds"}->{$typeA}->{$typeB})
+		{$funct = $interactions->{"bonds"}->{$typeA}->{$typeB};}
+			
+		elsif ($typeA ne $typeB && (exists $interactions->{"bonds"}->{$typeA}->{"*"} 
+                                 && exists $interactions->{"bonds"}->{$typeB}->{"*"})){
+			confess "ERROR: Wildcard conflict in bonds $typeA-$typeB. 
+			Both $typeA-\* and $typeB-\* are defined in .b file. Can not unambiguously assign a function...\n";
+ 		}
+		## If typeA exists while TypeB is a wildcard ##
+		elsif (exists $interactions->{"bonds"}->{$typeA}->{"*"})
+		{$funct = $interactions->{"bonds"}->{$typeA}->{"*"};}
+
+		## If typeB exists while TypeA is a wildcard ##
+		elsif (exists $interactions->{"bonds"}->{$typeB}->{"*"})
+		{$funct = $interactions->{"bonds"}->{$typeB}->{"*"};}
+	
+		if(!defined $funct || $funct eq ""){
+			if(exists $interactions->{"bonds"}->{"*"}->{"*"})
+            		{$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
+		     	else{
+			confess "\n ERROR: Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB. Check .b file\n";
+			}
+		}
+
     return $funct;
 }
 
@@ -1268,13 +1276,13 @@ sub parseCONTACT
 		## noChainFlag ignores contact between chains ##  
 
   ## OPEN .contact FILE ##
-  unless (open(MYFILE, $fileName)) {
-    confess "CONTACT FILE READ ERROR: Contact file $fileName doesn't exist, check shadow.log for possible error from Shadow Map program\n";
-  }
   
-  if($noAllFlag){print "NOTE::Ignoring contacts calculated from Shadow Map Program\n";}
+  if($noAllFlag){print "\nNOTE: Not calculating contact map\n";}
 
   if(!$noAllFlag){
+   unless (open(MYFILE, $fileName)) {
+    confess "\n\nERROR: Internal contact file can not be read.  See shadow.log for more information.\n\n";
+  }
   while($line = <MYFILE>)
   {
 	($contact1,$type1,$contact2,$type2,$dist) = split(/\s+/,$line);
@@ -1283,24 +1291,23 @@ sub parseCONTACT
  	{next;}
 	## NOTE RESIDUE INDEX == CONTACT ##
 	if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
-	{confess("ERROR: CONTACTS between atoms $type1 $type2 exceed contacts threshold with value $dist\n");}
+	{confess("\n\nERROR: CONTACTS between atoms $type1 $type2 exceed contacts threshold with value $dist\n\n");}
 	
 	push(@interiorTempPDL,[0,$type1,0,$type2,$dist]);
 	$numContacts++;
   }
-    print "Adding additional contacts from $fileName2\n";
 
    ## NO DCA FILE RETURN ##
-   if($fileName2 eq ""){$contactPDL = pdl(@interiorTempPDL);return $numContacts;}
-  }
+##   if($fileName2 eq ""){$contactPDL = pdl(@interiorTempPDL);return $numContacts;}
+  }else{
    ## Else Proceed ##
    ## NO DCA FILE RETURN ##
-   if($fileName2 eq ""){$contactPDL = pdl(@interiorTempPDL);return $numContacts;}
+##   if($fileName2 eq ""){$contactPDL = pdl(@interiorTempPDL);return $numContacts;}
   
-  print "Adding additional contacts from $fileName2\n";
+  print "Reading contacts from $fileName2\n";
   ## OPEN .dca FILE ##
   unless (open(MYFILE1, $fileName2)) {
-    confess "CONTACT FILE READ ERROR:Cannot read additional contact file '$fileName2'.\nProgram closing.\n";
+    confess "\n\nERROR:Cannot read contact file '$fileName2'.\nProgram closing.\n\n";
   }
   
    ## DCA CONTACTS ARE IN FORM
@@ -1319,7 +1326,7 @@ sub parseCONTACT
     push(@interiorTempPDL,[1,$contact1,$epsilon,$contact2,$dist]);
 	$numContacts++;
   }
-  
+ } 
   $contactPDL = pdl(@interiorTempPDL);
   return $numContacts;
   
