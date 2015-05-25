@@ -87,7 +87,7 @@ sub parseATOM
   my $pdbResidueIndex=0; my $interiorPdbResidueIndex=0;
   my %indexMap;my $lineNumber = 0;
   my $PDB; 
- 
+  my $LASTRESINDEX; 
   ## OPEN .PDB FILE ##
  unless (open($PDB, $fileName)) {
     confess "Cannot read from '$fileName'.\nProgram closing.\n";
@@ -160,7 +160,8 @@ sub parseATOM
 	    ## OBTAIN RESIDUE NAME ##
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
-        $pdbResidueIndex = substr($record,22,4); 
+        $pdbResidueIndex = substr($record,22,5);
+	$pdbResidueIndex =~ s/^\s+|\s+$//g; 
         if(!exists $residues{$residue}){confess "\nPDB PARSE ERROR: \"$residue\" doesn't exist in .bif at line $lineNumber\n";}
 
 
@@ -180,7 +181,11 @@ sub parseATOM
 			{confess("PDB PARSE ERROR\n Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber\n");}
 			$interiorResidue = substr($record,17,4);
 			$interiorResidue =~ s/^\s+|\s+$//g;
-            $interiorPdbResidueIndex = substr($record,22,4);  
+            		$interiorPdbResidueIndex = substr($record,22,5);  
+			$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
+			unless($interiorPdbResidueIndex =~ /^\d+$/){;
+				confess "\n\nERROR: Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.\n\n";
+			}
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 			if($interiorResidue !~ /$residue/
             || $pdbResidueIndex != $interiorPdbResidueIndex)
@@ -237,6 +242,7 @@ sub parseATOM
 		   $consecResidues[1] = $residue;
 		   $headFlag = 0;
 		   $linkFlag = 1;
+		   $LASTRESINDEX=$interiorPdbResidueIndex;
 		}		
 		## CONNECT TO N AND N-1 RESIDUE ##
 		elsif(!$headFlag)
@@ -255,6 +261,10 @@ sub parseATOM
 		   @union = ();
 		   @connResA = @connResB;
 		   $headFlag = 0;$linkFlag = 0;
+		   if($interiorPdbResidueIndex-$LASTRESINDEX != 1){
+			confess "\n\nERROR: Residues are not numbered sequentially (residues $consecResidues[0]$LASTRESINDEX and $consecResidues[1]$interiorPdbResidueIndex) in PDB file. \n\n";
+		   }
+		   $LASTRESINDEX=$interiorPdbResidueIndex;
 		}
 		#else {confess "PDB PARSE ERROR";}
 		$tempPDL{$residue}->{$residueIndex}=pdl(@temp);
@@ -1287,7 +1297,6 @@ sub parseCONTACT
 	push(@interiorTempPDL,[0,$type1,0,$type2,$dist]);
 	$numContacts++;
   }
-    print "Reading contacts from $fileName2\n";
 
    ## NO DCA FILE RETURN ##
 ##   if($fileName2 eq ""){$contactPDL = pdl(@interiorTempPDL);return $numContacts;}
