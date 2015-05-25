@@ -132,7 +132,7 @@ sub adjustFactorsHelper1
     	my $resTyped = $atomTypes->{$d}->[1];
     	my $resTypeUse;
 
- 	if(!$resTypeb || !$resTypec) {confess "Atom $b or $c doesn't have a residue type\n";}
+ 	if(!$resTypeb || !$resTypec) {confess "\n\nERROR: Atom $b or $c doesn't have a residue type\n";}
 
  	## $eG == -1 is IMPROPER SKIP ##
 	if($eG < 0) 
@@ -145,7 +145,7 @@ sub adjustFactorsHelper1
        ## CASE WHERE THERE IS A DIHEDRAL BETWEEN TWO DIFFERENT RESTYPES ##
        if(! defined $termRatios->{$resTypec}->{"energyGroup"}->{$eG})
        {
-            confess("Error generating dihedrals because energyGroup $eG is not defined for 
+            confess("\n\nERROR: Error generating dihedrals because energyGroup $eG is not defined for 
                $resTypeb-$resTypec ($a-$b-$c-$d)\n");
        }
        $normalize = $termRatios->{$resTypec}->{"energyGroup"}->{$eG}->{"normalize"};
@@ -157,7 +157,7 @@ sub adjustFactorsHelper1
    }
  	if(!defined $normalize)
     {
-     confess("Normalize option not set of $resTypea-$resTypeb-$resTypec-$resTyped of energyGroup $eG
+     confess("\n\nERROR: Normalize option not set of $resTypea-$resTypeb-$resTypec-$resTyped of energyGroup $eG
           with atom indices $a-$b-$c-$d\n");
     }
     ## Normalize option is set ##	
@@ -205,7 +205,7 @@ for(my $i=0;$i<$size;$i++)
        ## CASE WHERE THERE IS A DIHEDRAL BETWEEN TWO DIFFERENT RESTYPES ##
        if(! defined $termRatios->{$resTypec}->{"energyGroup"}->{$eG})
        { 
-           confess("Error generating dihedrals because energyGroup $eG is not defined for 
+           confess("\n\nERROR: Error generating dihedrals because energyGroup $eG is not defined for 
                $resTypeb-$resTypec\n");
        }
        $normalize = $termRatios->{$resTypec}->{"energyGroup"}->{$eG}->{"normalize"};
