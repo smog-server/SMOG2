@@ -2,7 +2,7 @@
 
                    README for SMOG2
 
-SMOG2 is a standalone software package for generating
+SMOG2 is a downloadable software package for generating
 structure-based models, as provided by the 
 smog-server.org webserver. These models may be used to
 perform simulations using Gromacs, or NAMD.
@@ -38,9 +38,13 @@ Data::Dumper
 Exporter
 perl PDL
 
-2) Once the modules are installed, you need to run the
-configure script.  First, modify configure.smog2.  
-Specifically, supply values to the following two variables:
+1a) If you do not have java installed (uncommon), then
+you will have to install it.
+
+2) Once the modules and jave are installed, you need to 
+run the configure script. First, modify configure.smog2  
+Specifically, give values to the following two 
+variables:
 
 smog2dir=""
 perl4smog=""
@@ -48,17 +52,22 @@ perl4smog=""
 smog2dir is the main smog2 directory (this will have 
 src and share as subdirectories), and perl4smog is the
 version of perl that you prefer to use.  On linux, the
-most common value would be "/usr/bin/perl".  
+most common value for perl4smog is be "/usr/bin/perl".  
 
 To finish the configure process, issue the command:
  
 source configure.smog2
 
-If you used smog2 frequently, it is recommended that 
+If you use smog2 frequently, it is recommended that 
 you add this line to your .bashrc file, so that you will
 not need to re-run config.bash every time you use smog2.
 If you do add it to your bashrc, make sure to include
 the full path for configure.smog2.
+
+3) (Optional) It is highly recommended that once smog2
+is configured, that you download and run the smog-check
+suite.  That will verify your configurations are correct
+and that SMOG2 is producing accurate forcefield files.
 
 ########################################################
 

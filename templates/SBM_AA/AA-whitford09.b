@@ -5,11 +5,11 @@
 	<bond func="sbm_bonds(?,20000)">
 	<bType>*</bType>
 	<bType>*</bType>
-    </bond>
+        </bond>
 	<bond func="sbm_bonds_6(?,200)">
-	<bType>MG</bType>
+	<bType>*</bType>
     	<bType>MG</bType>
-</bond>
+        </bond>
 </bonds>
 
 <!-- ANGLES -->
@@ -22,7 +22,8 @@
 </angles>
 
 <!-- DIHEDRALS -->
-<dihedrals>																		<!-- NUCLEIC DIHEDRALS -->
+<dihedrals>	
+	<!-- NUCLEIC DIHEDRALS -->
 	<dihedral func="sbm_dihedrals(?,?,1)+sbm_dihedrals(?,?*0.5,3)" energyGroup="bb_n">
 	<bType>*</bType>
 	<bType>*</bType>
@@ -47,7 +48,7 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-																	<!-- AMINO DIHEDRALS -->
+	<!-- AMINO DIHEDRALS -->
 	<dihedral func="sbm_dihedrals(?,?,1)+sbm_dihedrals(?,?*0.5,3)" energyGroup="bb_a">
 	<bType>*</bType>
 	<bType>*</bType>
@@ -72,7 +73,13 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	
+	<!-- LIGAND DIHEDRALS -->
+        <dihedral func="sbm_rigid(?,10)" energyGroup="lig">
+        <bType>*</bType>
+        <bType>*</bType>
+        <bType>*</bType>
+        <bType>*</bType>
+        </dihedral>
 </dihedrals>
 
 <!-- IMPROPERS -->

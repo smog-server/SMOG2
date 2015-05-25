@@ -38,8 +38,8 @@ my $ignAllContacts=0;
 my $topFile = "smog.top";
 my $groFile = "smog.gro";
 my $DCAFile = "";
-my $shadowFile = "shadow.contacts";
-my $ndxFile = "temp.ndx";
+my $shadowFile = "smog.contacts";
+my $ndxFile = "smog.ndx";
 my $mapOpt = "shadow";my $contactOpt = "6 1";
 my $numContacts = 0;
 my $coarseFolder = ""; ## Coarse Grain Folder ##
@@ -1143,8 +1143,7 @@ sub convertPDBToGroNdx
 			if($z < $zmin){$zmin=$z;}
 		}
 	
-	 	$chain = substr($line,21,1);
-  		if($chain eq " ") {$chain = $chainCounter;}
+  		$chain = $chainCounter;
 		$counter++;$atomNum=$counter;
 		$resNum = substr($line,22,4);
 		$resNum =~ s/^\s+|\s+$//g;
@@ -1247,7 +1246,7 @@ sub usage
 		print "Optional Inputs\n";
 		print "-g [file.gro]: Output .gro file name\n";
 		print "-o [file.top]: Output .top file name\n";
-        print "-s [file.shadow]: Output .shadow file name\n";
+        	print "-s [file.shadow]: Output .shadow file name\n";
 		print "-n [file.ndx]: Output .ndx file name\n";
 		print "-c [extra.contacts]: Input contact map file\n";
 		print "-ignH: Ignore hydrogens in PDB\n";
@@ -1443,9 +1442,9 @@ sub allAtom
         ## PARSE TEMPLATES ##
         #####################
 
-	## parse Bif File ##
+	## parse .bif File ##
 	parseBif();
-	## parse Sif File ##
+	## parse .sif File ##
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
@@ -1514,7 +1513,7 @@ sub allAtom
 	
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "Can't find Shadow. Make sure SMOG_PATH is set correctly.\n"}
-    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile  $SCMparams > shadow.log");
+    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams > shadow.log");
 	$numContacts = parseCONTACT($shadowFile,$DCAFile,$ignChainContact,$ignAllContacts,0);
 	print "Done\n";
 
@@ -1530,8 +1529,6 @@ sub allAtom
 	print "Done\n";
 	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile,shadow.log\n";
 	close($OUTPUT);
-        print "Press any key to continue...\n";
-	#<STDIN>; ## Wait for user return #
 	printCitation();
 }
 
@@ -1614,7 +1611,7 @@ sub coarseGrain
     
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "Can't find Shadow. Make sure SMOG_PATH is set correctly.\n"}
-	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -o $shadowFile $SCMparams  > shadow.log");
+	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams  > shadow.log");
         print "Done\n";	
 	## CLEAR ALL-ATOM MEMORY ##
         clearBifMemory();clearPDBMemory();
@@ -1685,8 +1682,6 @@ sub coarseGrain
 	print "Done\n";
 	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile,shadow.log\n";
 	close($OUTPUT);
-	print "Press any key to continue...\n";
-	#<STDIN>; ## Wait for user return ##
 	printCitation();
 
 
