@@ -1268,7 +1268,7 @@ sub parseCONTACT
 
   ## OPEN .contact FILE ##
   
-  if($noAllFlag){print "NOTE: Not going to calculate contacts map.\n";}
+  if($noAllFlag){print "NOTE: Not going to calculate contact map.\n";}
 
   if(!$noAllFlag){
    unless (open(MYFILE, $fileName)) {
