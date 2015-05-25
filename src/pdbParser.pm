@@ -323,7 +323,7 @@ sub parseATOMCoarse
   my $atomCounter=0;my $singleFlag = 1;
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=1;
-   
+  my $LASTRESINDEX; 
   ## OPEN .PDB FILE ##
  unless (open(MYFILE, $fileName)) {
     confess "\n\nERROR: Cannot read from '$fileName'.\nProgram closing.\n";
@@ -357,7 +357,6 @@ sub parseATOMCoarse
 		$outLength = length($record);
 	 	## OBTAIN RESIDUE NAME ##
 		$residue = substr($record,17,4);
-		
 		$residue =~ s/^\s+|\s+$//g;
 		$resCount = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
 	 	seek(MYFILE, -$outLength, 1); # place the same line back onto the filehandle
@@ -368,6 +367,7 @@ sub parseATOMCoarse
 
 			$interiorResidue = substr($record,17,4);
 			$interiorResidue =~ s/^\s+|\s+$//g;
+
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 			if($interiorResidue !~ /$residue/)
 			{confess "\n\nPDB PARSE ERROR\nResidue doesn't conform with coarse grain .bif:: $record";}
@@ -378,7 +378,6 @@ sub parseATOMCoarse
 			
 			## CHECK IF ATOM IS COARSE GRAINED ##
                         if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
-			
 			$x = substr($record, 30, 8);
 			$y = substr($record, 38, 8);
 			$z = substr($record, 46, 8);
