@@ -1275,18 +1275,16 @@ sub stripHydrogen
 sub setContactParams
 {
 			my $method = $contactSettings->{"method"};
-			my $ignoreHydrogens="";
-			if($ignHContacts){$ignoreHydrogens="--ignoreH";}
 			if($method =~ m/shadow/)
 			{
 					my $radius = $contactSettings->{"shadowRadius"};
 					my $dist = $contactSettings->{"contactDistance"};
-				    return "-m shadow -c $dist -s $radius --distance $ignoreHydrogens";
+				    return "-m shadow -c $dist -s $radius --distance ";
 			}
 			elsif($method =~ m/cutoff/) 
 			{
 			  my $dist = $contactSettings->{"contactDistance"};
-			  return "-m cutoff -c $dist -rd 0 --distance $ignoreHydrogens";
+			  return "-m cutoff -c $dist -rd 0 --distance ";
 			
 			}
 			else {confess "\n\n ERROR at contact map method settings. $method is not a supported contactmap method.\n\n";}
