@@ -915,12 +915,13 @@ sub contactFuncParser
 
 sub calculateExclusions
 {
-  my($fileName,$fileName2,$noChainFlag) = @_;
+  my($fileName,$fileName2,$noChainFlag,$ignAllContacts) = @_;
   my $numContacts = 0; my $garbage = 0;
   my $line = "";
   my $type1;my $type2; my $contact1; my $contact2;
   my $dist;
   
+  if($ignAllContacts == 0){
   ## OPEN .contact FILE ##
   unless (open(MYFILE, $fileName)) {
     print "Cannot read from '$fileName'.\nProgram closing.\n";
@@ -938,7 +939,7 @@ sub calculateExclusions
     if($noChainFlag && ($allAtoms{$type1}->[4] ne $allAtoms{$type2}->[4])){next;}
     print $OUTPUT $type1,"	",$type2,"\n";
   }
-
+  }
 
    ## NO DCA FILE RETURN ##
    if($fileName2 eq ""){return;}
@@ -1435,7 +1436,7 @@ sub allAtom
 	$| = 1;
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
-        print "Parsing All-Atom Templates.....";
+        print "Parsing All-Atom Templates..... ";
 	parseInputFolder($inputFolder); ## PARSE FOLDER --> FILE
 
 	#####################
@@ -1458,7 +1459,7 @@ sub allAtom
 	###############
         ## PARSE PDB ##
         ###############
-	print "Parsing .pdb.....";
+	print "Parsing .pdb.....  ";
 	parseATOM($inputPDB);
 	catPDL();
 	print "Done\n";
@@ -1492,7 +1493,7 @@ sub allAtom
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	print "Done\n";
 	## CALL SHADOW/PARSE CONTACTS ##
-	print "Starting contacts ...\n";
+	print "Starting contacts ...  ";
 	
 	
 	my $SCMparams = setContactParams();
@@ -1513,7 +1514,8 @@ sub allAtom
 	
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "Can't find Shadow. Make sure SMOG_PATH is set correctly.\n"}
-    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams > shadow.log");
+	if($ignAllContacts==0){
+	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams > shadow.log");}
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
 	print "Done\n";
 
@@ -1523,7 +1525,7 @@ sub allAtom
 	print "Calculating Hamiltonian...";
 	## CALCULATE PAIRS and EXCLUSION ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	calculateExclusions($shadowFile,"",$ignChainContact);
+	calculateExclusions($shadowFile,"",$ignChainContact,$ignAllContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "Done\n";
@@ -1676,7 +1678,7 @@ sub coarseGrain
 	if($numContacts == 0){confess "There are 0 contacts,check shadow.error log file for possible errors";}
 	## CALCULATE PAIRS and EXCLUSION ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	calculateExclusions($shadowFile,$ContactFile,$ignChainContact);
+	calculateExclusions($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "Done\n";
