@@ -318,7 +318,7 @@ foreach my $k(keys %{$contactScaling})
    my $atomListString = $contactScaling->{$k}->{"atomList"};
    $atomListString = trim($atomListString);
    my @atomList = split(/\s+/,$atomListString);
-   if(scalar(@atomList) == 0){confess("No atom list at contact scaling");}
+   if(scalar(@atomList) == 0){confess("\n\nERROR: No atom list at contact scaling\n\n");}
    my %atomListHash = map {$_=>1} @atomList;
 
    my $A = $contactScaling->{$k}->{"resTypeA"};
@@ -389,7 +389,7 @@ sub intToFunc
  {
 	if(exists $funcTableRev{$interType} && exists $funcTableRev{$interType}->{$int})
 	{return $funcTableRev{$interType}->{$int};}
-	else{confess "NO EXISTENCE OF INTERACTION $interType,$int";}
+	else{confess "\n\nERROR: NO EXISTENCE OF INTERACTION $interType,$int\n\n";}
  }
 
 }
@@ -652,9 +652,9 @@ foreach my $res (keys %residues)
 		($atomA,$atomB) = $bondInfo =~ /(.*)\-(.*)/;
   ## Check if atoms exists in declaration ##
   	    if(!exists $residueHandle->{"atoms"}->{"$atomA"}) 
-		{confess "$atomA doesn't exists in $res but a bond was defined $bondInfo\n"; }
+		{confess "\n\nERROR: $atomA doesn't exists in $res but a bond was defined $bondInfo\n\n"; }
 		if(!exists $residueHandle->{"atoms"}->{"$atomB"}) 
-		{confess "$atomB doesn't exists in $res but a bond was defined $bondInfo\n"; }
+		{confess "\n\nERROR: $atomB doesn't exists in $res but a bond was defined $bondInfo\n\n"; }
 
 		$typeA = $residueHandle->{"atoms"}->{"$atomA"}->{"bType"};
 		$typeB = $residueHandle->{"atoms"}->{"$atomB"}->{"bType"};
@@ -667,8 +667,8 @@ foreach my $res (keys %residues)
 			
 		elsif ($typeA ne $typeB && (exists $interactions->{"bonds"}->{$typeA}->{"*"} 
                                  && exists $interactions->{"bonds"}->{$typeB}->{"*"})){
-			confess "ERROR: Wildcard conflict in bonds $typeA-$typeB. 
-			Both $typeA-\* and $typeB-\* are defined in .b file. Can not unambiguously assign a function...\n";
+			confess "\n\nERROR: Wildcard conflict in bonds $typeA-$typeB. 
+			Both $typeA-\* and $typeB-\* are defined in .b file. Can not unambiguously assign a function...\n\n";
  		}
 		## If typeA exists while TypeB is a wildcard ##
 		elsif (exists $interactions->{"bonds"}->{$typeA}->{"*"})
@@ -682,7 +682,7 @@ foreach my $res (keys %residues)
 			if(exists $interactions->{"bonds"}->{"*"}->{"*"})
             		{$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
 		     	else{
-			confess "\n ERROR: Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB\n";
+			confess "\n\n ERROR: Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB\n\n";
 			}
 		}
 		$indexA = $residueHandle->{"atoms"}->{"$atomA"}->{"index"};
@@ -921,7 +921,7 @@ foreach my $res(keys %dihedralAdjList)
 			$sym=1;
 		}
 		if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
-			confess "$sym,$symmatch,$matchScoreCount,$saveScore,ERROR: Multiple possible angles match $a-$b-$c-$d equally well. Unclear assignment of function type\n";
+			confess "\n\nERROR: Multiple possible angles match $a-$b-$c-$d equally well. Unclear assignment of function type\n\n";
 		}
 
 		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
@@ -986,7 +986,7 @@ foreach my $res(keys %dihedralAdjList)
 			$sym=1;
 		}
 		if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
-			confess "$matchScoreCount,$saveScore,ERROR: Multiple possible angles match $a-$b-$c equally well. Unclear assignment of function type\n";
+			confess "\n\nERROR: Multiple possible angles match $a-$b-$c equally well. Unclear assignment of function type\n\n";
 		}
 		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
 		my $indexB = $residues{$res}->{"atoms"}->{$atoms[1]}->{"index"};
