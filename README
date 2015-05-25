@@ -82,13 +82,13 @@ running smog2 can be quite simple.
 Note: configure.smog2 defines the alias smog2
 
 For the C-alpha model:
-smog2 -i <PDBFILE> -tCG $SMOG_PATH/SBM_calpha -contactRes $SMOG_PATH/SBM_AA 
+smog2 -i <PDBFILE> -t $SMOG_PATH/SBM_calpha -t_contacts $SMOG_PATH/SBM_AA 
 
 where <PDBFILE> is the the system for which you would 
 like to generate a SMOG model.
 
 To run the All-atom model: 
-smog2 -i <PDBFILE> -tAA $SMOG_PATH/SBM_CA  
+smog2 -i <PDBFILE> -t $SMOG_PATH/SBM_CA  
 
 For a list of all supported flags and options, type:
 smog2 --help

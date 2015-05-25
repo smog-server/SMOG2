@@ -1267,13 +1267,13 @@ sub parseCONTACT
 		## noChainFlag ignores contact between chains ##  
 
   ## OPEN .contact FILE ##
-  unless (open(MYFILE, $fileName)) {
-    confess "CONTACT FILE READ ERROR: Contact file $fileName doesn't exist, check shadow.log for possible error from Shadow Map program\n";
-  }
   
-  if($noAllFlag){print "NOTE::Ignoring contacts calculated from Shadow Map Program\n";}
+  if($noAllFlag){print "NOTE: Not going to calculate contacts map.\n";}
 
   if(!$noAllFlag){
+   unless (open(MYFILE, $fileName)) {
+    confess "ERROR: Internal contact file can not be read.  See shadow.log for more information.\n";
+  }
   while($line = <MYFILE>)
   {
 	($contact1,$type1,$contact2,$type2,$dist) = split(/\s+/,$line);
@@ -1287,19 +1287,19 @@ sub parseCONTACT
 	push(@interiorTempPDL,[0,$type1,0,$type2,$dist]);
 	$numContacts++;
   }
-    print "Adding additional contacts from $fileName2\n";
+    print "Reading contacts from $fileName2\n";
 
    ## NO DCA FILE RETURN ##
-   if($fileName2 eq ""){$contactPDL = pdl(@interiorTempPDL);return $numContacts;}
-  }
+##   if($fileName2 eq ""){$contactPDL = pdl(@interiorTempPDL);return $numContacts;}
+  }else{
    ## Else Proceed ##
    ## NO DCA FILE RETURN ##
-   if($fileName2 eq ""){$contactPDL = pdl(@interiorTempPDL);return $numContacts;}
+##   if($fileName2 eq ""){$contactPDL = pdl(@interiorTempPDL);return $numContacts;}
   
-  print "Adding additional contacts from $fileName2\n";
+  print "Reading contacts from $fileName2\n";
   ## OPEN .dca FILE ##
   unless (open(MYFILE1, $fileName2)) {
-    confess "CONTACT FILE READ ERROR:Cannot read additional contact file '$fileName2'.\nProgram closing.\n";
+    confess "CONTACT FILE READ ERROR:Cannot read contact file '$fileName2'.\nProgram closing.\n";
   }
   
    ## DCA CONTACTS ARE IN FORM
@@ -1318,7 +1318,7 @@ sub parseCONTACT
     push(@interiorTempPDL,[1,$contact1,$epsilon,$contact2,$dist]);
 	$numContacts++;
   }
-  
+ } 
   $contactPDL = pdl(@interiorTempPDL);
   return $numContacts;
   
