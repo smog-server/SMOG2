@@ -1,0 +1,43 @@
+<?xml version='1.0'?>
+<sif>
+<!-- FUNCTION DEFINITIONS -->
+<functions>
+	<function name="sbm_dihedrals" directive="dihedrals" fType="1"/>
+	<function name="sbm_improper" directive="dihedrals" fType="2"/>
+	<function name="sbm_rigid" directive="dihedrals" fType="2"/>
+	<function name="sbm_planarRigid" directive="dihedrals" fType="2"/>
+	<function name="sbm_angles" directive="angles" fType="1"/>
+	<function name="sbm_bonds" directive="bonds" fType="1"/>
+	<function name="sbm_contacts_6-12" directive="pairs" fType="1"/>
+	<function name="sbm_contacts_10-12" directive="contacts" fType="2"/>
+    	<function name="sbm_contacts_Gaussian" directive="contacts" fType="3"/>
+</functions>
+<!-- HAMILTONIAN SETTINGS -->
+<settings>
+	<!-- ENERGY/CONTACT GROUPS -->
+<Groups>
+	<!-- AMINO ENERGY GROUPS --> 
+	<!-- Normalized -->
+	<energyGroup residueType="amino" name="bb_a" normalize="0"/>
+	<energyGroup residueType="amino" name="sc_a" normalize="0"/>
+	<!-- Not-Normalized -->
+	<energyGroup residueType="amino" name="pr_a" normalize="0"/>
+	<energyGroup residueType="amino" name="ip_a" normalize="0"/>
+	<energyGroup residueType="amino" name="r_a"  normalize="0"/>
+
+ <!-- Global Contacts Settings -->
+	<contactGroup residueType="mixed" name="c" intraRelativeStrength="1" normalize="0"/>
+
+ <!-- Contact/Dihedral Group ratio: This is only used if normalization is turned on-->
+       <groupRatios contacts="1" dihedrals="1"/>
+
+</Groups>
+<!-- CONTACT MAP SETTINGS -->
+<Contacts method="cutoff" contactDistance="6" shadowRadius="1"/>
+
+<bondsThreshold shortBond="0.08" longBond="0.5"/>
+<anglesThreshold smallAngles="30" largeAngles="150"/>
+<contactsThreshold shortContacts="0.2"/> 
+
+</settings>
+</sif>
