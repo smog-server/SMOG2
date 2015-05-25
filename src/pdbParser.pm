@@ -323,7 +323,6 @@ sub parseATOMCoarse
   my $atomCounter=0;my $singleFlag = 1;
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=1;
-  my $LASTRESINDEX; 
   ## OPEN .PDB FILE ##
  unless (open(MYFILE, $fileName)) {
     confess "\n\nERROR: Cannot read from '$fileName'.\nProgram closing.\n";
