@@ -1229,7 +1229,6 @@ sub parseInputFolder
    {$nb = $file;$nb = "$folderName/$nb";validateTemplate($nb,"nb");next;}
   }
   $bifForSCM = $bif;
-  print $bifForSCM;
  setInputFileName($bif,$sif,$b,$nb);
 
 }
