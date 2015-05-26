@@ -4,7 +4,7 @@
 					<!-- LIGANDS -->
 
 <!--GLUCOSE-->
-		<residue name="GLC" type="ligand" atomCount=0>
+		<residue name="GLC" type="ligand" atomCount="0">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1</atom>
