@@ -28,7 +28,7 @@ use IPC::Open3;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
-
+my $VERSION="2.0";
 my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
@@ -1236,9 +1236,26 @@ sub parseInputFolder
 
 sub usage
 {
-  print "\n***************************\n";
-  print "********** SMOG2 **********";
-  print "\n***************************\n";
+my $header="*********** ********** ************** SMOG v$VERSION **************** ********** *********";
+my $headw=length($header);
+  print "\n";
+for(my $I=0;$I<$headw;$I++){
+  print "*";
+}
+  print "\n";
+  print "$header";
+  print "\n";
+  print "Thank you for using the Noel-Onuchic-Whitford Structure-based Model (SMOG) software\n";
+  print " This package is the product of contributions from a number of people, including:\n";
+  print "                   Mohit Ranghunathan, Mariana Levi, Ryan Hayes\n";
+  print "                    Jeffrey Noel, Jose Onuchic & Paul Whitford\n\n";
+  print "                  Copyright (c) 2015, The SMOG development team at\n";
+  print "                    Rice University and Northeastern University\n";
+
+for(my $I=0;$I<$headw;$I++){
+  print "*";
+}
+  print "\n\n";
   print "Unknown option: @_\n" if ( @_ );
   print "usage: smogv2  [-i input.pdb] [-o smog.top] [-g smog.gro] [--help|-?] [-ignh]\n";
 		print "Necessary Inputs\n";		
@@ -1310,14 +1327,10 @@ sub printCitation
     else{$citationFile = "";}
        
 
-print "\n************************\n";
-print "******* CITATION *******";
-print "\n************************\n";
-print "SMOGV2 & Shadow is part of  http://smog-server.org\n
+print "\n\nSMOGV2 & Shadow is part of  http://smog-server.org\n
 Direct questions to: info\@smog-server.org\n
 For citation please visit: http://www.smog-server.org/refs.html\n
 $citationFile\n";
-print "***************************************************\n";
 
 
 }
