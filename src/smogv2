@@ -1240,7 +1240,7 @@ sub usage
   print "********** SMOG2 **********";
   print "\n***************************\n";
   print "Unknown option: @_\n" if ( @_ );
-  print "usage: smogv2  [-i input.pdb] [-o file.top] [-g file.gro] [--help|-?] [-t templateFolder/] [-c contacts.txt] [-ignh]\n";
+  print "usage: smogv2  [-i input.pdb] [-o smog.top] [-g smog.gro] [--help|-?] [-ignh]\n";
 		print "Necessary Inputs\n";		
 		print "-i [input.pdb]: Input pdb to generate Hamiltonian\n";
 		print "-t [templateFolder]: Folder containing templates of molecular and interaction definitions\n";
@@ -1249,7 +1249,7 @@ sub usage
 		print "Optional Inputs\n";
 		print "-g [smog.gro]: Output .gro file name\n";
 		print "-o [smog.top]: Output .top file name\n";
-        	print "-s [smog.shadow]: Output .shadow file name\n";
+        	print "-s [smog.contacts]: Output .shadow file name\n";
 		print "-n [smog.ndx]: Output .ndx file name\n";
 		print "-c [contacts.txt]: Input contact map file\n";
 #		print "-ignH: Ignore hydrogens in PDB\n";
@@ -1275,18 +1275,16 @@ sub stripHydrogen
 sub setContactParams
 {
 			my $method = $contactSettings->{"method"};
-			my $ignoreHydrogens="";
-			if($ignHContacts){$ignoreHydrogens="--ignoreH";}
 			if($method =~ m/shadow/)
 			{
 					my $radius = $contactSettings->{"shadowRadius"};
 					my $dist = $contactSettings->{"contactDistance"};
-				    return "-m shadow -c $dist -s $radius --distance $ignoreHydrogens";
+				    return "-m shadow -c $dist -s $radius --distance ";
 			}
 			elsif($method =~ m/cutoff/) 
 			{
 			  my $dist = $contactSettings->{"contactDistance"};
-			  return "-m cutoff -c $dist -rd 0 --distance $ignoreHydrogens";
+			  return "-m cutoff -c $dist -rd 0 --distance ";
 			
 			}
 			else {confess "\n\n ERROR at contact map method settings. $method is not a supported contactmap method.\n\n";}
@@ -1708,6 +1706,28 @@ usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $contactRes));
 
+## check if files exist
+# things we don't want to overwrite
+foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile,"shadow.log"){
+	if($filen ne "" && -e $filen){
+		confess "\n\nERROR: $filen already exists!! Quitting.\n\n";
+	}
+}
+
+# files we will read
+foreach my $filen($inputPDB,$ContactFile){
+	if($filen ne "" && ! -e $filen){
+		confess "\n\nERROR: Can't find file $filen !! Quitting.\n\n";
+	}
+}
+# directories we will access
+foreach my $filen($inputFolder,$contactRes){
+	if($filen ne "" && ! -d $filen){
+		confess "\n\nERROR: Can't find directory $filen !! Quitting.\n\n";
+	}
+}
+
+
 
 ## get variables in order
 # if CG is enabled, then the templates are CG templates
@@ -1726,7 +1746,8 @@ if($ContactFile ne ""){
 }
 
 
-## check for compliance
+
+## check for compatibility of options
 # if CG is not enabled, but contact templates are provided, stop
 if($CGenabled == 0 && $contactRes ne ""){
 	confess "ERROR: t_contacts only supported when using a CG model.  Did you forget to specify \"-CG\"?\n";
