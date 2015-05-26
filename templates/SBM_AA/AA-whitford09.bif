@@ -2849,49 +2849,6 @@
 		</residue>	
 
 	
-<!--ALANINE-TERMINAL-->
-		<residue name="ALT" type="amino">
-			<atoms>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
-			</atoms>
-			<bonds>
-	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
-					<atom>N</atom>
-					<atom>CA</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>CA</atom>
-					<atom>C</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>C</atom>
-					<atom>O</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>C</atom>
-					<atom>OXT</atom>
-				</bond>
-	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
-					<atom>CA</atom>
-					<atom>CB</atom>
-				</bond>
-			</bonds>
-			<impropers>
-				<improper>
-					<atom>CB</atom>
-					<atom>CA</atom>
-					<atom>C</atom>
-					<atom>N</atom>
-				</improper>
-			</impropers>
-		</residue>
 <!--SERINE-TERMINAL-->
 	<residue name="SERT" type="amino">
 			<atoms>
