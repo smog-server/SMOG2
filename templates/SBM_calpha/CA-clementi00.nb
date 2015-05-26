@@ -1,19 +1,19 @@
 <?xml version='1.0'?>
 <nb>
 
-	 <!-- DEFAULTS -->
- 	<defaults gen-pairs="0"/>
+<!-- DEFAULTS -->
+<defaults gen-pairs="0"/>
 
-	<!-- GENERAL NONBONDS -->
-	<nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.0"  c12="0.167772160e-04">
+<!-- GENERAL NONBONDS -->
+<nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.0"  c12="0.167772160e-04">
 	<nbType>NB_1</nbType>
-	</nonbond>
+</nonbond>
 	
-    <!-- CONTACTS -->
-    <contact func="sbm_contacts_10-12(1,?,?)" contactGroup="c">
-    <pairType>*</pairType>
-    <pairType>*</pairType>
-    </contact>
+<!-- CONTACTS -->
+<contact func="sbm_contacts_10-12(1,?,?)" contactGroup="c">
+    	<pairType>*</pairType>
+    	<pairType>*</pairType>
+</contact>
 
 </nb>
 

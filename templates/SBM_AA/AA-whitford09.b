@@ -92,6 +92,4 @@
 	</improper>
 </impropers>
 
-
-
 </b>
