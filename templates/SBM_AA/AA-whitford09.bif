@@ -1,11 +1,10 @@
 <?xml version='1.0'?>
 <bif>
 	<residues>
-<!-- LIGANDS -->
-								<!--ADDING-LIGANDS-->
+					<!-- LIGANDS -->
 
 <!--GLUCOSE-->
-		<residue name="GLC" type="ligand">
+		<residue name="GLC" type="ligand" atomCount=0>
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1</atom>
@@ -284,13 +283,12 @@
 				</improper>
 			</impropers>
 		</residue>
-		<!-- AMINO RESIDUES -->
 
 
 
-
+					<!-- AMINO RESIDUES -->
 <!--ALANINE-->
-		<residue name="ALA" type="amino" atomCount="5">
+		<residue name="ALA" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -329,7 +327,7 @@
 		</residue>
 
 <!--ALANINE-TERMINAL-->
-		<residue name="ALAT" type="amino" atomCount="6">
+		<residue name="ALAT" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -377,7 +375,7 @@
 		</residue>
 		
 <!--THREONINE-->
-		<residue name="THR" type="amino" atomCount="7">
+		<residue name="THR" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -432,50 +430,8 @@
 		</residue>
 
 
-<!--THREONINE-JianPENG-->
-		<residue name="THRJ" type="amino" atomCount="5">
-			<atoms>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
-            </atoms>
-			<bonds>
-	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
-					<atom>N</atom>
-					<atom>CA</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>CA</atom>
-					<atom>C</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>C</atom>
-					<atom>O</atom>
-				</bond>
-	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
-					<atom>CA</atom>
-					<atom>CB</atom>
-				</bond>
-			</bonds>
-			<impropers>
-				<improper>
-					<atom>CB</atom>
-					<atom>CA</atom>
-					<atom>C</atom>
-					<atom>N</atom>
-				</improper>
-			</impropers>
-		</residue>
-
-
-
-
 <!--THREONINE-TERMINAL-->
-		<residue name="THRT" type="amino" atomCount="8">
+		<residue name="THRT" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -537,7 +493,7 @@
 
 
 <!--PHENYLALANINE-->
-		<residue name="PHE" type="amino" atomCount="11">
+		<residue name="PHE" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -860,48 +816,6 @@
 			</impropers>
 		</residue>
 
-<!--METHIONINE NTERMINUS-->
-		<residue name="METN" type="amino">
-			<atoms>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">SD</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE</atom>
-			</atoms>
-			<bonds>
-	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
-					<atom>CA</atom>
-					<atom>C</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>C</atom>
-					<atom>O</atom>
-				</bond>
-	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
-					<atom>CA</atom>
-					<atom>CB</atom>
-				</bond>
-				<bond energyGroup="sc_a">
-					<atom>CB</atom>
-					<atom>CG</atom>
-				</bond>
-				<bond energyGroup="sc_a">
-					<atom>CG</atom>
-					<atom>SD</atom>
-				</bond>
-				<bond energyGroup="sc_a">
-					<atom>SD</atom>
-					<atom>CE</atom>
-				</bond>
-			</bonds>
-		</residue>
-
-
 <!--METHIONINE-TERMINAL-->
 		<residue name="METT" type="amino">
 			<atoms>
@@ -961,86 +875,9 @@
 			</impropers>
 		</residue>
 
-
-
-<!--METHISTIDINE-->
-	<residue name="HMS" type="amino">
-			<atoms>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CG</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">ND1</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CD2</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CE1</atom>
-                		<atom bType="B_1" nbType="NB_1" pairType="P_1">NE2</atom>
-             			<atom bType="B_1" nbType="NB_1" pairType="P_1">CM</atom>
-			</atoms>
-			<bonds>
-	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
-					<atom>N</atom>
-					<atom>CA</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>CA</atom>
-					<atom>C</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>C</atom>
-					<atom>O</atom>
-				</bond>
-	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
-					<atom>CA</atom>
-					<atom>CB</atom>
-				</bond>
-				<bond energyGroup="sc_a">
-					<atom>CB</atom>
-					<atom>CG</atom>
-				</bond>
-				<bond energyGroup="pr_a">
-					<atom>CG</atom>
-					<atom>ND1</atom>
-				</bond>
-				<bond energyGroup="pr_a">
-					<atom>CG</atom>
-					<atom>CD2</atom>
-				</bond>
-				<bond energyGroup="pr_a">
-					<atom>CD2</atom>
-					<atom>NE2</atom>
-				</bond>
-				<bond energyGroup="pr_a">
-					<atom>NE2</atom>
-					<atom>CE1</atom>
-				</bond>
-				<bond energyGroup="pr_a">
-					<atom>ND1</atom>
-					<atom>CE1</atom>
-                </bond>
-               <bond energyGroup="pr_a">
-					<atom>NE2</atom>
-					<atom>CM</atom>
-				</bond>
-
-			</bonds>
-			<impropers>
-				<improper>
-					<atom>CB</atom>
-					<atom>CA</atom>
-					<atom>C</atom>
-					<atom>N</atom>
-				</improper>
-			</impropers>
-		</residue>
-
-
 		
 <!--HISTIDINE-->
-	<residue name="HIS" type="amino">
+		<residue name="HIS" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1110,7 +947,7 @@
 
 
 <!--HISTIDINE-TERMINAL-->
-	<residue name="HIST" type="amino">
+		<residue name="HIST" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2151,9 +1988,58 @@
 				</improper>
 			</impropers>
 		</residue>	
+<!--SERINE-TERMINAL-->
+		<residue name="SERT" type="amino">
+			<atoms>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_a">
+					<atom>N</atom>
+					<atom>CA</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>CA</atom>
+					<atom>C</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>O</atom>
+				</bond>
+				<bond energyGroup="bb_a">
+					<atom>C</atom>
+					<atom>OXT</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="sc_a">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+				<bond energyGroup="sc_a">
+					<atom>CB</atom>
+					<atom>OG</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>CB</atom>
+					<atom>CA</atom>
+					<atom>C</atom>
+					<atom>N</atom>
+				</improper>
+			</impropers>
+		</residue>	
+
 
 <!--ARGININE-->		
-<residue name="ARG" type="amino">
+		<residue name="ARG" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2224,7 +2110,7 @@
 
 
 <!--ARGININE-TERMINAL-->		
-<residue name="ARGT" type="amino">
+		<residue name="ARGT" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2849,57 +2735,7 @@
 		</residue>	
 
 	
-<!--SERINE-TERMINAL-->
-	<residue name="SERT" type="amino">
-			<atoms>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">C</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">O</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CB</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">OG</atom>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">OXT</atom>
-			</atoms>
-			<bonds>
-	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
-					<atom>N</atom>
-					<atom>CA</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>CA</atom>
-					<atom>C</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>C</atom>
-					<atom>O</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>C</atom>
-					<atom>OXT</atom>
-				</bond>
-	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
-					<atom>CA</atom>
-					<atom>CB</atom>
-				</bond>
-				<bond energyGroup="sc_a">
-					<atom>CB</atom>
-					<atom>OG</atom>
-				</bond>
-			</bonds>
-			<impropers>
-				<improper>
-					<atom>CB</atom>
-					<atom>CA</atom>
-					<atom>C</atom>
-					<atom>N</atom>
-				</improper>
-			</impropers>
-		</residue>	
-
-
-										<!-- NUCLEIC RESIDUES -->
+					<!-- NUCLEIC RESIDUES -->
 
 <!--RNA A-->
 		<residue name="A" type="nucleic">
