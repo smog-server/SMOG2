@@ -32,7 +32,7 @@ my $VERSION="2.0";
 my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
-my $help;my $inputPDB; my $inputFolder="";
+my $help;my $inputPDB; my $inputFolder=""; my $bifForSCM;
 my $ignH;my $ignChainContact=0;my $ignHContacts;
 my $ignAllContacts=0;
 my $topFile = "smog.top";
@@ -1228,7 +1228,7 @@ sub parseInputFolder
    if($file =~ m/\.nb/)
    {$nb = $file;$nb = "$folderName/$nb";validateTemplate($nb,"nb");next;}
   }
-
+  $bifForSCM = $bif;
  setInputFileName($bif,$sif,$b,$nb);
 
 }
@@ -1296,12 +1296,12 @@ sub setContactParams
 			{
 					my $radius = $contactSettings->{"shadowRadius"};
 					my $dist = $contactSettings->{"contactDistance"};
-				    return "-m shadow -c $dist -s $radius --distance ";
+				    return "-m shadow -c $dist -s $radius -bif $bifForSCM --distance ";
 			}
 			elsif($method =~ m/cutoff/) 
 			{
 			  my $dist = $contactSettings->{"contactDistance"};
-			  return "-m cutoff -c $dist -rd 0 --distance ";
+			  return "-m cutoff -c $dist -bif $bifForSCM --distance ";
 			
 			}
 			else {confess "\n\n ERROR at contact map method settings. $method is not a supported contactmap method.\n\n";}
@@ -1528,6 +1528,7 @@ sub allAtom
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
 	if($ignAllContacts==0){
+		print "\n java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams \n";
 	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams > shadow.log");}
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
 	print "Done\n";
