@@ -19,6 +19,12 @@
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
+<!--THREONINE-JIANPENG-->
+		<residue name="THRJ" type="amino">
+			<atoms>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+			</atoms>
+		</residue>
 		<residue name="THRT" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -62,7 +68,14 @@
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
-        	</residue>
+        </residue>
+ <!-- METHISTIDINE-->
+		<residue name="HMS" type="amino">
+			<atoms>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+			</atoms>
+		</residue>
+	       
 		<residue name="HIST" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -163,6 +176,7 @@
 		<residue name="SER" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+			
 			</atoms>
 		</residue>
 		<residue name="SERT" type="amino">
@@ -171,6 +185,7 @@
 			
 			</atoms>
 		</residue>	
+
 <!--ARGININE-->		
 		<residue name="ARG" type="amino">
 			<atoms>
@@ -186,11 +201,13 @@
 		<residue name="GLN" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				
 			</atoms>
 		</residue>
 		<residue name="GLNT" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				
 			</atoms>
 		</residue>
 
@@ -198,11 +215,13 @@
 		<residue name="PRO" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				
 			</atoms>
 		</residue>
 		<residue name="PROT" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				
 			</atoms>
 		</residue>
 <!--LYSINE-->
@@ -221,11 +240,13 @@
 		<residue name="TRP" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				
 			</atoms>
 		</residue>
 		<residue name="TRPT" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
+				
 			</atoms>
 		</residue>
 </residues>

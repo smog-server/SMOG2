@@ -35,18 +35,17 @@
 	<energyGroup residueType="amino" name="ip_a" normalize="0"/>
 	<energyGroup residueType="amino" name="r_a"  normalize="0"/>
 
-    	<!-- LIGAND ENERGY GROUP -->
-    	<energyGroup residueType="ligand" name="lig" intraRelativeStrength="1" normalize="0"/>
+    <!-- LIGAND ENERGY GROUP -->
+    <energyGroup residueType="ligand" name="lig" intraRelativeStrength="1" normalize="0"/>
 
 
- 	<!-- Global Contacts Settings -->
+ <!-- Global Contacts Settings -->
 	<contactGroup residueType="mixed" name="c" intraRelativeStrength="1" normalize="1"/>
 
- 	<!-- Contact/Dihedral Group ratio -->
-       	<groupRatios contacts="2" dihedrals="1"/>
+ <!-- Contact/Dihedral Group ratio -->
+       <groupRatios contacts="2" dihedrals="1"/>
 
 </Groups>
-
 <!-- CONTACT MAP SETTINGS -->
 <Contacts method="shadow" contactDistance="6" shadowRadius="1">
 <contactScaling name="stackingScale" resTypeA="nucleic" resTypeB="nucleic" scale="1" deltaMin="1" deltaMax="1"
