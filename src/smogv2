@@ -1263,7 +1263,7 @@ for(my $I=0;$I<$headw;$I++){
 		print "-i [input.pdb]: Input pdb to generate Hamiltonian\n";
 		print "-t [templateFolder]: Folder containing templates of molecular and interaction definitions\n";
                 print "-CG: enable coarse-graining\n";
-                print "-t_contacts [templateFolder]: Folder containing templates for idetermining native contact map. Only necessary when -CG enabled\n";
+                print "-t_contacts [templateFolder]: Folder containing templates for determining native contact map. Only necessary when -CG enabled\n";
 		print "Optional Inputs\n";
 		print "-g [smog.gro]: Output .gro file name\n";
 		print "-o [smog.top]: Output .top file name\n";
