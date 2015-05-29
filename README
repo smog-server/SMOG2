@@ -95,7 +95,7 @@ smog2 -i <PDBFILE> -t $SMOG_PATH/SBM_AA
 For a list of all supported flags and options, type:
 smog2 --help
 
-For more advanced usage of SMOG2, please consult the
-SMOG2 manual.
+For more advanced usage of SMOG v2, please consult the
+manual available with the distribution.
 
 ########################################################
