@@ -8,31 +8,33 @@ perl4smog=""
 
 
 ## don't change anything below this line
-
+ERR=0
 if [ "$smog2dir" == "" ]
 then
-	echo "You must set smog2dir in the config script.  Configure incomplete."
-	exit
+	echo "You must set smog2dir in the config script."
+	ERR=1
 fi
 
 if [ ! -d $smog2dir ]
 then
-	echo  "Can't find the directory "$smog2dir" (smog2dir).  Configure incomplete."
-	exit
+	echo  "Can't find the directory "$smog2dir" (smog2dir)."
+	ERR=1
 fi
 
 if [ "$perl4smog" == "" ]
 then
-	echo "You must set perl4smog in the config script.  Configure incomplete."
-	exit
+	echo "You must set perl4smog in the config script."
+	ERR=1
 fi
 
-
+if (( $ERR == 0 )); then
 export perl4smog
 alias smog2="$perl4smog $smog2dir/src/smogv2"
 export smog_exec="$perl4smog $smog2dir/src/smogv2"
-#echo "Setting Vars to $curPath"
 export PERLLIB=$smog2dir/src:$PERLLIB
 export SMOG_PATH=$smog2dir
-#echo "DONE INSTALLING"
-
+else
+echo 
+echo "There were issues configuring SMOG. Configuration incomplete."
+echo
+fi

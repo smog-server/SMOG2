@@ -89,7 +89,7 @@ sub adjustInputFile(){
 	$isHead = 1;
 	$isTail = 0;
 	$resInd = 1;
-	$atomCount=1;	
+	$atomCount=0;	
 	my $k = 0;
 	
 	## Loops through all PDB rows ##
@@ -105,7 +105,7 @@ sub adjustInputFile(){
 		## If TER line: ##
 		if($pArr[$k] =~ /^TER/){
 			print NEWPDB "TER\n";
-			$atomCount=1;
+			$atomCount=0;
 			$isHead = 1;
 			$resInd = 1;
 			$k++;
@@ -127,7 +127,7 @@ sub adjustInputFile(){
 			## Loop through the resdiue ##
 			$loopInd = 0;
 			while ($newResNum eq $resNum){
-				
+				$atomCount++;	
 				## Obtain atom information ##
 				my $atomName = substr($pArr[$k],12,4);
 				$atomName =~ s/^\s+|\s+$//g;
@@ -150,7 +150,6 @@ sub adjustInputFile(){
 					$newResNum =~ s/^\s+|\s+$//g;		
 					if ($newResNum eq $resNum){
 						$loopInd++;
-						$atomCount++;
 					}
 				}  	
 			}
@@ -176,7 +175,7 @@ sub adjustInputFile(){
 					if ($aName eq "OP1"){$aName="O1P"};
 					if ($aName eq "OP2"){$aName="O2P"};
 					if ($aName eq "OP3"){$aName="O3P"};
-					if ($aName eq "CD"){$aName="CD1"};
+					if (($resName eq "ILE" || $resName eq "ILET") &&  $aName eq "CD"){$aName="CD1"};
 					#if ($aName eq "CG"){$aName="CG1"};
 					my $ind = $residue[$i]->{"atomIndex"};
 					my $x = $residue[$i]->{"x"};

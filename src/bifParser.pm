@@ -553,7 +553,7 @@ foreach my $inter(@interHandle)
 	my $func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
 	"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
 	if(exists $interactions->{"nonbonds"}->{$typeA}){
-		confess "\n\nERROR: nonbonded parameters defined mulitple times for nbType $typeA. Check .nb file.\n\n";
+		confess "\n\nERROR: nonbonded parameters defined multiple times for nbType $typeA. Check .nb file.\n\n";
 	}
 	$interactions->{"nonbonds"}->{$typeA} = $func;
 	$funcTable{"nonbonds"}->{$func} = $counter;
@@ -577,7 +577,7 @@ foreach my $inter(@interHandle)
 	my $typeB = $inter->{$type}->[1];
 	my $func = $inter->{"func"}->[0]->{"func"};
 	if(exists $interactions->{"pairs"}->{$type}->{$typeA}->{$typeB}){
-		confess "\n\nERROR: pairs parameters defined mulitple times for types $typeA-$typeB. Check .nb file.\n\n";
+		confess "\n\nERROR: pairs parameters defined multiple times for types $typeA-$typeB. Check .nb file.\n\n";
 	}
 	$interactions->{"pairs"}->{$type}->{$typeA}->{$typeB} = $func;
 	$interactions->{"pairs"}->{$type}->{$typeB}->{$typeA} = $func;
@@ -598,7 +598,7 @@ foreach my $inter(@interHandle)
 	my $func = $inter->{"func"};
  	my $cG = $inter->{"contactGroup"};
 	if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
-		confess "\n\nERROR: contact parameters defined mulitple times for types $typeA-$typeB. Check .nb file.\n\n";
+		confess "\n\nERROR: contact parameters defined multiple times for types $typeA-$typeB. Check .nb file.\n\n";
 	}
 	$interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB} = $func;
 	$interactions->{"contacts"}->{"func"}->{$typeB}->{$typeA} = $func;
