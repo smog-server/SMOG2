@@ -1262,6 +1262,7 @@ for(my $I=0;$I<$headw;$I++){
 
 sub usage
 {
+  header();
   print "Unknown option: @_\n" if ( @_ );
   print "usage: smogv2  [-i input.pdb] [-o smog.top] [-g smog.gro] [--help|-?] [-ignh]\n";
 		print "Necessary Inputs\n";		
@@ -1579,7 +1580,7 @@ sub coarseGrain
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
-        print "Done\n";
+        print "Done parsing template files\n";
 
 	## Find Bonds ##
 	createBondFunctionals();
@@ -1669,7 +1670,7 @@ sub coarseGrain
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	print "Done\n";
 	$absAtomCount = keys(%allAtoms);
-	print "NOTE: Total atom count used for normalization is $totalAtoms with $absAtomCount atoms in the system\n";
+	print "NOTE: Total atom count: $absAtomCount\n";
 	print "Creating Topology.....";
 	
 	## COUNT NUMBER OF DIHEDRALS ##
@@ -1766,7 +1767,7 @@ foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile,"shadow.log"){
 
 # files we will read
 foreach my $filen($inputPDB,$ContactFile){
-	if($filen ne "" && ! -e $filen){
+	if($filen ne "" && ! -f $filen){
 		confess "\n\nERROR: Can't find file $filen !! Quitting.\n\n";
 	}
 }

@@ -1,36 +1,50 @@
-#!/usr/bin/perl
-## ADJUST PDB TO MODIFY HEAD AND TAIL RESIDUES
-# THAT CONFORMS WITH BIF DECLARATION OF RESIDUES
-# USAGE ./adjustPDB <pdb> <map file>
+#!/usr/bin/perl -w
+
+# USAGE ./adjustPDB <pdb> <map file> <output file>
 use strict;
 use warnings;
-use Getopt::Long;
 use Carp;
-
-## GLOBAL VARIABLE ##
 my %map;
 
+## VARS: ##
+my $rows;
+my $atomCount;
+## TAIL/HEAD FLAG INITIALIZATION ##
+my $isHead;
+my $isTail;
+my $resInd;
+my $chainName;
+my $resName;
+my @residue;
+my @pArr;
+my $loopInd;
+my $prevResTypeRNA;
+
+#@ARGV = ("test.pdb","sbmMap","output.pdb");
+
 ## CHECK INPUT ##
-if(scalar(@ARGV) < 2) 
-{confess("Usage: ./adjustPDB <PDB> <-f filename | sbmMap>\n 
-For default templates use the option sbmMap, else provide a filename with the option -f \n");}
-if(!exists $ENV{"SMOG_PATH"})
-{confess("Environmental Variable SMOG_PATH not set\n");}
-
-## OUTPUT PDB FILE NAME ##
-open(OUTPDB,">$ARGV[0].mpd") || confess("Cannot create output PDB\n");
-
+if(scalar(@ARGV) < 3){
+	confess("Usage: ./adjustPDB <PDB> <-f filename | default> <output file>\n 
+For default templates use the option default, else provide a filename with the option -f \n");
+}
+if(!exists $ENV{"SMOG_PATH"}){
+	confess("Environmental Variable SMOG_PATH not set\n");
+}
 my $mapOption = $ARGV[1];
-if($mapOption =~ m/^sbmMap$/)
-{$mapOption = "$ENV{SMOG_PATH}/tools/sbmMap";}
-elsif($mapOption =~ m/^-f$/ &&
-exists $ARGV[2])
-{$mapOption = $ARGV[2];}
-else{confess("Usage: ./adjustPDB <PDB> <-f filename | sbmMap>\n 
-For default templates use the option sbmMap, else provide a filename with the option -f \n");}
+if($mapOption =~ m/^default$/){
+	$mapOption = "$ENV{SMOG_PATH}/tools/sbmMap";
+	open(NEWPDB,">$ARGV[2]") or die "Can't open the all-atom region atoms PDB file. \n";
+}
+elsif($mapOption =~ m/^-f$/ && exists $ARGV[2]){
+	$mapOption = $ARGV[2];
+	open(NEWPDB,">$ARGV[3]") or die "Can't open the all-atom region atoms PDB file. \n";
+}
+else{
+	confess("Usage: ./adjustPDB <PDB> <-f filename | default> <output file>\n 
+			For default templates use the option default, else provide a filename with the option -f \n");
+}
 
-## INPUT PDB FILE ##
-open(PDB,"$ARGV[0]") || confess("Cannot open input PDB\n");
+open(OLDPDB,"$ARGV[0]") or die "Can't open molecule PDB file.\n";
 
 ## CACHE MAP ##
 #Note: Map files has to be in format <residue> <head_name> <tail_name>
@@ -46,80 +60,143 @@ while(my $line = <MAP>)
   $map{$entries[0]}{"tail"} = $entries[2];
 }
 
-## EDIT PDB FILE ##
-my $line = "";
-my $resName = "";
-my $resIdx = "";
-my $outSTR = "";
-my $oldIdx = "";my $oldRes = "";
-my $startChain = 0;
-while($line = <PDB>)
-{
-  chomp($line);
-
-  ## NEW CHAIN MODIFY TERMINAL ##
-  if($line =~ /TER/ || $line =~ /END/)
-  {
-   if($oldRes eq "") {confess("Your PDB is not correct\n");}
-
-   my $tail = $map{$oldRes}{"tail"};
-   if(length($tail) > length($oldRes))
-    {$outSTR =~ s/$oldRes\s/$tail/g;}
-   else
-    {$outSTR =~ s/$oldRes/$tail/g;}
-   print OUTPDB $outSTR;
-   $oldIdx = "";
-   $resIdx = "";$startChain = 1;
-   if($line =~ /^END$/){print OUTPDB "END"; last;}
-   else{print OUTPDB "TER\n";}
-   next;
-  }
-
-  ## SKIP NON ATOM LINES ##
-  if($line !~ /ATOM/) {print OUTPDB "$line\n";next;}
- 
-  $oldRes = $resName;
-  $resName = substr $line,17,3;
-  $oldIdx = $resIdx;
-  $resIdx = substr $line,22,5;
-  $resName =~ s/(^\s+|\s+$)//g;
-  $resIdx =~ s/(^\s+|\s+$)//g;
-  
-  ## START ##
-  if($oldIdx eq "")
-  {
-   $outSTR = "$line\n";
-   $startChain = 1;
-   $oldIdx = $resIdx;
-   next;
-  }
-  ## MODIFY FIRST RESIDUE ##
-  if($oldIdx ne $resIdx && $startChain)
-  {
-   $startChain = 0;
-   my $head = $map{$oldRes}{"head"};
-   
-   if(length($oldRes) < length($head))
-   {$outSTR =~ s/$oldRes\s/$head/g;}
-   else
-   {$outSTR =~ s/$oldRes/$head/g;}
-
-   print OUTPDB $outSTR;
-   $outSTR = "$line\n";
-   next; 
-  } 
-  elsif($oldIdx ne $resIdx)
-  {
-    $outSTR = "$outSTR";
-    print OUTPDB $outSTR;
-    $outSTR = "";
-  }  
- 
-  $outSTR = "$outSTR$line\n";
- 
+## Returns 1 if a residue is a RNA or DNA, else returns zero. ##
+sub isRNA{
+	my($resName) = @_;
+	my %RNAlist=("U",1,"U5",1,"G",1,"G5",1,"A",1,"A5",1,"C",1,"C5",1,"MIA",1);
+	if ($RNAlist{$resName}){
+			return 1;
+	}
+	return 0;
 }
-print "Your PDB file $ARGV[0] was adjusted using the map $mapOption. The file $ARGV[0].mpd was generated\n";
 
 
+sub adjustInputFile(){
+	
+	# Read the molecule PDB into an array (for convinience)
+	
+	my $endFlag = 0;
+	
+	$rows=0;
+	while(<OLDPDB>){
+		my $line=$_;
+		chomp($line);
+		$pArr[$rows]=$line;	
+		$rows++;
+	}
+	close OLDPDB;
+	
+	$isHead = 1;
+	$isTail = 0;
+	$resInd = 1;
+	$atomCount=0;	
+	my $k = 0;
+	
+	## Loops through all PDB rows ##
+	while($k<$rows){
+		
+		## If end of file: ##
+		if ($pArr[$k] =~ /^END/){
+			print NEWPDB "END\n";
+			$endFlag = 1;
+			last;
+		}
+		
+		## If TER line: ##
+		if($pArr[$k] =~ /^TER/){
+			print NEWPDB "TER\n";
+			$atomCount=0;
+			$isHead = 1;
+			$resInd = 1;
+			$k++;
+		}
+		
+		## If atom line: ##
+		if ($pArr[$k] =~ /^ATOM/){
 
+			my $resNum = substr($pArr[$k],22,5);
+			$resNum =~ s/^\s+|\s+$//g;		
+			my $newResNum = $resNum;
+			
+			
+			$resName = substr($pArr[$k],17,4);
+			$resName =~ s/^\s+|\s+$//g;
+			
+			$chainName = substr($pArr[$k],21,1);
+			
+			## Loop through the resdiue ##
+			$loopInd = 0;
+			while ($newResNum eq $resNum){
+				$atomCount++;	
+				## Obtain atom information ##
+				my $atomName = substr($pArr[$k],12,4);
+				$atomName =~ s/^\s+|\s+$//g;
+				
+				$residue[$loopInd]->{"atomName"} = $atomName;
+				$residue[$loopInd]->{"atomIndex"} = $atomCount;
+				$residue[$loopInd]->{"x"} = substr($pArr[$k],30,8);   
+				$residue[$loopInd]->{"y"} = substr($pArr[$k],38,8);  
+				$residue[$loopInd]->{"z"} = substr($pArr[$k],46,8);  
+				
+				$k++;
+				
+				## Check if next line is END or TER ##
+				if ($k == $rows || $pArr[$k] =~ /^END/ || $pArr[$k] =~ /^TER/){
+					$newResNum = "";
+					$isTail = 1;
+				}	
+				else{
+					$newResNum = substr($pArr[$k],22,5);	#get next residue index
+					$newResNum =~ s/^\s+|\s+$//g;		
+					if ($newResNum eq $resNum){
+						$loopInd++;
+					}
+				}  	
+			}
+			
+			## Adjust Tail\Head names ##
+			if ($isHead){
+				my $newResName = $map{$resName}{"head"};
+				$resName = $newResName;
+			}
+			if ($isTail){
+				if (not($prevResTypeRNA)){	#check that it's not an amino-accilated tRNA
+					my $newResName = $map{$resName}{"tail"};
+					$resName = 	$newResName;
+				}
+			}
+			
+			for(my $i=0; $i<$loopInd+1; $i++){
+					my $aName = $residue[$i]->{"atomName"};
+					if ($aName =~ /'/){
+						chop($aName);
+						$aName .= "*";
+					}
+					if ($aName eq "OP1"){$aName="O1P"};
+					if ($aName eq "OP2"){$aName="O2P"};
+					if ($aName eq "OP3"){$aName="O3P"};
+					if (($resName eq "ILE" || $resName eq "ILET") &&  $aName eq "CD"){$aName="CD1"};
+					#if ($aName eq "CG"){$aName="CG1"};
+					my $ind = $residue[$i]->{"atomIndex"};
+					my $x = $residue[$i]->{"x"};
+					my $y = $residue[$i]->{"y"};
+					my $z = $residue[$i]->{"z"};
 
+				    printf NEWPDB "ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$resName,$chainName,$resInd,$x,$y,$z;
+			}
+
+			#LEAVE CURRENT RESIDUE AND UPDATE FLAGS#
+			$isHead = 0;
+			$isTail = 0;
+			$resInd++;
+			$prevResTypeRNA = isRNA($resName);
+			undef @residue; 
+		}
+	}
+	if (not($endFlag)){
+		printf NEWPDB "END\n";
+	}
+	close NEWPDB;
+}
+
+adjustInputFile();
