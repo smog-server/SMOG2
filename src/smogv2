@@ -1262,6 +1262,7 @@ for(my $I=0;$I<$headw;$I++){
 
 sub usage
 {
+  header();
   print "Unknown option: @_\n" if ( @_ );
   print "usage: smogv2  [-i input.pdb] [-o smog.top] [-g smog.gro] [--help|-?] [-ignh]\n";
 		print "Necessary Inputs\n";		
@@ -1766,7 +1767,7 @@ foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile,"shadow.log"){
 
 # files we will read
 foreach my $filen($inputPDB,$ContactFile){
-	if($filen ne "" && ! -e $filen){
+	if($filen ne "" && ! -f $filen){
 		confess "\n\nERROR: Can't find file $filen !! Quitting.\n\n";
 	}
 }
