@@ -1511,7 +1511,7 @@ sub allAtom
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	print "Done\n";
 	## CALL SHADOW/PARSE CONTACTS ##
-	print "Starting contacts ...  ";
+	print "Starting contact calculations ...\n  ";
 	
 	
 	my $SCMparams = setContactParams();
@@ -1533,7 +1533,7 @@ sub allAtom
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
 	if($ignAllContacts==0){
-	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams > shadow.log");}
+	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");}
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
 	print "Done\n";
 
@@ -1547,7 +1547,7 @@ sub allAtom
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "Done\n";
-	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile,shadow.log\n";
+	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
 }
@@ -1630,7 +1630,7 @@ sub coarseGrain
         print "Finding coarse grain contacts.....";
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
-	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams  > shadow.log");
+	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams ");
         print "Done\n";	
         }
 	## CLEAR ALL-ATOM MEMORY ##
@@ -1700,7 +1700,7 @@ sub coarseGrain
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "Done\n";
-	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile,shadow.log\n";
+	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
 
@@ -1749,7 +1749,7 @@ if($ContactFile ne ""){
 ## check if files exist
 # things we don't want to overwrite
 my $maxbu=10;
-foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile,"shadow.log"){
+foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile){
 	if($filen ne "" && -e $filen){
 		for(my $bu=1;$bu<=$maxbu;$bu++){
 			my $buname="$filen.bu$bu";
