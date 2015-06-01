@@ -29,23 +29,32 @@ sub getDiheCountsHelper
  my $size = $diheArr->dim(1);
  my @tempArr;
  
-
  ## Count number of dihedrals passing through a bond ##
-for(my $i=0;$i<$size;$i++)
-{
-	my ($a,$b,$c,$d,$func,$cD,$eG) = $diheArr->slice(":,$i:$i")->list;
+ for(my $i=0;$i<$size;$i++)
+ {
+ 	my @A = $diheArr->slice(":,$i:$i")->list;
+ 	unless($#A > 0){ 
+ 		confess "\n\nERROR: Unable to construct a dihedral angle.\n        This typically means there is a chain with fewer than 4 atoms (e.g. a 1-bead per residue CG model with a 3-residues chain.)\n\n";
+ 	}
+	my $a=$A[0];
+	my $b=$A[1];
+	my $c=$A[2];
+	my $d=$A[3];
+	my $func=$A[4];
+	my $cD=$A[5];
+	my $eG=$A[6];
 	$a = sclr(slice($inputPDL,"3:3,$a,:"));
 	$b = sclr(slice($inputPDL,"3:3,$b,:"));
 	$c = sclr(slice($inputPDL,"3:3,$c,:"));
 	$d = sclr(slice($inputPDL,"3:3,$d,:"));
+
  ## only count the dihedral if it is not an improper
-        if($eG >= 0){	
+        if($eG >= 0 ){	
 		if(exists $uniqueBonds{"$b-$c--$eG"}){$uniqueBonds{"$b-$c--$eG"}++;}
 		elsif (exists $uniqueBonds{"$c-$b--$eG"}) {$uniqueBonds{"$c-$b--$eG"}++;}
 		else {$uniqueBonds{"$b-$c--$eG"}=1;}
-	}
-}
-
+	}	
+ }
 }
 
 sub setDiheCountsHelper
@@ -54,25 +63,35 @@ sub setDiheCountsHelper
  my $size = $diheArr->dim(1);
  my $count=0;
  
-for(my $i=0;$i<$size;$i++)
-{
-	my ($a,$b,$c,$d,$func,$cD,$eG) = $diheArr->slice(":,$i:$i")->list;
-	
-	$a = sclr(slice($inputPDL,"3:3,$a,:"));
-	$b = sclr(slice($inputPDL,"3:3,$b,:"));
-	$c = sclr(slice($inputPDL,"3:3,$c,:"));
-	$d = sclr(slice($inputPDL,"3:3,$d,:"));
-	
-	$count = (exists $uniqueBonds{"$b-$c--$eG"}?
-							$uniqueBonds{"$b-$c--$eG"}
-							:$uniqueBonds{"$c-$b--$eG"});
-	if($eG >=0){
-		set($diheArr,5,$i,1/$count);
-	}else{
-		set($diheArr,5,$i,1);
+	for(my $i=0;$i<$size;$i++)
+	{
+	#	my ($a,$b,$c,$d,$func,$cD,$eG) = $diheArr->slice(":,$i:$i")->list;
+		my @A = $diheArr->slice(":,$i:$i")->list; 
+#		if($#A >0){ 
+			my $a=$A[0];
+			my $b=$A[1];
+			my $c=$A[2];
+			my $d=$A[3];
+			my $func=$A[4];
+			my $cD=$A[5];
+			my $eG=$A[6];
+
+			$a = sclr(slice($inputPDL,"3:3,$a,:"));
+			$b = sclr(slice($inputPDL,"3:3,$b,:"));
+			$c = sclr(slice($inputPDL,"3:3,$c,:"));
+			$d = sclr(slice($inputPDL,"3:3,$d,:"));
+			
+			$count = (exists $uniqueBonds{"$b-$c--$eG"}?
+					$uniqueBonds{"$b-$c--$eG"}
+					:$uniqueBonds{"$c-$b--$eG"});
+
+			if($eG >=0){
+				set($diheArr,5,$i,1/$count);
+			}else{
+				set($diheArr,5,$i,1);
+			}
+#	 	}
 	}
- }
- 
 }
 
 ##
@@ -220,22 +239,17 @@ for(my $i=0;$i<$size;$i++)
     ## Normalize option is set ##	
 	if($normalize eq 1) 
 	{
-			my $diheLeftOver = 0;
-                        ## epsilonC+epsilonD ##
-			$totalStrength = $termRatios->{"interRelativeTotal"};
-			## epsilonC ##			
-			$contactTotal = $termRatios->{"contactRelative"};
-			## leftOver = totalAtoms*(1-epsilonC/(epsilonC+epsilonD)) ##			
-			$diheLeftOver = $totalAtoms - $totalAtoms*($contactTotal/$totalStrength);
-			
-				
-			$count = ($count/${$sum})*($diheLeftOver); 
-			set($diheArr,5,$i,$count);
-
+		my $diheLeftOver = 0;
+                ## epsilonC+epsilonD ##
+		$totalStrength = $termRatios->{"interRelativeTotal"};
+		## epsilonC ##			
+		$contactTotal = $termRatios->{"contactRelative"};
+		## leftOver = totalAtoms*(1-epsilonC/(epsilonC+epsilonD)) ##			
+		$diheLeftOver = $totalAtoms - $totalAtoms*($contactTotal/$totalStrength);
+		$count = ($count/${$sum})*($diheLeftOver); 
+		set($diheArr,5,$i,$count);
 	}
-			
- }
-
+    }
 }
 
 1;

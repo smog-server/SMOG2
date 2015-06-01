@@ -1580,7 +1580,7 @@ sub coarseGrain
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
-        print "Done\n";
+        print "Done parsing template files\n";
 
 	## Find Bonds ##
 	createBondFunctionals();
@@ -1670,7 +1670,7 @@ sub coarseGrain
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	print "Done\n";
 	$absAtomCount = keys(%allAtoms);
-	print "NOTE: Total atom count used for normalization is $totalAtoms with $absAtomCount atoms in the system\n";
+	print "NOTE: Total atom count: $absAtomCount\n";
 	print "Creating Topology.....";
 	
 	## COUNT NUMBER OF DIHEDRALS ##
