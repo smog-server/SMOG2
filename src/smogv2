@@ -1298,12 +1298,12 @@ sub setContactParams
 			{
 					my $radius = $contactSettings->{"shadowRadius"};
 					my $dist = $contactSettings->{"contactDistance"};
-				    return "-m shadow -c $dist -s $radius -bif $bifForSCM --distance ";
+				    return "-m shadow -c $dist -s $radius -bif $bifForSCM --distance --smog2output";
 			}
 			elsif($method =~ m/cutoff/) 
 			{
 			  my $dist = $contactSettings->{"contactDistance"};
-			  return "-m cutoff -c $dist -bif $bifForSCM --distance ";
+			  return "-m cutoff -c $dist -bif $bifForSCM --distance --smog2output";
 			
 			}
 			else {confess "\n\nERROR at contact map method settings. $method is not a supported contactmap method.\n\n";}
