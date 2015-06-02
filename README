@@ -25,7 +25,7 @@ on usage, extensions and bugs to info@smog-server.org.
 
 ########################################################
 
-		  CONFIGURING SMOG2
+		  CONFIGURING SMOG v2
 
 Before using SMOG v2, you need to configure your settings.
 This is a relatively simple  process.
@@ -54,7 +54,7 @@ perl4smog=""
 smog2dir is the main SMOG v2 directory (this will have 
 src and share as subdirectories), and perl4smog is the
 version of perl that you prefer to use.  On linux, the
-most common value for perl4smog is be "/usr/bin/perl".  
+most common value for perl4smog is "/usr/bin/perl".  
 
 To finish the configure process, issue the command:
  
@@ -62,14 +62,14 @@ source configure.smog2
 
 If you use SMOG frequently, it is recommended that 
 you add this line to your .bashrc file, so that you will
-not need to re-run config.bash every time you use SMOG.
+not need to re-run configure.smog2 every time you use SMOG.
 If you do add it to your bashrc, make sure to include
 the full path for configure.smog2.
 
 3) (Optional) It is highly recommended that once SMOG
-is configured, that you download and run the smog-check
-suite.  That will verify your configurations are correct
-and that SMOG is producing accurate forcefield files.
+is configured, you download and run the smog-check suite.
+This will verify your configurations are correct and that
+SMOG is producing accurate forcefield files.
 
 ########################################################
 
@@ -79,7 +79,7 @@ and that SMOG is producing accurate forcefield files.
 			USAGE
 
 If your configuration step completes successfully, 
-running smog2 can be quite simple.  
+running SMOG v2 can be quite simple.  
 
 Note: configure.smog2 defines the alias smog2
 
@@ -95,7 +95,7 @@ smog2 -i <PDBFILE> -t $SMOG_PATH/SBM_AA
 For a list of all supported flags and options, type:
 smog2 --help
 
-For more advanced usage of SMOG2, please consult the
-SMOG2 manual.
+For more advanced usage of SMOG v2, please consult the
+manual available with the distribution.
 
 ########################################################
