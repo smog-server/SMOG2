@@ -1262,6 +1262,7 @@ for(my $I=0;$I<$headw;$I++){
 
 sub usage
 {
+  header();
   print "Unknown option: @_\n" if ( @_ );
   print "usage: smogv2  [-i input.pdb] [-o smog.top] [-g smog.gro] [--help|-?] [-ignh]\n";
 		print "Necessary Inputs\n";		
@@ -1510,7 +1511,7 @@ sub allAtom
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	print "Done\n";
 	## CALL SHADOW/PARSE CONTACTS ##
-	print "Starting contacts ...  ";
+	print "Starting contact calculations ...\n  ";
 	
 	
 	my $SCMparams = setContactParams();
@@ -1532,7 +1533,7 @@ sub allAtom
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
 	if($ignAllContacts==0){
-	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams > shadow.log");}
+	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");}
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
 	print "Done\n";
 
@@ -1546,7 +1547,7 @@ sub allAtom
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "Done\n";
-	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile,shadow.log\n";
+	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
 }
@@ -1579,7 +1580,7 @@ sub coarseGrain
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
-        print "Done\n";
+        print "Done parsing template files\n";
 
 	## Find Bonds ##
 	createBondFunctionals();
@@ -1629,7 +1630,7 @@ sub coarseGrain
         print "Finding coarse grain contacts.....";
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
-	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams  > shadow.log");
+	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams ");
         print "Done\n";	
         }
 	## CLEAR ALL-ATOM MEMORY ##
@@ -1669,7 +1670,7 @@ sub coarseGrain
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	print "Done\n";
 	$absAtomCount = keys(%allAtoms);
-	print "NOTE: Total atom count used for normalization is $totalAtoms with $absAtomCount atoms in the system\n";
+	print "NOTE: Total atom count: $absAtomCount\n";
 	print "Creating Topology.....";
 	
 	## COUNT NUMBER OF DIHEDRALS ##
@@ -1699,7 +1700,7 @@ sub coarseGrain
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "Done\n";
-	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile,shadow.log\n";
+	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
 
@@ -1748,7 +1749,7 @@ if($ContactFile ne ""){
 ## check if files exist
 # things we don't want to overwrite
 my $maxbu=10;
-foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile,"shadow.log"){
+foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile){
 	if($filen ne "" && -e $filen){
 		for(my $bu=1;$bu<=$maxbu;$bu++){
 			my $buname="$filen.bu$bu";
@@ -1766,7 +1767,7 @@ foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile,"shadow.log"){
 
 # files we will read
 foreach my $filen($inputPDB,$ContactFile){
-	if($filen ne "" && ! -e $filen){
+	if($filen ne "" && ! -f $filen){
 		confess "\n\nERROR: Can't find file $filen !! Quitting.\n\n";
 	}
 }
