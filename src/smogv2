@@ -1265,12 +1265,13 @@ sub usage
   header();
   print "Unknown option: @_\n" if ( @_ );
   print "usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?] [-ignh]\n";
-		print "Necessary Inputs\n";		
-		print "-i [PDB file name ]: Input PDB to generate Hamiltonian\n";
+		print "Required Inputs\n";		
+		print "-i [filename.pdb]: Input PDB to generate Hamiltonian\n";
 		print "-t [templateFolder]: Folder containing templates of molecular and interaction definitions\n";
+
+		print "Optional Input/Output parameters\n";
                 print "-CG: enable coarse-graining\n";
                 print "-t_contacts [templateFolder]: Folder containing templates for determining native contact map. Only necessary when -CG enabled\n";
-		print "Optional Input/Output parameters\n";
 		print "-g [smog.gro]: Output .gro file name\n";
 		print "-o [smog.top]: Output .top file name\n";
         	print "-s [smog.contacts]: Output .shadow file name\n";
