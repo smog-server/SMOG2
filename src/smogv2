@@ -555,8 +555,6 @@ sub dihedralOutput
 	my $paramFormat="";
 	($fType,@paramArr) = diheFuncParser($fun);
 	
-	## 0 DIHEDRAL ##
-	if($fType == 0){return "";}
 	## If dihedral angle is to be native and/or has scaling ##
 	if($paramArr[0] =~ /^\?$/ && $fType == 1){
           # Angle will be scaled by multiplicity factor n, if they are cosine functions
@@ -761,23 +759,32 @@ sub contactOutput
  my @funcs = split(/\+/,$inputFunc); ## split combination of functions
  my $outputString="";
  my @paramArr;
+ my $fname;
  my $fType=""; my $formattedString;
  ## Parse each part of the function ##
  foreach my $fun(@funcs)
  {
 	my $paramFormat="";
-	($fType,@paramArr) = contactFuncParser($fun);
+	($fType,$fname,@paramArr) = contactFuncParser($fun);
 
 	## LJ CONTACTS 6-12 ##	
-	if($fType == 1){contactParseLJ612(\@paramArr,$epsilon,$c0,$c1);$fType=1;}
+	if($fname eq "sbm_contacts_6-12"){
+		contactParseLJ612(\@paramArr,$epsilon,$c0,$c1);
+		if($fType != 1){confess "Only fType=1 is supported with contacts sbm_contacts_6-12"}
+    }
         ## LJ CONTACTS 10-12 ##
-    elsif($fType == 2){contactParseLJ1012(\@paramArr,$epsilon,$c0,$c1);$fType=1;}
+    elsif($fname eq "sbm_contacts_10-12"){
+		contactParseLJ1012(\@paramArr,$epsilon,$c0,$c1);
+		if($fType != 1){confess "Only fType=1 is supported with contacts sbm_contacts_10-12"}
+    }
         ## Gaussian ##
-    elsif($fType == 3){contactParseGaussian(\@paramArr,$epsilon,$c0);}
-    else{confess("Contact function type $fType is not defined\n");}
+    elsif($fname eq "sbm_contacts_gaussian"){
+	contactParseGaussian(\@paramArr,$epsilon,$c0);
+	if($fType != 6){confess "Only fType=6 is supported with contacts sbm_contacts_gaussian"}
 
-    ## PAIRS Ftype ALWAYS 1 unless gaussian 6 ##
-    if($fType==3){$fType = 6;}
+    }
+    else{confess("Contact function name $fname is not supported\n");}
+
  	## Format output <i j function p1 p2 ... pn>
  	foreach(@paramArr){$paramFormat="$paramFormat	%12.9e";}
 	$formattedString = sprintf("%d %d %d$paramFormat",$i,$j,$fType,@paramArr);
@@ -904,7 +911,7 @@ sub contactFuncParser
 	$fType = returnFunction($funcName); ## Obtain Gromacs function type
  	@paramArr = split(",",$params); ## Parse all parameters
  	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
-	return ($fType,@paramArr);
+	return ($fType,$funcName,@paramArr);
 }
 
 

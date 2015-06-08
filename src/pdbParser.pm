@@ -191,7 +191,7 @@ sub parseATOM
             || $pdbResidueIndex != $interiorPdbResidueIndex)
 			{
 			$residueIndex--;$lineNumber--;
-            confess "\nPDB PARSE ERROR\nThere must be missing atoms in residue $residue at line $lineNumber. $residue at $lineNumber must have been truncated, because the next entry is $interiorResidue\n";
+            confess "\nPDB PARSE ERROR\nThere appears to be a missing atom in residue $residue at line $lineNumber.\n";
 			}
 			
 			$x = substr($record, 30, 8);
