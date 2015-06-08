@@ -9,8 +9,8 @@
 	<function name="sbm_angles" directive="angles" fType="1"/>
 	<function name="sbm_bonds" directive="bonds" fType="1"/>
 	<function name="sbm_contacts_6-12" directive="pairs" fType="1"/>
-	<function name="sbm_contacts_10-12" directive="contacts" fType="2"/>
-    	<function name="sbm_contacts_Gaussian" directive="contacts" fType="3"/>
+	<function name="sbm_contacts_10-12" directive="pairs" fType="1"/>
+    	<function name="sbm_contacts_gaussian" directive="pairs" fType="6"/>
 </functions>
 <!-- HAMILTONIAN SETTINGS -->
 <settings>

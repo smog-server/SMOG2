@@ -56,6 +56,12 @@ while(my $line = <MAP>)
   if($line =~ /#/){next;}
   my @entries = split(/\s+/,$line);
   #map-->residue-->{head|tail} 
+  if($#entries != 2){
+   my $count=$#entries+1;
+   print "ERROR: Looking for 3 fields in $mapOption, but only found $count.\n";
+   print "Offending line: $line\n";
+   print "Reformatting incomplete...\n";
+  }
   $map{$entries[0]}{"head"} = $entries[1];
   $map{$entries[0]}{"tail"} = $entries[2];
 }

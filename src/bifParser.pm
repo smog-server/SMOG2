@@ -48,7 +48,7 @@ our %residueBackup;
 
 ## HOLDS INFORMATION ON FUNCTIONS ##
 ## functions = 
-##				"function name" => {fType=>"",directive=""}
+##	"function name" => {fType=>"",directive=""}
 ##
 our $functions;
 
