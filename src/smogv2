@@ -237,12 +237,13 @@ sub bondOutput
 sub bondFuncParser
 {
 	my($bondFunc) = @_;
-	my $fType;my @paramArr;
+	my $fType;my @paramArr;my $directive;
 	my $funcName = ""; my $params = "";
  ($bondFunc =~ m/(.*)\((.*)\)/);
 	$funcName = $1;
 	$params = $2;
-	$fType = returnFunction($funcName); ## Obtain Gromacs function type
+	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
+	if($directive ne "bonds"){confess "\n\n ERROR: $funcName is not a valid bonds function\n\n";}
  @paramArr = split(",",$params); ## Parse all parameters
  foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
@@ -389,12 +390,13 @@ sub angleOutput
 sub angleFuncParser
 {
 	my($angFunc) = @_;
-	my $fType;my @paramArr;
+	my $fType;my @paramArr;my $directive;
 	my $funcName = ""; my $params = "";
  ($angFunc =~ m/(.*)\((.*)\)/);
 	$funcName = $1;
 	$params = $2;
-	$fType = returnFunction($funcName); ## Obtain Gromacs function type
+	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
+	if($directive ne "angles"){confess "\n\n ERROR: $funcName is not a valid angles function\n\n";}
  @paramArr = split(",",$params); ## Parse all parameters
  foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
@@ -595,24 +597,17 @@ sub dihedralOutput
 sub diheFuncParser
 {
 	my($diheFunc) = @_;
- my $fType;my @paramArr;
+ 	my $fType;my @paramArr; my $directive;
 	my $funcName = "";my $params = "";
 	($diheFunc =~ m/(.*)\((.*)\)/);
 	$funcName = $1; $params = $2;
 
-	$fType = returnFunction($funcName);
+	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
+	if($directive ne "dihedrals"){confess "\n\n ERROR: $funcName is not a valid dihedrals function\n\n";}
 	@paramArr = split(",",$params); ## Parse all parameters;
 	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
 }
-
-
-
-#########################
-## CALCULATE 1-4 PAIRS ##
-#########################
-## NOTE: 1-4 ARE ASSUMED TO BE NON NATIVE ##
-
 
 
 
@@ -902,13 +897,14 @@ sub contactParseGaussian
 sub contactFuncParser
 {
 	my($contactFunc) = @_;
-	my $fType;my @paramArr;
+	my $fType;my @paramArr;my $directive;
 	my $funcName = ""; my $params = "";
  	#($contactFunc =~ m/(.*)\((.*)\)/);
  	($contactFunc =~ /^([^(]+)\((.*)\)$/);
  	$funcName = $1;
 	$params = $2;
-	$fType = returnFunction($funcName); ## Obtain Gromacs function type
+	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
+	if($directive ne "pairs"){confess "\n\n ERROR: $funcName is not a valid pairs(contacts) function\n\n";}
  	@paramArr = split(",",$params); ## Parse all parameters
  	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,$funcName,@paramArr);

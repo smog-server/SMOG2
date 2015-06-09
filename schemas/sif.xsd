@@ -58,7 +58,7 @@
 <!-- DIRECTIVE TYPE -->
 <xs:simpleType name="directiveType">
     <xs:restriction base="xs:string">
-    <xs:pattern value="contacts|bonds|angles|pairs|dihedrals"/>
+    <xs:pattern value="bonds|angles|pairs|dihedrals"/>
     </xs:restriction>
 </xs:simpleType>
 
