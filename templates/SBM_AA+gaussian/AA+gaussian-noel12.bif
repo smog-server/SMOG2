@@ -1929,7 +1929,7 @@
 			</impropers>
 		</residue>
 
-<!--ISOLEUCINE-->
+<!--ISOLEUCINE-TERMINAL-->
 		<residue name="ILET" type="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
