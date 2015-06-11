@@ -48,8 +48,8 @@
 </Groups>
 
 <!-- CONTACT MAP SETTINGS -->
-<Contacts method="shadow" contactDistance="6" shadowRadius="1">
-<contactScaling name="stackingScale" resTypeA="nucleic" resTypeB="nucleic" scale="1" deltaMin="1" deltaMax="1"
+<Contacts method="cutoff" contactDistance="4" shadowRadius="0">
+<contactScaling name="stackingScale" resTypeA="nucleic" resTypeB="nucleic" scale="0.33" deltaMin="1" deltaMax="1"
 atomList="N1 N2 N3 N4 N5 N6 N7 N8 N9 C1 C2 C3 C4 C5 C6 C7 C8 C9 O1 O2 O3 O4 O5 O6 O7 O8 O9"/>
 </Contacts>
 
