@@ -564,8 +564,7 @@ sub dihedralOutput
  	elsif($paramArr[0] =~ /\?\*(.*)/){
           # Angle will be scaled by multiplicity factor given by m*? in .b file
           $paramArr[0]=$values*eval($1);}
-        else{
-	  $paramArr[0] = $values;}
+        }
 
 	## If dihedral kd is normalized or has scaling&normalize ##
 	if($paramArr[1] =~ /^\?$/){$paramArr[1]=$ratio;} ##? has to be consistent with normalization##
@@ -823,7 +822,7 @@ sub contactParseLJ612
 
 
 ##
-# Parse LJ 6-12 Params
+# Parse LJ 10-12 Params
 sub contactParseLJ1012
 {
   my($paramArr,$epsilon,$c10,$c12) = @_;
