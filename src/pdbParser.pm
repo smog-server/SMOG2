@@ -425,7 +425,7 @@ sub returnFunction
 {
  my($funcString) = @_;
  if(!exists $functions->{$funcString}){confess "\n\nERROR: $funcString cannot be found\n";}
- return $functions->{$funcString}->{"fType"};
+ return ($functions->{$funcString}->{"fType"},$functions->{$funcString}->{"directive"});
 
 }
 
