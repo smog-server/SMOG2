@@ -30,7 +30,7 @@
 </dihedrals>
 <!-- IMPROPERS -->
 <impropers>
-	<improper func="dihedral_harmonic(?,10)">
+	<improper func="not_defined(?,?)">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
