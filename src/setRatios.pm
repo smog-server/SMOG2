@@ -20,7 +20,7 @@ use bifParser;
 use Carp;
 
 our @ISA = 'Exporter';
-our @EXPORT = qw(setRatios getSetDiheCounts);
+our @EXPORT = qw(setRatios getSetDiheCounts %fTypes);
 my %uniqueBonds;
 
 sub getDiheCountsHelper

@@ -10,7 +10,7 @@
 </nonbond>
 	
 <!-- CONTACTS -->
-<contact func="sbm_contacts_10-12(1,?,?)" contactGroup="c">
+<contact func="contact_1(12,10,?,?)" contactGroup="c">
     	<pairType>*</pairType>
     	<pairType>*</pairType>
 </contact>

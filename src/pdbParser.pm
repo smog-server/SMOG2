@@ -22,7 +22,7 @@ use Carp;
 ## DECLEARATION TO SHAR DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($interactionThreshold %residues $termRatios %allAtoms parseCONTACT $contactPDL parseATOM catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parseATOMCoarse);
+qw($interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL parseATOM catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parseATOMCoarse);
 
 my @vector;
 my $coorPDL;
@@ -420,12 +420,13 @@ sub parseATOMCoarse
 
 
 ##
-# returnFunction: Return the fType of a specified function
+# returnFunction: Return the fType and directive field for a specified function
 sub returnFunction
 {
  my($funcString) = @_;
- if(!exists $functions->{$funcString}){confess "\n\nERROR: $funcString cannot be found\n";}
- return ($functions->{$funcString}->{"fType"},$functions->{$funcString}->{"directive"});
+ if(!exists $fTypes{"$funcString"}){confess "\n\nERROR: $funcString is not a supported function type in SMOG\n\n";}
+ if(!exists $functions->{$funcString}){confess "\n\nERROR: Function $funcString is being used, but is not defined in .sif file\n\n";}
+ return ($fTypes{"$funcString"},$functions->{$funcString}->{"directive"});
 
 }
 

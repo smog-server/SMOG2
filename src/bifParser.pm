@@ -25,7 +25,7 @@ use Storable qw(dclone);
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($interactionThreshold $termRatios %residueBackup $functions %eGRevTable %eGTable intToFunc funcToInt %residues %dihedralFunctionals %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory);
+qw($interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %dihedralFunctionals %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -232,6 +232,15 @@ sub parseSif {
 $data = $xml->XMLin($sif,ForceArray=>1);
 ## Parse function data
 $functions = $data->{"functions"}->[0]->{"function"};
+## check that all functions are supported
+#my $M=$fTypes{"bond_harmonic"};
+#foreach $f (keys %fTypes)
+#{
+#	if(!exists $fTypes{"$f"}){
+#		confess "\n\n ERROR: Function type $f not supported\n\n";
+#	}
+#}
+
 ## Parse settings data
 $settings = $data->{"settings"}->[0];
 my $energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};

@@ -1,17 +1,18 @@
 <?xml version='1.0'?>
 <sif>
 <!-- FUNCTION DEFINITIONS -->
+<!-- NOTE: Function definitions should only be changed if you modify the source code.-->
 <functions>
-	<function name="sbm_dihedrals" directive="dihedrals" fType="1"/>
-	<function name="sbm_improper" directive="dihedrals" fType="2"/>
-	<function name="sbm_rigid" directive="dihedrals" fType="2"/>
-	<function name="sbm_planarRigid" directive="dihedrals" fType="2"/>
-	<function name="sbm_angles" directive="angles" fType="1"/>
-	<function name="sbm_bonds" directive="bonds" fType="1"/>
-	<function name="sbm_contacts_6-12" directive="pairs" fType="1"/>
-	<function name="sbm_contacts_10-12" directive="pairs" fType="1"/>
-    	<function name="sbm_contacts_gaussian" directive="pairs" fType="6"/>
+	<function name="bond_harmonic" directive="bonds"/>
+    	<function name="bond_type6" directive="bonds"/>
+	<function name="angle_harmonic" directive="angles"/>
+	<function name="dihedral_cosine" directive="dihedrals"/>
+	<function name="dihedral_harmonic" directive="dihedrals"/>
+    	<function name="contact_1" directive="pairs"/>
+    	<function name="contact_2" directive="pairs"/>
+    	<function name="contact_gaussian" directive="pairs"/>
 </functions>
+
 <!-- HAMILTONIAN SETTINGS -->
 <settings>
 	<!-- ENERGY/CONTACT GROUPS -->

@@ -2,7 +2,7 @@
 <b>
 <!-- BONDS -->
 <bonds>
-	<bond func="sbm_bonds(?,20000)">
+	<bond func="bond_harmonic(?,20000)">
 	<bType>*</bType>
 	<bType>*</bType>
 	</bond>
@@ -11,7 +11,7 @@
 
 <!-- ANGLES -->
 <angles>
-	<angle func="sbm_angles(?,40)">
+	<angle func="angle_harmonic(?,40)">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
@@ -21,25 +21,7 @@
 <!-- DIHEDRALS -->
 <dihedrals>																															
 <!-- AMINO DIHEDRALS -->
-	<dihedral func="sbm_dihedrals(?,1,1)+sbm_dihedrals(?,0.5,3)" energyGroup="bb_a">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
-	<dihedral func="sbm_dihedrals(?,1,1)+sbm_dihedrals(?,0.5,3)" energyGroup="sc_a">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
-	<dihedral func="sbm_planarRigid(?,40)" energyGroup="pr_a">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
-	<dihedral func="sbm_rigid(?,10)" energyGroup="r_a">
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="bb">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
@@ -48,7 +30,7 @@
 </dihedrals>
 <!-- IMPROPERS -->
 <impropers>
-	<improper func="sbm_improper(?,10)">
+	<improper func="not_defined(?,?)">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
