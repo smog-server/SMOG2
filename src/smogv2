@@ -46,6 +46,16 @@ my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $contactRes = ""; ## Duplicate ##
 my $softTerm=0; ## Boolean to for soft termination
 my $CGenabled=0; ## enable coarse-graining
+## this is the array that defines how function names are converted to gromacs function types
+our %fTypes = (	'bond_harmonic' => '1',
+		'bond_type6' => '6',
+		'angle_harmonic' => '1',
+		'dihedral_cosine'=>'1',
+		'dihedral_harmonic' => '2',
+		'contact_NM1'=>'1',
+		'contact_NM2'=>'1',
+		'contact_gaussian'=>'6'
+		);
 
 #####################
 ## CALCULATE BONDS ##
@@ -561,10 +571,12 @@ sub dihedralOutput
 	if($paramArr[0] =~ /^\?$/ && $fType == 1){
           # Angle will be scaled by multiplicity factor n, if they are cosine functions
           $paramArr[0] = $values*$paramArr[2];}
+	elsif($paramArr[0] =~ /^\?$/ && $fType == 2){
+          # Angle will not be scaled by multiplicity factor n, if they are harmonic functions
+          $paramArr[0] = $values;}
  	elsif($paramArr[0] =~ /\?\*(.*)/){
           # Angle will be scaled by multiplicity factor given by m*? in .b file
           $paramArr[0]=$values*eval($1);}
-        }
 
 	## If dihedral kd is normalized or has scaling&normalize ##
 	if($paramArr[1] =~ /^\?$/){$paramArr[1]=$ratio;} ##? has to be consistent with normalization##
@@ -710,8 +722,7 @@ sub calculateContacts
 			if(!$normalize) {
 			$dist = sclr(slice($contactPDL,"4:4,$i:$i"));
 			$c0=$dist;
-	  		$c1=$dist;
-			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$c1,$epsilon),"\n";
+			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
 			}	
 			
 			else {	
@@ -731,9 +742,8 @@ sub calculateContacts
 			$epsilon = $epsilon*$multFactor;
 	  		$dist = sclr(slice($contactPDL,"4:4,$i:$i"));
 	  		$c0=$dist;
-	  		$c1=$dist;
 	  		$totalEpsilon+=$epsilon;
-			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$c1,$epsilon),"\n";
+			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
 			}
 	}
 	
@@ -745,7 +755,7 @@ sub calculateContacts
 # internal format is f()+g()
 sub contactOutput
 {
- my($inputFunc,$i,$j,$c0,$c1,$epsilon) = @_;
+ my($inputFunc,$i,$j,$c0,$epsilon) = @_;
  if(!$inputFunc){confess "\n\nERROR AT CONTACTOUTPUT::NO FUNCTION DEFINED\n\n";}
  ## Remove white spaces from string ##
  $inputFunc =~ s/^\s+|\s+$//g;
@@ -761,20 +771,20 @@ sub contactOutput
 	my $paramFormat="";
 	($fType,$fname,@paramArr) = contactFuncParser($fun);
 
-	## LJ CONTACTS 6-12 ##	
-	if($fname eq "sbm_contacts_6-12"){
-		contactParseLJ612(\@paramArr,$epsilon,$c0,$c1);
-		if($fType != 1){confess "Only fType=1 is supported with contacts sbm_contacts_6-12"}
+	## LJ CONTACTS N-M polynomial, sigma and epsilon usage ##	
+	if($fname eq "contact_NM1"){
+		contactParseNM1(\@paramArr,$c0,$epsilon);
+		if($fType != 1){confess "Only fType=1 is supported with contacts contact_NM1"}
     }
-        ## LJ CONTACTS 10-12 ##
-    elsif($fname eq "sbm_contacts_10-12"){
-		contactParseLJ1012(\@paramArr,$epsilon,$c0,$c1);
-		if($fType != 1){confess "Only fType=1 is supported with contacts sbm_contacts_10-12"}
+	## LJ CONTACTS N-M polynomial, CN, CM usage ##	
+    elsif($fname eq "contacts_NM2"){
+		contactParseNM2(\@paramArr,$c0,$epsilon);
+		if($fType != 1){confess "Only fType=1 is supported with contacts contact_NM2"}
     }
         ## Gaussian ##
-    elsif($fname eq "sbm_contacts_gaussian"){
-	contactParseGaussian(\@paramArr,$epsilon,$c0);
-	if($fType != 6){confess "Only fType=6 is supported with contacts sbm_contacts_gaussian"}
+    elsif($fname eq "contact_gaussian"){
+	contactParseGaussian(\@paramArr,$c0,$epsilon);
+	if($fType != 6){confess "Only fType=6 is supported with contacts contact_gaussian"}
 
     }
     else{confess("Contact function name $fname is not supported\n");}
@@ -789,33 +799,46 @@ sub contactOutput
 }
 
 ##
-# Parse LJ 6-12 Params
-sub contactParseLJ612
+# Parse LJ NM sigma eps usage
+sub contactParseNM1
 {
-  my($paramArr,$epsilon,$c6,$c12) = @_;
-  ##i=0 is epsilon##
-  ##i=1 is c6##
-  ##i=2 is c12##
-  
-  if(($paramArr->[1] =~ /^\?$/ xor $paramArr->[2] =~ /^\?$/))
-  {confess("Contact function ill defined\n");}
+  my($paramArr,$r0,$epsilon) = @_;
+  ##pararArr holds N, M, and whether native distances and weights should be used.
+  ##epsilon
+  ##r0 is native distance##
+  my $cN;my $cM; 
+  my $A; my $B;
+  my $N; my $M;
+  $N=$paramArr->[0];
+  $M=$paramArr->[1];
+  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N % 1 or $M % 1){confess "\n\n ERROR: must provide integers for contact exponents\n\n";}
 
-  ## Exponentiate c6 c12 ##
-  $c6=$c6**6;$c12=$c12**12;
+  $B=-1.0/($M/$N-1.0);
+  $A=$M/$N*$B;
+  # replace ? with native distance expression
+  $paramArr->[2] =~ s/\?/$r0/g;
+  #Eval expression
+  $r0 = eval($paramArr->[2]);
+     
+  $A *= $epsilon*$r0**$N;
+  $B *= $epsilon*$r0**$M;
 
-  if($paramArr->[1] =~ /^\?$/){$paramArr->[1]=$c6;}
-  if($paramArr->[2] =~ /^\?$/){$paramArr->[2]=$c12;}
-   
 
   ## native option used
-  if($paramArr->[0] =~ /^\?$/)
+  if($paramArr->[3] =~ /^\?$/)
   {
-    $paramArr->[1]=2*$epsilon*$c6;
-    $paramArr->[2]=$epsilon*$c12;
+    $paramArr->[3]=$A;
+    $paramArr->[2]=$B;
   }
   ## non-native option used
-  else{$paramArr->[1]=2*$paramArr->[0]*$c6*$epsilon;$paramArr->[2]=$paramArr->[0]*$c12*$epsilon;} 
+  else{
+   $A *= $paramArr->[3];
+   $B *= $paramArr->[3];
+   $paramArr->[3]=$A;
+   $paramArr->[2]=$B;
+  } 
   ## Shift first value off ##
+  shift @{$paramArr};
   shift @{$paramArr};
 
 }
