@@ -52,8 +52,8 @@ our %fTypes = (	'bond_harmonic' => '1',
 		'angle_harmonic' => '1',
 		'dihedral_cosine'=>'1',
 		'dihedral_harmonic' => '2',
-		'contact_NM1'=>'1',
-		'contact_NM2'=>'1',
+		'contact_1'=>'1',
+		'contact_2'=>'1',
 		'contact_gaussian'=>'6'
 		);
 
@@ -772,14 +772,14 @@ sub contactOutput
 	($fType,$fname,@paramArr) = contactFuncParser($fun);
 
 	## LJ CONTACTS N-M polynomial, sigma and epsilon usage ##	
-	if($fname eq "contact_NM1"){
+    if($fname eq "contact_1"){
 		contactParseNM1(\@paramArr,$c0,$epsilon);
-		if($fType != 1){confess "Only fType=1 is supported with contacts contact_NM1"}
+		if($fType != 1){confess "Only fType=1 is supported with contacts contact_1"}
     }
 	## LJ CONTACTS N-M polynomial, CN, CM usage ##	
-    elsif($fname eq "contacts_NM2"){
+    elsif($fname eq "contact_2"){
 		contactParseNM2(\@paramArr,$c0,$epsilon);
-		if($fType != 1){confess "Only fType=1 is supported with contacts contact_NM2"}
+		if($fType != 1){confess "Only fType=1 is supported with contacts contact_2"}
     }
         ## Gaussian ##
     elsif($fname eq "contact_gaussian"){
@@ -806,12 +806,14 @@ sub contactParseNM1
   ##pararArr holds N, M, and whether native distances and weights should be used.
   ##epsilon
   ##r0 is native distance##
+  #
   my $cN;my $cM; 
   my $A; my $B;
   my $N; my $M;
   $N=$paramArr->[0];
   $M=$paramArr->[1];
-  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N % 1 or $M % 1){confess "\n\n ERROR: must provide integers for contact exponents\n\n";}
+  if(!exists $paramArr->[3]){ confess "\n\n ERROR: Insufficient number of parameters provided for to contact_NM1. Expecting 4.\n\n"; }
+  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N % 1 or $M % 1){confess "\n\n ERROR: must provide integers for exponents on function\n\n";}
 
   $B=-1.0/($M/$N-1.0);
   $A=$M/$N*$B;

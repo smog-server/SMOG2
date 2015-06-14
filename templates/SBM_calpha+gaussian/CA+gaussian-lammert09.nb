@@ -10,7 +10,7 @@
 	</nonbond>
 	
     <!-- CONTACTS -->
-    <contact func="sbm_contacts_Gaussian(1,0.167772160e-04,0.05,?)" contactGroup="c">
+    <contact func="contact_gaussian(1,0.167772160e-04,0.05,?)" contactGroup="c">
     <pairType>*</pairType>
     <pairType>*</pairType>
     </contact>

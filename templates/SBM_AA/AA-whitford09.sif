@@ -8,8 +8,8 @@
 	<function name="angle_harmonic" directive="angles"/>
 	<function name="dihedral_cosine" directive="dihedrals"/>
 	<function name="dihedral_harmonic" directive="dihedrals"/>
-    	<function name="contact_NM1" directive="pairs"/>
-    	<function name="contact_NM2" directive="pairs"/>
+    	<function name="contact_1" directive="pairs"/>
+    	<function name="contact_2" directive="pairs"/>
     	<function name="contact_gaussian" directive="pairs"/>
 </functions>
 
