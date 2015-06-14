@@ -7,7 +7,7 @@
    <nbType>NB_1</nbType>
  </nonbond>	
  <!-- CONTACTS -->
-  <contact func="sbm_contacts_Gaussian(?,5.96046e-10,sqrt(((?)**2)/(34.66)),?)" contactGroup="c">
+  <contact func="contact_gaussian(?,5.96046e-10,sqrt(((?)**2)/(34.66)),?)" contactGroup="c">
     <pairType>*</pairType>
     <pairType>*</pairType>
   </contact>

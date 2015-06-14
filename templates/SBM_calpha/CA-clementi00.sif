@@ -1,32 +1,22 @@
 <?xml version='1.0'?>
 <sif>
 <!-- FUNCTION DEFINITIONS -->
+<!-- NOTE: Function definitions should only be changed if you modify the source code.-->
 <functions>
-	<function name="sbm_dihedrals" directive="dihedrals" fType="1"/>
-	<function name="sbm_improper" directive="dihedrals" fType="2"/>
-	<function name="sbm_rigid" directive="dihedrals" fType="2"/>
-	<function name="sbm_planarRigid" directive="dihedrals" fType="2"/>
-	<function name="sbm_angles" directive="angles" fType="1"/>
-	<function name="sbm_bonds" directive="bonds" fType="1"/>
-	<function name="sbm_contacts_6-12" directive="pairs" fType="1"/>
-	<function name="sbm_contacts_10-12" directive="pairs" fType="1"/>
-    	<function name="sbm_contacts_gaussian" directive="pairs" fType="6"/>
+	<function name="bond_harmonic" directive="bonds"/>
+	<function name="angle_harmonic" directive="angles"/>
+	<function name="dihedral_cosine" directive="dihedrals"/>
+    	<function name="contact_1" directive="pairs"/>
 </functions>
 <!-- HAMILTONIAN SETTINGS -->
 <settings>
 	<!-- ENERGY/CONTACT GROUPS -->
 <Groups>
 	<!-- AMINO ENERGY GROUPS --> 
-	<!-- Normalized -->
-	<energyGroup residueType="amino" name="bb_a" normalize="0"/>
-	<energyGroup residueType="amino" name="sc_a" normalize="0"/>
-	<!-- Not-Normalized -->
-	<energyGroup residueType="amino" name="pr_a" normalize="0"/>
-	<energyGroup residueType="amino" name="ip_a" normalize="0"/>
-	<energyGroup residueType="amino" name="r_a"  normalize="0"/>
+	<energyGroup residueType="amino" name="bb" normalize="0"/>
 
  <!-- Global Contacts Settings -->
-	<contactGroup residueType="mixed" name="c" intraRelativeStrength="1" normalize="0"/>
+	<contactGroup residueType="mixed" name="c"  normalize="0"/>
 
  <!-- Contact/Dihedral Group ratio: This is only used if normalization is turned on-->
        <groupRatios contacts="1" dihedrals="1"/>

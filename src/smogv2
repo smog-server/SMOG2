@@ -46,6 +46,16 @@ my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $contactRes = ""; ## Duplicate ##
 my $softTerm=0; ## Boolean to for soft termination
 my $CGenabled=0; ## enable coarse-graining
+## this is the array that defines how function names are converted to gromacs function types
+our %fTypes = (	'bond_harmonic' => '1',
+		'bond_type6' => '6',
+		'angle_harmonic' => '1',
+		'dihedral_cosine'=>'1',
+		'dihedral_harmonic' => '2',
+		'contact_1'=>'1',
+		'contact_2'=>'1',
+		'contact_gaussian'=>'6'
+		);
 
 #####################
 ## CALCULATE BONDS ##
@@ -547,29 +557,44 @@ sub dihedralOutput
  ## Remove white spaces from string ##
  $inputFunc =~ s/^\s+|\s+$//g;
  ## If $input contains a + ##
-	my @funcs = split(/\+/,$inputFunc);
+ 	my @funcs = split(/\+/,$inputFunc);
 	my $outputString="";
 	my $fType="";my $exportRatio;       
  	my $formattedString="";
 	my $valueSend;my @paramArr;
+	my $funci=0; my @fTypei;
 	foreach my $fun(@funcs)
 	{
 	my $paramFormat="";
 	($fType,@paramArr) = diheFuncParser($fun);
-	
-	## If dihedral angle is to be native and/or has scaling ##
-	if($paramArr[0] =~ /^\?$/ && $fType == 1){
-          # Angle will be scaled by multiplicity factor n, if they are cosine functions
-          $paramArr[0] = $values*$paramArr[2];}
- 	elsif($paramArr[0] =~ /\?\*(.*)/){
-          # Angle will be scaled by multiplicity factor given by m*? in .b file
-          $paramArr[0]=$values*eval($1);}
-        }
 
+	# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
+	if($paramArr[0] =~ /\?/){
+         # replace ? with native angles
+   	 $paramArr[0] =~ s/\?/$values/g;
+	 # evaluate
+	 $paramArr[0] = eval($paramArr[0]);
+	  if( $fType == 1){
+            # Angle will be scaled by multiplicity factor n, if they are cosine functions
+            $paramArr[0] *= $paramArr[2];
+	  }
+
+	}
+
+
+        if($paramArr[1] =~ /[*?^&!@#%()]/){confess "\n\n ERROR: Dihedral weight can only contain numbers, but $paramArr[1] found.\n\n"};
+	if($funci == 0){
+	  $fTypei[0]= $fType;
+	  if($fType==1 and $paramArr[1] != 1 and $eG != 0){
+	   confess "\n\n ERROR: Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file\n\n";
+	  }
+	}elsif($funci != 0 and $fTypei[0] != $fType){
+          confess "\n\nERROR: Sums of dihedrals of different types is not supported.\n\n";
+	}
+
+	$funci++;
 	## If dihedral kd is normalized or has scaling&normalize ##
-	if($paramArr[1] =~ /^\?$/){$paramArr[1]=$ratio;} ##? has to be consistent with normalization##
- 	elsif($paramArr[1] =~ /\?\*(.*)/){$paramArr[1]=eval($1)*$ratio;}
- 	else{$paramArr[1]*=$ratio;} ## Simple scaling ##
+ 	$paramArr[1]*=$ratio;
 
 	### MINOR KLUDGE TO FIX RIGID/IMPROPER DIHEDRALS BEING OFF BY +-180 ###
 	if($fType == 2)
@@ -710,8 +735,7 @@ sub calculateContacts
 			if(!$normalize) {
 			$dist = sclr(slice($contactPDL,"4:4,$i:$i"));
 			$c0=$dist;
-	  		$c1=$dist;
-			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$c1,$epsilon),"\n";
+			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
 			}	
 			
 			else {	
@@ -731,9 +755,8 @@ sub calculateContacts
 			$epsilon = $epsilon*$multFactor;
 	  		$dist = sclr(slice($contactPDL,"4:4,$i:$i"));
 	  		$c0=$dist;
-	  		$c1=$dist;
 	  		$totalEpsilon+=$epsilon;
-			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$c1,$epsilon),"\n";
+			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
 			}
 	}
 	
@@ -745,7 +768,7 @@ sub calculateContacts
 # internal format is f()+g()
 sub contactOutput
 {
- my($inputFunc,$i,$j,$c0,$c1,$epsilon) = @_;
+ my($inputFunc,$i,$j,$c0,$epsilon) = @_;
  if(!$inputFunc){confess "\n\nERROR AT CONTACTOUTPUT::NO FUNCTION DEFINED\n\n";}
  ## Remove white spaces from string ##
  $inputFunc =~ s/^\s+|\s+$//g;
@@ -761,20 +784,20 @@ sub contactOutput
 	my $paramFormat="";
 	($fType,$fname,@paramArr) = contactFuncParser($fun);
 
-	## LJ CONTACTS 6-12 ##	
-	if($fname eq "sbm_contacts_6-12"){
-		contactParseLJ612(\@paramArr,$epsilon,$c0,$c1);
-		if($fType != 1){confess "Only fType=1 is supported with contacts sbm_contacts_6-12"}
+	## LJ CONTACTS N-M polynomial, sigma and epsilon usage ##	
+    if($fname eq "contact_1"){
+		contactParseNM1(\@paramArr,$c0,$epsilon);
+		if($fType != 1){confess "Only fType=1 is supported with contacts contact_1"}
     }
-        ## LJ CONTACTS 10-12 ##
-    elsif($fname eq "sbm_contacts_10-12"){
-		contactParseLJ1012(\@paramArr,$epsilon,$c0,$c1);
-		if($fType != 1){confess "Only fType=1 is supported with contacts sbm_contacts_10-12"}
+	## LJ CONTACTS N-M polynomial, CN, CM usage ##	
+    elsif($fname eq "contact_2"){
+		contactParseNM2(\@paramArr,$c0,$epsilon);
+		if($fType != 1){confess "Only fType=1 is supported with contacts contact_2"}
     }
         ## Gaussian ##
-    elsif($fname eq "sbm_contacts_gaussian"){
-	contactParseGaussian(\@paramArr,$epsilon,$c0);
-	if($fType != 6){confess "Only fType=6 is supported with contacts sbm_contacts_gaussian"}
+    elsif($fname eq "contact_gaussian"){
+	contactParseGaussian(\@paramArr,$c0,$epsilon);
+	if($fType != 6){confess "Only fType=6 is supported with contacts contact_gaussian"}
 
     }
     else{confess("Contact function name $fname is not supported\n");}
@@ -789,76 +812,107 @@ sub contactOutput
 }
 
 ##
-# Parse LJ 6-12 Params
-sub contactParseLJ612
+# Parse LJ NM sigma eps usage
+sub contactParseNM1
 {
-  my($paramArr,$epsilon,$c6,$c12) = @_;
-  ##i=0 is epsilon##
-  ##i=1 is c6##
-  ##i=2 is c12##
-  
-  if(($paramArr->[1] =~ /^\?$/ xor $paramArr->[2] =~ /^\?$/))
-  {confess("Contact function ill defined\n");}
+  my($paramArr,$r0,$epsilon) = @_;
+  ##pararArr holds N, M, and whether native distances and weights should be used.
+  ##epsilon
+  ##r0 is native distance##
+  #
+  my $cN;my $cM; 
+  my $A; my $B;
+  my $N; my $M;
+  $N=$paramArr->[0];
+  $M=$paramArr->[1];
+  if(!exists $paramArr->[3]){ confess "\n\n ERROR: Insufficient number of parameters provided for to contact_1. Expecting 4.\n\n"; }
+  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N % 1 or $M % 1){confess "\n\n ERROR: must provide integers for exponents on function\n\n";}
 
-  ## Exponentiate c6 c12 ##
-  $c6=$c6**6;$c12=$c12**12;
+  $B=-1.0/($M/$N-1.0);
+  $A=$M/$N*$B;
+  # replace ? with native distance expression
+  $paramArr->[2] =~ s/\?/$r0/g;
+  #Eval expression
+  $r0 = eval($paramArr->[2]);
+     
+  $A *= $epsilon*$r0**$N;
+  $B *= $epsilon*$r0**$M;
 
-  if($paramArr->[1] =~ /^\?$/){$paramArr->[1]=$c6;}
-  if($paramArr->[2] =~ /^\?$/){$paramArr->[2]=$c12;}
-   
-
-  ## native option used
-  if($paramArr->[0] =~ /^\?$/)
+  ## normalized option used
+  if($paramArr->[3] =~ /^\?$/)
   {
-    $paramArr->[1]=2*$epsilon*$c6;
-    $paramArr->[2]=$epsilon*$c12;
+    $paramArr->[3]=$A;
+    $paramArr->[2]=$B;
   }
-  ## non-native option used
-  else{$paramArr->[1]=2*$paramArr->[0]*$c6*$epsilon;$paramArr->[2]=$paramArr->[0]*$c12*$epsilon;} 
+  ## additional rescaling used
+  else{
+   $A *= $paramArr->[3];
+   $B *= $paramArr->[3];
+   $paramArr->[3]=$A;
+   $paramArr->[2]=$B;
+  } 
   ## Shift first value off ##
+  shift @{$paramArr};
   shift @{$paramArr};
 
 }
 
-
-##
-# Parse LJ 10-12 Params
-sub contactParseLJ1012
+# Parse LJ NM sigma eps usage
+sub contactParseNM2
 {
-  my($paramArr,$epsilon,$c10,$c12) = @_;
-  ##i=0 is epsilon##
-  ##i=1 is c6##
-  ##i=2 is c12##
+  my($paramArr,$r0,$epsilon) = @_;
+  ##pararArr holds f(r), g(r), and whether native distances and weights should be used.
+  ##epsilon
+  ##r0 is native distance##
+  #
+  my $A; my $B;
+  my $F; my $G;
+  $F=$paramArr->[0];
+  $G=$paramArr->[1];
+  if(!exists $paramArr->[3]){ confess "\n\n ERROR: Insufficient number of parameters provided for to contact_2. Expecting 4.\n\n"; }
 
-  if(($paramArr->[1] =~ /^\?$/ xor $paramArr->[2] =~ /^\?$/))
-  {confess("Contact function ill-defined\n");}
-  
-   ## Exponentiate c10 c12 ##
-  $c10=$c10**10;$c12=$c12**12;
+  # replace ? with native distance expression
+  $paramArr->[2] =~ s/\?/$r0/g;
 
-  if($paramArr->[1] =~ /^\?$/){$paramArr->[1]=$c10;}
-  if($paramArr->[2] =~ /^\?$/){$paramArr->[2]=$c12;}
-  
+  $paramArr->[2] = eval($paramArr->[2]);
 
-  ## native option used
-  if($paramArr->[0] =~ /^\?$/)
+  # substitute value of r into f(r) and g(r)
+  $F =~ s/\?/$paramArr->[2]/g;
+  $G =~ s/\?/$paramArr->[2]/g;
+
+  #Eval expression
+  $A = eval($F);
+  $B = eval($G);
+  $A *= $epsilon; 
+  $B *= $epsilon; 
+
+
+  ## standard normalization used
+  if($paramArr->[3] =~ /^\?$/)
   {
-    $paramArr->[1]=6*$epsilon*$c10;
-    $paramArr->[2]=5*$epsilon*$c12;
+    $paramArr->[3]=$A;
+    $paramArr->[2]=$B;
   }
-  ## non-native option used
-  else{$paramArr->[1]=6*$paramArr->[0]*$c10*$epsilon;$paramArr->[2]=5*$paramArr->[0]*$c12*$epsilon;} 
+  ## additional rescaling used
+  else{
+   $A *= $paramArr->[3];
+   $B *= $paramArr->[3];
+   $paramArr->[3]=$A;
+   $paramArr->[2]=$B;
+  } 
   ## Shift first value off ##
+  shift @{$paramArr};
   shift @{$paramArr};
 
 }
+
 
 ##
 # Parse Gaussian Params
 sub contactParseGaussian
 {
 
- my($paramArr,$epsilon,$r0) = @_;
+ my($paramArr,$r0,$epsilon) = @_;
  my $A=0;my $sigma_G=0;my $a=0;
   ##i=0 is epsilon_c##
   ##i=1 is epsilon_nc#
