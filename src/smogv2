@@ -825,8 +825,9 @@ sub contactParseNM1
   my $N; my $M;
   $M=$paramArr->[0];
   $N=$paramArr->[1];
-  if(!exists $paramArr->[3]){ confess "\n\n ERROR: Insufficient number of parameters provided for to contact_1. Expecting 4.\n\n"; }
-  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N % 1 or $M % 1){confess "\n\n ERROR: must provide integers for exponents on function\n\n";}
+  my $length=scalar @{$paramArr};
+  if($length != 4){ confess "\n\n ERROR: Incorrect number of parameters provided for contact_1. Expecting 4, found $length.\n\n"; }
+  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){confess "\n\n ERROR: must provide integers for exponents of function contact_1\n\n";}
 
   if($M>=$N){confess "\n\n ERROR: When using contact_1, the first exponent provided should be smaller.\n\n"}
 
@@ -869,9 +870,10 @@ sub contactParseNM2
   #
   my $A; my $B;
   my $F; my $G;
-  $F=$paramArr->[0];
-  $G=$paramArr->[1];
-  if(!exists $paramArr->[3]){ confess "\n\n ERROR: Insufficient number of parameters provided for to contact_2. Expecting 4.\n\n"; }
+  $F=$paramArr->[1];
+  $G=$paramArr->[0];
+  my $length=scalar @{$paramArr};
+  if($length != 4){ confess "\n\n ERROR: Incorrect number of parameters provided for contact_2. Expecting 4, found $length.\n\n"; }
 
   # replace ? with native distance expression
   $paramArr->[2] =~ s/\?/$r0/g;
