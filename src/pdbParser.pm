@@ -22,7 +22,7 @@ use Carp;
 ## DECLEARATION TO SHAR DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL parseATOM catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parseATOMCoarse);
+qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL parseATOM catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parseATOMCoarse);
 
 my @vector;
 my $coorPDL;
