@@ -1,18 +1,18 @@
 <?xml version='1.0'?>
 <sif>
 <!-- FUNCTION DEFINITIONS -->
-<!-- NOTE: Function definitions should only be changed if you modify the source code.-->
 <functions>
-	<function name="bond_harmonic" directive="bonds"/>
-    	<function name="bond_type6" directive="bonds"/>
-	<function name="angle_harmonic" directive="angles"/>
-	<function name="dihedral_cosine" directive="dihedrals"/>
-	<function name="dihedral_harmonic" directive="dihedrals"/>
-    	<function name="contact_1" directive="pairs"/>
-    	<function name="contact_2" directive="pairs"/>
-    	<function name="contact_gaussian" directive="pairs"/>
+	<function name="sbm_dihedrals" directive="dihedrals" fType="1"/>
+	<function name="sbm_improper" directive="dihedrals" fType="2"/>
+	<function name="sbm_rigid" directive="dihedrals" fType="2"/>
+	<function name="sbm_planarRigid" directive="dihedrals" fType="2"/>
+	<function name="sbm_angles" directive="angles" fType="1"/>
+	<function name="sbm_bonds" directive="bonds" fType="1"/>
+    	<function name="sbm_bonds_6" directive="bonds" fType="6"/>
+    	<function name="sbm_contacts_6-12" directive="pairs" fType="1"/>
+	<function name="sbm_contacts_10-12" directive="pairs" fType="1"/>
+	<function name="sbm_contacts_gaussian" directive="pairs" fType="6" />
 </functions>
-
 <!-- HAMILTONIAN SETTINGS -->
 <settings>
 	<!-- ENERGY/CONTACT GROUPS -->
@@ -35,20 +35,21 @@
 	<energyGroup residueType="amino" name="ip_a" normalize="0"/>
 	<energyGroup residueType="amino" name="r_a"  normalize="0"/>
 
-    <!-- LIGAND ENERGY GROUP -->
-    <energyGroup residueType="ligand" name="lig" intraRelativeStrength="1" normalize="0"/>
+    	<!-- LIGAND ENERGY GROUP -->
+    	<energyGroup residueType="ligand" name="lig" intraRelativeStrength="1" normalize="0"/>
 
 
- <!-- Global Contacts Settings -->
+ 	<!-- Global Contacts Settings -->
 	<contactGroup residueType="mixed" name="c" intraRelativeStrength="1" normalize="1"/>
 
- <!-- Contact/Dihedral Group ratio -->
-       <groupRatios contacts="2" dihedrals="1"/>
+ 	<!-- Contact/Dihedral Group ratio -->
+       	<groupRatios contacts="2" dihedrals="1"/>
 
 </Groups>
+
 <!-- CONTACT MAP SETTINGS -->
-<Contacts method="shadow" contactDistance="6" shadowRadius="1">
-<contactScaling name="stackingScale" resTypeA="nucleic" resTypeB="nucleic" scale="1" deltaMin="1" deltaMax="1"
+<Contacts method="cutoff" contactDistance="4" shadowRadius="0">
+<contactScaling name="stackingScale" resTypeA="nucleic" resTypeB="nucleic" scale="0.33" deltaMin="1" deltaMax="1"
 atomList="N1 N2 N3 N4 N5 N6 N7 N8 N9 C1 C2 C3 C4 C5 C6 C7 C8 C9 O1 O2 O3 O4 O5 O6 O7 O8 O9"/>
 </Contacts>
 

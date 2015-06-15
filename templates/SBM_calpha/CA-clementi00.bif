@@ -233,7 +233,7 @@
 	<connections>
 		<!-- AMINO/AMINO -->
 			<connection name="amino-amino" resTypeA="amino" resTypeB="amino">
-			<bond energyGroup="bb_a" >
+			<bond energyGroup="bb" >
 				<atom>CA</atom>
 				<atom>CA</atom>
 			</bond>

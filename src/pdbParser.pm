@@ -22,7 +22,7 @@ use Carp;
 ## DECLEARATION TO SHAR DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($interactionThreshold %residues $termRatios %allAtoms parseCONTACT $contactPDL parseATOM catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parseATOMCoarse);
+qw($interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL parseATOM catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parseATOMCoarse);
 
 my @vector;
 my $coorPDL;
@@ -420,12 +420,13 @@ sub parseATOMCoarse
 
 
 ##
-# returnFunction: Return the fType of a specified function
+# returnFunction: Return the fType and directive field for a specified function
 sub returnFunction
 {
  my($funcString) = @_;
- if(!exists $functions->{$funcString}){confess "\n\nERROR: $funcString cannot be found\n";}
- return $functions->{$funcString}->{"fType"};
+ if(!exists $fTypes{"$funcString"}){confess "\n\nERROR: $funcString is not a supported function type in SMOG\n\n";}
+ if(!exists $functions->{$funcString}){confess "\n\nERROR: Function $funcString is being used, but is not defined in .sif file\n\n";}
+ return ($fTypes{"$funcString"},$functions->{$funcString}->{"directive"});
 
 }
 
@@ -959,20 +960,20 @@ sub appendImpropers
  #@connImproper = @{$connHandle->{"improper"}};
  foreach my $ips(@{$connHandle->{"improper"}})
  {
-  	my @atomsHandle = @{$ips->{"atom"}}; 
- 	my ($a,$b,$c,$d) = ('O','CA','C','N?');
-        ($a,$b,$c,$d) = @atomsHandle;
- 	my($ia,$ta)= ($a !~/(.*)\?/ ? (getAtomAbsoluteIndex($resA,$a),getAtomBType($resA,$a)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
- 	my($ib,$tb)= ($b !~/(.*)\?/ ? (getAtomAbsoluteIndex($resA,$b),getAtomBType($resA,$b)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
- 	my($ic,$tc)= ($c !~/(.*)\?/ ? (getAtomAbsoluteIndex($resA,$c),getAtomBType($resA,$c)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
- 	my($id,$td)= ($d !~/(.*)\?/ ? (getAtomAbsoluteIndex($resA,$d),getAtomBType($resA,$d)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
- 	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
- 	## [x,y,z,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
- 	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);
+   	my @atomsHandle = @{$ips->{"atom"}}; 
+  	my ($a,$b,$c,$d) = ('C','C','C','C');
+         ($a,$b,$c,$d) = @atomsHandle;
+  	my($ia,$ta)= ($a !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$a),getAtomBType($resA,$a)) 
+ 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
+  	my($ib,$tb)= ($b !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$b),getAtomBType($resA,$b)) 
+ 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
+  	my($ic,$tc)= ($c !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$c),getAtomBType($resA,$c)) 
+ 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
+  	my($id,$td)= ($d !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$d),getAtomBType($resA,$d)) 
+ 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
+  	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
+  	## [x,y,z,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
+  	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);
   }	
 
 

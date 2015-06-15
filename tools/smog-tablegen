@@ -1,0 +1,127 @@
+#!/usr/bin/perl -w
+##################################################################################
+# smog-tablegen                                                                  #
+# This script will generate a table for a Debye-Huckel potential with a switching#
+# function for use with Gromacs Version 4.5.X. This was written particularly for #
+# use with a structure-based model (smog-server.org).  Including electrostatic   #
+# interactions can be a bit tricky, so it is always advised that the user double #
+# checks, and fully understands this script, the charges assigned and the        #
+# corresponding flags in the mdp file.                                           #
+# The screening parameters were taken from  Givaty and Levy (2009) JMB, 385,     #
+# pp 1087-1097.                                                                  #
+# Paul Whitford (6/1/15)                                                         #
+##################################################################################
+
+# prefactor is a combination of several terms.
+# the DH potential that we want to use is
+# U=K_Coulomb*B(kappa) Sum {q_i*q_j*exp(-kappa*r_ij)/(epsilon*r_ij)}
+# K_Coulomb=4*pi*epsilon_{0}=~332 kcal*mol^-1
+# for dilute systems, B(kappa)~1
+# Gromacs automatically multiplies by an 'electric conversion factor,' 
+#   equal to 138.935485. We want to undo that, hence the division by 138.
+use strict;
+use warnings;
+use Carp;
+if (scalar(@ARGV) != 7 ){
+ confess("Usage: ./smog-tablegen <N> <M> <ion concentration> <electrostatic switching distance> <electrostatic truncate distance> <table length> <output file name>\n");
+}
+
+my $prefactor=332.0/138.935485;
+my $exponent1=$ARGV[0];
+my $exponent2=$ARGV[1];
+unless($exponent1 =~ /^\d+$/ and $exponent2 =~ /^\d+$/){
+ confess("N and M must be integers\n");
+}
+
+if($exponent1 >= $exponent2){
+ confess ("For consistency with smog2, only N < M is supported\n");
+}
+
+# molar concentration of monovalent ions.
+my $conc=$ARGV[2];
+# kappa is the inverse screening length.  Units of nm^-1.
+my $kappa=3.2*sqrt($conc);
+
+
+# switching function: This ensures that the force and potential go continuously
+# to zero at the cut-off distance (rc), and it starts switching at rc1.
+my $r1=$ARGV[3];
+my $rc=$ARGV[4];
+if($rc <= $r1){
+ confess("switching distance must be shorter than truncated distance\n");
+
+}
+#what is the length of the table(in nm)?
+my $Rtable=$ARGV[5];
+
+
+my $outfilename=$ARGV[6];
+open(OUTFILE,">$outfilename") or die "Can\'t open $outfilename for writing.\n";
+
+
+# what is the spacing of the table (in nm)? 
+my $DR=0.002;
+
+sub V
+{
+ my ($kappa, $R)=@_;
+ my $F=exp(-$kappa*$R)/$R;
+ return $F;
+}
+
+sub Vprime
+{
+ my ($kappa, $R)=@_;
+ my $F=-$kappa*exp(-$kappa*$R)/$R-exp(-$kappa*$R)/($R*$R);
+ return $F;
+}
+
+
+# calculate the parameters for the switching function.
+
+my $M=V($kappa,$rc);
+$M=-$M;
+my $N=($rc-$r1)**2;
+my $O=($rc-$r1)**3;
+my $R=Vprime($kappa,$rc);
+$R=-$R;
+my $S=2*($rc-$r1);
+my $T=3*($rc-$r1)**2;
+
+my $A=(($M/$O)-($R/$T))/(($N/$O)-($S/$T));
+my $B=$R/$T-$A*$S/$T;
+
+# generate the table file. 
+
+my $Ntable=int($Rtable/$DR);
+##$R=$DR;
+my $VE;my $VpE;
+##$VE=V($kappa, $R);
+##$VE=$prefactor*$VE/10.0;
+##print OUTFILE "0 $VE 0 0.0 0.0 0.0 0.0\n";
+
+for(my $i=1; $i<$Ntable;$i++){
+$R=$i*$DR;
+
+ my $R1=-1/$R**$exponent2;
+ my $R2=-$exponent2/$R**($exponent2+1);
+ my $R3=1/$R**$exponent1;
+ my $R4=$exponent1/$R**($exponent1+1);
+ if( $R < $r1){
+  $VE=V($kappa, $R);
+  $VE=$prefactor*$VE/10.0;
+  $VpE=Vprime($kappa, $R);
+  $VpE=-$prefactor*$VpE/10.0;
+ print OUTFILE "$R $VE $VpE $R1 $R2 $R3 $R4\n";
+ }elsif($R >= $r1 && $R<=$rc){
+  $VE=V($kappa, $R)+$A*($R-$r1)**2+$B*($R-$r1)**3;
+  $VE=$prefactor*$VE/10.0;
+  $VpE=Vprime($kappa, $R)+$A*2*($R-$r1)+$B*3*($R-$r1)**2;
+  $VpE=-$prefactor*$VpE/10.0;
+  print OUTFILE "$R $VE $VpE $R1 $R2 $R3 $R4\n";
+ }else{
+  print OUTFILE "$R 0.0 0.0 $R1 $R2 $R3 $R4\n "
+ }
+}
+
+
