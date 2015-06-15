@@ -34,9 +34,9 @@ unless($exponent1 =~ /^\d+$/ and $exponent2 =~ /^\d+$/){
 }
 
 if($exponent1 >= $exponent2){
- confess ("For consistency, Only N < M is supported\n");
-
+ confess ("For consistency with smog2, only N < M is supported\n");
 }
+
 # molar concentration of monovalent ions.
 my $conc=$ARGV[2];
 # kappa is the inverse screening length.  Units of nm^-1.

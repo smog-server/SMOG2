@@ -823,10 +823,12 @@ sub contactParseNM1
   my $cN;my $cM; 
   my $A; my $B;
   my $N; my $M;
-  $N=$paramArr->[0];
-  $M=$paramArr->[1];
+  $M=$paramArr->[0];
+  $N=$paramArr->[1];
   if(!exists $paramArr->[3]){ confess "\n\n ERROR: Insufficient number of parameters provided for to contact_1. Expecting 4.\n\n"; }
   if($N =~ /^\?$/ or $M =~ /^\?$/ or $N % 1 or $M % 1){confess "\n\n ERROR: must provide integers for exponents on function\n\n";}
+
+  if($M>=$N){confess "\n\n ERROR: When using contact_1, the first exponent provided should be smaller.\n\n"}
 
   $B=-1.0/($M/$N-1.0);
   $A=$M/$N*$B;
