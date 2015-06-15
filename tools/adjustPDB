@@ -20,7 +20,6 @@ my @pArr;
 my $loopInd;
 my $prevResTypeRNA;
 
-#@ARGV = ("test.pdb","sbmMap","output.pdb");
 
 ## CHECK INPUT ##
 if(scalar(@ARGV) < 3){
