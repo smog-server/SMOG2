@@ -7462,7 +7462,7 @@
                         	<atom>O</atom>
                         	<atom>CA</atom>
                         	<atom>C</atom>
-                        	<atom>N?</atom>
+                        	<atom>N+</atom>
                 	</improper>
 		</connection>
 	</connections>
