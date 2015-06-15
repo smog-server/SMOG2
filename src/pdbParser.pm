@@ -960,20 +960,20 @@ sub appendImpropers
  #@connImproper = @{$connHandle->{"improper"}};
  foreach my $ips(@{$connHandle->{"improper"}})
  {
-  	my @atomsHandle = @{$ips->{"atom"}}; 
- 	my ($a,$b,$c,$d) = ('O','CA','C','N?');
-        ($a,$b,$c,$d) = @atomsHandle;
- 	my($ia,$ta)= ($a !~/(.*)\?/ ? (getAtomAbsoluteIndex($resA,$a),getAtomBType($resA,$a)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
- 	my($ib,$tb)= ($b !~/(.*)\?/ ? (getAtomAbsoluteIndex($resA,$b),getAtomBType($resA,$b)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
- 	my($ic,$tc)= ($c !~/(.*)\?/ ? (getAtomAbsoluteIndex($resA,$c),getAtomBType($resA,$c)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
- 	my($id,$td)= ($d !~/(.*)\?/ ? (getAtomAbsoluteIndex($resA,$d),getAtomBType($resA,$d)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
- 	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
- 	## [x,y,z,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
- 	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);
+   	my @atomsHandle = @{$ips->{"atom"}}; 
+  	my ($a,$b,$c,$d) = ('C','C','C','C');
+         ($a,$b,$c,$d) = @atomsHandle;
+  	my($ia,$ta)= ($a !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$a),getAtomBType($resA,$a)) 
+ 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
+  	my($ib,$tb)= ($b !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$b),getAtomBType($resA,$b)) 
+ 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
+  	my($ic,$tc)= ($c !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$c),getAtomBType($resA,$c)) 
+ 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
+  	my($id,$td)= ($d !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$d),getAtomBType($resA,$d)) 
+ 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
+  	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
+  	## [x,y,z,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
+  	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);
   }	
 
 
