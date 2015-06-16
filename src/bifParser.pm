@@ -247,7 +247,7 @@ $settings = $data->{"settings"}->[0];
 our $energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};
 my $contactGroups = $settings->{"Groups"}->[0]->{"contactGroup"};
 my $groupRatios = $settings->{"Groups"}->[0]->{"groupRatios"}->[0];
-my $residueType; my $energyGroup;
+my $residueType; 
 my $intraRelativeStrength; my $normalize;
 my $interRelativeStrength;
 my $totalStrength;my $total;
@@ -268,20 +268,18 @@ my $totalEnergyGroup;my $totalContactGroup;
 foreach my $egName(keys %{$energyGroups})
 {
 	$residueType = $energyGroups->{$egName}->{"residueType"};
-	$energyGroup = $egName;
 	$intraRelativeStrength = $energyGroups->{$egName}->{"intraRelativeStrength"};
 	$normalize = $energyGroups->{$egName}->{"normalize"};
-	$termRatios->{$residueType}->{"energyGroup"}->{$energyGroup}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
+	$termRatios->{$residueType}->{"energyGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
 		
 }
 
 my $setflag = 0;$total=0;
 foreach my $egName(keys %{$contactGroups})
 {
-	$energyGroup = $egName;
 	$intraRelativeStrength = $contactGroups->{$egName}->{"intraRelativeStrength"};
 	$normalize = $contactGroups->{$egName}->{"normalize"};
-	$termRatios->{"contactGroup"}->{$energyGroup}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
+	$termRatios->{"contactGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
 	if($normalize){$total+=$intraRelativeStrength;}
 }
 ## NOTE:Contact Type is Global ##
