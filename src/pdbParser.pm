@@ -214,7 +214,6 @@ sub parseATOM
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 			$residueType = $residues{$residue}->{"type"};
-			##[nbType,residueType,resIndex,atom,chainNumber,resName]
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue];
 			my $pdbIndex = substr($record,6,5);
 			$pdbIndex =~ s/^\s+|\s+$//g;

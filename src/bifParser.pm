@@ -266,12 +266,12 @@ my %totalHash;
 # Contact ratio is global
 # Dihedral group ratio is residue dependent
 
-foreach my $ratios(keys %{$energyGroups})
+foreach my $egName(keys %{$energyGroups})
 {
-	$residueType = $energyGroups->{$ratios}->{"residueType"};
-	$energyGroup = $ratios;
-	$intraRelativeStrength = $energyGroups->{$ratios}->{"intraRelativeStrength"};
-	$normalize = $energyGroups->{$ratios}->{"normalize"};
+	$residueType = $energyGroups->{$egName}->{"residueType"};
+	$energyGroup = $egName;
+	$intraRelativeStrength = $energyGroups->{$egName}->{"intraRelativeStrength"};
+	$normalize = $energyGroups->{$egName}->{"normalize"};
 	$termRatios->{$residueType}->{"energyGroup"}->{$energyGroup}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
 	if($normalize){
 	if(exists $totalHash{$residueType}){$totalHash{$residueType}+=$intraRelativeStrength;}
@@ -286,11 +286,11 @@ foreach $residueType(keys %totalHash)
 
 
 my $setflag = 0;$total=0;
-foreach my $ratios(keys %{$contactGroups})
+foreach my $egName(keys %{$contactGroups})
 {
-	$energyGroup = $ratios;
-	$intraRelativeStrength = $contactGroups->{$ratios}->{"intraRelativeStrength"};
-	$normalize = $contactGroups->{$ratios}->{"normalize"};
+	$energyGroup = $egName;
+	$intraRelativeStrength = $contactGroups->{$egName}->{"intraRelativeStrength"};
+	$normalize = $contactGroups->{$egName}->{"normalize"};
 	$termRatios->{"contactGroup"}->{$energyGroup}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
 	if($normalize){$total+=$intraRelativeStrength;}
 }
