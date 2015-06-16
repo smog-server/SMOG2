@@ -25,7 +25,7 @@ use Storable qw(dclone);
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %dihedralFunctionals %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory);
+qw($energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %dihedralFunctionals %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -89,7 +89,8 @@ undef %residues;undef $functions;
 undef $contactSettings;undef $termRatios;
 undef $interactions;undef %bondTypes;
 undef %funcTable;undef %funcTableRev;
-undef %eGTable; undef %eGRevTable;
+##undef %eGTable; 
+undef %eGRevTable;
 undef %bondFunctionals;undef %dihedralFunctionals;
 undef %angleFunctionals;undef %connections;
 undef %dihedralAdjList;
@@ -243,7 +244,7 @@ $functions = $data->{"functions"}->[0]->{"function"};
 
 ## Parse settings data
 $settings = $data->{"settings"}->[0];
-my $energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};
+our $energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};
 my $contactGroups = $settings->{"Groups"}->[0]->{"contactGroup"};
 my $groupRatios = $settings->{"Groups"}->[0]->{"groupRatios"}->[0];
 my $residueType; my $energyGroup;

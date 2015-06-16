@@ -157,7 +157,7 @@ sub adjustFactorsHelper1
 	if($eG < 0) 
 	{			
 	 next;
-	} 
+	}
 	$eG = $eGTable{$eG}; ## Obtain user defined residue name ##
    if(!defined $termRatios->{$resTypeb}->{"energyGroup"}->{$eG})
    {
