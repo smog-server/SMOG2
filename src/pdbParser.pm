@@ -213,7 +213,7 @@ sub parseATOM
 			
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
-			$residueType = $residues{$residue}->{"type"};
+			$residueType = $residues{$residue}->{"residueType"};
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue];
 			my $pdbIndex = substr($record,6,5);
 			$pdbIndex =~ s/^\s+|\s+$//g;
@@ -385,7 +385,7 @@ sub parseATOMCoarse
 			
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
-			$residueType = $residues{$residue}->{"type"};
+			$residueType = $residues{$residue}->{"residueType"};
 		    ##[nbType,residueType,resIndex,atom,chainNumber,resName]
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
 
@@ -474,8 +474,8 @@ sub getEnergyGroup
  	## If Bond is between two residues ##
 	else
 	{
-		$residueTypea =$residues{$residuea}->{"type"};
-		$residueTypeb =$residues{$residueb}->{"type"};
+		$residueTypea =$residues{$residuea}->{"residueType"};
+		$residueTypeb =$residues{$residueb}->{"residueType"};
 		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
 	}
 
@@ -955,7 +955,7 @@ sub appendImpropers
  
  ## WORK ON INTER-RESIDUAL IMPROPERS ##
  ### CHANGE THIS, ONLY HANDLES SINGLE IMPROPERS ###
- $connHandle = $connections{$residues{$resA}->{"type"}}->{$residues{$resB}->{"type"}};
+ $connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}};
  #@connImproper = @{$connHandle->{"improper"}};
  foreach my $ips(@{$connHandle->{"improper"}})
  {
@@ -1159,7 +1159,7 @@ sub createMultiConnections
     if($i == 0) 
 	{
 	  $connHandle 
-      = $connections{$residues{$connect->[0]}->{"type"}}->{$residues{$connect->[1]}->{"type"}};
+      = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
 	  $leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
 	  $leftAtom = $bondMapHashRev{"$leftAtom-$i"};
 	  $prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
@@ -1167,7 +1167,7 @@ sub createMultiConnections
 	}
         ## $i > 0, create inter residue connection ##
 	## $i-1 <--> $i
-	$connHandle = $connections{$residues{$connect->[$i-1]}->{"type"}}->{$residues{$connect->[$i]}->{"type"}};
+	$connHandle = $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}};
 	$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
     $rightAtom = $bondMapHashRev{"$rightAtom-$i"};
 	push(@connectList,$leftAtom);
@@ -1175,7 +1175,7 @@ sub createMultiConnections
     
     ## $i <--> $i+1
         if($i == $#$connect) {last;}
-        $connHandle = $connections{$residues{$connect->[$i]}->{"type"}}->{$residues{$connect->[$i+1]}->{"type"}};
+        $connHandle = $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}};
     $leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
     $leftAtom = $bondMapHashRev{"$leftAtom-$i"};
     $prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
@@ -1207,7 +1207,7 @@ sub createConnection
   ## USES GLOBAL FLAG MISSING TO CREATE NEW MAP ##
    ## Connection via connections attribute ##
    if(!$atomA || !$atomB){
-    $connHandle = $connections{$residues{$connect->[0]}->{"type"}}->{$residues{$connect->[1]}->{"type"}};
+    $connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
     $atomA = $connHandle->{"bond"}->[0]->{"atom"}->[0];
     $atomB = $connHandle->{"bond"}->[0]->{"atom"}->[1];
     }
