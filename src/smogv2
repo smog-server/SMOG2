@@ -1278,18 +1278,60 @@ sub parseInputFolder
  my ($folderName) = @_;
  opendir(my $folder,$folderName);
  my $bif;my $sif;my $b;my $nb;
+ my $bifexists=0;
+ my $sifexists=0;
+ my $nbexists=0;
+ my $bexists=0;
  while(my $file = readdir($folder))
  {
    if($file =~ m/\.bif/)
-   {$bif = $file;$bif = "$folderName/$bif";validateTemplate($bif,"bif");next;}
+   {
+    $bifexists++;
+    $bif = $file;$bif = "$folderName/$bif";
+    print "\nFound .bif file $bif";
+    validateTemplate($bif,"bif");next;}
    if($file =~ m/\.sif/)
-   {$sif = $file;$sif = "$folderName/$sif";validateTemplate($sif,"sif");next;}
+   {
+    $sifexists++;
+    $sif = $file;$sif = "$folderName/$sif";
+    print "\nFound .sif file $sif";
+    validateTemplate($sif,"sif");next;}
    if($file =~ m/\.b/)
-   {$b = $file;$b = "$folderName/$b";validateTemplate($b,"b");next;}
+   {
+    $bexists++;
+    $b = $file;$b = "$folderName/$b";
+    print "\nFound .b file $b";
+    validateTemplate($b,"b");next;}
    if($file =~ m/\.nb/)
-   {$nb = $file;$nb = "$folderName/$nb";validateTemplate($nb,"nb");next;}
+   {
+    $nbexists++;
+    $nb = $file;$nb = "$folderName/$nb";
+    print "\nFound .nb file $nb";
+    validateTemplate($nb,"nb");next;}
   }
   $bifForSCM = $bif;
+
+  if($bifexists >1){
+   confess "\n\n ERROR: Found multiple .bif files in directory $folderName\n\n";
+  }elsif($bifexists ==0){
+   confess "\n\n ERROR: .bif file not found in directory $folderName\n\n";
+  }
+  if($sifexists >1){
+   confess "\n\n ERROR: Found multiple .sif files in directory $folderName\n\n";
+  }elsif($sifexists ==0){
+   confess "\n\n ERROR: .sif file not found in directory $folderName\n\n";
+  }
+  if($bexists >1){
+   confess "\n\n ERROR: Found multiple .b files in directory $folderName\n\n";
+  }elsif($bexists ==0){
+   confess "\n\n ERROR: .b file not found in directory $folderName\n\n";
+  }
+  if($nbexists >1){
+   confess "\n\n ERROR: Found multiple .nb files in directory $folderName\n\n";
+  }elsif($nbexists ==0){
+   confess "\n\n ERROR: .nb file not found in directory $folderName\n\n";
+  }
+
  setInputFileName($bif,$sif,$b,$nb);
 
 }
@@ -1529,7 +1571,7 @@ sub allAtom
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
-        print "Done\n";
+        print "\nDone parsing templates.\n";
 
 	## Find Bonds ##
 	createBondFunctionals();
