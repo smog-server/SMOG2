@@ -252,7 +252,6 @@ my $intraRelativeStrength; my $normalize;
 my $interRelativeStrength;
 my $totalStrength;my $total;
 my $totalEnergyGroup;my $totalContactGroup;
-my %totalHash;
 
 ## PARSE ENERGY GROUP INFORMATION ##
 ## INFO PLACED IN termRatio HASH
@@ -273,17 +272,8 @@ foreach my $egName(keys %{$energyGroups})
 	$intraRelativeStrength = $energyGroups->{$egName}->{"intraRelativeStrength"};
 	$normalize = $energyGroups->{$egName}->{"normalize"};
 	$termRatios->{$residueType}->{"energyGroup"}->{$energyGroup}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
-	if($normalize){
-	if(exists $totalHash{$residueType}){$totalHash{$residueType}+=$intraRelativeStrength;}
-	else{$totalHash{$residueType}=$intraRelativeStrength;}
-	}
-	
+		
 }
-##
-# Collect IntraRelative total per residue type
-foreach $residueType(keys %totalHash)
-{$termRatios->{$residueType}->{"eGintraRelativeTotal"} = $totalHash{$residueType};}
-
 
 my $setflag = 0;$total=0;
 foreach my $egName(keys %{$contactGroups})
