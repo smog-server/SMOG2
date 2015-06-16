@@ -1,17 +1,35 @@
 #!/usr/bin/perl -w
-##################################################################################
-# smog-tablegen                                                                  #
-# This script will generate a table for a Debye-Huckel potential with a switching#
-# function for use with Gromacs Version 4.5.X. This was written particularly for #
-# use with a structure-based model (smog-server.org).  Including electrostatic   #
-# interactions can be a bit tricky, so it is always advised that the user double #
-# checks, and fully understands this script, the charges assigned and the        #
-# corresponding flags in the mdp file.                                           #
-# The screening parameters were taken from  Givaty and Levy (2009) JMB, 385,     #
-# pp 1087-1097.                                                                  #
-# Paul Whitford (6/1/15)                                                         #
-##################################################################################
+use strict;
+use warnings;
+use Carp;
+print <<EOT;
+*****************************************************************************************
+                                     smog-tablegen                                   
 
+     smog-tablegen is part of the SMOG v2 distribution, available at smog-server.org     
+
+ This tool will generate a table for native contacts and Debye-Huckel electrostatic 
+ interactions, for use with Structure-based Models in Gromacs. 
+
+ Native contact Potentials: Gromacs supports a 6-12 potential for native contacts. If you
+ are using a 6-12 potential, then there is no need to use a table.  However, if would 
+ like to use alternate contact potentials of the form (function contact_1 in SMOG v2):
+	U=A/r^N-B/r^M,
+ then you will need to generate force table.
+
+ Electrostatics: When using direct Coulomb interactions, then there is no need for a 
+ table. If you would like to use a Debye-Huckel potential, to describe screened
+ electrostatic interactions, then you should use this script. Parameters for the D-H
+ potential are decsribed in Givaty and Levy (2009) J. Mol. Biol., 385, pp 1087-1097. 
+
+ See the SMOG manual for descriptions and usage guidelines for tabulated interactions.
+
+          For questions regarding this script, contact info\@smog-server.org              
+*****************************************************************************************
+EOT
+
+
+# Brief description 
 # prefactor is a combination of several terms.
 # the DH potential that we want to use is
 # U=K_Coulomb*B(kappa) Sum {q_i*q_j*exp(-kappa*r_ij)/(epsilon*r_ij)}
@@ -19,11 +37,8 @@
 # for dilute systems, B(kappa)~1
 # Gromacs automatically multiplies by an 'electric conversion factor,' 
 #   equal to 138.935485. We want to undo that, hence the division by 138.
-use strict;
-use warnings;
-use Carp;
 if (scalar(@ARGV) != 7 ){
- confess("Usage: ./smog-tablegen <N> <M> <ion concentration> <electrostatic switching distance> <electrostatic truncate distance> <table length> <output file name>\n");
+ confess("\n\n\nERROR: Incorrect arguments.\n\nUsage: ./smog-tablegen <M> <N> <ion concentration> <electrostatic switching distance> <electrostatic truncate distance> <table length> <output file name>\n\n\n");
 }
 
 my $prefactor=332.0/138.935485;
