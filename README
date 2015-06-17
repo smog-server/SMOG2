@@ -88,10 +88,11 @@ SMOG is producing accurate forcefield files.
 If your configuration step completes successfully, 
 running SMOG v2 can be quite simple.  
 
-Note: configure.smog2 defines the alias smog2
+Note: It is assumed that you added $SMOG_PATH to PATH
 
 For the C-alpha model:
-smog2 -i <PDBFILE> -t $SMOG_PATH/SBM_calpha -CG -t_contacts $SMOG_PATH/SBM_AA 
+smog2 -i <PDBFILE> -t $SMOG_PATH/SBM_calpha \
+ 	-CG -t_contacts $SMOG_PATH/SBM_AA 
 
 where <PDBFILE> is the the system for which you would 
 like to generate a SMOG model.
