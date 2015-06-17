@@ -43,7 +43,7 @@ perl PDL
 1a) If you do not have java installed (uncommon), then
 you will have to install it.
 
-2) Once the modules and jave are installed, you need to 
+2) Once the modules and java are installed, you need to 
 run the configure script. First, modify configure.smog2  
 Specifically, give values to the following two 
 variables:
@@ -60,11 +60,18 @@ To finish the configure process, issue the command:
  
 source configure.smog2
 
+If configuration is complete, you will have a directory
+$smog2dir/bin, which will contain wrappers for SMOG 2,
+as well as for tools described in the manual. If you
+call the configure script multiple times, new files
+will not be created, but the environment will still
+be initialized.
+
 If you use SMOG frequently, it is recommended that 
-you add this line to your .bashrc file, so that you will
-not need to re-run configure.smog2 every time you use SMOG.
-If you do add it to your bashrc, make sure to include
-the full path for configure.smog2.
+you add the configura line to your .bashrc file, so 
+you will not need to re-run configure.smog2 every time 
+you use SMOG. If you do add it to your bashrc, make 
+sure to include the full path for configure.smog2.
 
 3) (Optional) It is highly recommended that once SMOG
 is configured, you download and run the smog-check suite.

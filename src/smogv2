@@ -33,7 +33,7 @@ my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
 my $help;my $inputPDB; my $inputFolder=""; my $bifForSCM;
-my $ignH;my $ignChainContact=0;my $ignHContacts;
+my $ignChainContact=0;
 my $ignAllContacts=0;
 my $topFile = "smog.top";
 my $groFile = "smog.gro";
@@ -1367,7 +1367,7 @@ sub usage
 {
   header();
   print "Unknown option: @_\n" if ( @_ );
-  print "usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?] [-ignh]\n";
+  print "usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]\n";
 		print "Required Inputs\n";		
 		print "-i [filename.pdb]: Input PDB to generate Hamiltonian\n";
 		print "-t [templateFolder]: Folder containing templates of molecular and interaction definitions\n";
@@ -1383,18 +1383,6 @@ sub usage
 		##print printCitation();
   exit;
 }
-
-sub stripHydrogen
-{
-		my($inputFile) = @_;
-		system("perl $ENV{SMOG_PATH}/tools/stripH.pl $inputFile");
-		printf("Stripping Hydrogens off $inputFile. Creating ignH_$inputFile\n");
-		$inputPDB = "$inputFile.new";
-		printf("Generating Hamiltonian with $inputPDB\n");
-		<STDIN>
-		#printCitation();
-}
-
 
 sub setContactParams
 {
@@ -1822,7 +1810,7 @@ sub coarseGrain
 # -o output top file name, default is smog.top
 # -v verbose option
 usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
-	'c=s' => \$ContactFile, 'ignH' => \$ignH, 'ignChainContacts' => \$ignChainContact, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
+	'c=s' => \$ContactFile, 'ignChainContacts' => \$ignChainContact, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
 	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes,
 	 'softTerm' => \$softTerm)
           or defined $help 
@@ -1897,11 +1885,6 @@ if($ContactFile ne "" && $contactRes ne "")
 if($contactRes eq "" && $CGenabled != 0 && $ContactFile eq "")
 {confess("\n\nERROR: You need to specify t_contacts, or provide a contact map, when using coarse-graining\n\n");}
 
-
-
-## PreProcessing ##
-## Check if -ignh option is set ##
-stripHydrogen($inputPDB) if defined $ignH;
 
 ####################
 ## PROGRAM DRIVER ##

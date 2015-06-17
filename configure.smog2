@@ -28,13 +28,32 @@ then
 fi
 
 if (( $ERR == 0 )); then
-export perl4smog
-alias smog2="$perl4smog $smog2dir/src/smogv2"
-export smog_exec="$perl4smog $smog2dir/src/smogv2"
-export PERLLIB=$smog2dir/src:$PERLLIB
-export SMOG_PATH=$smog2dir
+	export perl4smog
+	export smog_exec="$perl4smog $smog2dir/src/smogv2"
+	export PERLLIB=$smog2dir/src:$PERLLIB
+	export SMOG_PATH=$smog2dir
+
+	if [ ! -d $SMOG_PATH/bin ]
+	then
+		echo Creating $SMOG_PATH/bin
+		mkdir $SMOG_PATH/bin
+	
+		echo '#!/bin/bash' > $SMOG_PATH/bin/smog2
+		echo "# Wrapper for SMOG V2" >> $SMOG_PATH/bin/smog2
+		echo $smog_exec >> $SMOG_PATH/bin/smog2
+		chmod u+x $SMOG_PATH/bin/smog2
+	
+		for tool in adjustPDB  removeH  tablegen 
+		do
+			echo Creating wrapper for $SMOG_PATH/bin/smog_$tool
+			echo '#!/bin/bash' > $SMOG_PATH/bin/smog_$tool
+			echo "# Wrapper for smog_$tool" >> $SMOG_PATH/bin/smog_$tool
+			echo $perl4smog $SMOG_PATH/tools/smog_$tool >> $SMOG_PATH/bin/smog_$tool
+			chmod u+x $SMOG_PATH/bin/smog_$tool
+		done
+	fi
 else
-echo 
-echo "There were issues configuring SMOG. Configuration incomplete."
+	echo 
+	echo "There were issues configuring SMOG. Configuration incomplete."
 echo
 fi
