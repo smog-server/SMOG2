@@ -48,7 +48,7 @@ if (( $ERR == 0 )); then
 			echo Creating wrapper for $SMOG_PATH/bin/smog_$tool
 			echo '#!/bin/bash' > $SMOG_PATH/bin/smog_$tool
 			echo "# Wrapper for smog_$tool" >> $SMOG_PATH/bin/smog_$tool
-			echo $perl4smog $SMOG_PATH/tools/smog_$tool >> $SMOG_PATH/bin/smog_$tool
+			echo $perl4smog $SMOG_PATH/tools/smog_$tool \"\$\@\" >> $SMOG_PATH/bin/smog_$tool
 			chmod u+x $SMOG_PATH/bin/smog_$tool
 		done
 	fi
