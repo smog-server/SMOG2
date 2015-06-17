@@ -4,7 +4,7 @@ use warnings;
 use Carp;
 print <<EOT;
 *****************************************************************************************
-                                     smog-tablegen                                   
+                                     smog_tablegen                                   
 
      smog-tablegen is part of the SMOG v2 distribution, available at smog-server.org     
 
