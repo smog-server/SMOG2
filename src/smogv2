@@ -1637,7 +1637,7 @@ sub allAtom
 	calculateExclusions($shadowFile,"",$ignChainContact,$ignAllContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
-	print "Your Structure-based Model is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile\n";
+	print "Your Structure-based Model is ready!\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
 }
@@ -1733,7 +1733,7 @@ sub coarseGrain
         ###################################
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
-        print "\n\n		FINAL PROCESSING\n\n Will use templates given with -t\n\n";
+        print "\n\n	     FINAL PROCESSING\n\n Will use templates given with -t\n\n";
 	print "Parsing Coarse Grained Templates.....";
 	parseInputFolder($coarseFolder);
 	## parse Bif File ##
@@ -1792,7 +1792,7 @@ sub coarseGrain
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "Done\n";
-	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile\n";
+	print "Your Structure-based Model is ready!\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
 
@@ -1840,20 +1840,28 @@ if($ContactFile ne ""){
 
 ## Ensure we only write out files with gromacs-compatible suffices
 my $maxbu=10;
-my ($ext) = $topFile =~ /(\.[^.]+)$/;
-if($ext ne ".top"){
+my ($ext)=$topFile =~ /(\.[^.]+)$/;
+if($topFile !~ /(\.[^.]+)$/){
+	$topFile = $topFile . ".top";
+}elsif($ext ne ".top"){
 	$topFile = $topFile . ".top";
 }
-my ($ext) = $groFile =~ /(\.[^.]+)$/;
-if($ext ne ".gro"){
+my ($ext)=$groFile =~ /(\.[^.]+)$/;
+if($groFile !~ /(\.[^.]+)$/){
+	$groFile = $groFile . ".gro";
+}elsif($ext ne ".gro"){
 	$groFile = $groFile . ".gro";
 }
-my ($ext) = $shadowFile =~ /(\.[^.]+)$/;
-if($ext ne ".contacts"){
+my ($ext)=$shadowFile =~ /(\.[^.]+)$/;
+if($shadowFile !~ /(\.[^.]+)$/){
+	$shadowFile = $shadowFile . ".contacts";
+}elsif($ext ne ".contacts"){
 	$shadowFile = $shadowFile . ".contacts";
 }
-my ($ext) = $ndxFile =~ /(\.[^.]+)$/;
-if($ext ne ".ndx"){
+my ($ext)=$ndxFile =~ /(\.[^.]+)$/;
+if($ndxFile !~ /(\.[^.]+)$/){
+	$ndxFile = $ndxFile . ".ndx";
+}elsif($ext ne ".ndx"){
 	$ndxFile = $ndxFile . ".ndx";
 }
 
