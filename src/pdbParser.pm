@@ -357,10 +357,10 @@ sub parseATOMCoarse
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
 		$resCount = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
-		my $atomsInRes=scalar(keys(%{$residues{$residue}->{"atoms"}}));
-		if($atomsInRes != 1)
+		my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
+		if($atomsInBif != 1)
                  {confess "\n\nERROR: When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue\n\n";}
-
+		my $atomsInRes=0;
 	 	seek(MYFILE, -$outLength, 1); # place the same line back onto the filehandle
 	
 		for($i=0;$i<$resCount;$i++)
@@ -380,6 +380,7 @@ sub parseATOMCoarse
 			
 			## CHECK IF ATOM IS COARSE GRAINED ##
                         if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
+			$atomsInRes++;
 			$x = substr($record, 30, 8);
 			$y = substr($record, 38, 8);
 			$z = substr($record, 46, 8);
@@ -392,8 +393,12 @@ sub parseATOMCoarse
 			$residueType = $residues{$residue}->{"residueType"};
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
 			$temp[$putIndex]=[$x,$y,$z,$atomSerial];
-            $tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
+            		$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			$totalAtoms++;
+		}
+
+		if($atomsInRes != $atomsInBif){
+			confess "\n\n ERROR: Not all atoms in the CG bif appear in the PDB.\n\n";
 		}
 
 		if($i != $resCount){confess "\n\nPDB PARSE ERROR\nTotal number of atoms of $residue doesn't match with .bif declaration\n\n";}
