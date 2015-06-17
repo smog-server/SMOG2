@@ -390,9 +390,6 @@ sub parseATOMCoarse
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 			$residueType = $residues{$residue}->{"residueType"};
-			if($residues{$residue}->{"atomCount"} > 1){
-				confess "\n\n ERROR: Currently, -CG only supports models that have 1 atom per residue.\n\n"
-			}
 
 		    ##[nbType,residueType,resIndex,atom,chainNumber,resName]
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
