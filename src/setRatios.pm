@@ -17,7 +17,6 @@ use Data::Dumper;
 use Exporter;
 use PDL;
 use bifParser;
-use Carp;
 
 our @ISA = 'Exporter';
 our @EXPORT = qw(setRatios getSetDiheCounts %fTypes);
@@ -34,7 +33,7 @@ sub getDiheCountsHelper
  {
  	my @A = $diheArr->slice(":,$i:$i")->list;
  	unless($#A > 0){ 
- 		confess "\n\nERROR: Unable to construct a dihedral angle.\n        This typically means there is a chain with fewer than 4 atoms (e.g. a 1-bead per residue CG model with a 3-residues chain.)\n\n";
+ 		smog_quit ("Unable to construct a dihedral angle.\n        This typically means there is a chain with fewer than 4 atoms (e.g. a 1-bead per residue CG model with a 3-residues chain.)");
  	}
 	my $a=$A[0];
 	my $b=$A[1];
@@ -151,7 +150,7 @@ sub adjustFactorsHelper1
     	my $resTyped = $atomTypes->{$d}->[1];
     	my $resTypeUse;
 
- 	if(!$resTypeb || !$resTypec) {confess "\n\nERROR: Atom $b or $c doesn't have a residue type\n";}
+ 	if(!$resTypeb || !$resTypec) {smog_quit ("Atom $b or $c doesn't have a residue type");}
 
  	## $eG == -1 is IMPROPER SKIP ##
 	if($eG < 0) 
@@ -164,8 +163,7 @@ sub adjustFactorsHelper1
        ## CASE WHERE THERE IS A DIHEDRAL BETWEEN TWO DIFFERENT RESTYPES ##
        if(! defined $termRatios->{$resTypec}->{"energyGroup"}->{$eG})
        {
-            confess("\n\nERROR: Error generating dihedrals because energyGroup $eG is not defined for 
-               $resTypeb-$resTypec ($a-$b-$c-$d)\n");
+            smog_quit("energyGroup $eG is not defined for $resTypeb-$resTypec ($a-$b-$c-$d)\n");
        }
        $normalize = $termRatios->{$resTypec}->{"energyGroup"}->{$eG}->{"normalize"};
        $resTypeUse = $resTypec;
@@ -176,8 +174,7 @@ sub adjustFactorsHelper1
    }
  	if(!defined $normalize)
     {
-     confess("\n\nERROR: Normalize option not set of $resTypea-$resTypeb-$resTypec-$resTyped of energyGroup $eG
-          with atom indices $a-$b-$c-$d\n");
+     smog_quit("Normalize option not set for $resTypea-$resTypeb-$resTypec-$resTyped of energyGroup $eG with atom indices $a-$b-$c-$d");
     }
     ## Normalize option is set ##	
 	if($normalize eq 1) 
@@ -224,8 +221,7 @@ for(my $i=0;$i<$size;$i++)
        ## CASE WHERE THERE IS A DIHEDRAL BETWEEN TWO DIFFERENT RESTYPES ##
        if(! defined $termRatios->{$resTypec}->{"energyGroup"}->{$eG})
        { 
-           confess("\n\nERROR: Error generating dihedrals because energyGroup $eG is not defined for 
-               $resTypeb-$resTypec\n");
+           smog_quit("energyGroup $eG is not defined for $resTypeb-$resTypec\n");
        }
        $normalize = $termRatios->{$resTypec}->{"energyGroup"}->{$eG}->{"normalize"};
        $resTypeUse = $resTypec;
