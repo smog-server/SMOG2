@@ -1537,9 +1537,9 @@ sub allAtom
 {
 	my ($inputFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile) = @_;
 
-	print "\n************************\n";
-	print "******* ALL ATOM *******";
-	print "\n************************\n";
+	print "\n****************************************************\n";
+	print   "******* ALL-ATOM SMOG MODEL WILL BE GENERATED*******";
+	print "\n****************************************************\n";
         
         ## TEST IF SMOG PATH EXISTS ##
         if(!$ENV{"SMOG_PATH"}){confess("\n\nERROR: SMOG_PATH environment variable not set\n\n");}
@@ -1627,7 +1627,6 @@ sub allAtom
 	if($ignAllContacts==0){
 	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");}
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
-	print "Done\n";
 
 
 	if($numContacts == 0){confess "\n\nERROR: There are 0 contacts,check shadow.error log file for possible errors\n\n";}
@@ -1638,7 +1637,6 @@ sub allAtom
 	calculateExclusions($shadowFile,"",$ignChainContact,$ignAllContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
-	print "Done\n";
 	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
@@ -1650,10 +1648,11 @@ sub allAtom
 sub coarseGrain
 {
 	my ($inputFolder,$coarseFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile) = @_;
+	print "\n****************************************************\n";
+	print   "**** COARSE-GRAINED SMOG MODEL WILL BE GENERATED****";
+	print "\n****************************************************\n";
+        
 
-	print "\n**********************************\n";
-	print "********* COARSE GRAINED *********";
-	print "\n**********************************\n";
 	$| = 1;
 	## TEST IF SMOG PATH EXISTS ##
         if(!$ENV{"SMOG_PATH"}){confess("\n\nERROR: SMOG_PATH environment variable not set\n\n");}
@@ -1665,6 +1664,7 @@ sub coarseGrain
 	##############################
         ## PARSE ALL ATOM TEMPLATES ##
         ##############################
+        print "\n\n		PREPROCESSING\n\nWill use templates given with -t_contacts\n";
 	parseInputFolder($inputFolder);
 	## parse Bif File ##
 	parseBif();
@@ -1672,7 +1672,7 @@ sub coarseGrain
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
-        print "Done parsing template files\n";
+        print "\nDone parsing template files.\n";
 
 	## Find Bonds ##
 	createBondFunctionals();
@@ -1723,7 +1723,6 @@ sub coarseGrain
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
 	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams ");
-        print "Done\n";	
         }
 	## CLEAR ALL-ATOM MEMORY ##
         clearBifMemory();clearPDBMemory();
@@ -1734,6 +1733,7 @@ sub coarseGrain
         ###################################
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
+        print "\n\n		FINAL PROCESSING\n\n Will use templates given with -t\n\n";
 	print "Parsing Coarse Grained Templates.....";
 	parseInputFolder($coarseFolder);
 	## parse Bif File ##
