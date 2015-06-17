@@ -33,7 +33,7 @@ my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
 my $help;my $inputPDB; my $inputFolder=""; my $bifForSCM;
-my $ignH;my $ignChainContact=0;my $ignHContacts;
+my $ignChainContact=0;
 my $ignAllContacts=0;
 my $topFile = "smog.top";
 my $groFile = "smog.gro";
@@ -1367,7 +1367,7 @@ sub usage
 {
   header();
   print "Unknown option: @_\n" if ( @_ );
-  print "usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?] [-ignh]\n";
+  print "usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]\n";
 		print "Required Inputs\n";		
 		print "-i [filename.pdb]: Input PDB to generate Hamiltonian\n";
 		print "-t [templateFolder]: Folder containing templates of molecular and interaction definitions\n";
@@ -1383,18 +1383,6 @@ sub usage
 		##print printCitation();
   exit;
 }
-
-sub stripHydrogen
-{
-		my($inputFile) = @_;
-		system("perl $ENV{SMOG_PATH}/tools/stripH.pl $inputFile");
-		printf("Stripping Hydrogens off $inputFile. Creating ignH_$inputFile\n");
-		$inputPDB = "$inputFile.new";
-		printf("Generating Hamiltonian with $inputPDB\n");
-		<STDIN>
-		#printCitation();
-}
-
 
 sub setContactParams
 {
@@ -1549,9 +1537,9 @@ sub allAtom
 {
 	my ($inputFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile) = @_;
 
-	print "\n************************\n";
-	print "******* ALL ATOM *******";
-	print "\n************************\n";
+	print "\n****************************************************\n";
+	print   "******* ALL-ATOM SMOG MODEL WILL BE GENERATED*******";
+	print "\n****************************************************\n";
         
         ## TEST IF SMOG PATH EXISTS ##
         if(!$ENV{"SMOG_PATH"}){confess("\n\nERROR: SMOG_PATH environment variable not set\n\n");}
@@ -1639,7 +1627,6 @@ sub allAtom
 	if($ignAllContacts==0){
 	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");}
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
-	print "Done\n";
 
 
 	if($numContacts == 0){confess "\n\nERROR: There are 0 contacts,check shadow.error log file for possible errors\n\n";}
@@ -1650,7 +1637,6 @@ sub allAtom
 	calculateExclusions($shadowFile,"",$ignChainContact,$ignAllContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
-	print "Done\n";
 	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
@@ -1662,10 +1648,11 @@ sub allAtom
 sub coarseGrain
 {
 	my ($inputFolder,$coarseFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile) = @_;
+	print "\n****************************************************\n";
+	print   "**** COARSE-GRAINED SMOG MODEL WILL BE GENERATED****";
+	print "\n****************************************************\n";
+        
 
-	print "\n**********************************\n";
-	print "********* COARSE GRAINED *********";
-	print "\n**********************************\n";
 	$| = 1;
 	## TEST IF SMOG PATH EXISTS ##
         if(!$ENV{"SMOG_PATH"}){confess("\n\nERROR: SMOG_PATH environment variable not set\n\n");}
@@ -1677,6 +1664,7 @@ sub coarseGrain
 	##############################
         ## PARSE ALL ATOM TEMPLATES ##
         ##############################
+        print "\n\n		PREPROCESSING\n\nWill use templates given with -t_contacts\n";
 	parseInputFolder($inputFolder);
 	## parse Bif File ##
 	parseBif();
@@ -1684,7 +1672,7 @@ sub coarseGrain
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
-        print "Done parsing template files\n";
+        print "\nDone parsing template files.\n";
 
 	## Find Bonds ##
 	createBondFunctionals();
@@ -1735,7 +1723,6 @@ sub coarseGrain
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
 	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams ");
-        print "Done\n";	
         }
 	## CLEAR ALL-ATOM MEMORY ##
         clearBifMemory();clearPDBMemory();
@@ -1746,6 +1733,7 @@ sub coarseGrain
         ###################################
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
+        print "\n\n		FINAL PROCESSING\n\n Will use templates given with -t\n\n";
 	print "Parsing Coarse Grained Templates.....";
 	parseInputFolder($coarseFolder);
 	## parse Bif File ##
@@ -1822,7 +1810,7 @@ sub coarseGrain
 # -o output top file name, default is smog.top
 # -v verbose option
 usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
-	'c=s' => \$ContactFile, 'ignH' => \$ignH, 'ignChainContacts' => \$ignChainContact, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
+	'c=s' => \$ContactFile, 'ignChainContacts' => \$ignChainContact, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
 	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes,
 	 'softTerm' => \$softTerm)
           or defined $help 
@@ -1897,11 +1885,6 @@ if($ContactFile ne "" && $contactRes ne "")
 if($contactRes eq "" && $CGenabled != 0 && $ContactFile eq "")
 {confess("\n\nERROR: You need to specify t_contacts, or provide a contact map, when using coarse-graining\n\n");}
 
-
-
-## PreProcessing ##
-## Check if -ignh option is set ##
-stripHydrogen($inputPDB) if defined $ignH;
 
 ####################
 ## PROGRAM DRIVER ##

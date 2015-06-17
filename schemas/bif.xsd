@@ -56,7 +56,7 @@ minOccurs="0"/>
     <xs:element name="impropers" type="impropersType" minOccurs="0"/>
   </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="type" type="xs:string" use="required"/>
+    <xs:attribute name="residueType" type="xs:string" use="required"/>
     <xs:attribute name="atomCount" type="xs:nonNegativeInteger" use="optional"/>
 
 </xs:complexType>
@@ -69,8 +69,8 @@ minOccurs="0"/>
     <xs:element name="improper" type="improperType" minOccurs="0" maxOccurs="1"/>
   </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="resTypeA" type="xs:string" use="required"/>
-    <xs:attribute name="resTypeB" type="xs:string" use="required"/>
+    <xs:attribute name="residueType1" type="xs:string" use="required"/>
+    <xs:attribute name="residueType2" type="xs:string" use="required"/>
 </xs:complexType>
 
 <!-- RESIDUES TYPE -->

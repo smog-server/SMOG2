@@ -38,7 +38,7 @@ qw($energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $funct
 
 ## HOLDS INFORMATION ON RESIDUES ##
 ## residue => 
-##			"type" => residue type (ie. amino,rna),
+##			"residueType" => residue type (ie. amino,rna),
 ##			"atoms" => hash of atoms with nbtype, btype,
 ##			"impropers" => list of 4 atom impropers
 ##			"bonds" => hash of bonds info with key as "atomA-atomB"
@@ -120,7 +120,7 @@ my $data = $xml->XMLin($bif,KeyAttr=>{residue=>"name",connection=>"name"},ForceA
 ## PARSE RESIDUES INTO A HASH ##
 ## Hash is formatted as below
 ## residue => 
-##			"type" => residue type (ie. amino,rna),
+##			"residueType" => residue type (ie. amino,rna),
 ##			"atoms" => hash of atoms with nbtype, btype,pairType
 ##			"impropers" => list of 4 atom impropers
 ##			"bonds" => hash of bonds info with key as "atomA-atomB"
@@ -187,10 +187,9 @@ foreach my $res ( keys %{$residueHandle} )
     ##atomCount !exists == -1, else atomCount
     if(!exists $residueHandle->{$res}->{"atomCount"})
     {$residueHandle->{$res}->{"atomCount"}=-1;}
-  
   ## Create residue hash containing all data
   my $interRes = {
-	"type" => $residueHandle->{$res}->{type},
+	"residueType" => $residueHandle->{$res}->{residueType},
 	"atoms" => \%atoms,
 	"impropers" => \@impropers,
 	"bonds" => \%bonds,
@@ -211,11 +210,14 @@ foreach my $res ( keys %{$residueHandle} )
 my $conHandle = $data->{"connections"}->[0]->{"connection"};
 my $resA; my $resB; 
 ## Loop through connections
-foreach my $conn (keys %{$conHandle})
+foreach my $connname (keys %{$conHandle})
 {
-	$resA = $conHandle->{$conn}->{"resTypeA"};
-	$resB = $conHandle->{$conn}->{"resTypeB"};
-	$connections{$resA}->{$resB}=$conHandle->{$conn};
+	$resA = $conHandle->{$connname}->{"residueType1"};
+	$resB = $conHandle->{$connname}->{"residueType2"};
+	if(exists $connections{$resA}->{$resB}){
+		confess "\n\n ERROR: Duplicate assignment of connections between residue types $resA and $resB\n\n";
+	}
+	$connections{$resA}->{$resB}=$conHandle->{$connname};
 }
 
 
@@ -247,12 +249,11 @@ $settings = $data->{"settings"}->[0];
 our $energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};
 my $contactGroups = $settings->{"Groups"}->[0]->{"contactGroup"};
 my $groupRatios = $settings->{"Groups"}->[0]->{"groupRatios"}->[0];
-my $residueType; my $energyGroup;
+my $residueType; 
 my $intraRelativeStrength; my $normalize;
 my $interRelativeStrength;
 my $totalStrength;my $total;
 my $totalEnergyGroup;my $totalContactGroup;
-my %totalHash;
 
 ## PARSE ENERGY GROUP INFORMATION ##
 ## INFO PLACED IN termRatio HASH
@@ -266,32 +267,21 @@ my %totalHash;
 # Contact ratio is global
 # Dihedral group ratio is residue dependent
 
-foreach my $ratios(keys %{$energyGroups})
+foreach my $egName(keys %{$energyGroups})
 {
-	$residueType = $energyGroups->{$ratios}->{"residueType"};
-	$energyGroup = $ratios;
-	$intraRelativeStrength = $energyGroups->{$ratios}->{"intraRelativeStrength"};
-	$normalize = $energyGroups->{$ratios}->{"normalize"};
-	$termRatios->{$residueType}->{"energyGroup"}->{$energyGroup}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
-	if($normalize){
-	if(exists $totalHash{$residueType}){$totalHash{$residueType}+=$intraRelativeStrength;}
-	else{$totalHash{$residueType}=$intraRelativeStrength;}
-	}
-	
+	$residueType = $energyGroups->{$egName}->{"residueType"};
+	$intraRelativeStrength = $energyGroups->{$egName}->{"intraRelativeStrength"};
+	$normalize = $energyGroups->{$egName}->{"normalize"};
+	$termRatios->{$residueType}->{"energyGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
+		
 }
-##
-# Collect IntraRelative total per residue type
-foreach $residueType(keys %totalHash)
-{$termRatios->{$residueType}->{"eGintraRelativeTotal"} = $totalHash{$residueType};}
-
 
 my $setflag = 0;$total=0;
-foreach my $ratios(keys %{$contactGroups})
+foreach my $egName(keys %{$contactGroups})
 {
-	$energyGroup = $ratios;
-	$intraRelativeStrength = $contactGroups->{$ratios}->{"intraRelativeStrength"};
-	$normalize = $contactGroups->{$ratios}->{"normalize"};
-	$termRatios->{"contactGroup"}->{$energyGroup}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
+	$intraRelativeStrength = $contactGroups->{$egName}->{"intraRelativeStrength"};
+	$normalize = $contactGroups->{$egName}->{"normalize"};
+	$termRatios->{"contactGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
 	if($normalize){$total+=$intraRelativeStrength;}
 }
 ## NOTE:Contact Type is Global ##
@@ -331,8 +321,8 @@ foreach my $k(keys %{$contactScaling})
    if(scalar(@atomList) == 0){confess("\n\nERROR: No atom list at contact scaling\n\n");}
    my %atomListHash = map {$_=>1} @atomList;
 
-   my $A = $contactScaling->{$k}->{"resTypeA"};
-   my $B = $contactScaling->{$k}->{"resTypeB"};
+   my $A = $contactScaling->{$k}->{"residueType1"};
+   my $B = $contactScaling->{$k}->{"residueType2"};
    delete $contactScaling->{$k};
    $contactScaling->{$A}->{$B} 
    = {"deltaMin"=>$deltaMin,"deltaMax"=>$deltaMax,"scale"=>$scale,"atomList"=>\%atomListHash};
@@ -418,7 +408,6 @@ sub getEnergyGroup
 	}
 	else
 	{
-		#$connections{$resA}->{$resB}
 		print "STALE STATE\n";
 		return "r";
 	}
