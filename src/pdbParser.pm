@@ -390,10 +390,7 @@ sub parseATOMCoarse
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 			$residueType = $residues{$residue}->{"residueType"};
-
-		    ##[nbType,residueType,resIndex,atom,chainNumber,resName]
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
-
 			$temp[$putIndex]=[$x,$y,$z,$atomSerial];
             $tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			$totalAtoms++;
