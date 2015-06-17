@@ -1397,12 +1397,12 @@ sub setContactParams
 			{
 					my $radius = $contactSettings->{"shadowRadius"};
 					my $dist = $contactSettings->{"contactDistance"};
-				    return "-m shadow -c $dist -s $radius -bif $bifForSCM --distance --smog2output";
+				    return "-m shadow -c $dist -s $radius -bif $bifForSCM --distance --smog2output --showProgress";
 			}
 			elsif($method =~ m/cutoff/) 
 			{
 			  my $dist = $contactSettings->{"contactDistance"};
-			  return "-m cutoff -c $dist -bif $bifForSCM --distance --smog2output";
+			  return "-m cutoff -c $dist -bif $bifForSCM --distance --smog2output --showProgress";
 			
 			}
 			else {smog_quit ("Contact map method $method is not supported.");}
@@ -1579,7 +1579,7 @@ sub allAtom
 	parseATOM($inputPDB);
 	catPDL();
 	print "Done\n";
-
+	print "Creating topology for contact calculation.....  ";
 	#####################################
 	## DO CALCULATIONS FOR HAMILTONIAN ##
 	#####################################
@@ -1610,11 +1610,8 @@ sub allAtom
 	## CALCULATE DIHEDRALS ##
 	print "Saving dihedrals\n";
 	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
-
     
-
 	## CREATE GRO FILE ##
-	print "Creating .gro...";
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	print "Done\n";
 	## CALL SHADOW/PARSE CONTACTS ##
@@ -1640,6 +1637,7 @@ sub allAtom
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){smog_quit ("Can't find Shadow executable. Make sure SMOG_PATH is set correctly.")}
 	if($ignAllContacts==0){
+		print "Calling $ENV{SMOG_PATH}/tools/SCM.jar \n";
 	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");}
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
 
