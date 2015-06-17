@@ -1573,7 +1573,7 @@ sub allAtom
 	parseATOM($inputPDB);
 	catPDL();
 	print "Done\n";
-
+	print "Creating topology for contact calculation.....  ";
 	#####################################
 	## DO CALCULATIONS FOR HAMILTONIAN ##
 	#####################################
@@ -1595,11 +1595,8 @@ sub allAtom
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
 	## CALCULATE DIHEDRALS ##
 	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
-
     
-
 	## CREATE GRO FILE ##
-	print "Creating .gro...";
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	print "Done\n";
 	## CALL SHADOW/PARSE CONTACTS ##
@@ -1625,6 +1622,7 @@ sub allAtom
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
 	if($ignAllContacts==0){
+		print "Calling $ENV{SMOG_PATH}/tools/SCM.jar \n";
 	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");}
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
 
