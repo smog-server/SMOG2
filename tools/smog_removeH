@@ -1,15 +1,37 @@
+#!/usr/bin/perl -w
 use strict;
 use warnings;
 use Carp;
 
+print <<EOT;
+*****************************************************************************************
+                                       smog_removeH                                   
+
+     smog_removeH is part of the SMOG v2 distribution, available at smog-server.org     
+
+    This tool will remove all Hydrogen atoms from a PDB file.  This is a simple script,
+ 	  which assumes only ATOM, TER, and END lines appear in your PDB file.
+
+  	  See the SMOG manual for usage guidelines for tabulated interactions.
+
+           For questions regarding this script, contact info\@smog-server.org              
+*****************************************************************************************
+EOT
+
+
 ##
 # STRIP HYDROGENS OFF PDB FILE 
-# usage: ./stripH.pl <pdbFile> 
-# WARNING: THIS PROGRAM DOES NOT GUARANTEE CORECTNESS
-# WARNING: THIS PROGRAM ONLY ASSUMES THERE ARE ATOM/TER/END LINES
+# WARNING: THIS SCRIPT IS NOT COMPREHENSIVE, BUT CAN BE HELPFUL
+
+
+if(scalar(@ARGV) != 1){
+        confess("\nUsage: smog_removeH <PDB>\n");
+}
+
 
 my $pdb = $ARGV[0];
 open(PDB,$pdb);
+if (-e $pdb.new){confess "\n\nOutput file $pdb.new already exists.  Quitting.\n\n"}
 open(PDBOUT,">$pdb.new");
 
 my $atomCount = 0;

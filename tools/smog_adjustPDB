@@ -4,6 +4,24 @@
 use strict;
 use warnings;
 use Carp;
+
+print <<EOT;
+*****************************************************************************************
+                                      smog_adjustPDB                                   
+
+    smog_adjustPDB is part of the SMOG v2 distribution, available at smog-server.org     
+
+    This tool will renumber the atoms in each chain, and modify the names of terminal
+        residues, so that they are compatible with the definitions used by SMOG v2
+
+                       See the SMOG manual for usage guidelines.
+
+            For questions regarding this script, contact info\@smog-server.org              
+*****************************************************************************************
+EOT
+
+
+
 my %map;
 
 ## VARS: ##
