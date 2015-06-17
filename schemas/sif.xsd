@@ -22,8 +22,8 @@
 <!-- contactScalingType -->
 <xs:complexType name="contactScalingType">
     <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="resTypeA" type="xs:string" use="required"/>
-    <xs:attribute name="resTypeB" type="xs:string" use="required"/>
+    <xs:attribute name="residueType1" type="xs:string" use="required"/>
+    <xs:attribute name="residueType2" type="xs:string" use="required"/>
     <xs:attribute name="scale" type="xs:string" use="required"/>
     <xs:attribute name="deltaMin" type="xs:positiveInteger" use="required"/>
     <xs:attribute name="deltaMax" type="xs:positiveInteger" use="required"/>

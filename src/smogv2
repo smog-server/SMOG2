@@ -33,7 +33,7 @@ my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
 my $help;my $inputPDB; my $inputFolder=""; my $bifForSCM;
-my $ignH;my $ignChainContact=0;my $ignHContacts;
+my $ignChainContact=0;
 my $ignAllContacts=0;
 my $topFile = "smog.top";
 my $groFile = "smog.gro";
@@ -585,7 +585,8 @@ sub dihedralOutput
         if($paramArr[1] =~ /[*?^&!@#%()]/){confess "\n\n ERROR: Dihedral weight can only contain numbers, but $paramArr[1] found.\n\n"};
 	if($funci == 0){
 	  $fTypei[0]= $fType;
-	  if($fType==1 and $paramArr[1] != 1 and $eG != 0){
+
+	  if($fType==1 and $paramArr[1] != 1 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
 	   confess "\n\n ERROR: Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file\n\n";
 	  }
 	}elsif($funci != 0 and $fTypei[0] != $fType){
@@ -823,10 +824,13 @@ sub contactParseNM1
   my $cN;my $cM; 
   my $A; my $B;
   my $N; my $M;
-  $N=$paramArr->[0];
-  $M=$paramArr->[1];
-  if(!exists $paramArr->[3]){ confess "\n\n ERROR: Insufficient number of parameters provided for to contact_1. Expecting 4.\n\n"; }
-  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N % 1 or $M % 1){confess "\n\n ERROR: must provide integers for exponents on function\n\n";}
+  $M=$paramArr->[0];
+  $N=$paramArr->[1];
+  my $length=scalar @{$paramArr};
+  if($length != 4){ confess "\n\n ERROR: Incorrect number of parameters provided for contact_1. Expecting 4, found $length.\n\n"; }
+  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){confess "\n\n ERROR: must provide integers for exponents of function contact_1\n\n";}
+
+  if($M>=$N){confess "\n\n ERROR: When using contact_1, the first exponent provided should be smaller.\n\n"}
 
   $B=-1.0/($M/$N-1.0);
   $A=$M/$N*$B;
@@ -867,9 +871,10 @@ sub contactParseNM2
   #
   my $A; my $B;
   my $F; my $G;
-  $F=$paramArr->[0];
-  $G=$paramArr->[1];
-  if(!exists $paramArr->[3]){ confess "\n\n ERROR: Insufficient number of parameters provided for to contact_2. Expecting 4.\n\n"; }
+  $F=$paramArr->[1];
+  $G=$paramArr->[0];
+  my $length=scalar @{$paramArr};
+  if($length != 4){ confess "\n\n ERROR: Incorrect number of parameters provided for contact_2. Expecting 4, found $length.\n\n"; }
 
   # replace ? with native distance expression
   $paramArr->[2] =~ s/\?/$r0/g;
@@ -1273,18 +1278,60 @@ sub parseInputFolder
  my ($folderName) = @_;
  opendir(my $folder,$folderName);
  my $bif;my $sif;my $b;my $nb;
+ my $bifexists=0;
+ my $sifexists=0;
+ my $nbexists=0;
+ my $bexists=0;
  while(my $file = readdir($folder))
  {
    if($file =~ m/\.bif/)
-   {$bif = $file;$bif = "$folderName/$bif";validateTemplate($bif,"bif");next;}
+   {
+    $bifexists++;
+    $bif = $file;$bif = "$folderName/$bif";
+    print "\nFound .bif file $bif";
+    validateTemplate($bif,"bif");next;}
    if($file =~ m/\.sif/)
-   {$sif = $file;$sif = "$folderName/$sif";validateTemplate($sif,"sif");next;}
+   {
+    $sifexists++;
+    $sif = $file;$sif = "$folderName/$sif";
+    print "\nFound .sif file $sif";
+    validateTemplate($sif,"sif");next;}
    if($file =~ m/\.b/)
-   {$b = $file;$b = "$folderName/$b";validateTemplate($b,"b");next;}
+   {
+    $bexists++;
+    $b = $file;$b = "$folderName/$b";
+    print "\nFound .b file $b";
+    validateTemplate($b,"b");next;}
    if($file =~ m/\.nb/)
-   {$nb = $file;$nb = "$folderName/$nb";validateTemplate($nb,"nb");next;}
+   {
+    $nbexists++;
+    $nb = $file;$nb = "$folderName/$nb";
+    print "\nFound .nb file $nb";
+    validateTemplate($nb,"nb");next;}
   }
   $bifForSCM = $bif;
+
+  if($bifexists >1){
+   confess "\n\n ERROR: Found multiple .bif files in directory $folderName\n\n";
+  }elsif($bifexists ==0){
+   confess "\n\n ERROR: .bif file not found in directory $folderName\n\n";
+  }
+  if($sifexists >1){
+   confess "\n\n ERROR: Found multiple .sif files in directory $folderName\n\n";
+  }elsif($sifexists ==0){
+   confess "\n\n ERROR: .sif file not found in directory $folderName\n\n";
+  }
+  if($bexists >1){
+   confess "\n\n ERROR: Found multiple .b files in directory $folderName\n\n";
+  }elsif($bexists ==0){
+   confess "\n\n ERROR: .b file not found in directory $folderName\n\n";
+  }
+  if($nbexists >1){
+   confess "\n\n ERROR: Found multiple .nb files in directory $folderName\n\n";
+  }elsif($nbexists ==0){
+   confess "\n\n ERROR: .nb file not found in directory $folderName\n\n";
+  }
+
  setInputFileName($bif,$sif,$b,$nb);
 
 }
@@ -1320,7 +1367,7 @@ sub usage
 {
   header();
   print "Unknown option: @_\n" if ( @_ );
-  print "usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?] [-ignh]\n";
+  print "usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]\n";
 		print "Required Inputs\n";		
 		print "-i [filename.pdb]: Input PDB to generate Hamiltonian\n";
 		print "-t [templateFolder]: Folder containing templates of molecular and interaction definitions\n";
@@ -1336,18 +1383,6 @@ sub usage
 		##print printCitation();
   exit;
 }
-
-sub stripHydrogen
-{
-		my($inputFile) = @_;
-		system("perl $ENV{SMOG_PATH}/tools/stripH.pl $inputFile");
-		printf("Stripping Hydrogens off $inputFile. Creating ignH_$inputFile\n");
-		$inputPDB = "$inputFile.new";
-		printf("Generating Hamiltonian with $inputPDB\n");
-		<STDIN>
-		#printCitation();
-}
-
 
 sub setContactParams
 {
@@ -1502,9 +1537,9 @@ sub allAtom
 {
 	my ($inputFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile) = @_;
 
-	print "\n************************\n";
-	print "******* ALL ATOM *******";
-	print "\n************************\n";
+	print "\n****************************************************\n";
+	print   "******* ALL-ATOM SMOG MODEL WILL BE GENERATED*******";
+	print "\n****************************************************\n";
         
         ## TEST IF SMOG PATH EXISTS ##
         if(!$ENV{"SMOG_PATH"}){confess("\n\nERROR: SMOG_PATH environment variable not set\n\n");}
@@ -1524,7 +1559,7 @@ sub allAtom
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
-        print "Done\n";
+        print "\nDone parsing templates.\n";
 
 	## Find Bonds ##
 	createBondFunctionals();
@@ -1592,7 +1627,6 @@ sub allAtom
 	if($ignAllContacts==0){
 	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");}
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
-	print "Done\n";
 
 
 	if($numContacts == 0){confess "\n\nERROR: There are 0 contacts,check shadow.error log file for possible errors\n\n";}
@@ -1603,8 +1637,7 @@ sub allAtom
 	calculateExclusions($shadowFile,"",$ignChainContact,$ignAllContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
-	print "Done\n";
-	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile\n";
+	print "Your Structure-based Model is ready!\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
 }
@@ -1615,10 +1648,11 @@ sub allAtom
 sub coarseGrain
 {
 	my ($inputFolder,$coarseFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile) = @_;
+	print "\n****************************************************\n";
+	print   "**** COARSE-GRAINED SMOG MODEL WILL BE GENERATED****";
+	print "\n****************************************************\n";
+        
 
-	print "\n**********************************\n";
-	print "********* COARSE GRAINED *********";
-	print "\n**********************************\n";
 	$| = 1;
 	## TEST IF SMOG PATH EXISTS ##
         if(!$ENV{"SMOG_PATH"}){confess("\n\nERROR: SMOG_PATH environment variable not set\n\n");}
@@ -1630,6 +1664,7 @@ sub coarseGrain
 	##############################
         ## PARSE ALL ATOM TEMPLATES ##
         ##############################
+        print "\n\n		PREPROCESSING\n\nWill use templates given with -t_contacts\n";
 	parseInputFolder($inputFolder);
 	## parse Bif File ##
 	parseBif();
@@ -1637,7 +1672,7 @@ sub coarseGrain
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
-        print "Done parsing template files\n";
+        print "\nDone parsing template files.\n";
 
 	## Find Bonds ##
 	createBondFunctionals();
@@ -1688,7 +1723,6 @@ sub coarseGrain
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
 	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams ");
-        print "Done\n";	
         }
 	## CLEAR ALL-ATOM MEMORY ##
         clearBifMemory();clearPDBMemory();
@@ -1699,6 +1733,7 @@ sub coarseGrain
         ###################################
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
+        print "\n\n	     FINAL PROCESSING\n\n Will use templates given with -t\n\n";
 	print "Parsing Coarse Grained Templates.....";
 	parseInputFolder($coarseFolder);
 	## parse Bif File ##
@@ -1757,7 +1792,7 @@ sub coarseGrain
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "Done\n";
-	print "Your Hamiltonian is ready!\nFiles generated $topFile,$groFile,$shadowFile,$ndxFile\n";
+	print "Your Structure-based Model is ready!\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
 
@@ -1775,7 +1810,7 @@ sub coarseGrain
 # -o output top file name, default is smog.top
 # -v verbose option
 usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
-	'c=s' => \$ContactFile, 'ignH' => \$ignH, 'ignChainContacts' => \$ignChainContact, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
+	'c=s' => \$ContactFile, 'ignChainContacts' => \$ignChainContact, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
 	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes,
 	 'softTerm' => \$softTerm)
           or defined $help 
@@ -1803,10 +1838,38 @@ if($ContactFile ne ""){
 	$ignAllContacts=1;
 }
 
+## Ensure we only write out files with gromacs-compatible suffices
+my $maxbu=10;
+my ($ext)=$topFile =~ /(\.[^.]+)$/;
+if($topFile !~ /(\.[^.]+)$/){
+	$topFile = $topFile . ".top";
+}elsif($ext ne ".top"){
+	$topFile = $topFile . ".top";
+}
+my ($ext)=$groFile =~ /(\.[^.]+)$/;
+if($groFile !~ /(\.[^.]+)$/){
+	$groFile = $groFile . ".gro";
+}elsif($ext ne ".gro"){
+	$groFile = $groFile . ".gro";
+}
+my ($ext)=$shadowFile =~ /(\.[^.]+)$/;
+if($shadowFile !~ /(\.[^.]+)$/){
+	$shadowFile = $shadowFile . ".contacts";
+}elsif($ext ne ".contacts"){
+	$shadowFile = $shadowFile . ".contacts";
+}
+my ($ext)=$ndxFile =~ /(\.[^.]+)$/;
+if($ndxFile !~ /(\.[^.]+)$/){
+	$ndxFile = $ndxFile . ".ndx";
+}elsif($ext ne ".ndx"){
+	$ndxFile = $ndxFile . ".ndx";
+}
+
 ## check if files exist
 # things we don't want to overwrite
-my $maxbu=10;
 foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile){
+
+	my ($ext) = $filen =~ /(\.[^.]+)$/;
 	if($filen ne "" && -e $filen){
 		for(my $bu=1;$bu<=$maxbu;$bu++){
 			my $buname="$filen.bu$bu";
@@ -1850,11 +1913,6 @@ if($ContactFile ne "" && $contactRes ne "")
 if($contactRes eq "" && $CGenabled != 0 && $ContactFile eq "")
 {confess("\n\nERROR: You need to specify t_contacts, or provide a contact map, when using coarse-graining\n\n");}
 
-
-
-## PreProcessing ##
-## Check if -ignh option is set ##
-stripHydrogen($inputPDB) if defined $ignH;
 
 ####################
 ## PROGRAM DRIVER ##

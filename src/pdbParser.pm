@@ -22,7 +22,7 @@ use Carp;
 ## DECLEARATION TO SHAR DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL parseATOM catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parseATOMCoarse);
+qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL parseATOM catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parseATOMCoarse);
 
 my @vector;
 my $coorPDL;
@@ -213,8 +213,7 @@ sub parseATOM
 			
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
-			$residueType = $residues{$residue}->{"type"};
-			##[nbType,residueType,resIndex,atom,chainNumber,resName]
+			$residueType = $residues{$residue}->{"residueType"};
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue];
 			my $pdbIndex = substr($record,6,5);
 			$pdbIndex =~ s/^\s+|\s+$//g;
@@ -358,6 +357,10 @@ sub parseATOMCoarse
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
 		$resCount = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
+		my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
+		if($atomsInBif != 1)
+                 {confess "\n\nERROR: When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue\n\n";}
+		my $atomsInRes=0;
 	 	seek(MYFILE, -$outLength, 1); # place the same line back onto the filehandle
 	
 		for($i=0;$i<$resCount;$i++)
@@ -377,6 +380,7 @@ sub parseATOMCoarse
 			
 			## CHECK IF ATOM IS COARSE GRAINED ##
                         if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
+			$atomsInRes++;
 			$x = substr($record, 30, 8);
 			$y = substr($record, 38, 8);
 			$z = substr($record, 46, 8);
@@ -386,13 +390,15 @@ sub parseATOMCoarse
 			
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
-			$residueType = $residues{$residue}->{"type"};
-		    ##[nbType,residueType,resIndex,atom,chainNumber,resName]
+			$residueType = $residues{$residue}->{"residueType"};
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
-
 			$temp[$putIndex]=[$x,$y,$z,$atomSerial];
-            $tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
+            		$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			$totalAtoms++;
+		}
+
+		if($atomsInRes != $atomsInBif){
+			confess "\n\n ERROR: Not all atoms in the CG bif appear in the PDB.\n\n";
 		}
 
 		if($i != $resCount){confess "\n\nPDB PARSE ERROR\nTotal number of atoms of $residue doesn't match with .bif declaration\n\n";}
@@ -400,7 +406,7 @@ sub parseATOMCoarse
 	  	@union = (@union,@temp);@temp=();
 		push(@consecResidues,$residue);
 		$headFlag = 0;
-        $tempPDL{$residue}->{$residueIndex}=pdl(@tempBond);
+        	$tempPDL{$residue}->{$residueIndex}=pdl(@tempBond);
 		@tempBond = ();
 		$residueIndex++;
 				
@@ -475,8 +481,8 @@ sub getEnergyGroup
  	## If Bond is between two residues ##
 	else
 	{
-		$residueTypea =$residues{$residuea}->{"type"};
-		$residueTypeb =$residues{$residueb}->{"type"};
+		$residueTypea =$residues{$residuea}->{"residueType"};
+		$residueTypeb =$residues{$residueb}->{"residueType"};
 		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
 	}
 
@@ -956,7 +962,7 @@ sub appendImpropers
  
  ## WORK ON INTER-RESIDUAL IMPROPERS ##
  ### CHANGE THIS, ONLY HANDLES SINGLE IMPROPERS ###
- $connHandle = $connections{$residues{$resA}->{"type"}}->{$residues{$resB}->{"type"}};
+ $connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}};
  #@connImproper = @{$connHandle->{"improper"}};
  foreach my $ips(@{$connHandle->{"improper"}})
  {
@@ -1160,7 +1166,7 @@ sub createMultiConnections
     if($i == 0) 
 	{
 	  $connHandle 
-      = $connections{$residues{$connect->[0]}->{"type"}}->{$residues{$connect->[1]}->{"type"}};
+      = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
 	  $leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
 	  $leftAtom = $bondMapHashRev{"$leftAtom-$i"};
 	  $prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
@@ -1168,7 +1174,7 @@ sub createMultiConnections
 	}
         ## $i > 0, create inter residue connection ##
 	## $i-1 <--> $i
-	$connHandle = $connections{$residues{$connect->[$i-1]}->{"type"}}->{$residues{$connect->[$i]}->{"type"}};
+	$connHandle = $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}};
 	$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
     $rightAtom = $bondMapHashRev{"$rightAtom-$i"};
 	push(@connectList,$leftAtom);
@@ -1176,7 +1182,7 @@ sub createMultiConnections
     
     ## $i <--> $i+1
         if($i == $#$connect) {last;}
-        $connHandle = $connections{$residues{$connect->[$i]}->{"type"}}->{$residues{$connect->[$i+1]}->{"type"}};
+        $connHandle = $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}};
     $leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
     $leftAtom = $bondMapHashRev{"$leftAtom-$i"};
     $prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
@@ -1208,7 +1214,7 @@ sub createConnection
   ## USES GLOBAL FLAG MISSING TO CREATE NEW MAP ##
    ## Connection via connections attribute ##
    if(!$atomA || !$atomB){
-    $connHandle = $connections{$residues{$connect->[0]}->{"type"}}->{$residues{$connect->[1]}->{"type"}};
+    $connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
     $atomA = $connHandle->{"bond"}->[0]->{"atom"}->[0];
     $atomB = $connHandle->{"bond"}->[0]->{"atom"}->[1];
     }
