@@ -19,7 +19,6 @@ use PDL;
 use mathFunctions;
 use setRatios;
 use Getopt::Long;
-use Carp;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
@@ -63,6 +62,13 @@ our %fTypes = (	'bond_harmonic' => '1',
 ## CALCULATE BONDS ##
 #####################
 
+sub smog_quit
+{
+	my ($LINE)=@_;
+	print "\n\nFATAL ERROR: $LINE\n\n";
+	exit;
+
+}
 
 ##
 # Combined bond calculation,sorting, and printing
@@ -212,7 +218,7 @@ sub connCalculateBondsHelper
 sub bondOutput
 {
  my($inputFunc,$i,$j,$values) = @_;
- if(!$inputFunc){confess "\n\nERROR AT BONDOUTPUT::NO FUNCTION DEFINED\n\n";}
+ if(!$inputFunc){smog_quit ("BONDOUTPUT::NO FUNCTION DEFINED");}
  ## Remove white spaces from string ##
  $inputFunc =~ s/^\s+|\s+$//g;
  ## If $input contains a + ##
@@ -255,7 +261,7 @@ sub bondFuncParser
 	$funcName = $1;
 	$params = $2;
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "bonds"){confess "\n\n ERROR: $funcName is not a valid bonds function\n\n";}
+	if($directive ne "bonds"){smog_quit ("$funcName is not a valid bonds function");}
  @paramArr = split(",",$params); ## Parse all parameters
  foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
@@ -356,9 +362,7 @@ sub connCalculateAnglesHelper
 		my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
 
 	
-		#print $OUTPUT angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos);
   push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos)};
-
  }
 
 }
@@ -368,7 +372,7 @@ sub connCalculateAnglesHelper
 sub angleOutput
 {
  my($inputFunc,$i,$j,$k,$values) = @_;
-	if(!$inputFunc){confess "\n\nERROR AT ANGLEOUTPUT::NO FUNCTION DEFINED\n\n";}
+	if(!$inputFunc){smog_quit ("ANGLEOUTPUT::NO FUNCTION DEFINED");}
  ## Remove white spaces from string ##
  $inputFunc =~ s/^\s+|\s+$//g;
  ## If $input contains a + ##
@@ -408,7 +412,7 @@ sub angleFuncParser
 	$funcName = $1;
 	$params = $2;
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "angles"){confess "\n\n ERROR: $funcName is not a valid angles function\n\n";}
+	if($directive ne "angles"){smog_quit ("$funcName is not a valid angles function");}
  @paramArr = split(",",$params); ## Parse all parameters
  foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
@@ -584,15 +588,15 @@ sub dihedralOutput
 	}
 
 
-        if($paramArr[1] =~ /[*?^&!@#%()]/){confess "\n\n ERROR: Dihedral weight can only contain numbers, but $paramArr[1] found.\n\n"};
+        if($paramArr[1] =~ /[*?^&!@#%()]/){smog_quit ("Dihedral weight can only contain numbers, but $paramArr[1] found.")};
 	if($funci == 0){
 	  $fTypei[0]= $fType;
 
 	  if($fType==1 and $paramArr[1] != 1 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
-	   confess "\n\n ERROR: Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file\n\n";
+	   smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
 	  }
 	}elsif($funci != 0 and $fTypei[0] != $fType){
-          confess "\n\nERROR: Sums of dihedrals of different types is not supported.\n\n";
+          smog_quit ("Sums of dihedrals of different types is not supported.");
 	}
 
 	$funci++;
@@ -630,7 +634,7 @@ sub diheFuncParser
 	$funcName = $1; $params = $2;
 
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "dihedrals"){confess "\n\n ERROR: $funcName is not a valid dihedrals function\n\n";}
+	if($directive ne "dihedrals"){smog_quit ("$funcName is not a valid dihedrals function");}
 	@paramArr = split(",",$params); ## Parse all parameters;
 	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
@@ -676,7 +680,7 @@ sub calculateContacts
 			$resTypeb = $atomTypes->{$atomb}->[1];
 			($funct,$cG) = getContactFunctionals($nbtypea,$nbtypeb);
 			if(!$funct || !$cG)
-			{confess("\n No contact Function defined for nbType contacts $nbtypea-$nbtypeb\n");}
+			{smog_quit("No contact Function defined for nbType contacts $nbtypea-$nbtypeb");}
 			$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 			if(!$normalize){next;}		
 			$contactIntraTotal = $termRatios->{"cintraRelativeTotal"};
@@ -700,7 +704,7 @@ sub calculateContacts
 			$resTypeb = $atomTypes->{$atomb}->[1];
 			($funct,$cG) = getContactFunctionals($nbtypea,$nbtypeb);
 			if(!$funct || !$cG)
-			{confess("\n No contact Function defined for nbType contacts $nbtypea-$nbtypeb\n");} 
+			{smog_quit("No contact Function defined for nbType contacts $nbtypea-$nbtypeb");} 
 			
 			$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 
@@ -772,7 +776,7 @@ sub calculateContacts
 sub contactOutput
 {
  my($inputFunc,$i,$j,$c0,$epsilon) = @_;
- if(!$inputFunc){confess "\n\nERROR AT CONTACTOUTPUT::NO FUNCTION DEFINED\n\n";}
+ if(!$inputFunc){smog_quit "CONTACTOUTPUT::NO FUNCTION DEFINED";}
  ## Remove white spaces from string ##
  $inputFunc =~ s/^\s+|\s+$//g;
  ## If $input contains a + ##
@@ -790,20 +794,20 @@ sub contactOutput
 	## LJ CONTACTS N-M polynomial, sigma and epsilon usage ##	
     if($fname eq "contact_1"){
 		contactParseNM1(\@paramArr,$c0,$epsilon);
-		if($fType != 1){confess "Only fType=1 is supported with contacts contact_1"}
+		if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_1")}
     }
 	## LJ CONTACTS N-M polynomial, CN, CM usage ##	
     elsif($fname eq "contact_2"){
 		contactParseNM2(\@paramArr,$c0,$epsilon);
-		if($fType != 1){confess "Only fType=1 is supported with contacts contact_2"}
+		if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_2")}
     }
         ## Gaussian ##
     elsif($fname eq "contact_gaussian"){
 	contactParseGaussian(\@paramArr,$c0,$epsilon);
-	if($fType != 6){confess "Only fType=6 is supported with contacts contact_gaussian"}
+	if($fType != 6){smog_quit ("Only fType=6 is supported with contacts contact_gaussian")}
 
     }
-    else{confess("Contact function name $fname is not supported\n");}
+    else{smog_quit("Contact function name $fname is not supported");}
 
  	## Format output <i j function p1 p2 ... pn>
  	foreach(@paramArr){$paramFormat="$paramFormat	%12.9e";}
@@ -829,10 +833,10 @@ sub contactParseNM1
   $M=$paramArr->[0];
   $N=$paramArr->[1];
   my $length=scalar @{$paramArr};
-  if($length != 4){ confess "\n\n ERROR: Incorrect number of parameters provided for contact_1. Expecting 4, found $length.\n\n"; }
-  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){confess "\n\n ERROR: must provide integers for exponents of function contact_1\n\n";}
+  if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_1. Expecting 4, found $length."); }
+  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
 
-  if($M>=$N){confess "\n\n ERROR: When using contact_1, the first exponent provided should be smaller.\n\n"}
+  if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller.")}
 
   $B=-1.0/($M/$N-1.0);
   $A=$M/$N*$B;
@@ -876,7 +880,7 @@ sub contactParseNM2
   $F=$paramArr->[1];
   $G=$paramArr->[0];
   my $length=scalar @{$paramArr};
-  if($length != 4){ confess "\n\n ERROR: Incorrect number of parameters provided for contact_2. Expecting 4, found $length.\n\n"; }
+  if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_2. Expecting 4, found $length."); }
 
   # replace ? with native distance expression
   $paramArr->[2] =~ s/\?/$r0/g;
@@ -928,13 +932,13 @@ sub contactParseGaussian
 
 
   if($paramArr->[1] =~ /\?/ && !($paramArr->[2] =~ /^\?$/))
-  {confess("\n\nERROR AT CONTACT FUNCTION PARSING:: CONFLICTING INPUTS\n\n");}
+  {smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
 
   ## Epsilon_c ##
   if($paramArr->[0] =~ /^\?$/){$paramArr->[0]=$epsilon;}
   else{$paramArr->[0]=$epsilon*($paramArr->[0]);}
   ## Epsilon_nc ##
-  if($paramArr->[1] =~ /\?/){confess("\n\nERROR AT CONTACT FUNCTION PARSING:: CONFLICTING INPUTS\n\n");}
+  if($paramArr->[1] =~ /\?/){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
 
   ## Check if sigma_G has r0 dependency ##
   if($paramArr->[2] =~ /\?/)
@@ -964,7 +968,7 @@ sub contactFuncParser
  	$funcName = $1;
 	$params = $2;
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "pairs"){confess "\n\n ERROR: $funcName is not a valid pairs(contacts) function\n\n";}
+	if($directive ne "pairs"){smog_quit ("$funcName is not a valid pairs(contacts) function");}
  	@paramArr = split(",",$params); ## Parse all parameters
  	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,$funcName,@paramArr);
@@ -1013,7 +1017,7 @@ sub calculateExclusions
   
   ## OPEN .dca FILE ##
   unless (open(MYFILE1, $fileName2)) {
-    confess "\n\nERROR: Cannot read from '$fileName2'.\nProgram closing.\n\n";
+    smog_quit ("Cannot read from '$fileName2'");
   }
   
    ## DCA CONTACTS ARE IN FORM
@@ -1052,7 +1056,7 @@ sub calculateAtomTypes
 		$nbtype = $uniqeHandle->{$atoms}->[0];
   		if(!$uniqeHandle->{$atoms}->[0])
         {
-          confess("\n\nERROR: Atom $atoms has no nbType\n\n");
+          smog_quit("Atom $atoms has no nbType");
         }
 
 		if(exists $obtained{$nbtype}){next;}
@@ -1062,7 +1066,7 @@ sub calculateAtomTypes
 		$mass = $interactions->{"nonbonds"}->{$nbtype}->{"mass"};
 		$charge = $interactions->{"nonbonds"}->{$nbtype}->{"charge"};
 		if(!$c6 || !$c12 || !$ptype || !$mass || !$charge)
-		{confess("\n\nERROR:Nonbond Params at atom types not set for nbType $nbtype\n\n");}
+		{smog_quit("Nonbond Params at atom types not set for nbType $nbtype");}
 		
 		$formattedString = sprintf("  %-4s %-6.3f %-5.3f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
 		print $OUTPUT $formattedString,"\n";
@@ -1314,24 +1318,24 @@ sub parseInputFolder
   $bifForSCM = $bif;
 
   if($bifexists >1){
-   confess "\n\n ERROR: Found multiple .bif files in directory $folderName\n\n";
+   smog_quit ("Found multiple .bif files in directory $folderName");
   }elsif($bifexists ==0){
-   confess "\n\n ERROR: .bif file not found in directory $folderName\n\n";
+   smog_quit (" .bif file not found in directory $folderName");
   }
   if($sifexists >1){
-   confess "\n\n ERROR: Found multiple .sif files in directory $folderName\n\n";
+   smog_quit ("Found multiple .sif files in directory $folderName");
   }elsif($sifexists ==0){
-   confess "\n\n ERROR: .sif file not found in directory $folderName\n\n";
+   smog_quit (" .sif file not found in directory $folderName");
   }
   if($bexists >1){
-   confess "\n\n ERROR: Found multiple .b files in directory $folderName\n\n";
+   smog_quit ("Found multiple .b files in directory $folderName");
   }elsif($bexists ==0){
-   confess "\n\n ERROR: .b file not found in directory $folderName\n\n";
+   smog_quit (" .b file not found in directory $folderName");
   }
   if($nbexists >1){
-   confess "\n\n ERROR: Found multiple .nb files in directory $folderName\n\n";
+   smog_quit ("Found multiple .nb files in directory $folderName");
   }elsif($nbexists ==0){
-   confess "\n\n ERROR: .nb file not found in directory $folderName\n\n";
+   smog_quit (" .nb file not found in directory $folderName");
   }
 
  setInputFileName($bif,$sif,$b,$nb);
@@ -1401,7 +1405,7 @@ sub setContactParams
 			  return "-m cutoff -c $dist -bif $bifForSCM --distance --smog2output";
 			
 			}
-			else {confess "\n\nERROR at contact map method settings. $method is not a supported contactmap method.\n\n";}
+			else {smog_quit ("Contact map method $method is not supported.");}
 }
 
 
@@ -1461,7 +1465,7 @@ sub determine_optimal_memory {
 
     my $physical;
     if ($os =~ /Win/) {
-        confess("\n\nERROR: SMOG2 does not run on windows\n\n");
+        smog_quit("SMOG2 does not run on windows");
     }
     elsif ($os =~/darwin/ or $os =~ /bsd/i) {
         $physical = get_osx_memory($max_memory);
@@ -1498,7 +1502,7 @@ sub get_linux_memory {
 
     close MEM;
 
-    confess("\n\nERROR: Couldn't parse physical memory from the output of free\n\n");
+    smog_quit("Couldn't parse physical memory from the output of free");
 }
 
 sub get_osx_memory {
@@ -1517,7 +1521,7 @@ sub get_osx_memory {
 
     close MEM;
     unless ($total_mem) {
-        confess("\n\nERROR: Couldn't parse physical memory from the output of top\n\n");
+        smog_quit("Couldn't parse physical memory from the output of top");
     }
 
     return $total_mem;
@@ -1544,7 +1548,7 @@ sub allAtom
 	print "\n*****************************************************\n";
         
         ## TEST IF SMOG PATH EXISTS ##
-        if(!$ENV{"SMOG_PATH"}){confess("\n\nERROR: SMOG_PATH environment variable not set\n\n");}
+        if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
 	$| = 1;
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
@@ -1634,13 +1638,13 @@ sub allAtom
 	freeMemoryForShadow();
 	
 	if((!exists $ENV{SMOG_PATH}) || 
-		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
+		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){smog_quit ("Can't find Shadow executable. Make sure SMOG_PATH is set correctly.")}
 	if($ignAllContacts==0){
 	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");}
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
 
 
-	if($numContacts == 0){confess "\n\nERROR: There are 0 contacts,check shadow.error log file for possible errors\n\n";}
+	if($numContacts == 0){smog_quit ("There are 0 contacts,check shadow.error log file for possible errors");}
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
 	print "Completing final details...";
 	## CALCULATE PAIRS and EXCLUSION ##
@@ -1666,7 +1670,7 @@ sub coarseGrain
 
 	$| = 1;
 	## TEST IF SMOG PATH EXISTS ##
-        if(!$ENV{"SMOG_PATH"}){confess("\n\nERROR: SMOG_PATH environment variable not set\n\n");}
+        if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
 
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
@@ -1741,7 +1745,7 @@ sub coarseGrain
         if($ignAllContacts ==0){
         print "Finding coarse grained contacts... ";
 	if((!exists $ENV{SMOG_PATH}) || 
-		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
+		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){smog_quit ("Can't find Shadow executable. Make sure SMOG_PATH is set correctly.")}
 	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams ");
         }
 	## CLEAR ALL-ATOM MEMORY ##
@@ -1813,7 +1817,7 @@ sub coarseGrain
 	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
 
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,1);
-	if($numContacts == 0){confess "\n\nERROR: There are 0 contacts,check shadow.error log file for possible errors\n\n";}
+	if($numContacts == 0){smog_quit ("There are 0 contacts,check shadow.error log file for possible errors");}
 	## CALCULATE PAIRS and EXCLUSION ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
 	calculateExclusions($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts);
@@ -1873,19 +1877,19 @@ if($topFile !~ /(\.[^.]+)$/){
 }elsif($ext ne ".top"){
 	$topFile = $topFile . ".top";
 }
-my ($ext)=$groFile =~ /(\.[^.]+)$/;
+($ext)=$groFile =~ /(\.[^.]+)$/;
 if($groFile !~ /(\.[^.]+)$/){
 	$groFile = $groFile . ".gro";
 }elsif($ext ne ".gro"){
 	$groFile = $groFile . ".gro";
 }
-my ($ext)=$shadowFile =~ /(\.[^.]+)$/;
+($ext)=$shadowFile =~ /(\.[^.]+)$/;
 if($shadowFile !~ /(\.[^.]+)$/){
 	$shadowFile = $shadowFile . ".contacts";
 }elsif($ext ne ".contacts"){
 	$shadowFile = $shadowFile . ".contacts";
 }
-my ($ext)=$ndxFile =~ /(\.[^.]+)$/;
+($ext)=$ndxFile =~ /(\.[^.]+)$/;
 if($ndxFile !~ /(\.[^.]+)$/){
 	$ndxFile = $ndxFile . ".ndx";
 }elsif($ext ne ".ndx"){
@@ -1906,7 +1910,7 @@ foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile){
 			last;
 			}
 			if($bu == $maxbu){
-		 	confess "\n\nERROR: Already backed up $maxbu copies of $filen. Quitting!\n\n"; 
+		 	smog_quit ("Already backed up $maxbu copies of $filen."); 
 			}
 		}
 	}
@@ -1915,30 +1919,30 @@ foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile){
 # files we will read
 foreach my $filen($inputPDB,$ContactFile){
 	if($filen ne "" && ! -f $filen){
-		confess "\n\nERROR: Can't find file $filen !! Quitting.\n\n";
+		smog_quit("Can't find file $filen !! ");
 	}
 }
 # directories we will access
 foreach my $filen($inputFolder,$contactRes){
 	if($filen ne "" && ! -d $filen){
-		confess "\n\nERROR: Can't find directory $filen !! Quitting.\n\n";
+		smog_quit ("Can't find directory $filen !! ");
 	}
 }
 
 ## check for compatibility of options
 # if CG is not enabled, but contact templates are provided, stop
 if($CGenabled == 0 && $contactRes ne ""){
-	confess "\n\nERROR: t_contacts only supported when using a CG model.  Did you forget to specify \"-CG\"?\n\n";
+	smog_quit ("t_contacts only supported when using a CG model.  Did you forget to specify \"-CG\"?");
 }
 
 # if contact templates and a contact file are provided, complain
 if($ContactFile ne "" && $contactRes ne "")
-{confess("\n\nERROR: You can only specify a t_contacts directory, or a contact file, not both\n\n");}
+{smog_quit("You can only specify a t_contacts directory, or a contact file, not both");}
 
 
 # if contact templates are not provided, and contact file is not provided, but CG is turned on, complain
 if($contactRes eq "" && $CGenabled != 0 && $ContactFile eq "")
-{confess("\n\nERROR: You need to specify t_contacts, or provide a contact map, when using coarse-graining\n\n");}
+{smog_quit("You need to specify t_contacts, or provide a contact map, when using coarse-graining");}
 
 
 ####################

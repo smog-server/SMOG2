@@ -18,7 +18,6 @@ use warnings;
 use XML::Simple;
 use Data::Dumper;
 use Exporter;
-use Carp;
 use String::Util 'trim';
 use Storable qw(dclone);
 
@@ -215,7 +214,7 @@ foreach my $connname (keys %{$conHandle})
 	$resA = $conHandle->{$connname}->{"residueType1"};
 	$resB = $conHandle->{$connname}->{"residueType2"};
 	if(exists $connections{$resA}->{$resB}){
-		confess "\n\n ERROR: Duplicate assignment of connections between residue types $resA and $resB\n\n";
+		smog_quit ("Duplicate assignment of connections between residue types $resA and $resB");
 	}
 	$connections{$resA}->{$resB}=$conHandle->{$connname};
 }
@@ -235,14 +234,6 @@ sub parseSif {
 $data = $xml->XMLin($sif,ForceArray=>1);
 ## Parse function data
 $functions = $data->{"functions"}->[0]->{"function"};
-## check that all functions are supported
-#my $M=$fTypes{"bond_harmonic"};
-#foreach $f (keys %fTypes)
-#{
-#	if(!exists $fTypes{"$f"}){
-#		confess "\n\n ERROR: Function type $f not supported\n\n";
-#	}
-#}
 
 ## Parse settings data
 $settings = $data->{"settings"}->[0];
@@ -318,7 +309,7 @@ foreach my $k(keys %{$contactScaling})
    my $atomListString = $contactScaling->{$k}->{"atomList"};
    $atomListString = trim($atomListString);
    my @atomList = split(/\s+/,$atomListString);
-   if(scalar(@atomList) == 0){confess("\n\nERROR: No atom list at contact scaling\n\n");}
+   if(scalar(@atomList) == 0){smog_quit("No atom list at contact scaling");}
    my %atomListHash = map {$_=>1} @atomList;
 
    my $A = $contactScaling->{$k}->{"residueType1"};
@@ -389,7 +380,7 @@ sub intToFunc
  {
 	if(exists $funcTableRev{$interType} && exists $funcTableRev{$interType}->{$int})
 	{return $funcTableRev{$interType}->{$int};}
-	else{confess "\n\nERROR: NO EXISTENCE OF INTERACTION $interType,$int\n\n";}
+	else{smog_quit ("NO EXISTENCE OF INTERACTION $interType,$int");}
  }
 
 }
@@ -435,7 +426,7 @@ foreach my $inter(@interHandle)
 	my $func = $inter->{"func"};
 	if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
                exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
-		confess "\n\nERROR: bond type between bType $typeA and bType $typeB defined more than once. Check .b file.\n\n";
+		smog_quit ("bond type between bType $typeA and bType $typeB defined more than once. Check .b file.");
 	}
 	$interactions->{"bonds"}->{$typeA}->{$typeB} = $func;
 	$interactions->{"bonds"}->{$typeB}->{$typeA} = $func;
@@ -465,7 +456,7 @@ foreach my $inter(@interHandle)
 	
 	my $keyString = "$typeA-$typeB-$typeC-$typeD";
 	if(exists $interactions->{"dihedrals"}->{$eG}->{$keyString}){
-		confess "\n\nERROR: dihedral type between bTypes $typeA-$typeB-$typeC-$typeD and energy group $eG defined more than once. Check .b file.\n\n";
+		smog_quit ("dihedral type between bTypes $typeA-$typeB-$typeC-$typeD and energy group $eG defined more than once. Check .b file.");
 	}
 	$interactions->{"dihedrals"}->{$eG}->{$keyString} = $func;
 	
@@ -499,7 +490,7 @@ foreach my $inter(@interHandle)
 	
 	my $keyString = "$typeA-$typeB-$typeC-$typeD";
 	if(exists $interactions->{"impropers"}->{$keyString}){
-		confess "\n\nERROR: improper type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.\n\n";
+		smog_quit ("improper type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.");
 	}
 	$interactions->{"impropers"}->{$keyString} = $func;
 	
@@ -527,7 +518,7 @@ foreach my $inter(@interHandle)
 	my $keyString = "$typeA-$typeB-$typeC";
 	## NOTE THE ORDER OF CENTRAL TYPE LISTED IN XML FILE MATTERS ##
 	if(exists $interactions->{"angles"}->{$keyString}){
-		confess "\n\nERROR: bond angle type between bTypes $typeA-$typeB-$typeC defined more than once. Check .b file.\n\n";
+		smog_quit ("bond angle type between bTypes $typeA-$typeB-$typeC defined more than once. Check .b file.");
 	}
 	$interactions->{"angles"}->{$keyString} = $func;
 	$keyString = "$typeC-$typeB-$typeA";
@@ -552,7 +543,7 @@ foreach my $inter(@interHandle)
 	my $func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
 	"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
 	if(exists $interactions->{"nonbonds"}->{$typeA}){
-		confess "\n\nERROR: nonbonded parameters defined multiple times for nbType $typeA. Check .nb file.\n\n";
+		smog_quit ("nonbonded parameters defined multiple times for nbType $typeA. Check .nb file.");
 	}
 	$interactions->{"nonbonds"}->{$typeA} = $func;
 	$funcTable{"nonbonds"}->{$func} = $counter;
@@ -576,7 +567,7 @@ foreach my $inter(@interHandle)
 	my $typeB = $inter->{$type}->[1];
 	my $func = $inter->{"func"}->[0]->{"func"};
 	if(exists $interactions->{"pairs"}->{$type}->{$typeA}->{$typeB}){
-		confess "\n\nERROR: pairs parameters defined multiple times for types $typeA-$typeB. Check .nb file.\n\n";
+		smog_quit ("pairs parameters defined multiple times for types $typeA-$typeB. Check .nb file.");
 	}
 	$interactions->{"pairs"}->{$type}->{$typeA}->{$typeB} = $func;
 	$interactions->{"pairs"}->{$type}->{$typeB}->{$typeA} = $func;
@@ -597,7 +588,7 @@ foreach my $inter(@interHandle)
 	my $func = $inter->{"func"};
  	my $cG = $inter->{"contactGroup"};
 	if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
-		confess "\n\nERROR: contact parameters defined multiple times for types $typeA-$typeB. Check .nb file.\n\n";
+		smog_quit ("contact parameters defined multiple times for types $typeA-$typeB. Check .nb file.");
 	}
 	$interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB} = $func;
 	$interactions->{"contacts"}->{"func"}->{$typeB}->{$typeA} = $func;
@@ -613,7 +604,7 @@ foreach my $inter(@interHandle)
 ## Obtain default options (ONLY FOR GEN PAIRS) ##
 @interHandle = @{$data->{"defaults"}};
 if(exists $interactions->{"gen-pairs"}){
-	confess "\n\nERROR: default declaration is given multiple times. Check .nb file.\n\n";
+	smog_quit ("default declaration is given multiple times. Check .nb file.");
 }
 $interactions->{"gen-pairs"} = $interHandle[0]->{"gen-pairs"};
 
@@ -651,9 +642,9 @@ foreach my $res (keys %residues)
 		($atomA,$atomB) = $bondInfo =~ /(.*)\-(.*)/;
   ## Check if atoms exists in declaration ##
   	    if(!exists $residueHandle->{"atoms"}->{"$atomA"}) 
-		{confess "\n\nERROR: $atomA doesn't exists in $res but a bond was defined $bondInfo\n\n"; }
+		{smog_quit ("$atomA doesn't exists in $res but a bond was defined $bondInfo"); }
 		if(!exists $residueHandle->{"atoms"}->{"$atomB"}) 
-		{confess "\n\nERROR: $atomB doesn't exists in $res but a bond was defined $bondInfo\n\n"; }
+		{smog_quit ("$atomB doesn't exists in $res but a bond was defined $bondInfo"); }
 
 		$typeA = $residueHandle->{"atoms"}->{"$atomA"}->{"bType"};
 		$typeB = $residueHandle->{"atoms"}->{"$atomB"}->{"bType"};
@@ -666,8 +657,8 @@ foreach my $res (keys %residues)
 			
 		elsif ($typeA ne $typeB && (exists $interactions->{"bonds"}->{$typeA}->{"*"} 
                                  && exists $interactions->{"bonds"}->{$typeB}->{"*"})){
-			confess "\n\nERROR: Wildcard conflict in bonds $typeA-$typeB. 
-			Both $typeA-\* and $typeB-\* are defined in .b file. Can not unambiguously assign a function...\n\n";
+			smog_quit ("Wildcard conflict in bonds $typeA-$typeB. 
+			Both $typeA-\* and $typeB-\* are defined in .b file. Can not unambiguously assign a function...\n\n");
  		}
 		## If typeA exists while TypeB is a wildcard ##
 		elsif (exists $interactions->{"bonds"}->{$typeA}->{"*"})
@@ -681,7 +672,7 @@ foreach my $res (keys %residues)
 			if(exists $interactions->{"bonds"}->{"*"}->{"*"})
             		{$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
 		     	else{
-			confess "\n\n ERROR: Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB\n\n";
+			smog_quit ("Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB");
 			}
 		}
 		$indexA = $residueHandle->{"atoms"}->{"$atomA"}->{"index"};
@@ -912,7 +903,7 @@ foreach my $res(keys %dihedralAdjList)
 		}
 
 		if($Nd ==0){
-			confess "\n\nERROR: No dihedrals defined in templates for energy group $eG.  Check .b file.\n\n";
+			smog_quit ("No dihedrals defined in templates for energy group $eG.  Check .b file.");
 		}
 		
 		my $sym=0;
@@ -920,7 +911,7 @@ foreach my $res(keys %dihedralAdjList)
 			$sym=1;
 		}
 		if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
-			confess "\n\nERROR: Multiple possible angles match $a-$b-$c-$d equally well. Unclear assignment of function type\n\n";
+			smog_quit ("Multiple possible angles match $a-$b-$c-$d equally well. Unclear assignment of function type");
 		}
 
 		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
@@ -985,7 +976,7 @@ foreach my $res(keys %dihedralAdjList)
 			$sym=1;
 		}
 		if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
-			confess "\n\nERROR: Multiple possible angles match $a-$b-$c equally well. Unclear assignment of function type\n\n";
+			smog_quit ("Multiple possible angles match $a-$b-$c equally well. Unclear assignment of function type");
 		}
 		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
 		my $indexB = $residues{$res}->{"atoms"}->{$atoms[1]}->{"index"};
