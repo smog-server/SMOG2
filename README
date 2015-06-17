@@ -68,7 +68,7 @@ will not be created, but the environment will still
 be initialized.
 
 If you use SMOG frequently, it is recommended that 
-you add the configura line to your .bashrc file, so 
+you add the configure line to your .bashrc file, so 
 you will not need to re-run configure.smog2 every time 
 you use SMOG. If you do add it to your bashrc, make 
 sure to include the full path for configure.smog2.
