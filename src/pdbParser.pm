@@ -810,8 +810,6 @@ sub connCreateInteractionsBOND
 		if(scalar(@{$imp})!=0){
 		appendImpropersBOND($consecResidues[0],$consecResidues[1],$resAIdx,$resBIdx,$sizeA,$imp,\@tempArr);
 		}
-		##CALL getSetDiheCounts####
-		##getSetDiheCounts(\@tempArr);
 		
         if(@tempArr)
         {$connDiheFunctionals{$counter} = pdl(@tempArr);}
@@ -929,8 +927,6 @@ sub connCreateInteractions
 		if(!$atomA || !$atomB){
 		appendImpropers($consecResidues[0],$consecResidues[1],$sizeA,\@tempArr,$startFlag);
 		}
-		##CALL getSetDiheCounts####
-		##getSetDiheCounts(\@tempArr);
 		
         if(@tempArr)
         {$connDiheFunctionals{$counter} = pdl(@tempArr);}

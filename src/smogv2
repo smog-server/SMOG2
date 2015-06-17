@@ -50,8 +50,10 @@ my $CGenabled=0; ## enable coarse-graining
 our %fTypes = (	'bond_harmonic' => '1',
 		'bond_type6' => '6',
 		'angle_harmonic' => '1',
+		'angle_free' => '0',
 		'dihedral_cosine'=>'1',
 		'dihedral_harmonic' => '2',
+		'dihedral_free' => '0',
 		'contact_1'=>'1',
 		'contact_2'=>'1',
 		'contact_gaussian'=>'6'
@@ -1537,16 +1539,16 @@ sub allAtom
 {
 	my ($inputFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile) = @_;
 
-	print "\n****************************************************\n";
-	print   "******* ALL-ATOM SMOG MODEL WILL BE GENERATED*******";
-	print "\n****************************************************\n";
+	print "\n*****************************************************\n";
+	print   "******* ALL-ATOM SMOG MODEL WILL BE GENERATED *******";
+	print "\n*****************************************************\n";
         
         ## TEST IF SMOG PATH EXISTS ##
         if(!$ENV{"SMOG_PATH"}){confess("\n\nERROR: SMOG_PATH environment variable not set\n\n");}
 	$| = 1;
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
-        print "Parsing All-Atom Templates..... ";
+        print "Parsing All-Atom Templates... ";
 	parseInputFolder($inputFolder); ## PARSE FOLDER --> FILE
 
 	#####################
@@ -1569,7 +1571,7 @@ sub allAtom
 	###############
         ## PARSE PDB ##
         ###############
-	print "Parsing .pdb.....  ";
+	print "Parsing .pdb... ";
 	parseATOM($inputPDB);
 	catPDL();
 	print "Done\n";
@@ -1578,22 +1580,31 @@ sub allAtom
 	## DO CALCULATIONS FOR HAMILTONIAN ##
 	#####################################
 	## COUNT NUMBER OF DIHEDRALS ##
+	print "Generating angles and dihedrals...";
 	getSetDiheCounts(\%connDiheFunctionals,\%connPDL);
 	## SET DIHEDRAL RATIOS ##
+	print "..";
 	setRatios(\%connDiheFunctionals,\%connPDL,$totalAtoms,\%allAtoms);
 	## PRINT TOPOLOGY HEADERS ##
+	print "..";
 	printDefaultParamsHeader();
 	## CALCULATE ATOM TYPE HEADERS ##
+	print "..";
 	calculateAtomTypes(\%allAtoms);
 	## PRINT MOLECULE TYPE ##
+	print "..";
 	printMoleculeTypes();
 	## PRINT ATOMS HEADER ##
+	print "..";
 	calculateAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
+	print "..";
 	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,0);
 	## CALCULATE ANGLES ##
+	print "\nSaving angles\n";
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
 	## CALCULATE DIHEDRALS ##
+	print "Saving dihedrals\n";
 	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
 
     
@@ -1630,14 +1641,14 @@ sub allAtom
 
 
 	if($numContacts == 0){confess "\n\nERROR: There are 0 contacts,check shadow.error log file for possible errors\n\n";}
-	print "NOTE: Total atom count used for normalization is $totalAtoms with $absAtomCount atoms in the system\n";
-	print "Calculating Hamiltonian...";
+	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
+	print "Completing final details...";
 	## CALCULATE PAIRS and EXCLUSION ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
 	calculateExclusions($shadowFile,"",$ignChainContact,$ignAllContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
-	print "Your Structure-based Model is ready!\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
+	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
 }
@@ -1648,9 +1659,9 @@ sub allAtom
 sub coarseGrain
 {
 	my ($inputFolder,$coarseFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile) = @_;
-	print "\n****************************************************\n";
-	print   "**** COARSE-GRAINED SMOG MODEL WILL BE GENERATED****";
-	print "\n****************************************************\n";
+	print "\n*****************************************************\n";
+	print   "**** COARSE-GRAINED SMOG MODEL WILL BE GENERATED ****";
+	print "\n*****************************************************\n";
         
 
 	$| = 1;
@@ -1681,7 +1692,7 @@ sub coarseGrain
 	###############
         ## PARSE PDB ##
         ###############
-	print "Parsing .pdb.....";
+	print "Parsing .pdb... ";
 	parseATOM($inputPDB);
 	catPDL();
 	print "Done\n";
@@ -1690,24 +1701,33 @@ sub coarseGrain
 	## DO CALCULATIONS FOR HAMILTONIAN ##
 	#####################################
 	## COUNT NUMBER OF DIHEDRALS ##
+	print "Preparing system for contact evaluations...";
 	getSetDiheCounts(\%connDiheFunctionals,\%connPDL);
 	## SET DIHEDRAL RATIOS ##
+	print "..";
 	setRatios(\%connDiheFunctionals,\%connPDL,$totalAtoms,\%allAtoms);
 	## PRINT TOPOLOGY HEADERS ##
+	print "..";
 	printDefaultParamsHeader();
 	## CALCULATE ATOM TYPE HEADERS ##
+	print "..";
 	calculateAtomTypes(\%allAtoms);
 	## PRINT MOLECULE TYPE ##
+	print "..";
 	printMoleculeTypes();
 	## PRINT ATOMS HEADER ##
+	print "..";
 	calculateAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
+	print "..";
 	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,0);
 	## CALCULATE ANGLES ##
+	print "..";
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
 	## CALCULATE DIHEDRALS ##
+	print "..";
 	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
-
+	print "..\n";
         convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	my $SCMparams = setContactParams();
 	my $absAtomCount = keys(%allAtoms);
@@ -1719,7 +1739,7 @@ sub coarseGrain
      $memoryMax = "-Xmx$memoryMax"."m";
     } 
         if($ignAllContacts ==0){
-        print "Finding coarse grain contacts.....";
+        print "Finding coarse grained contacts... ";
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){confess "\n\nERROR: Can't find Shadow executable. Make sure SMOG_PATH is set correctly.\n\n"}
 	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams ");
@@ -1733,8 +1753,8 @@ sub coarseGrain
         ###################################
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
-        print "\n\n	     FINAL PROCESSING\n\n Will use templates given with -t\n\n";
-	print "Parsing Coarse Grained Templates.....";
+        print "\n\n	     FINAL PROCESSING\n\nWill use templates given with -t\n\n";
+	print "Parsing Coarse Grained Templates... ";
 	parseInputFolder($coarseFolder);
 	## parse Bif File ##
 	parseBif();
@@ -1763,25 +1783,33 @@ sub coarseGrain
 	print "Done\n";
 	$absAtomCount = keys(%allAtoms);
 	print "NOTE: Total atom count: $absAtomCount\n";
-	print "Creating Topology.....";
 	
 	## COUNT NUMBER OF DIHEDRALS ##
+	print "Constructing final model...";
 	getSetDiheCounts(\%connDiheFunctionals,\%connPDL);
 	## SET DIHEDRAL RATIOS ##
+	print "..";
 	setRatios(\%connDiheFunctionals,\%connPDL,$totalAtoms,\%allAtoms);
 	## PRINT TOPOLOGY HEADERS ##
+	print "..";
 	printDefaultParamsHeader();
 	## CALCULATE ATOM TYPE HEADERS ##
+	print "..";
 	calculateAtomTypes(\%allAtoms);
 	## PRINT MOLECULE TYPE ##
+	print "..";
 	printMoleculeTypes();
 	## PRINT ATOMS HEADER ##
+	print "..";
 	calculateAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
+	print "..\n";
 	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,1);
 	## CALCULATE ANGLES ##
+	print "Saving angles\n";
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
 	## CALCULATE DIHEDRALS ##
+	print "Saving dihedrals\n";
 	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
 
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,1);
@@ -1791,8 +1819,7 @@ sub coarseGrain
 	calculateExclusions($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
-	print "Done\n";
-	print "Your Structure-based Model is ready!\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
+	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
 	close($OUTPUT);
 	##printCitation();
 

@@ -48,6 +48,13 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
+	<dihedral func="dihedral_free()" energyGroup="free">
+	<bType>*</bType>
+	<bType>free_bond</bType>
+	<bType>free_bond</bType>
+	<bType>*</bType>
+	</dihedral>
+
 	<!-- AMINO DIHEDRALS -->
 	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="bb_a">
 	<bType>*</bType>
