@@ -40,7 +40,7 @@ if (( $ERR == 0 )); then
 	
 		echo '#!/bin/bash' > $SMOG_PATH/bin/smog2
 		echo "# Wrapper for SMOG V2" >> $SMOG_PATH/bin/smog2
-		echo $smog_exec >> $SMOG_PATH/bin/smog2
+		echo $smog_exec \"\$\@\" >> $SMOG_PATH/bin/smog2
 		chmod u+x $SMOG_PATH/bin/smog2
 	
 		for tool in adjustPDB  removeH  tablegen 
