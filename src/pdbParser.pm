@@ -357,6 +357,10 @@ sub parseATOMCoarse
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
 		$resCount = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
+		my $atomsInRes=scalar(keys(%{$residues{$residue}->{"atoms"}}));
+		if($atomsInRes != 1)
+                 {confess "\n\nERROR: When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue\n\n";}
+
 	 	seek(MYFILE, -$outLength, 1); # place the same line back onto the filehandle
 	
 		for($i=0;$i<$resCount;$i++)
@@ -386,6 +390,10 @@ sub parseATOMCoarse
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 			$residueType = $residues{$residue}->{"residueType"};
+			if($residues{$residue}->{"atomCount"} > 1){
+				confess "\n\n ERROR: Currently, -CG only supports models that have 1 atom per residue.\n\n"
+			}
+
 		    ##[nbType,residueType,resIndex,atom,chainNumber,resName]
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
 
@@ -399,7 +407,7 @@ sub parseATOMCoarse
 	  	@union = (@union,@temp);@temp=();
 		push(@consecResidues,$residue);
 		$headFlag = 0;
-        $tempPDL{$residue}->{$residueIndex}=pdl(@tempBond);
+        	$tempPDL{$residue}->{$residueIndex}=pdl(@tempBond);
 		@tempBond = ();
 		$residueIndex++;
 				

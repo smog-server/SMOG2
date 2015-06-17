@@ -187,7 +187,6 @@ foreach my $res ( keys %{$residueHandle} )
     ##atomCount !exists == -1, else atomCount
     if(!exists $residueHandle->{$res}->{"atomCount"})
     {$residueHandle->{$res}->{"atomCount"}=-1;}
-  
   ## Create residue hash containing all data
   my $interRes = {
 	"residueType" => $residueHandle->{$res}->{residueType},
