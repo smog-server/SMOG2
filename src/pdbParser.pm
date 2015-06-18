@@ -1244,70 +1244,62 @@ sub catPDL
 
 sub parseCONTACT
 {
-  my($fileName,$fileName2,$noChainFlag,$noAllFlag,$coarseGraining) = @_;
-  my $numContacts = 0; my $garbage = 0;
-  my $line = "";
-  my $type1;my $type2; my $contact1; my $contact2;
-  my $dist;
-  my @interiorTempPDL;
-		## noChainFlag ignores contact between chains ##  
+	#lets leave this as two filename inputs in case we want to allow two sources of contacts in the future (i.e. user and shadow)
+	my($fileName,$fileName2,$ignAllContacts,$coarseGraining) = @_;
+	my $numContacts = 0; my $garbage = 0;
+	my $line = "";
+	my $type1;my $type2; my $contact1; my $contact2;
+	my $dist;
+	my @interiorTempPDL; #usage: push(@interiorTempPDL,[1,$contact1,$contact2,$dist]);
+	#Format for this PDL has a boolean as the first argument
+	#it is unused for now, but could be useful in future to use
+	#as a flag to differentiate between user generated and smog generated contacts
 
-  ## OPEN .contact FILE ##
-  
-  if($noAllFlag){print "\nNOTE: Not calculating contact map\n";}
+	if(!$ignAllContacts){ #use shadow generated contact map
+		## OPEN .contact FILE ##
+		unless (open(MYFILE, $fileName)) {
+			smog_quit ("Internal contact file can not be read.  See shadow.log for more information.");
+		}
+		while($line = <MYFILE>)
+		{
+			($contact1,$type1,$contact2,$type2,$dist) = split(/\s+/,$line);
+			## NOTE RESIDUE INDEX == CONTACT ##
+			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
+			{smog_quit("CONTACTS between atoms $type1 $type2 exceed contacts threshold with value $dist");}
 
-  if(!$noAllFlag){
-   unless (open(MYFILE, $fileName)) {
-    smog_quit ("Internal contact file can not be read.  See shadow.log for more information.");
-  }
-  while($line = <MYFILE>)
-  {
-	($contact1,$type1,$contact2,$type2,$dist) = split(/\s+/,$line);
- 	## INTER CHAIN CONTACT IGNORE ##
- 	if($noChainFlag && ($allAtoms{$type1}->[4] ne $allAtoms{$type2}->[4]))
- 	{next;}
-	## NOTE RESIDUE INDEX == CONTACT ##
-	if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
-	{smog_quit("CONTACTS between atoms $type1 $type2 exceed contacts threshold with value $dist");}
-	
-	push(@interiorTempPDL,[0,$type1,0,$type2,$dist]);
-	$numContacts++;
-  }
-
-   ## NO DCA FILE RETURN ##
-##   if($fileName2 eq ""){$contactPDL = pdl(@interiorTempPDL);return $numContacts;}
-  }else{
-   ## Else Proceed ##
-   ## NO DCA FILE RETURN ##
-##   if($fileName2 eq ""){$contactPDL = pdl(@interiorTempPDL);return $numContacts;}
-  
-  print "Reading contacts from $fileName2\n";
-  ## OPEN .dca FILE ##
-  unless (open(MYFILE1, $fileName2)) {
-    smog_quit ("Cannot read contact file '$fileName2'.");
-  }
-  
-   ## DCA CONTACTS ARE IN FORM
-   ## atom1 atom2 dist(angstrom) ##
-   while($line = <MYFILE1>)
-  {
-	my ($contact1,$contact2,$dist,$epsilon) = split(/\s+/,$line);
- 	## INTER CHAIN CONTACT IGNORE ##
- 	#if($noChainFlag && ($allAtoms{$type1}->[2] ne $allAtoms{$type2}->[2])){next;}
-	## NOTE RESIDUE INDEX == CONTACT ##
-	## ANGSTROM TO NM CONVERSION ##
-	$dist/=10;
-	##[dcaContacts_boolean,c1,value,c2,dist]##
-    if(!exists $allAtoms{$contact1}){warn("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
-    if(!exists $allAtoms{$contact2}){warn("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
-    push(@interiorTempPDL,[1,$contact1,$epsilon,$contact2,$dist]);
-	$numContacts++;
-  }
- } 
-  $contactPDL = pdl(@interiorTempPDL);
-  return $numContacts;
+			push(@interiorTempPDL,[0,$type1,$type2,$dist]);
+			$numContacts++;
+		}
+	} else { #read in contact from file
+		print "\nNOTE: Not calculating contact map\n";
+		print "Reading contacts from $fileName2\n";
+		## OPEN user provided contact FILE ##
+		unless (open(MYFILE1, $fileName2)) {
+			smog_quit ("Cannot read contact file '$fileName2'.");
+		}
+		## User contact map should be in format ##
+		## atom1 atom2 dist(nm) ##
+		while($line = <MYFILE1>) {
+			my ($contact1,$contact2,$dist) = split(/\s+/,$line);
+			if(!exists $allAtoms{$contact1}){warn("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
+			if(!exists $allAtoms{$contact2}){warn("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
+			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
+			{smog_quit("CONTACTS between atoms $contact1 $contact2 exceed contacts threshold with value $dist");}
+			push(@interiorTempPDL,[1,$contact1,$contact2,$dist]);
+			$numContacts++;
+		}
+	} 
+	$contactPDL = pdl(@interiorTempPDL);
+	return $numContacts;
   
 }
 
+sub smog_quit
+{
+	my ($LINE)=@_;
+	print "\n\nFATAL ERROR: $LINE\n\n";
+	exit;
+
+}
 
 1;
