@@ -1282,6 +1282,7 @@ sub validateTemplate
 sub parseInputFolder
 {
  my ($folderName) = @_;
+ $folderName = $1 if($folderName=~/(.*)\/$/);
  opendir(my $folder,$folderName);
  my $bif;my $sif;my $b;my $nb;
  my $bifexists=0;
