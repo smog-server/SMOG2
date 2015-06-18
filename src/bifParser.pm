@@ -425,26 +425,6 @@ sub getEnergyGroup
 }
 
 
-
-#sub getEnergyGroup
-#{
-#	my($residuea,$residueb,$atoma,$atomb) = @_;
-#    if(!($atoma =~/(.*)\?/ ^ $atomb =~/(.*)\?/))
-#	{
-#		$atoma =~ s/\?//;$atomb =~ s/\?//;
-#		if(exists $residues{$residuea}->{"energyGroups"}->{"$atoma-$atomb"})
-#			{return $residues{$residuea}->{"energyGroups"}->{"$atoma-$atomb"};}
-#		else
-#			{return $residues{$residuea}->{"rigidGroups"}->{"$atoma-$atomb"};}
-#	}
-#	else
-#	{
-#		print "STALE STATE\n";
-#		return "r";
-#	}
-#
-#}
-
 ##############################
 ## PARSE BOND/NONBOND FILES ##
 ##############################
@@ -943,15 +923,20 @@ foreach my $res(keys %dihedralAdjList)
 		}
 
 		if($Nd ==0){
-			smog_quit ("No dihedrals defined in templates for energy group $eG.  Check .b file.");
+			smog_quit ("energy group $eG is used in .bif file, but it is not defined in .b file.");
 		}
 		
 		my $sym=0;
 		if(($a eq $d and $b eq $c) || ($a eq $b and $b eq $c and $c eq $d)){
 			$sym=1;
 		}
-		if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
-			smog_quit ("Multiple possible angles match $a-$b-$c-$d equally well. Unclear assignment of function type");
+		if(($symmatch ==0 && $sym == 1 && $matchScoreCount > 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount > 0)){
+
+			smog_quit ("$symmatch  $sym $matchScoreCount Multiple possible angles match $a-$b-$c-$d, and energyGroup $eG equally well. Can not determine function based on .b file.");
+		}
+
+		if($matchScore == 0){
+			smog_quit ("Dihedral Angle between bTypes $a-$b-$c-$d and energyGroup $eG: Unable to match to a function in .b file.");
 		}
 
 		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};

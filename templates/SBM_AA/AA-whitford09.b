@@ -56,8 +56,8 @@
 	</dihedral>
 	<dihedral func="dihedral_free()" energyGroup="free">
 	<bType>*</bType>
-	<bType>free</bType>
-	<bType>free</bType>
+	<bType>*</bType>
+	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
 
