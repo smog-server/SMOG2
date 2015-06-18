@@ -1294,12 +1294,5 @@ sub parseCONTACT
   
 }
 
-sub smog_quit
-{
-	my ($LINE)=@_;
-	print "\n\nFATAL ERROR: $LINE\n\n";
-	exit;
-
-}
 
 1;

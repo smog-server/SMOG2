@@ -61,14 +61,6 @@ our %fTypes = (	'bond_harmonic' => '1',
 ## CALCULATE BONDS ##
 #####################
 
-sub smog_quit
-{
-	my ($LINE)=@_;
-	print "\n\nFATAL ERROR: $LINE\n\n";
-	exit;
-
-}
-
 ##
 # Combined bond calculation,sorting, and printing
 sub printOrderedBonds
@@ -775,7 +767,7 @@ sub calculateContacts
 sub contactOutput
 {
  my($inputFunc,$i,$j,$c0,$epsilon) = @_;
- if(!$inputFunc){smog_quit "CONTACTOUTPUT::NO FUNCTION DEFINED";}
+ if(!$inputFunc){smog_quit ("CONTACTOUTPUT::NO FUNCTION DEFINED");}
  ## Remove white spaces from string ##
  $inputFunc =~ s/^\s+|\s+$//g;
  ## If $input contains a + ##
