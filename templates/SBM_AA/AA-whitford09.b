@@ -19,6 +19,12 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</angle>
+	<angle func="angle_free()">
+	<bType>freeb</bType>
+	<bType>freeb</bType>
+	<bType>freeb</bType>
+	</angle>
+
 </angles>
 
 <!-- DIHEDRALS -->
@@ -50,8 +56,8 @@
 	</dihedral>
 	<dihedral func="dihedral_free()" energyGroup="free">
 	<bType>*</bType>
-	<bType>free_bond</bType>
-	<bType>free_bond</bType>
+	<bType>*</bType>
+	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
 

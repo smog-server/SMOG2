@@ -24,7 +24,7 @@ use Storable qw(dclone);
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(smog_quit $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %dihedralFunctionals %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory);
+qw(getEnergyGroup smog_quit $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %dihedralFunctionals %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -393,26 +393,37 @@ sub intToFunc
  }
 
 }
-
-
+# getEnergyGroup: Return the energy group for both connected, and internal dihedrals
 sub getEnergyGroup
 {
 	my($residuea,$residueb,$atoma,$atomb) = @_;
-    if(!($atoma =~/(.*)\?/ ^ $atomb =~/(.*)\?/))
+	my $residueIn=$residuea;
+	my $residueTypea;my $residueTypeb;
+	
+	
+ 	## If Bond is internal ##
+ 	if(($atoma =~/(.*)\?/ && $atomb =~/(.*)\?/)
+ 	|| ($atoma !~/(.*)\?/ && $atomb !~/(.*)\?/))
 	{
+	 
+		$residueIn = $residueb if($atoma =~ /\?/|| $atomb =~ /\?/);
 		$atoma =~ s/\?//;$atomb =~ s/\?//;
-		if(exists $residues{$residuea}->{"energyGroups"}->{"$atoma-$atomb"})
-			{return $residues{$residuea}->{"energyGroups"}->{"$atoma-$atomb"};}
-		else
-			{return $residues{$residuea}->{"rigidGroups"}->{"$atoma-$atomb"};}
+		if(exists $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"})
+			{return $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"};}
+		elsif(exists $residues{$residueIn}->{"rigidGroups"}->{"$atoma-$atomb"})
+			{return $residues{$residueIn}->{"rigidGroups"}->{"$atoma-$atomb"};}
+		else{smog_quit("A specified energy group for $residuea:$atoma, $residueb:$atomb doesn't exists");}
 	}
+ 	## If Bond is between two residues ##
 	else
 	{
-		print "STALE STATE\n";
-		return "r";
+		$residueTypea =$residues{$residuea}->{"residueType"};
+		$residueTypeb =$residues{$residueb}->{"residueType"};
+		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
 	}
 
 }
+
 
 ##############################
 ## PARSE BOND/NONBOND FILES ##
@@ -912,15 +923,20 @@ foreach my $res(keys %dihedralAdjList)
 		}
 
 		if($Nd ==0){
-			smog_quit ("No dihedrals defined in templates for energy group $eG.  Check .b file.");
+			smog_quit ("energy group $eG is used in .bif file, but it is not defined in .b file.");
 		}
 		
 		my $sym=0;
 		if(($a eq $d and $b eq $c) || ($a eq $b and $b eq $c and $c eq $d)){
 			$sym=1;
 		}
-		if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
-			smog_quit ("Multiple possible angles match $a-$b-$c-$d equally well. Unclear assignment of function type");
+		if(($symmatch ==0 && $sym == 1 && $matchScoreCount > 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount > 0)){
+
+			smog_quit ("$symmatch  $sym $matchScoreCount Multiple possible angles match $a-$b-$c-$d, and energyGroup $eG equally well. Can not determine function based on .b file.");
+		}
+
+		if($matchScore == 0){
+			smog_quit ("Dihedral Angle between bTypes $a-$b-$c-$d and energyGroup $eG: Unable to match to a function in .b file.");
 		}
 
 		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};

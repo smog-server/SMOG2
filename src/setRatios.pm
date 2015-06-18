@@ -179,6 +179,10 @@ sub adjustFactorsHelper1
 	if($normalize eq 1) 
 	{
 		$relativeRatio=$termRatios->{$resTypeUse}->{"energyGroup"}->{$eG}->{"intraRelativeStrength"};
+		if(!defined $relativeRatio){
+			smog_quit("normalize=0, but intraRelativeStrength not defined for energyGroup $eG. Check .sif file");
+		}
+
         ${$sum}+=($count*$relativeRatio);
 		$count*=$relativeRatio;
         set($diheArr,5,$i,$count);	
