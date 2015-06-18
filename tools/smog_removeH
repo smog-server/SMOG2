@@ -18,7 +18,6 @@ print <<EOT;
 *****************************************************************************************
 EOT
 
-
 ##
 # STRIP HYDROGENS OFF PDB FILE 
 # WARNING: THIS SCRIPT IS NOT COMPREHENSIVE, BUT CAN BE HELPFUL
@@ -31,7 +30,7 @@ if(scalar(@ARGV) != 1){
 
 my $pdb = $ARGV[0];
 open(PDB,$pdb);
-if (-e $pdb.new){confess "\n\nOutput file $pdb.new already exists.  Quitting.\n\n"}
+if (-e "$pdb.new"){confess "\n\nOutput file $pdb.new already exists.  Quitting.\n\n";}
 open(PDBOUT,">$pdb.new");
 
 my $atomCount = 0;
