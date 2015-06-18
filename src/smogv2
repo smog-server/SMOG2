@@ -344,17 +344,18 @@ sub connCalculateAnglesHelper
  
  for(my $i=0;$i<$size;$i++)
  {
-		my ($atom1,$atom2,$atom3,$func) = $angleArr->slice(":,$i:$i")->list;
-  my $left = norm(slice($inputPDL,"0:2,$atom1,:")-slice($inputPDL,"0:2,$atom2,:"));
-		my $right = norm(slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:"));
-		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
+	my ($atom1,$atom2,$atom3,$func) = $angleArr->slice(":,$i:$i")->list;
+  	my $left = norm(slice($inputPDL,"0:2,$atom1,:")-slice($inputPDL,"0:2,$atom2,:"));
+	my $right = norm(slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:"));
+	my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
 	
-		my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
-		my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
-		my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
+	my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
+	my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
+	my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
 
-	
-  push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos)};
+  	my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos);
+	if(!$val) {next;}
+  	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos)};
  }
 
 }
@@ -377,20 +378,24 @@ sub angleOutput
 	{
 	my $paramFormat="";
 	($fType,@paramArr) = angleFuncParser($fun);
-	if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## non-native option used
+	if($fType != 0){
+		if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## non-native option used
 	
-	## Check angles threshold ##
-	 if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"})
+		## Check angles threshold ##
+	 	if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"})
 	 	 {print("\n\nWARNING: ANGLES between atom $i $j $k lower than angles threshold with value $paramArr[0]\n\n");}
-	 if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"})
+	 	if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"})
 	 	 {print("\n\nWARNING: ANGLES between atom $i $j $k greater than angles threshold with value $paramArr[0]\n\n");}
 	
- ## Format output <i j k function p1 p2 ... pn>
- foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-	$formattedString = sprintf("%9d%9d%9d%6d$paramFormat",$i,$j,$k,$fType,@paramArr);
-	$outputString = "$outputString$formattedString\n";
+ 		## Format output <i j k function p1 p2 ... pn>
+ 		foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+			$formattedString = sprintf("%9d%9d%9d%6d$paramFormat",$i,$j,$k,$fType,@paramArr);
+			$outputString = "$outputString$formattedString\n";
+		}
 	}
-	return $outputString; 
+	if($fType != 0){
+		return $outputString; 
+	}
 }
 
 ##
@@ -566,52 +571,60 @@ sub dihedralOutput
 	my $paramFormat="";
 	($fType,@paramArr) = diheFuncParser($fun);
 
-	# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
-	if($paramArr[0] =~ /\?/){
-         # replace ? with native angles
-   	 $paramArr[0] =~ s/\?/$values/g;
-	 # evaluate
-	 $paramArr[0] = eval($paramArr[0]);
-	 }
-	 if( $fType == 1){
-            # Angle will be scaled by multiplicity factor n, if they are cosine functions
-            $paramArr[0] *= $paramArr[2];
-	  }
-
-
-        if($paramArr[1] =~ /[*?^&!@#%()]/){smog_quit ("Dihedral weight can only contain numbers, but $paramArr[1] found.")};
-	if($funci == 0){
-	  $fTypei[0]= $fType;
-
-	  if($fType==1 and $paramArr[1] != 1 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
-	   smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
-	  }
-	}elsif($funci != 0 and $fTypei[0] != $fType){
-          smog_quit ("Sums of dihedrals of different types is not supported.");
+ 	if($fType !=0){
+		# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
+		if($paramArr[0] =~ /\?/){
+	         # replace ? with native angles
+	   	 $paramArr[0] =~ s/\?/$values/g;
+		 # evaluate
+		 $paramArr[0] = eval($paramArr[0]);
+		 }
+		 if( $fType == 1){
+	            # Angle will be scaled by multiplicity factor n, if they are cosine functions
+	            $paramArr[0] *= $paramArr[2];
+		 }
+	
+	
+	        if($paramArr[1] =~ /[*?^&!@#%()]/){smog_quit ("Dihedral weight can only contain numbers, but $paramArr[1] found.")};
+	#	my $h=$energyGroups->{$eGTable{$eG}}->{"normalize"};
+	#	print "$eG $fType $h\n";
+	
+		if($fType == 0 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
+			smog_quit("Function type dihedral_free is being used for an energy group with normalize != 0.  This can lead to unpredictable results.");
+		}
+	
+		if($funci == 0){
+		  $fTypei[0]= $fType;
+	
+		  if($fType==1 and $paramArr[1] != 1 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
+		   smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
+		  }
+		}elsif($funci != 0 and $fTypei[0] != $fType){
+	          smog_quit ("Sums of dihedrals of different types is not supported.");
+		}
+	
+		$funci++;
+		## If dihedral kd is normalized or has scaling&normalize ##
+	 	$paramArr[1]*=$ratio;
+	
+		### MINOR KLUDGE TO FIX RIGID/IMPROPER DIHEDRALS BEING OFF BY +-180 ###
+		if($fType == 2)
+		{
+			if($paramArr[0]>180){$paramArr[0]-=180;}else{$paramArr[0]+=180;}
+		}
+	 
+		## Format output <i j k function p1 p2 ... pn>
+	 	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+	
+	 ## MINOR KLUDGE TO FIX MULTIPLICITY FORMATTING FOR TYPE 1 ##
+	 ## BLAME PAUL##
+	 if($fType eq 1) {$paramFormat=" %12.9e	%12.9e %u";}
+	
+		$formattedString = sprintf("%9d%9d%9d%9d%3d$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
+		$outputString = "$outputString$formattedString\n";
 	}
-
-	$funci++;
-	## If dihedral kd is normalized or has scaling&normalize ##
- 	$paramArr[1]*=$ratio;
-
-	### MINOR KLUDGE TO FIX RIGID/IMPROPER DIHEDRALS BEING OFF BY +-180 ###
-	if($fType == 2)
-	{
-		if($paramArr[0]>180){$paramArr[0]-=180;}else{$paramArr[0]+=180;}
 	}
- 
-	## Format output <i j k function p1 p2 ... pn>
- 	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-
- ## MINOR KLUDGE TO FIX MULTIPLICITY FORMATTING FOR TYPE 1 ##
- ## BLAME PAUL##
- if($fType eq 1) {$paramFormat=" %12.9e	%12.9e %u";}
-
-	$formattedString = sprintf("%9d%9d%9d%9d%3d$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
-	$outputString = "$outputString$formattedString\n";
-	}
-	return $outputString;
- 
+		return $outputString;
  }
  
 ##
