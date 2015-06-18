@@ -770,8 +770,6 @@ sub calculateContacts
 			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
 			}
 	}
-	
-	#print "TOTAL EPSIOLON IS $totalEpsilon\n";
 }
 
 ##
@@ -1045,7 +1043,7 @@ sub calculateAtoms
 	print $OUTPUT ";nr  type  resnr residue atom  cgnr\n";
 	my $atomName;my $atomNum; my $resName; my $resNum;
 	my $charge = 0; my $mass = 1; my $atomType="none";
-	my $counter=0; my $resCounter=1;my $resNumPrev=1;
+	my $counter=0; my $resCounter=1;my $resNumCurr="null";
 	while($line = <PDB>)
 	{
 		if($line =~ m/END/) {last;}
@@ -1059,9 +1057,12 @@ sub calculateAtoms
 			$resName =~ s/^\s+|\s+$//g;
 			$resNum = substr($line,22,4);
 			$resNum =~ s/^\s+|\s+$//g;
-   			if($resNum ne $resNumPrev)
+			if($resNumCurr eq "null"){
+				$resNumCurr=$resNum;
+			}
+   			if($resNum ne $resNumCurr)
 			{
-				$resNumPrev=$resNum;
+				$resNumCurr=$resNum;
 				$resCounter++;
 			}
 			if(!$residues{$resName}->{"atoms"}->{$atomName}){next;}
@@ -1131,7 +1132,7 @@ sub convertPDBToGroNdx
  	my $chain = "";
  	my $chainCounter = 1;
  	my %chainHash;
-	my $resNumPrev=1;my $resCounter=1;
+	my $resNumCurr=1;my $resCounter=1;
 	my $boundflag=0;
 	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
  	open(PDB,$inputPDB); ## INPUT PDB
@@ -1179,10 +1180,10 @@ sub convertPDBToGroNdx
 		$counter++;$atomNum=$counter;
 		$resNum = substr($line,22,4);
 		$resNum =~ s/^\s+|\s+$//g;
-		if($atomNum == 1){$resNumPrev=$resNum;}
-		if($resNum ne $resNumPrev)
+		if($atomNum == 1){$resNumCurr=$resNum;}
+		if($resNum ne $resNumCurr)
 			{
-				$resNumPrev=$resNum;
+				$resNumCurr=$resNum;
 				$resCounter++;
 			}
 
