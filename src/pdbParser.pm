@@ -26,10 +26,7 @@ qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %a
 my @vector;
 my $coorPDL;
 my %results;
-my %residueCount = ("ASN"=>8);
 my %residuePDL=();
-
-my %testASN = ("N"=>0,"CA"=>1,"C"=>2,"O"=>3,"CB"=>4,"CG"=>5,"OD1"=>6,"ND2"=>7); 
 
 our %tempPDL = ();
 our %resPDL;
@@ -1297,12 +1294,5 @@ sub parseCONTACT
   
 }
 
-sub smog_quit
-{
-	my ($LINE)=@_;
-	print "\n\nFATAL ERROR: $LINE\n\n";
-	exit;
-
-}
 
 1;
