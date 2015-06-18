@@ -26,10 +26,7 @@ qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %a
 my @vector;
 my $coorPDL;
 my %results;
-my %residueCount = ("ASN"=>8);
 my %residuePDL=();
-
-my %testASN = ("N"=>0,"CA"=>1,"C"=>2,"O"=>3,"CB"=>4,"CG"=>5,"OD1"=>6,"ND2"=>7); 
 
 our %tempPDL = ();
 our %resPDL;
@@ -450,38 +447,6 @@ sub getAtomBType
  return $residues{$residue}->{"atoms"}->{$atom}->{"bType"};
 }
 
-
-##
-# getEnergyGroup: Return the energy group for both connected, and internal dihedrals
-sub getEnergyGroup
-{
-	my($residuea,$residueb,$atoma,$atomb) = @_;
-	my $residueIn=$residuea;
-	my $residueTypea;my $residueTypeb;
-	
-	
- 	## If Bond is internal ##
- 	if(($atoma =~/(.*)\?/ && $atomb =~/(.*)\?/)
- 	|| ($atoma !~/(.*)\?/ && $atomb !~/(.*)\?/))
-	{
-	 
-		$residueIn = $residueb if($atoma =~ /\?/|| $atomb =~ /\?/);
-		$atoma =~ s/\?//;$atomb =~ s/\?//;
-		if(exists $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"})
-			{return $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"};}
-		elsif(exists $residues{$residueIn}->{"rigidGroups"}->{"$atoma-$atomb"})
-			{return $residues{$residueIn}->{"rigidGroups"}->{"$atoma-$atomb"};}
-		else{smog_quit("A specified energy group for $residuea:$atoma, $residueb:$atomb doesn't exists");}
-	}
- 	## If Bond is between two residues ##
-	else
-	{
-		$residueTypea =$residues{$residuea}->{"residueType"};
-		$residueTypeb =$residues{$residueb}->{"residueType"};
-		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
-	}
-
-}
 
 sub singleCreateInteractions
 {
@@ -1297,12 +1262,5 @@ sub parseCONTACT
   
 }
 
-sub smog_quit
-{
-	my ($LINE)=@_;
-	print "\n\nFATAL ERROR: $LINE\n\n";
-	exit;
-
-}
 
 1;

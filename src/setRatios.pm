@@ -27,7 +27,6 @@ sub getDiheCountsHelper
  my($diheArr,$inputPDL) = @_;
  my $size = $diheArr->dim(1);
  my @tempArr;
- 
  ## Count number of dihedrals passing through a bond ##
  for(my $i=0;$i<$size;$i++)
  {
@@ -180,6 +179,10 @@ sub adjustFactorsHelper1
 	if($normalize eq 1) 
 	{
 		$relativeRatio=$termRatios->{$resTypeUse}->{"energyGroup"}->{$eG}->{"intraRelativeStrength"};
+		if(!defined $relativeRatio){
+			smog_quit("normalize=0, but intraRelativeStrength not defined for energyGroup $eG. Check .sif file");
+		}
+
         ${$sum}+=($count*$relativeRatio);
 		$count*=$relativeRatio;
         set($diheArr,5,$i,$count);	
