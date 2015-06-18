@@ -32,7 +32,6 @@ my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
 my $help;my $inputPDB; my $inputFolder=""; my $bifForSCM;
-my $ignChainContact=0;
 my $ignAllContacts=0;
 my $topFile = "smog.top";
 my $groFile = "smog.gro";
@@ -673,7 +672,7 @@ sub calculateContacts
 	{
 			my $normalize;
 			$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
-	  		$atomb = sclr(slice($contactPDL,"3:3,$i:$i"));
+	  		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
 			$nbtypea = $atomTypes->{$atoma}->[0];
 			$nbtypeb = $atomTypes->{$atomb}->[0];
 			$resTypea = $atomTypes->{$atoma}->[1];
@@ -697,7 +696,7 @@ sub calculateContacts
 			my $atomA="";my $atomB="";
 			
 	  		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
-	  		$atomb = sclr(slice($contactPDL,"3:3,$i:$i"));
+	  		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
 			$nbtypea = $atomTypes->{$atoma}->[0];
 			$nbtypeb = $atomTypes->{$atomb}->[0];
 			$resTypea = $atomTypes->{$atoma}->[1];
@@ -740,7 +739,7 @@ sub calculateContacts
 
 			## Non-Native option for contacts ##
 			if(!$normalize) {
-			$dist = sclr(slice($contactPDL,"4:4,$i:$i"));
+			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
 			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
 			}	
@@ -760,7 +759,7 @@ sub calculateContacts
 			$multFactor = $multFactor*($contactIntraScale/$contactIntraTotal);
 
 			$epsilon = $epsilon*$multFactor;
-	  		$dist = sclr(slice($contactPDL,"4:4,$i:$i"));
+	  		$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 	  		$c0=$dist;
 	  		$totalEpsilon+=$epsilon;
 			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
@@ -983,61 +982,19 @@ sub contactFuncParser
 
 sub calculateExclusions
 {
-  my($fileName,$fileName2,$noChainFlag,$ignAllContacts) = @_;
-  my $numContacts = 0; my $garbage = 0;
-  my $line = "";
-  my $type1;my $type2; my $contact1; my $contact2;
-  my $dist;
+	my($contactPDL,$numCon) = @_;
+	my $atoma; my $atomb;
 
-  print $OUTPUT "\n[ exclusions ]\n";
-  print $OUTPUT "; ai	aj\n";
-  
-  if($ignAllContacts == 0){
-  ## OPEN .contact FILE ##
-  unless (open(MYFILE, $fileName)) {
-    print "Cannot read from '$fileName'.\nProgram closing.\n";
-    <STDIN>;
-    exit;
-  }
- 
-  
-  while($line = <MYFILE>)
-  {
-	($contact1,$type1,$contact2,$type2,$dist) = split(/\s+/,$line);
-	## INTER CHAIN CONTACT IGNORE ##
-    if($noChainFlag && ($allAtoms{$type1}->[4] ne $allAtoms{$type2}->[4])){next;}
-    print $OUTPUT $type1,"	",$type2,"\n";
-  }
-  }
+	print $OUTPUT "\n[ exclusions ]\n";
+	print $OUTPUT "; ai	aj\n";
 
-   ## NO DCA FILE RETURN ##
-   if($fileName2 eq ""){return;}
-   ## Else Proceed ##
-  
-  
-  ## OPEN .dca FILE ##
-  unless (open(MYFILE1, $fileName2)) {
-    smog_quit ("Cannot read from '$fileName2'");
-  }
-  
-   ## DCA CONTACTS ARE IN FORM
-   ## atom1 atom2 dist(angstrom) ##
-   while($line = <MYFILE1>)
-  {
-	my ($contact1,$contact2,$dist,$epsilon) = split(/\s+/,$line);
- 	## INTER CHAIN CONTACT IGNORE ##
- 	#if($noChainFlag && ($allAtoms{$type1}->[2] ne $allAtoms{$type2}->[2])){next;}
-	## NOTE RESIDUE INDEX == CONTACT ##
-	## ANGSTROM TO NM CONVERSION ##
-	$dist/=10;
-	##[dcaContacts_boolean,c1,value,c2,dist]##
-    if(!exists $allAtoms{$contact1}){warn("ATOM $contact1 doesn't exists. Skipping exclusions $contact1-$contact2\n");next;}
-    if(!exists $allAtoms{$contact2}){warn("ATOM $contact2 doesn't exists. Skipping exclusion $contact1-$contact2\n");next;}
-	print $OUTPUT $contact1,"	",$contact2,"\n";
-
-  }
- 
-
+	#print an exclusion for every contact
+	for(my $i=0;$i<$numCon;$i++)
+	{
+		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
+		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
+		print $OUTPUT $atoma,"	",$atomb,"\n";
+	}
 }
 
 sub calculateAtomTypes
@@ -1639,7 +1596,7 @@ sub allAtom
 	if($ignAllContacts==0){
 		print "Calling $ENV{SMOG_PATH}/tools/SCM.jar \n";
 	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");}
-	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,0);
+	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignAllContacts,0);
 
 
 	if($numContacts == 0){smog_quit ("There are 0 contacts,check shadow.error log file for possible errors");}
@@ -1647,7 +1604,7 @@ sub allAtom
 	print "Completing final details...";
 	## CALCULATE PAIRS and EXCLUSION ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	calculateExclusions($shadowFile,"",$ignChainContact,$ignAllContacts);
+	calculateExclusions($contactPDL,$numContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
@@ -1814,11 +1771,11 @@ sub coarseGrain
 	print "Saving dihedrals\n";
 	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
 
-	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts,1);
+	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignAllContacts,1);
 	if($numContacts == 0){smog_quit ("There are 0 contacts,check shadow.error log file for possible errors");}
 	## CALCULATE PAIRS and EXCLUSION ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	calculateExclusions($shadowFile,$ContactFile,$ignChainContact,$ignAllContacts);
+	calculateExclusions($contactPDL,$numContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
@@ -1839,7 +1796,7 @@ sub coarseGrain
 # -o output top file name, default is smog.top
 # -v verbose option
 usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
-	'c=s' => \$ContactFile, 'ignChainContacts' => \$ignChainContact, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
+	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
 	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes,
 	 'softTerm' => \$softTerm)
           or defined $help 
