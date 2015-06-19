@@ -1,0 +1,60 @@
+title                    = AA template Gromacs 4.X
+;Preprocessor
+cpp			 = /lib/cpp
+;Run control: A leap-frog algorithm for integrating Newton's equations. 
+integrator		 = sd
+:time step in femtoseconds 
+dt			 = 0.002
+;number of stepsi
+nsteps  		 = 100000
+;frequency to write coordinates to output trajectory file
+nstxout 		 = 0
+;frequency to write velocities to output trajectory file
+nstvout 		 = 0
+;frequency to write energies to log file
+nstlog  		 = 5000
+;frequency to write energies to energy file
+nstenergy		 = 5000
+;frequency to write coordinates to xtc trajectory 
+nstxtcout		 = 5000
+;precision of xtc
+xtc_precision            = 1000
+;group(s) to write to xtc trajectory
+xtc_grps		 = system
+;group(s) to write to energy file 
+energygrps		 = system  
+;Frequency to update the neighbor list (and the long-range forces, 
+;when using twin-range cut-off's). 
+nstlist 		 = 50
+coulombtype 		 = Cut-off
+table-extension		 = 20
+;Make a grid in the box and only check atoms in neighboring grid cells 
+;when constructing a new neighbor list every nstlist steps. 
+ns_type 		 = grid
+; ** cutoffs are short because it is only for the non-bonded
+; ** [ pairs ] are always calculated provided they are in 
+; ** the same domain decomposition box. One would have to
+; ** increase the cutoff if using non-bonded electrostatics
+;cut-off distance for the short-range neighbor list
+rlist			 = 1.0
+;treatment of electrostatic interactions
+rcoulomb 		 = 1.0
+;treatment of van der waals interactions
+rvdw			 = 1.0
+; No need to use pbc for 4.5 or 4.6 which is simpler 
+; but have to use comm_mode to keep protein in place
+; Periodic boudary conditions in all the directions 
+pbc                      = no
+;Temperature coupling
+tc-grps 		 = system
+tau_t			 = 2.0 
+ref_t			 = 130
+;Pressure coupling
+Pcoupl  		 = no
+;Velocity generation
+gen_vel 		 = yes 
+gen_temp		 = 130
+gen_seed		 = -1
+;Constrain all bonds
+constraints		 = none
+comm_mode = angular
