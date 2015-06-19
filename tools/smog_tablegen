@@ -42,14 +42,14 @@ if (scalar(@ARGV) != 7 ){
 }
 
 my $prefactor=332.0/138.935485;
-my $exponent1=$ARGV[0];
-my $exponent2=$ARGV[1];
+my $exponent2=$ARGV[0];
+my $exponent1=$ARGV[1];
 unless($exponent1 =~ /^\d+$/ and $exponent2 =~ /^\d+$/){
  confess("N and M must be integers\n");
 }
 
-if($exponent1 >= $exponent2){
- confess ("For consistency with smog2, only N < M is supported\n");
+if($exponent2 >= $exponent1){
+ confess ("For consistency with smog2, only M < N is supported\n");
 }
 
 # molar concentration of monovalent ions.
@@ -109,13 +109,16 @@ my $B=$R/$T-$A*$S/$T;
 # generate the table file. 
 
 my $Ntable=int($Rtable/$DR);
-##$R=$DR;
 my $VE;my $VpE;
-##$VE=V($kappa, $R);
-##$VE=$prefactor*$VE/10.0;
-##print OUTFILE "0 $VE 0 0.0 0.0 0.0 0.0\n";
 
-for(my $i=1; $i<$Ntable;$i++){
+#first few lines have numbers too big for gromacs to read
+#will give segfaults if we don't zero them out
+for(my $i=0; $i<8;$i++){
+$R=$i*$DR;
+print OUTFILE "$R 0 0 0.0 0.0 0.0 0.0\n";
+}
+
+for(my $i=8; $i<$Ntable;$i++){
 $R=$i*$DR;
 
  my $R1=-1/$R**$exponent2;
@@ -127,16 +130,26 @@ $R=$i*$DR;
   $VE=$prefactor*$VE/10.0;
   $VpE=Vprime($kappa, $R);
   $VpE=-$prefactor*$VpE/10.0;
+ #print OUTFILE "$R 0.0 0.0 $R1 $R2 $R3 $R4\n";
  print OUTFILE "$R $VE $VpE $R1 $R2 $R3 $R4\n";
  }elsif($R >= $r1 && $R<=$rc){
   $VE=V($kappa, $R)+$A*($R-$r1)**2+$B*($R-$r1)**3;
   $VE=$prefactor*$VE/10.0;
   $VpE=Vprime($kappa, $R)+$A*2*($R-$r1)+$B*3*($R-$r1)**2;
   $VpE=-$prefactor*$VpE/10.0;
+  #print OUTFILE "$R 0.0 0.0 $R1 $R2 $R3 $R4\n";
   print OUTFILE "$R $VE $VpE $R1 $R2 $R3 $R4\n";
  }else{
   print OUTFILE "$R 0.0 0.0 $R1 $R2 $R3 $R4\n "
  }
 }
+#last line can't have a newline!
+$R=$Ntable*$DR;
+
+my $R1=-1/$R**$exponent2;
+my $R2=-$exponent2/$R**($exponent2+1);
+my $R3=1/$R**$exponent1;
+my $R4=$exponent1/$R**($exponent1+1);
+print OUTFILE "$R 0.0 0.0 $R1 $R2 $R3 $R4 "
 
 
