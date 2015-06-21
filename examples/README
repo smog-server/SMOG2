@@ -4,3 +4,6 @@ with various molecular systems, Gromacs versions, etc.
 examples/gromacs4/all-atom : protein folding setup for CI2 using Gromacs 4.5 or 4.6 and all-atom SBM
 examples/gromacs4/calpha : protein folding setup for CI2 using Gromacs 4.5 or 4.6 and coarse grained calpha SBM
 
+examples/gromacs5/all-atom : protein folding setup for CI2 using Gromacs 5 
+examples/gromacs5/calpha : protein folding setup for CI2 using Gromacs 5 and coarse grained calpha SBM
+
