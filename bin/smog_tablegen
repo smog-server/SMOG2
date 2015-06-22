@@ -1,0 +1,3 @@
+#!/bin/bash
+# Wrapper for smog_tablegen
+/usr/bin/perl /home/whitford/git.repos/smog2-pcw/tools/smog_tablegen "$@"

@@ -1,0 +1,3 @@
+#!/bin/bash
+# Wrapper for smog_adjustPDB
+/usr/bin/perl /home/whitford/git.repos/smog2-pcw/tools/smog_adjustPDB "$@"
