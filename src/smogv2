@@ -1347,7 +1347,7 @@ sub usage
                 print "-t_contacts [templateFolder]: Folder containing templates for determining native contact map. Only necessary when -CG enabled\n";
 		print "-g [smog.gro]: Output .gro file name\n";
 		print "-o [smog.top]: Output .top file name\n";
-        	print "-s [smog.contacts]: Output .shadow file name\n";
+        	print "-s [smog.contacts]: Output .contacts file name\n";
 		print "-n [smog.ndx]: Output .ndx file name\n";
 		print "-c [contacts.txt]: Input contact map file\n";
 		##print printCitation();
@@ -1360,13 +1360,16 @@ sub setContactParams
 			if($method =~ m/shadow/)
 			{
 					my $radius = $contactSettings->{"shadowRadius"};
+					my $radiusBonded = $contactSettings->{"shadowRadiusBonded"};
 					my $dist = $contactSettings->{"contactDistance"};
-				    return "-m shadow -c $dist -s $radius -bif $bifForSCM --distance --smog2output --showProgress";
+				    return "-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --distance --smog2output --showProgress";
 			}
 			elsif($method =~ m/cutoff/) 
 			{
 			  my $dist = $contactSettings->{"contactDistance"};
-			  return "-m cutoff -c $dist -bif $bifForSCM --distance --smog2output --showProgress";
+		 	  my $radius = 0.0;
+			  my $radiusBonded = 0.0;
+			  return "-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --distance --smog2output --showProgress";
 			
 			}
 			else {smog_quit ("Contact map method $method is not supported.");}
@@ -1606,7 +1609,7 @@ sub allAtom
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignAllContacts,0);
 
 
-	if($numContacts == 0){smog_quit ("There are 0 contacts,check shadow.error log file for possible errors");}
+	if($numContacts == 0){smog_quit ("There are 0 contacts,check log file for possible errors");}
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
 	print "Completing final details...";
 	## CALCULATE PAIRS and EXCLUSION ##
@@ -1646,6 +1649,7 @@ sub coarseGrain
 	## parse Bif File ##
 	parseBif();
 	## parse Sif File ##
+        print "\n Note: Contact definitions given in templates $inputFolder are being used\n";
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
@@ -1725,6 +1729,7 @@ sub coarseGrain
 	## parse Bif File ##
 	parseBif();
 	## parse Sif File ##
+        print "\n Note: Contact definitions given in templates $coarseFolder are NOT being used.\n";
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
