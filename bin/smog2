@@ -1,3 +1,0 @@
-#!/bin/bash
-# Wrapper for SMOG V2
-/usr/bin/perl /home/whitford/git.repos/smog2-pcw/src/smogv2 "$@"

@@ -1,3 +1,0 @@
-#!/bin/bash
-# Wrapper for smog_removeH
-/usr/bin/perl /home/whitford/git.repos/smog2-pcw/tools/smog_removeH "$@"
