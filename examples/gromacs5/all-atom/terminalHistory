@@ -1,0 +1,271 @@
+Jeff-Noels-Computer:CI2test jknoel$ source ../configure.smog2 #source your config file if you haven't in the terminal yet
+Jeff-Noels-Computer:CI2test jknoel$ smog2 -i CI2.AA.pdb -t $SMOG_PATH/SBM_AA #run smog to generate the input files
+
+*****************************************************************************************
+******* ******* ******* ******* ******* SMOG v2.0 ******* ******* ******* ******* *******
+
+              Thank you for using the Structure-based Model (SMOG) software
+    This package is the product of contributions from a number of people, including:
+                      Mohit Ranghunathan, Mariana Levi, Ryan Hayes,
+                       Jeffrey Noel, Jose Onuchic & Paul Whitford
+
+                     Copyright (c) 2015, The SMOG development team at
+                       Rice University and Northeastern University
+
+
+                SMOG v2.0 & Shadow are available at http://smog-server.org
+
+                      Direct questions to: info@smog-server.org
+
+            We kindly ask that you cite the appropriate primary references
+           when using SMOG models. See http://www.smog-server.org/refs.html
+
+--All-Atom Model-- 
+Whitford PC, et al. (2009) Proteins: Structure, Function, Bioinformatics, 75, 430-441. 
+
+--Contact Potentials--
+Shadow Algorithm: Noel JK, Whitford PC, Onuchic, JN (2012) J Phys Chem, 116, 8692-8702.
+
+*****************************************************************************************
+
+*****************************************************
+******* ALL-ATOM SMOG MODEL WILL BE GENERATED *******
+*****************************************************
+Parsing All-Atom Templates... 
+Found .b file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.b
+Found .bif file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.bif
+Found .nb file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.nb
+Found .sif file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.sif
+Done parsing templates.
+Parsing .pdb... Done
+Creating topology for contact calculation.....  Generating angles and dihedrals...............
+Saving angles
+Saving dihedrals
+Done
+Starting contact calculations ...
+  Calling /Users/jknoel/Dropbox/git/smog2/tools/SCM.jar 
+	
+	Shadow Contact Map Java Application (SCM)
+	More information at: http://smog-server.org/Shadow.html
+	Version 1.32
+	Using protein residue definitions from supplied .bif.
+	Reading grofile: smog.gro.
+	Found 504 atoms.
+	Reading Chains from smog.ndx.
+	Found 1 chains.
+	Reading Topology.
+	Initializing connected list.
+	Found 1 atom types.
+	Found 0 pairs.
+	Found 511 bonds.
+	Found 693 angles.
+	Found 1572 dihedrals.
+	Calculating contacts.
+		10% done and 27 contacts.
+		20% done and 38 contacts.
+		30% done and 238 contacts.
+		40% done and 354 contacts.
+		50% done and 459 contacts.
+		60% done and 569 contacts.
+		70% done and 573 contacts.
+		80% done and 599 contacts.
+		90% done and 599 contacts.
+	Printing contacts to file: smog.contacts.
+	******* Parameters Used for determination of contacts *********
+	Atom shadowing size: 1.0 nm
+	Cutoff radius: 6.0 nm
+	Minimum sequence distance between protein contacts: 3
+	Shadowing size of bonded atom: 0.5 nm
+	***************************************************************
+	Finished with contacts. 
+
+NOTE: Total number of atoms included in normalization is 504, and 504 atoms are in the system.
+Completing final details...
+Your Structure-based Model is ready!
+
+Files generated: 
+	smog.top
+	smog.gro
+	smog.contacts
+	smog.ndx
+bash-4.1$ #might not be in center of box, I just made the box big 15x15x15 nm or so
+bash-4.1$ #use trjconv to put it in the center (convenient for vmd and visualization)
+bash-4.1$ echo 0 0 | /home/jn12/programs/gromacs5ctbp/bin/trjconv -f smog.gro -o centered.gro -center -s smog.gro 
+GROMACS:    gmx trjconv, VERSION 5.0.4
+
+GROMACS is written by:
+Emile Apol         Rossen Apostolov   Herman J.C. Berendsen Par Bjelkmar       
+Aldert van Buuren  Rudi van Drunen    Anton Feenstra     Sebastian Fritsch  
+Gerrit Groenhof    Christoph Junghans Peter Kasson       Carsten Kutzner    
+Per Larsson        Justin A. Lemkul   Magnus Lundborg    Pieter Meulenhoff  
+Erik Marklund      Teemu Murtola      Szilard Pall       Sander Pronk       
+Roland Schulz      Alexey Shvetsov    Michael Shirts     Alfons Sijbers     
+Peter Tieleman     Christian Wennberg Maarten Wolf       
+and the project leaders:
+Mark Abraham, Berk Hess, Erik Lindahl, and David van der Spoel
+
+Copyright (c) 1991-2000, University of Groningen, The Netherlands.
+Copyright (c) 2001-2014, The GROMACS development team at
+Uppsala University, Stockholm University and
+the Royal Institute of Technology, Sweden.
+check out http://www.gromacs.org for more information.
+
+GROMACS is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License
+as published by the Free Software Foundation; either version 2.1
+of the License, or (at your option) any later version.
+
+GROMACS:      gmx trjconv, VERSION 5.0.4
+Executable:   /home/jn12/programs/gromacs5ctbp/bin/gmx
+Library dir:  /home/jn12/programs/gromacs5ctbp/share/gromacs/top
+Command line:
+  trjconv -f smog.gro -o centered.gro -center -s smog.gro
+
+Will write gro: Coordinate file in Gromos-87 format
+Select group for centering
+Group     0 (         System) has   504 elements
+Group     1 (        Protein) has   499 elements
+Group     2 (      Protein-H) has   499 elements
+Group     3 (        C-alpha) has    63 elements
+Group     4 (       Backbone) has   189 elements
+Group     5 (      MainChain) has   252 elements
+Group     6 (   MainChain+Cb) has   313 elements
+Group     7 (    MainChain+H) has   252 elements
+Group     8 (      SideChain) has   247 elements
+Group     9 (    SideChain-H) has   247 elements
+Group    10 (    Prot-Masses) has   499 elements
+Group    11 (    non-Protein) has     5 elements
+Group    12 (          Other) has     5 elements
+Group    13 (           GLYT) has     5 elements
+Select a group: Selected 0: 'System'
+Select group for output
+Group     0 (         System) has   504 elements
+Group     1 (        Protein) has   499 elements
+Group     2 (      Protein-H) has   499 elements
+Group     3 (        C-alpha) has    63 elements
+Group     4 (       Backbone) has   189 elements
+Group     5 (      MainChain) has   252 elements
+Group     6 (   MainChain+Cb) has   313 elements
+Group     7 (    MainChain+H) has   252 elements
+Group     8 (      SideChain) has   247 elements
+Group     9 (    SideChain-H) has   247 elements
+Group    10 (    Prot-Masses) has   499 elements
+Group    11 (    non-Protein) has     5 elements
+Group    12 (          Other) has     5 elements
+Group    13 (           GLYT) has     5 elements
+Select a group: Selected 0: 'System'
+Reading frames from gro file 'Gro file for a structure based model, generated with SMOG Version 2.0', 504 atoms.
+Reading frame       0 time    0.000   
+Precision of smog.gro is 0.001 (nm)
+Using output precision of 0.001 (nm)
+Last frame          0 time    0.000   
+
+
+gcq#45: "I Wonder, Should I Get Up..." (J. Lennon)
+
+bash-4.1$ ~/programs/gromacs5ctbp/bin/grompp -f allatomForGromacs5.mdp -c centered.gro -p smog.top 
+GROMACS:    gmx grompp, VERSION 5.0.4
+
+GROMACS is written by:
+Emile Apol         Rossen Apostolov   Herman J.C. Berendsen Par Bjelkmar       
+Aldert van Buuren  Rudi van Drunen    Anton Feenstra     Sebastian Fritsch  
+Gerrit Groenhof    Christoph Junghans Peter Kasson       Carsten Kutzner    
+Per Larsson        Justin A. Lemkul   Magnus Lundborg    Pieter Meulenhoff  
+Erik Marklund      Teemu Murtola      Szilard Pall       Sander Pronk       
+Roland Schulz      Alexey Shvetsov    Michael Shirts     Alfons Sijbers     
+Peter Tieleman     Christian Wennberg Maarten Wolf       
+and the project leaders:
+Mark Abraham, Berk Hess, Erik Lindahl, and David van der Spoel
+
+Copyright (c) 1991-2000, University of Groningen, The Netherlands.
+Copyright (c) 2001-2014, The GROMACS development team at
+Uppsala University, Stockholm University and
+the Royal Institute of Technology, Sweden.
+check out http://www.gromacs.org for more information.
+
+GROMACS is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License
+as published by the Free Software Foundation; either version 2.1
+of the License, or (at your option) any later version.
+
+GROMACS:      gmx grompp, VERSION 5.0.4
+Executable:   /home/jn12/programs/gromacs5ctbp/bin/gmx
+Library dir:  /home/jn12/programs/gromacs5ctbp/share/gromacs/top
+Command line:
+  grompp -f allatomForGromacs5.mdp -c centered.gro -p smog.top
+
+Ignoring obsolete mdp entry 'title'
+Ignoring obsolete mdp entry 'cpp'
+Replacing old mdp entry 'nstxtcout' by 'nstxout-compressed'
+Replacing old mdp entry 'xtc_grps' by 'compressed-x-grps'
+Replacing old mdp entry 'xtc_precision' by 'compressed-x-precision'
+Setting the LD random seed to 1493370754
+Generated 1 of the 1 non-bonded parameter combinations
+Excluding 3 bonded neighbours molecule type 'Macromolecule'
+Setting gen_seed to 4166039130
+Velocities were taken from a Maxwell distribution at 130 K
+Removing all charge groups because cutoff-scheme=Verlet
+Analysing residue names:
+There are:    63    Protein residues
+There are:     1      Other residues
+Analysing Protein...
+Analysing residues not classified as Protein/DNA/RNA/Water and splitting into groups...
+Number of degrees of freedom in T-Coupling group System is 1512.00
+Determining Verlet buffer for a tolerance of 0.005 kJ/mol/ps at 130 K
+Calculated rlist for 1x1 atom pair-list as 1.000 nm, buffer size 0.000 nm
+Set rlist, assuming 4x4 atom pair-list, to 1.000 nm, buffer size 0.000 nm
+This run will generate roughly 0 Mb of data
+
+gcq#141: "Carry Me Away" (Motors)
+
+bash-4.1$ ~/programs/gromacs5ctbp/bin/mdrun -v -s topol.tpr -noddcheck -ntomp 8
+GROMACS:    gmx mdrun, VERSION 5.0.4
+
+GROMACS is written by:
+Emile Apol         Rossen Apostolov   Herman J.C. Berendsen Par Bjelkmar       
+Aldert van Buuren  Rudi van Drunen    Anton Feenstra     Sebastian Fritsch  
+Gerrit Groenhof    Christoph Junghans Peter Kasson       Carsten Kutzner    
+Per Larsson        Justin A. Lemkul   Magnus Lundborg    Pieter Meulenhoff  
+Erik Marklund      Teemu Murtola      Szilard Pall       Sander Pronk       
+Roland Schulz      Alexey Shvetsov    Michael Shirts     Alfons Sijbers     
+Peter Tieleman     Christian Wennberg Maarten Wolf       
+and the project leaders:
+Mark Abraham, Berk Hess, Erik Lindahl, and David van der Spoel
+
+Copyright (c) 1991-2000, University of Groningen, The Netherlands.
+Copyright (c) 2001-2014, The GROMACS development team at
+Uppsala University, Stockholm University and
+the Royal Institute of Technology, Sweden.
+check out http://www.gromacs.org for more information.
+
+GROMACS is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License
+as published by the Free Software Foundation; either version 2.1
+of the License, or (at your option) any later version.
+
+GROMACS:      gmx mdrun, VERSION 5.0.4
+Executable:   /home/jn12/programs/gromacs5ctbp/bin/gmx
+Library dir:  /home/jn12/programs/gromacs5ctbp/share/gromacs/top
+Command line:
+  mdrun -v -s topol.tpr -noddcheck -ntomp 8
+
+Reading file topol.tpr, VERSION 5.0.4 (single precision)
+Using 1 MPI thread
+Using 8 OpenMP threads 
+starting mdrun 'Macromolecule'
+100000 steps,    200.0 ps.
+step 99900, remaining wall clock time:     0 s          
+Writing final coordinates.
+step 100000, remaining wall clock time:     0 s          
+               Core t (s)   Wall t (s)        (%)
+       Time:      111.542       14.343      777.7
+                 (ns/day)    (hour/ns)
+Performance:     1204.765        0.020
+
+gcq#114: "The Path Of the Righteous Man is Beset On All Sides With the Iniquities Of the Selfish and the Tyranny Of Evil Men." (Pulp Fiction)
+
+bash-4.1$ ls
+allatomForGromacs5.mdp  confout.gro  mdout.mdp      smog.ndx   terminalHistory
+centered.gro            ener.edr     smog.contacts  smog.top   topol.tpr
+CI2.AA.pdb              md.log       smog.gro       state.cpt  traj_comp.xtc
+bash-4.1$ 

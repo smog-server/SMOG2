@@ -1,0 +1,289 @@
+Jeff-Noels-Computer:CI2test jknoel$ source ../configure.smog2 #source your config file if you haven't in the terminal yet
+Jeff-Noels-Computer:CI2test jknoel$ smog2 -i CI2.AA.pdb -t $SMOG_PATH/SBM_AA #run smog to generate the input files
+
+*****************************************************************************************
+******* ******* ******* ******* ******* SMOG v2.0 ******* ******* ******* ******* *******
+
+              Thank you for using the Structure-based Model (SMOG) software
+    This package is the product of contributions from a number of people, including:
+                      Mohit Ranghunathan, Mariana Levi, Ryan Hayes,
+                       Jeffrey Noel, Jose Onuchic & Paul Whitford
+
+                     Copyright (c) 2015, The SMOG development team at
+                       Rice University and Northeastern University
+
+
+                SMOG v2.0 & Shadow are available at http://smog-server.org
+
+                      Direct questions to: info@smog-server.org
+
+            We kindly ask that you cite the appropriate primary references
+           when using SMOG models. See http://www.smog-server.org/refs.html
+
+--All-Atom Model-- 
+Whitford PC, et al. (2009) Proteins: Structure, Function, Bioinformatics, 75, 430-441. 
+
+--Contact Potentials--
+Shadow Algorithm: Noel JK, Whitford PC, Onuchic, JN (2012) J Phys Chem, 116, 8692-8702.
+
+*****************************************************************************************
+
+*****************************************************
+******* ALL-ATOM SMOG MODEL WILL BE GENERATED *******
+*****************************************************
+Parsing All-Atom Templates... 
+Found .b file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.b
+Found .bif file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.bif
+Found .nb file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.nb
+Found .sif file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.sif
+Done parsing templates.
+Parsing .pdb... Done
+Creating topology for contact calculation.....  Generating angles and dihedrals...............
+Saving angles
+Saving dihedrals
+Done
+Starting contact calculations ...
+  Calling /Users/jknoel/Dropbox/git/smog2/tools/SCM.jar 
+	
+	Shadow Contact Map Java Application (SCM)
+	More information at: http://smog-server.org/Shadow.html
+	Version 1.32
+	Using protein residue definitions from supplied .bif.
+	Reading grofile: smog.gro.
+	Found 504 atoms.
+	Reading Chains from smog.ndx.
+	Found 1 chains.
+	Reading Topology.
+	Initializing connected list.
+	Found 1 atom types.
+	Found 0 pairs.
+	Found 511 bonds.
+	Found 693 angles.
+	Found 1572 dihedrals.
+	Calculating contacts.
+		10% done and 27 contacts.
+		20% done and 38 contacts.
+		30% done and 238 contacts.
+		40% done and 354 contacts.
+		50% done and 459 contacts.
+		60% done and 569 contacts.
+		70% done and 573 contacts.
+		80% done and 599 contacts.
+		90% done and 599 contacts.
+	Printing contacts to file: smog.contacts.
+	******* Parameters Used for determination of contacts *********
+	Atom shadowing size: 1.0 nm
+	Cutoff radius: 6.0 nm
+	Minimum sequence distance between protein contacts: 3
+	Shadowing size of bonded atom: 0.5 nm
+	***************************************************************
+	Finished with contacts. 
+
+NOTE: Total number of atoms included in normalization is 504, and 504 atoms are in the system.
+Completing final details...
+Your Structure-based Model is ready!
+
+Files generated: 
+	smog.top
+	smog.gro
+	smog.contacts
+	smog.ndx
+Jeff-Noels-Computer:all-atom jknoel$ $GROMACS_STUFF/gromacs-4.5.3/bin/grompp -f allatomForGromacs4.X.mdp -p smog.top -c smog.gro -o all-atom.tpr
+                         :-)  G  R  O  M  A  C  S  (-:
+
+               Go Rough, Oppose Many Angry Chinese Serial killers
+
+                            :-)  VERSION 4.5.3  (-:
+
+        Written by Emile Apol, Rossen Apostolov, Herman J.C. Berendsen,
+      Aldert van Buuren, Pär Bjelkmar, Rudi van Drunen, Anton Feenstra, 
+        Gerrit Groenhof, Peter Kasson, Per Larsson, Pieter Meulenhoff, 
+           Teemu Murtola, Szilard Pall, Sander Pronk, Roland Schulz, 
+                Michael Shirts, Alfons Sijbers, Peter Tieleman,
+
+               Berk Hess, David van der Spoel, and Erik Lindahl.
+
+       Copyright (c) 1991-2000, University of Groningen, The Netherlands.
+            Copyright (c) 2001-2010, The GROMACS development team at
+        Uppsala University & The Royal Institute of Technology, Sweden.
+            check out http://www.gromacs.org for more information.
+
+         This program is free software; you can redistribute it and/or
+          modify it under the terms of the GNU General Public License
+         as published by the Free Software Foundation; either version 2
+             of the License, or (at your option) any later version.
+
+        :-)  /Users/jknoel/jknoel/programs/gromacs-4.5.3/bin/grompp  (-:
+
+Option     Filename  Type         Description
+------------------------------------------------------------
+  -f allatomForGromacs4.X.mdp  Input        grompp input file with MD parameters
+ -po      mdout.mdp  Output       grompp input file with MD parameters
+  -c       smog.gro  Input        Structure file: gro g96 pdb tpr etc.
+  -r       conf.gro  Input, Opt.  Structure file: gro g96 pdb tpr etc.
+ -rb       conf.gro  Input, Opt.  Structure file: gro g96 pdb tpr etc.
+  -n      index.ndx  Input, Opt.  Index file
+  -p       smog.top  Input        Topology file
+ -pp  processed.top  Output, Opt. Topology file
+  -o   all-atom.tpr  Output       Run input file: tpr tpb tpa
+  -t       traj.trr  Input, Opt.  Full precision trajectory: trr trj cpt
+  -e       ener.edr  Input, Opt.  Energy file
+
+Option       Type   Value   Description
+------------------------------------------------------
+-[no]h       bool   no      Print help info and quit
+-[no]version bool   no      Print version info and quit
+-nice        int    0       Set the nicelevel
+-[no]v       bool   no      Be loud and noisy
+-time        real   -1      Take frame at or first after this time.
+-[no]rmvsbds bool   yes     Remove constant bonded interactions with virtual
+                            sites
+-maxwarn     int    0       Number of allowed warnings during input processing
+-[no]zero    bool   no      Set parameters for bonded interactions without
+                            defaults to zero instead of generating an error
+-[no]renum   bool   yes     Renumber atomtypes and minimize number of
+                            atomtypes
+
+Ignoring obsolete mdp entry 'title'
+Ignoring obsolete mdp entry 'cpp'
+
+NOTE 1 [file allatomForGromacs4.X.mdp]:
+  nstcomm < nstcalcenergy defeats the purpose of nstcalcenergy, setting
+  nstcomm to nstcalcenergy
+
+Generated 1 of the 1 non-bonded parameter combinations
+Excluding 3 bonded neighbours molecule type 'Macromolecule'
+Setting gen_seed to 15035
+Velocities were taken from a Maxwell distribution at 130 K
+Analysing residue names:
+There are:    63    Protein residues
+There are:     1      Other residues
+Analysing Protein...
+Analysing residues not classified as Protein/DNA/RNA/Water and splitting into groups...
+Number of degrees of freedom in T-Coupling group System is 1506.00
+This run will generate roughly 0 Mb of data
+
+There was 1 note
+
+gcq#291: "Is This the Right Room for an Argument ?" (Monty Python)
+
+Jeff-Noels-Computer:all-atom jknoel$ $GROMACS_STUFF/gromacs-4.5.3/bin/mdrun -v -s all-atom.tpr -noddcheck -pd #use particle decomposition for protein folding on a single node
+                         :-)  G  R  O  M  A  C  S  (-:
+
+                     Gnomes, ROck Monsters And Chili Sauce
+
+                            :-)  VERSION 4.5.3  (-:
+
+        Written by Emile Apol, Rossen Apostolov, Herman J.C. Berendsen,
+      Aldert van Buuren, Pär Bjelkmar, Rudi van Drunen, Anton Feenstra, 
+        Gerrit Groenhof, Peter Kasson, Per Larsson, Pieter Meulenhoff, 
+           Teemu Murtola, Szilard Pall, Sander Pronk, Roland Schulz, 
+                Michael Shirts, Alfons Sijbers, Peter Tieleman,
+
+               Berk Hess, David van der Spoel, and Erik Lindahl.
+
+       Copyright (c) 1991-2000, University of Groningen, The Netherlands.
+            Copyright (c) 2001-2010, The GROMACS development team at
+        Uppsala University & The Royal Institute of Technology, Sweden.
+            check out http://www.gromacs.org for more information.
+
+         This program is free software; you can redistribute it and/or
+          modify it under the terms of the GNU General Public License
+         as published by the Free Software Foundation; either version 2
+             of the License, or (at your option) any later version.
+
+        :-)  /Users/jknoel/jknoel/programs/gromacs-4.5.3/bin/mdrun  (-:
+
+Option     Filename  Type         Description
+------------------------------------------------------------
+  -s   all-atom.tpr  Input        Run input file: tpr tpb tpa
+  -o       traj.trr  Output       Full precision trajectory: trr trj cpt
+  -x       traj.xtc  Output, Opt. Compressed trajectory (portable xdr format)
+-cpi      state.cpt  Input, Opt.  Checkpoint file
+-cpo      state.cpt  Output, Opt. Checkpoint file
+  -c    confout.gro  Output       Structure file: gro g96 pdb etc.
+  -e       ener.edr  Output       Energy file
+  -g         md.log  Output       Log file
+-dhdl      dhdl.xvg  Output, Opt. xvgr/xmgr file
+-field    field.xvg  Output, Opt. xvgr/xmgr file
+-table    table.xvg  Input, Opt.  xvgr/xmgr file
+-tablep  tablep.xvg  Input, Opt.  xvgr/xmgr file
+-tableb   table.xvg  Input, Opt.  xvgr/xmgr file
+-rerun    rerun.xtc  Input, Opt.  Trajectory: xtc trr trj gro g96 pdb cpt
+-tpi        tpi.xvg  Output, Opt. xvgr/xmgr file
+-tpid   tpidist.xvg  Output, Opt. xvgr/xmgr file
+ -ei        sam.edi  Input, Opt.  ED sampling input
+ -eo        sam.edo  Output, Opt. ED sampling output
+  -j       wham.gct  Input, Opt.  General coupling stuff
+ -jo        bam.gct  Output, Opt. General coupling stuff
+-ffout      gct.xvg  Output, Opt. xvgr/xmgr file
+-devout   deviatie.xvg  Output, Opt. xvgr/xmgr file
+-runav  runaver.xvg  Output, Opt. xvgr/xmgr file
+ -px      pullx.xvg  Output, Opt. xvgr/xmgr file
+ -pf      pullf.xvg  Output, Opt. xvgr/xmgr file
+-mtx         nm.mtx  Output, Opt. Hessian matrix
+ -dn     dipole.ndx  Output, Opt. Index file
+
+Option       Type   Value   Description
+------------------------------------------------------
+-[no]h       bool   no      Print help info and quit
+-[no]version bool   no      Print version info and quit
+-nice        int    0       Set the nicelevel
+-deffnm      string         Set the default filename for all file options
+-xvg         enum   xmgrace  xvg plot formatting: xmgrace, xmgr or none
+-[no]pd      bool   yes     Use particle decompostion
+-dd          vector 0 0 0   Domain decomposition grid, 0 is optimize
+-nt          int    0       Number of threads to start (0 is guess)
+-npme        int    -1      Number of separate nodes to be used for PME, -1
+                            is guess
+-ddorder     enum   interleave  DD node order: interleave, pp_pme or cartesian
+-[no]ddcheck bool   no      Check for all bonded interactions with DD
+-rdd         real   0       The maximum distance for bonded interactions with
+                            DD (nm), 0 is determine from initial coordinates
+-rcon        real   0       Maximum distance for P-LINCS (nm), 0 is estimate
+-dlb         enum   auto    Dynamic load balancing (with DD): auto, no or yes
+-dds         real   0.8     Minimum allowed dlb scaling of the DD cell size
+-gcom        int    -1      Global communication frequency
+-[no]v       bool   yes     Be loud and noisy
+-[no]compact bool   yes     Write a compact log file
+-[no]seppot  bool   no      Write separate V and dVdl terms for each
+                            interaction type and node to the log file(s)
+-pforce      real   -1      Print all forces larger than this (kJ/mol nm)
+-[no]reprod  bool   no      Try to avoid optimizations that affect binary
+                            reproducibility
+-cpt         real   15      Checkpoint interval (minutes)
+-[no]cpnum   bool   no      Keep and number checkpoint files
+-[no]append  bool   yes     Append to previous output files when continuing
+                            from checkpoint instead of adding the simulation
+                            part number to all file names
+-maxh        real   -1      Terminate after 0.99 times this time (hours)
+-multi       int    0       Do multiple simulations in parallel
+-replex      int    0       Attempt replica exchange every # steps
+-reseed      int    -1      Seed for replica exchange, -1 is generate a seed
+-[no]ionize  bool   no      Do a simulation including the effect of an X-Ray
+                            bombardment on your system
+
+Getting Loaded...
+Reading file all-atom.tpr, VERSION 4.5.3 (single precision)
+Starting 4 threads
+Loaded with Money
+
+starting mdrun 'Macromolecule'
+100000 steps,    200.0 ps.
+step 99900, remaining runtime:     0 s          
+Writing final coordinates.
+step 100000, remaining runtime:     0 s          
+	Parallel run - timing based on wallclock.
+
+               NODE (s)   Real (s)      (%)
+       Time:     29.238     29.238    100.0
+               (Mnbf/s)   (GFlops)   (ns/day)  (hour/ns)
+Performance:     60.415      4.074    591.014      0.041
+
+gcq#320: "Do You Have Sex Maniacs or Schizophrenics or Astrophysicists in Your Family?" (Gogol Bordello)
+
+Jeff-Noels-Computer:all-atom jknoel$ ls 
+CI2.AA.pdb             confout.gro            md.log                 allatomForGromacs4.X.mdp smog.gro               smog.top               state_prev.cpt         traj.xtc
+all-atom.tpr           ener.edr               mdout.mdp              smog.contacts          smog.ndx               state.cpt              terminalHistory
+Jeff-Noels-Computer:all-atom jknoel$ # your trajectory is traj.xtc, your energies are in ener.edr
+Jeff-Noels-Computer:all-atom jknoel$ 
