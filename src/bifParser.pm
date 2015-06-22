@@ -307,6 +307,30 @@ my $termStrengths = $settings->{"termStrengths"}->[0];
 ## PARSE CONTACT MAP SETTINGS ##
 $contactSettings = $data->{"settings"}->[0]->{"Contacts"}->[0];
 
+## check for consistency in the contact settings
+my $method = $contactSettings->{"method"};
+
+if($method =~ m/shadow/)
+{
+
+ if(!exists $contactSettings->{"shadowRadiusBonded"}){
+  smog_quit("When using contact method=shadow, you must supply a value for shadowRadiusBonded in the .sif file.");
+ }
+ if(!exists $contactSettings->{"shadowRadius"}){
+  smog_quit("When using contact method=shadow, you must supply a value for shadowRadius in the .sif file.");
+ }
+
+}
+elsif($method =~ m/cutoff/)
+{
+ if(exists $contactSettings->{"shadowRadiusBonded"}){
+  smog_quit("Contact method=cutoff can not use shadowRadiusBonded.  Either change the method, or remove shadowRadiusBonded in the .sif file.");
+ }
+ if(!exists $contactSettings->{"shadowRadius"}){
+  smog_quit("Contact method=cutoff can not use shadowRadius.  Either change the method, or remove shadowRadius in the .sif file.");
+ }
+}else{smog_quit ("Contact map method $method is not supported.");}
+
 # Scaling Parameters #
 if(exists $contactSettings->{"contactScaling"}){
 my $contactScaling = $contactSettings->{"contactScaling"};
