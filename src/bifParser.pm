@@ -326,7 +326,7 @@ elsif($method =~ m/cutoff/)
  if(exists $contactSettings->{"shadowRadiusBonded"}){
   smog_quit("Contact method=cutoff can not use shadowRadiusBonded.  Either change the method, or remove shadowRadiusBonded in the .sif file.");
  }
- if(!exists $contactSettings->{"shadowRadius"}){
+ if(exists $contactSettings->{"shadowRadius"}){
   smog_quit("Contact method=cutoff can not use shadowRadius.  Either change the method, or remove shadowRadius in the .sif file.");
  }
 }else{smog_quit ("Contact map method $method is not supported.");}

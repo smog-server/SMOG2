@@ -1649,7 +1649,7 @@ sub coarseGrain
 	## parse Bif File ##
 	parseBif();
 	## parse Sif File ##
-        print "\n Note: Contact definitions given in templates $inputFolder are being used\n"
+        print "\n Note: Contact definitions given in templates $inputFolder are being used\n";
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
@@ -1729,7 +1729,7 @@ sub coarseGrain
 	## parse Bif File ##
 	parseBif();
 	## parse Sif File ##
-        print "\n Note: Contact definitions given in templates $coarseFolder are NOT being used.\n"
+        print "\n Note: Contact definitions given in templates $coarseFolder are NOT being used.\n";
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
