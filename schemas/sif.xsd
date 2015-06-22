@@ -36,6 +36,7 @@
     <xs:attribute name="method" type="xs:string" use="required"/>
     <xs:attribute name="contactDistance" type="xs:decimal" use="required"/>
     <xs:attribute name="shadowRadius" type="xs:decimal" use="optional"/>
+    <xs:attribute name="shadowRadiusBonded" type="xs:decimal" use="optional"/>
     <xs:element name="contactScaling" type="contactScalingType" minOccurs="0" maxOccurs="unbounded"/>
 </xs:complexType>
 
