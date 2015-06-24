@@ -354,7 +354,7 @@ sub parseATOMCoarse
 		$resCount = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
 		my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
 		if($atomsInBif != 1)
-                 {##smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
+                 {smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
 }
 		my $atomsInRes=0;
 	 	seek(MYFILE, -$outLength, 1); # place the same line back onto the filehandle
