@@ -1667,7 +1667,7 @@ sub coarseGrain
         ## PARSE PDB ##
         ###############
 	print "Parsing .pdb... ";
-	parseATOM($inputPDB);
+	parseATOMCoarse($inputPDB);
 	catPDL();
 	print "Done\n";
 
@@ -1694,7 +1694,7 @@ sub coarseGrain
 	calculateAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,0);
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,1);
 	## CALCULATE ANGLES ##
 	print "..";
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
