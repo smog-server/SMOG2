@@ -1547,7 +1547,7 @@ sub allAtom
         ## PARSE PDB ##
         ###############
 	print "Parsing .pdb... ";
-	parseATOM($inputPDB);
+	parseATOMCoarse($inputPDB);
 	catPDL();
 	print "Done\n";
 	print "Creating topology for contact calculation.....  ";
@@ -1648,7 +1648,7 @@ sub coarseGrain
 	##############################
         ## PARSE ALL ATOM TEMPLATES ##
         ##############################
-        print "\n\n		PREPROCESSING\n\nWill use templates given with -t_contacts\n";
+        print "\n\n		PREPROCESSING\n\nWill use contact-specific templates\n";
 	parseInputFolder($inputFolder);
 	## parse Bif File ##
 	parseBif();
@@ -1727,7 +1727,7 @@ sub coarseGrain
         ###################################
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
-        print "\n\n	     FINAL PROCESSING\n\nWill use templates given with -t\n\n";
+        print "\n\n	     FINAL PROCESSING\n\nWill use templates for final model\n\n";
 	print "Parsing Coarse Grained Templates... ";
 	parseInputFolder($coarseFolder);
 	## parse Bif File ##
@@ -1840,6 +1840,9 @@ if(($CAdefault == 1 || $AAdefault == 1) and $contactRes ne ""){
 if($CAdefault == 1){
 	print "\n -CA given. Will use the default Calpha SMOG model provided with the distribution.\n\n";
 	my $SMOGDIR=$ENV{'SMOG_PATH'};
+	if(! -d $SMOGDIR){
+		smog_quit("SMOG_PATH set to $SMOGDIR.  $SMOGDIR does not appear to be a valid template directory.");
+	}
 	$CGenabled=1;
 	$inputFolder="$SMOGDIR/SBM_calpha";
 	$contactRes="$SMOGDIR/SBM_AA";

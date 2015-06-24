@@ -317,6 +317,7 @@ sub parseATOMCoarse
   my $atomCounter=0;my $singleFlag = 1;
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=1;
+  my $secondcall;
   ## OPEN .PDB FILE ##
  unless (open(MYFILE, $fileName)) {
     smog_quit ("Cannot read from '$fileName'.");
@@ -351,11 +352,18 @@ sub parseATOMCoarse
 	 	## OBTAIN RESIDUE NAME ##
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
-		$resCount = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
+		## if first iteration, save residueBackup, and use residues
+		if(exists $residueBackup{$residue}){
+			$resCount = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
+			$secondcall=1;
+		}else{
+			$resCount = scalar(keys(%{$residues{$residue}->{"atoms"}}));
+			$secondcall=0;
+		}
 		my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
 		if($atomsInBif != 1)
                  {
-			smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
+##			smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
 		}
 		my $atomsInRes=0;
 	 	seek(MYFILE, -$outLength, 1); # place the same line back onto the filehandle
@@ -372,8 +380,8 @@ sub parseATOMCoarse
 			{smog_quit ("Residue doesn't conform with coarse grain .bif:: $record");}
 			$atom = substr($record, 12, 4);
 			$atom =~ s/^\s+|\s+$//g;
-			if(!exists $residueBackup{$residue}->{"atoms"}->{$atom})
-			{smog_quit ("$atom doesn't exists in .bif declaration of $residue");}
+			if($secondcall == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
+			{smog_quit ("$atom doesn't exist in .bif declaration of $residue");}
 			
 			## CHECK IF ATOM IS COARSE GRAINED ##
                         if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
@@ -393,7 +401,6 @@ sub parseATOMCoarse
             		$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			$totalAtoms++;
 		}
-
 		if($atomsInRes != $atomsInBif){
 			smog_quit ("Not all atoms in the CG bif appear in the PDB.");
 		}
