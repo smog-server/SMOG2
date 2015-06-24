@@ -244,13 +244,13 @@ sub parseATOM
 		{
 		   my @testArr; my $sizeA; my $sizeB;
 		   @connResA = @connResB;
-	       @connResB=@temp;
+	       	   @connResB=@temp;
 		   $consecResidues[0] = $consecResidues[1];
-	       $consecResidues[1] = $residue;   
-           $sizeA = scalar(@connResA);
+	           $consecResidues[1] = $residue;   
+                   $sizeA = scalar(@connResA);
 		   @union = (@connResA,@connResB);
 		   ## Extract Index info ##
-	       connCreateInteractions(\@consecResidues,$sizeA,$counter,$linkFlag,"","","");
+	       	   connCreateInteractions(\@consecResidues,$sizeA,$counter,$linkFlag,"","","");
 		   $headFlag = 0;
 		   $connPDL{$counter}=pdl(@union);
 		   @union = ();
@@ -338,7 +338,7 @@ sub parseATOMCoarse
             coarseCreateInteractions(\@consecResidues,$counter);
 		   	$connPDL{$counter}=pdl(@union);
 			@union = ();$counter++;
-            @consecResidues = ();
+            		@consecResidues = ();
 			if($record =~ m/END/){last;}
 			else {next;}
 	} 
@@ -354,7 +354,8 @@ sub parseATOMCoarse
 		$resCount = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
 		my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
 		if($atomsInBif != 1)
-                 {smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");}
+                 {smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
+}
 		my $atomsInRes=0;
 	 	seek(MYFILE, -$outLength, 1); # place the same line back onto the filehandle
 	

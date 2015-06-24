@@ -88,16 +88,28 @@ SMOG is producing accurate forcefield files.
 If your configuration step completes successfully, 
 running SMOG v2 can be quite simple.  
 
-Note: It is assumed that you added $SMOG_PATH to PATH
+Note: It is assumed that $SMOG_PATH is properly defined.
 
-For the C-alpha model:
-smog2 -i <PDBFILE> -t $SMOG_PATH/SBM_calpha \
- 	-CG -t_contacts $SMOG_PATH/SBM_AA 
+To use the default C-alpha model (proteins only) 
 
-where <PDBFILE> is the the system for which you would 
-like to generate a SMOG model.
+smog2 -i <PDBFILE> -CA  
 
-To run the All-atom model: 
+For the default All-atom model: 
+
+smog2 -i <PDBFILE> -AA
+
+
+If you would like to use other models:
+
+Coarse-grained models
+smog2 -i <PDBFILE> -t <CG_TEMPLATES> \
+ 	-CG -t_contacts $SMOG_PATH/SBM_AA
+
+This example, CG_TEMPLATES is the directory containing 
+the CG templates, <PDBFILE> is the the system for which 
+you would like to generate a SMOG model.
+
+To run an All-atom model: 
 smog2 -i <PDBFILE> -t $SMOG_PATH/SBM_AA  
 
 For a list of all supported flags and options, type:

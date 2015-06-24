@@ -43,6 +43,8 @@ my $mapOpt = "shadow";my $contactOpt = "6 1";
 my $numContacts = 0;
 my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $contactRes = ""; ## Duplicate ##
+my $AAdefault = ""; ## Duplicate ##
+my $CAdefault = ""; ## Duplicate ##
 my $softTerm=0; ## Boolean to for soft termination
 my $CGenabled=0; ## enable coarse-graining
 ## this is the array that defines how function names are converted to gromacs function types
@@ -1341,8 +1343,9 @@ sub usage
 		print "Required Inputs\n";		
 		print "-i [filename.pdb]: Input PDB to generate Hamiltonian\n";
 		print "-t [templateFolder]: Folder containing templates of molecular and interaction definitions\n";
-
 		print "Optional Input/Output parameters\n";
+                print "-AA: Use default All-atom model\n";
+                print "-CA: Use default Calpha protein model\n";
                 print "-CG: enable coarse-graining\n";
                 print "-t_contacts [templateFolder]: Folder containing templates for determining native contact map. Only necessary when -CG enabled\n";
 		print "-g [smog.gro]: Output .gro file name\n";
@@ -1809,15 +1812,43 @@ sub coarseGrain
 # -v verbose option
 usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
-	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes,
+	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes, 'CA'=> \$CAdefault, 'AA' => \$AAdefault,
 	 'softTerm' => \$softTerm)
           or defined $help 
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $contactRes));
 
 
+if($CAdefault == 1 and $AAdefault == 1){
+	smog_quit('Can not use -CA and -AA flags at the same time.');
+}
+if($CAdefault == 1 and $CGenabled == 1){
+	smog_quit('Can not use -CG and -AA flags at the same time.');
+}
+if($CAdefault == 1 and $inputFolder ne ""){
+	smog_quit('Can not use -CA and -t flags at the same time.');
+}
+if($AAdefault == 1 and $inputFolder ne ""){
+	smog_quit('Can not use -AA and -t flags at the same time.');
+}
+if(($CAdefault == 1 || $AAdefault == 1) and $contactRes==1){
+	smog_quit('Can not use -AA, or -CA with -t_contacts.');
+}
 
+if($CAdefault == 1){
+	print "Will use the default Calpha SMOG model provided with the distribution.\n";
+	my $SMOGDIR=$ENV{'SMOG_PATH'};
+	$CGenabled=1;
+	$inputFolder="$SMOGDIR/SBM_calpha";
+	$contactRes="$SMOGDIR/SBM_AA";
 
+}
+if($AAdefault == 1){
+	print "Will use the default All-Atom SMOG model provided with the distribution.\n";
+	my $SMOGDIR=$ENV{'SMOG_PATH'};
+	$inputFolder="$SMOGDIR/SBM_AA";
+
+}
 
 ## get variables in order
 # if CG is enabled, then the templates are CG templates
