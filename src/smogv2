@@ -1574,7 +1574,7 @@ sub allAtom
 	calculateAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,0);
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,1);
 	## CALCULATE ANGLES ##
 	print "\nSaving angles\n";
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
