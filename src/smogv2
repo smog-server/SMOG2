@@ -1353,6 +1353,7 @@ sub usage
         	print "-s [smog.contacts]: Output .contacts file name\n";
 		print "-n [smog.ndx]: Output .ndx file name\n";
 		print "-c [contacts.txt]: Input contact map file\n";
+		print "-dname [name]: Default name to use for all output files.\n";
 		##print printCitation();
   exit;
 }
@@ -1806,13 +1807,13 @@ sub coarseGrain
 ## PARSE INPUTS ##
 ##################
 
-
+my $DNAME="";
 ## parse command line options ##
 # -o output top file name, default is smog.top
 # -v verbose option
 usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
-	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes, 'CA'=> \$CAdefault, 'AA' => \$AAdefault,
+	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME,
 	 'softTerm' => \$softTerm)
           or defined $help 
           or !defined $inputPDB 
@@ -1869,6 +1870,12 @@ if($ContactFile ne ""){
 
 ## Ensure we only write out files with gromacs-compatible suffices
 my $maxbu=10;
+if ($DNAME ne ""){
+	$topFile=$DNAME;
+	$groFile=$DNAME;
+	$shadowFile=$DNAME;
+	$ndxFile=$DNAME;
+}
 my ($ext)=$topFile =~ /(\.[^.]+)$/;
 if($topFile !~ /(\.[^.]+)$/){
 	$topFile = $topFile . ".top";
