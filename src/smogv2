@@ -43,8 +43,8 @@ my $mapOpt = "shadow";my $contactOpt = "6 1";
 my $numContacts = 0;
 my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $contactRes = ""; ## Duplicate ##
-my $AAdefault = ""; ## Duplicate ##
-my $CAdefault = ""; ## Duplicate ##
+my $AAdefault = 0; ## Duplicate ##
+my $CAdefault = 0; ## Duplicate ##
 my $softTerm=0; ## Boolean to for soft termination
 my $CGenabled=0; ## enable coarse-graining
 ## this is the array that defines how function names are converted to gromacs function types
@@ -1256,25 +1256,25 @@ sub parseInputFolder
  my $bexists=0;
  while(my $file = readdir($folder))
  {
-   if($file =~ m/\.bif/)
+   if($file =~ m/\.bif$/)
    {
     $bifexists++;
     $bif = $file;$bif = "$folderName/$bif";
     print "\nFound .bif file $bif";
     validateTemplate($bif,"bif");next;}
-   if($file =~ m/\.sif/)
+   if($file =~ m/\.sif$/)
    {
     $sifexists++;
     $sif = $file;$sif = "$folderName/$sif";
     print "\nFound .sif file $sif";
     validateTemplate($sif,"sif");next;}
-   if($file =~ m/\.b/)
+   if($file =~ m/\.b$/)
    {
     $bexists++;
     $b = $file;$b = "$folderName/$b";
     print "\nFound .b file $b";
     validateTemplate($b,"b");next;}
-   if($file =~ m/\.nb/)
+   if($file =~ m/\.nb$/)
    {
     $nbexists++;
     $nb = $file;$nb = "$folderName/$nb";
@@ -1819,6 +1819,7 @@ usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $contactRes));
 
+header();
 
 if($CAdefault == 1 and $AAdefault == 1){
 	smog_quit('Can not use -CA and -AA flags at the same time.');
@@ -1832,12 +1833,12 @@ if($CAdefault == 1 and $inputFolder ne ""){
 if($AAdefault == 1 and $inputFolder ne ""){
 	smog_quit('Can not use -AA and -t flags at the same time.');
 }
-if(($CAdefault == 1 || $AAdefault == 1) and $contactRes==1){
+if(($CAdefault == 1 || $AAdefault == 1) and $contactRes ne ""){
 	smog_quit('Can not use -AA, or -CA with -t_contacts.');
 }
 
 if($CAdefault == 1){
-	print "Will use the default Calpha SMOG model provided with the distribution.\n";
+	print "\n -CA given. Will use the default Calpha SMOG model provided with the distribution.\n\n";
 	my $SMOGDIR=$ENV{'SMOG_PATH'};
 	$CGenabled=1;
 	$inputFolder="$SMOGDIR/SBM_calpha";
@@ -1845,7 +1846,7 @@ if($CAdefault == 1){
 
 }
 if($AAdefault == 1){
-	print "Will use the default All-Atom SMOG model provided with the distribution.\n";
+	print "\n -AA given. Will use the default All-Atom SMOG model provided with the distribution.\n\n";
 	my $SMOGDIR=$ENV{'SMOG_PATH'};
 	$inputFolder="$SMOGDIR/SBM_AA";
 
@@ -1860,8 +1861,6 @@ if($CGenabled != 0){
 # if contact templates are provided, and CG is turned on, then use contact templates for first round
 if($contactRes ne "" && $CGenabled != 0)
 {$inputFolder=$contactRes;} 
-
-header();
 
 # if a contact file is provided, then don't calculate contacts
 if($ContactFile ne ""){
