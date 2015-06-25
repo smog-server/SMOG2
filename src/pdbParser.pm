@@ -526,7 +526,7 @@ sub coarseCreateInteractions {
 
 	my ($connect,$counter) = @_;
 	## $connect is a list of connected residues ##
-   	my($bH,$angH,$diheH,$map) = createMultiConnections($connect);
+   	my($bH,$angH,$diheH,$map,$bondMapHashRev) = createMultiConnections($connect);
     my @tempArr=();
 	## BOND ##
     for(my $i=0;$i<scalar(@{$bH})-1;$i+=2) {	
@@ -594,7 +594,7 @@ sub coarseCreateInteractions {
 		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
         	
 		## Adjust args for getEnergyGroup() ##
-        ($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
 		my $eG = getEnergyGroup($rb,$rc,$nb,$nc);
 		my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);	
         $eG = $eGRevTable{$eG};
@@ -602,9 +602,24 @@ sub coarseCreateInteractions {
 		push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);
 
 	}
+
+
+	for(my $i=0;$i<$#$connect;$i++){
+		my $startFlag;
+		if($i==0){$startFlag=1;}else{$startFlag=0};
+		my $sizeA=scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
+		appendImpropers($map,$connect,$bondMapHashRev,$connect->[$i],$connect->[$i+1],$i,$sizeA,\@tempArr,$startFlag);
+
+
+
+
+	}
 	## DOESN'T SUPPORT IMPROPER ##
 	$connDiheFunctionals{$counter} = pdl(@tempArr);
 	@tempArr = ();
+
+
+
 
 }
 
@@ -879,7 +894,7 @@ sub connCreateInteractions
 	   
 		## Manually add Improper dihedrals ONLY FOR NONBOND Connections##
 		if(!$atomA || !$atomB){
-		appendImpropers($consecResidues[0],$consecResidues[1],$sizeA,\@tempArr,$startFlag);
+		#appendImpropers($consecResidues[0],$consecResidues[1],$sizeA,\@tempArr,$startFlag);
 		}
 		
         if(@tempArr)
@@ -891,25 +906,54 @@ sub connCreateInteractions
 
 sub appendImpropers
 {
- my($resA,$resB,$sizeA,$tempArr,$startFlag) = @_;
+ my($map,$connect,$bondMapHashRev,$resA,$resB,$resIndA,$sizeA,$tempArr,$startFlag) = @_;
+ my $resIndB=$resIndA+1;
  my $resAIp = $residues{"$resA"}->{"impropers"};
  my $resBIp = $residues{"$resB"}->{"impropers"};
  my @connImproper; my $connHandle;
- 
+ my %bondMapHashRev=%{$bondMapHashRev};
  ## WORK RESIDUE B ##
  foreach my $ips(@{$resBIp})
  {
     if(! (defined $ips) ) {next;}
-	my($a,$b,$c,$d) = @{$ips};
-	my($ia,$ta)=($sizeA+getAtomAbsoluteIndex($resB,$a),getAtomBType($resB,$a));
-	my($ib,$tb)=($sizeA+getAtomAbsoluteIndex($resB,$b),getAtomBType($resB,$b));
-	my($ic,$tc)=($sizeA+getAtomAbsoluteIndex($resB,$c),getAtomBType($resB,$c));
-	my($id,$td)=($sizeA+getAtomAbsoluteIndex($resB,$d),getAtomBType($resB,$d));
-	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
-	## [a,b,c,d,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
-	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
+
+
+
+		my $ia;my $ib;my $ic;my $id;
+		my $ta;my $tb;my $tc;my $td;
+                my $na;my $nb;my $nc;my $nd;
+		my $ra;my $rb;my $rc;my $rd;
+		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
+		my($a,$b,$c,$d) = @{$ips};
+
+
+ 		$a=$bondMapHashRev{"$a-$resIndB"};
+ 		$b=$bondMapHashRev{"$b-$resIndB"};
+ 		$c=$bondMapHashRev{"$c-$resIndB"};
+ 		$d=$bondMapHashRev{"$d-$resIndB"};
+
+		##[AtomName,ResidueIndex,prevSize]##
+		$na = $map->{$a}->[0];
+		$ra = $connect->[$map->{$a}->[1]];
+ 		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
+		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
+		$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
+		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
+		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
+
+		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
+		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
+		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
+		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
+        	
+		## Adjust args for getEnergyGroup() ##
+        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
+		push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
  }
- 
+
+
+=comment  
  ## WORK ON INTER-RESIDUAL IMPROPERS ##
  ### CHANGE THIS, ONLY HANDLES SINGLE IMPROPERS ###
  $connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}};
@@ -932,7 +976,7 @@ sub appendImpropers
   	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);
   }	
 
-
+=cut
 
  if($startFlag == 0) {return;}
  
@@ -940,13 +984,38 @@ sub appendImpropers
  foreach my $ips(@{$resAIp})
  {
     if(! (defined $ips) ) {next;}
-	my($a,$b,$c,$d) = @{$ips};
-	my($ia,$ta)=(getAtomAbsoluteIndex($resA,$a),getAtomBType($resA,$a));
-	my($ib,$tb)=(getAtomAbsoluteIndex($resA,$b),getAtomBType($resA,$b));
-	my($ic,$tc)=(getAtomAbsoluteIndex($resA,$c),getAtomBType($resA,$c));
-	my($id,$td)=(getAtomAbsoluteIndex($resA,$d),getAtomBType($resA,$d));
-	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
-	## [x,y,z,func,countDihedrals,energyGroup]
+
+
+		my $ia;my $ib;my $ic;my $id;
+		my $ta;my $tb;my $tc;my $td;
+                my $na;my $nb;my $nc;my $nd;
+		my $ra;my $rb;my $rc;my $rd;
+		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
+		my($a,$b,$c,$d) = @{$ips};
+
+
+ 		$a=$bondMapHashRev{"$a-$resIndB"};
+ 		$b=$bondMapHashRev{"$b-$resIndB"};
+ 		$c=$bondMapHashRev{"$c-$resIndB"};
+ 		$d=$bondMapHashRev{"$d-$resIndB"};
+
+		##[AtomName,ResidueIndex,prevSize]##
+		$na = $map->{$a}->[0];
+		$ra = $connect->[$map->{$a}->[1]];
+ 		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
+		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
+		$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
+		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
+		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
+
+		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
+		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
+		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
+		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
+        	
+		## Adjust args for getEnergyGroup() ##
+        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
 	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
  }
 
@@ -1143,7 +1212,7 @@ sub createMultiConnections
         
    }
    ($dihes,$angles,$oneFour)=adjListTraversal(\%union);
-   return (\@connectList,$angles,$dihes,\%bondMapHash);
+   return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev);
 
 }
 
