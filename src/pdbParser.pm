@@ -158,7 +158,7 @@ sub parseATOM
 		$residue =~ s/^\s+|\s+$//g;
         	$pdbResidueIndex = substr($record,22,5);
 		$pdbResidueIndex =~ s/^\s+|\s+$//g; 
-        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif at line $lineNumber");}
+        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif.  See line $lineNumber of PDB");}
 
 
 		$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
@@ -372,6 +372,10 @@ sub parsePDBATOMS
 
 			$interiorResidue = substr($record,17,4);
 			$interiorResidue =~ s/^\s+|\s+$//g;
+	   		$residue = substr($record,17,4);
+        	        $residue =~ s/^\s+|\s+$//g;
+
+	                if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 			if($interiorResidue !~ /$residue/)
@@ -596,16 +600,10 @@ sub GenerateBondedGeometry {
 
 
 	for(my $i=0;$i<$#$connect;$i++){
-		my $startFlag;
-		if($i==0){$startFlag=1;}else{$startFlag=0};
-		my $sizeA=scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
 		appendImpropers($map,$connect,$bondMapHashRev,$i,\@tempArr);
 	}
 	$connDiheFunctionals{$counter} = pdl(@tempArr);
 	@tempArr = ();
-
-
-
 
 }
 
@@ -953,6 +951,13 @@ sub appendImpropers
 		my $ra;my $rb;my $rc;my $rd;
 		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
 		my($an,$bn,$cn,$dn) = @{$ips->{"atom"}};
+
+
+                if($a =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $a found.")};
+                if($b =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $b found.")};
+                if($c =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $c found.")};
+                if($d =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $d found.")};
+
 
 		if( $a =~ s/\+$//g ){
  			$a=$bondMapHashRev{"$a-$resIndB"};
