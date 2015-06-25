@@ -1321,10 +1321,10 @@ for(my $I=0;$I<$headw;$I++){
   print "\n\n";
   print "              Thank you for using the Structure-based Model (SMOG) software\n";
   print "    This package is the product of contributions from a number of people, including:\n";
-  print "                      Mohit Ranghunathan, Mariana Levi, Ryan Hayes,\n";
-  print "                       Jeffrey Noel, Jose Onuchic & Paul Whitford\n\n";
+  print "                     Jeffrey Noel, Mariana Levi, Mohit Ranghunathan,\n";
+  print "                        Ryan Hayes,  Jose Onuchic & Paul Whitford\n\n";
   print "                     Copyright (c) 2015, The SMOG development team at\n";
-  print "                       Rice University and Northeastern University\n\n";
+  print "                        Rice University and Northeastern University\n\n";
   printCitation();
 for(my $I=0;$I<$headw;$I++){
   print "*";
