@@ -600,9 +600,6 @@ sub GenerateBondedGeometry {
 
 
 	for(my $i=0;$i<$#$connect;$i++){
-		my $startFlag;
-		if($i==0){$startFlag=1;}else{$startFlag=0};
-		my $sizeA=scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
 		appendImpropers($map,$connect,$bondMapHashRev,$i,\@tempArr);
 	}
 	$connDiheFunctionals{$counter} = pdl(@tempArr);
@@ -956,10 +953,10 @@ sub appendImpropers
 		my($an,$bn,$cn,$dn) = @{$ips->{"atom"}};
 
 
-                if($a =~ /[*?^&!@#%()]/){smog_quit ("Special characters not permitted in connection atoms: $a found.")};
-                if($b =~ /[*?^&!@#%()]/){smog_quit ("Special characters not permitted in connection atoms: $b found.")};
-                if($c =~ /[*?^&!@#%()]/){smog_quit ("Special characters not permitted in connection atoms: $c found.")};
-                if($d =~ /[*?^&!@#%()]/){smog_quit ("Special characters not permitted in connection atoms: $d found.")};
+                if($a =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $a found.")};
+                if($b =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $b found.")};
+                if($c =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $c found.")};
+                if($d =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $d found.")};
 
 
 		if( $a =~ s/\+$//g ){
