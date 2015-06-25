@@ -43,10 +43,10 @@ my $mapOpt = "shadow";my $contactOpt = "6 1";
 my $numContacts = 0;
 my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $contactRes = ""; ## Duplicate ##
-my $AAdefault = ""; ## Duplicate ##
-my $CAdefault = ""; ## Duplicate ##
+my $AAdefault = 0; ## Duplicate ##
+my $CAdefault = 0; ## Duplicate ##
 my $softTerm=0; ## Boolean to for soft termination
-my $CGenabled=0; ## enable coarse-graining
+our $CGenabled=0; ## enable coarse-graining
 ## this is the array that defines how function names are converted to gromacs function types
 our %fTypes = (	'bond_harmonic' => '1',
 		'bond_type6' => '6',
@@ -1256,25 +1256,25 @@ sub parseInputFolder
  my $bexists=0;
  while(my $file = readdir($folder))
  {
-   if($file =~ m/\.bif/)
+   if($file =~ m/\.bif$/)
    {
     $bifexists++;
     $bif = $file;$bif = "$folderName/$bif";
     print "\nFound .bif file $bif";
     validateTemplate($bif,"bif");next;}
-   if($file =~ m/\.sif/)
+   if($file =~ m/\.sif$/)
    {
     $sifexists++;
     $sif = $file;$sif = "$folderName/$sif";
     print "\nFound .sif file $sif";
     validateTemplate($sif,"sif");next;}
-   if($file =~ m/\.b/)
+   if($file =~ m/\.b$/)
    {
     $bexists++;
     $b = $file;$b = "$folderName/$b";
     print "\nFound .b file $b";
     validateTemplate($b,"b");next;}
-   if($file =~ m/\.nb/)
+   if($file =~ m/\.nb$/)
    {
     $nbexists++;
     $nb = $file;$nb = "$folderName/$nb";
@@ -1353,6 +1353,7 @@ sub usage
         	print "-s [smog.contacts]: Output .contacts file name\n";
 		print "-n [smog.ndx]: Output .ndx file name\n";
 		print "-c [contacts.txt]: Input contact map file\n";
+		print "-dname [name]: Default name to use for all output files.\n";
 		##print printCitation();
   exit;
 }
@@ -1546,7 +1547,7 @@ sub allAtom
         ## PARSE PDB ##
         ###############
 	print "Parsing .pdb... ";
-	parseATOM($inputPDB);
+	parsePDBATOMS($inputPDB,$CGenabled);
 	catPDL();
 	print "Done\n";
 	print "Creating topology for contact calculation.....  ";
@@ -1573,7 +1574,7 @@ sub allAtom
 	calculateAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,0);
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,1);
 	## CALCULATE ANGLES ##
 	print "\nSaving angles\n";
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
@@ -1647,7 +1648,7 @@ sub coarseGrain
 	##############################
         ## PARSE ALL ATOM TEMPLATES ##
         ##############################
-        print "\n\n		PREPROCESSING\n\nWill use templates given with -t_contacts\n";
+        print "\n\n		PREPROCESSING\n\nWill use contact-specific templates\n";
 	parseInputFolder($inputFolder);
 	## parse Bif File ##
 	parseBif();
@@ -1666,7 +1667,7 @@ sub coarseGrain
         ## PARSE PDB ##
         ###############
 	print "Parsing .pdb... ";
-	parseATOM($inputPDB);
+	parsePDBATOMS($inputPDB,0);
 	catPDL();
 	print "Done\n";
 
@@ -1693,7 +1694,7 @@ sub coarseGrain
 	calculateAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,0);
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,1);
 	## CALCULATE ANGLES ##
 	print "..";
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
@@ -1726,7 +1727,7 @@ sub coarseGrain
         ###################################
 	## OPEN .top handle ##
 	open($OUTPUT, ">$topFile");
-        print "\n\n	     FINAL PROCESSING\n\nWill use templates given with -t\n\n";
+        print "\n\n	     FINAL PROCESSING\n\nWill use templates for final model\n\n";
 	print "Parsing Coarse Grained Templates... ";
 	parseInputFolder($coarseFolder);
 	## parse Bif File ##
@@ -1747,7 +1748,7 @@ sub coarseGrain
     	## PARSE PDB ##
     	###############
 	print "Coarse Graining system.....";
-	parseATOMCoarse($inputPDB);
+	parsePDBATOMS($inputPDB,$CGenabled);
 	catPDL();
 	print "Done\n";
 	
@@ -1806,18 +1807,19 @@ sub coarseGrain
 ## PARSE INPUTS ##
 ##################
 
-
+my $DNAME="";
 ## parse command line options ##
 # -o output top file name, default is smog.top
 # -v verbose option
 usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
-	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes, 'CA'=> \$CAdefault, 'AA' => \$AAdefault,
+	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME,
 	 'softTerm' => \$softTerm)
           or defined $help 
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $contactRes));
 
+header();
 
 if($CAdefault == 1 and $AAdefault == 1){
 	smog_quit('Can not use -CA and -AA flags at the same time.');
@@ -1831,20 +1833,23 @@ if($CAdefault == 1 and $inputFolder ne ""){
 if($AAdefault == 1 and $inputFolder ne ""){
 	smog_quit('Can not use -AA and -t flags at the same time.');
 }
-if(($CAdefault == 1 || $AAdefault == 1) and $contactRes==1){
+if(($CAdefault == 1 || $AAdefault == 1) and $contactRes ne ""){
 	smog_quit('Can not use -AA, or -CA with -t_contacts.');
 }
 
 if($CAdefault == 1){
-	print "Will use the default Calpha SMOG model provided with the distribution.\n";
+	print "\n -CA given. Will use the default Calpha SMOG model provided with the distribution.\n\n";
 	my $SMOGDIR=$ENV{'SMOG_PATH'};
+	if(! -d $SMOGDIR){
+		smog_quit("SMOG_PATH set to $SMOGDIR.  $SMOGDIR does not appear to be a valid template directory.");
+	}
 	$CGenabled=1;
 	$inputFolder="$SMOGDIR/SBM_calpha";
 	$contactRes="$SMOGDIR/SBM_AA";
 
 }
 if($AAdefault == 1){
-	print "Will use the default All-Atom SMOG model provided with the distribution.\n";
+	print "\n -AA given. Will use the default All-Atom SMOG model provided with the distribution.\n\n";
 	my $SMOGDIR=$ENV{'SMOG_PATH'};
 	$inputFolder="$SMOGDIR/SBM_AA";
 
@@ -1860,8 +1865,6 @@ if($CGenabled != 0){
 if($contactRes ne "" && $CGenabled != 0)
 {$inputFolder=$contactRes;} 
 
-header();
-
 # if a contact file is provided, then don't calculate contacts
 if($ContactFile ne ""){
 	$ignAllContacts=1;
@@ -1869,6 +1872,12 @@ if($ContactFile ne ""){
 
 ## Ensure we only write out files with gromacs-compatible suffices
 my $maxbu=10;
+if ($DNAME ne ""){
+	$topFile=$DNAME;
+	$groFile=$DNAME;
+	$shadowFile=$DNAME;
+	$ndxFile=$DNAME;
+}
 my ($ext)=$topFile =~ /(\.[^.]+)$/;
 if($topFile !~ /(\.[^.]+)$/){
 	$topFile = $topFile . ".top";
