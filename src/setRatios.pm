@@ -16,7 +16,7 @@ use warnings;
 use Data::Dumper;
 use Exporter;
 use PDL;
-use bifParser;
+use templateParser;
 
 our @ISA = 'Exporter';
 our @EXPORT = qw(setRatios getSetDiheCounts %fTypes);

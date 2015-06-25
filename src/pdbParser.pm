@@ -7,7 +7,7 @@
 ##############################################################################
 package pdbParser;
 
-use bifParser;
+use templateParser;
 use setRatios;
 use strict;
 use warnings;
