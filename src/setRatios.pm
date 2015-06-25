@@ -16,7 +16,7 @@ use warnings;
 use Data::Dumper;
 use Exporter;
 use PDL;
-use bifParser;
+use templateParser;
 
 our @ISA = 'Exporter';
 our @EXPORT = qw(setRatios getSetDiheCounts %fTypes);
@@ -116,7 +116,8 @@ sub setRatios
  my($diheFunctHandle,$inputPDL,$atomNum,$atomTypes) = @_;
  my $energyGroupSum; my $scaleFactor;my %residueRatio;
  my $sum; my $diheStrengthTotal;
- 
+ undef %uniqueBonds;
+
  foreach my $res(keys %{$diheFunctHandle})
  {
 		adjustFactorsHelper1($diheFunctHandle->{$res},$inputPDL->{$res},$atomNum,$atomTypes,\%residueRatio,\$sum);

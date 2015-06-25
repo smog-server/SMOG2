@@ -7,7 +7,7 @@
 ##############################################################################
 package pdbParser;
 
-use bifParser;
+use templateParser;
 use setRatios;
 use strict;
 use warnings;
@@ -21,7 +21,7 @@ use PDL; ## LOAD PDL MODULE
 ## DECLEARATION TO SHAR DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL parseATOM catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parseATOMCoarse);
+qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
 
 my @vector;
 my $coorPDL;
@@ -70,7 +70,7 @@ sub parseATOM
   my @temp; my @connResA; my @connResB; my @union;
   my $x;my $y;my $z;
   my $residue; my $interiorResidue; my $atom;my $atomSerial;
-  my $resCount; my $lineEnd;
+  my $atomsInRes; my $lineEnd;
   my $i; my $putIndex=0; my $strLength;
   my $resType;
   my $angH; my $diheH;
@@ -153,25 +153,25 @@ sub parseATOM
 	{
 	
 		$outLength = length($record);
-	    ## OBTAIN RESIDUE NAME ##
+	   	## OBTAIN RESIDUE NAME ##
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
-        $pdbResidueIndex = substr($record,22,5);
-	$pdbResidueIndex =~ s/^\s+|\s+$//g; 
-        if(!exists $residues{$residue}){smog_quit ("PARSE ERROR: \"$residue\" doesn't exist in .bif at line $lineNumber");}
+        	$pdbResidueIndex = substr($record,22,5);
+		$pdbResidueIndex =~ s/^\s+|\s+$//g; 
+        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif.  See line $lineNumber of PDB");}
 
 
-		$resCount = scalar(keys(%{$residues{$residue}->{"atoms"}}));
-	    seek($PDB, -$outLength, 1); # place the same line back onto the filehandle
+		$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
+	    	seek($PDB, -$outLength, 1); # place the same line back onto the filehandle
 	
-	    ## Incr local residue index ## 
-	    $residueIndex++;
-        $lineNumber--;
-	    ## Parse residue hash ##
-	     my %uniqueAtom;
-		for($i=0;$i<$resCount;$i++)
+	    	## Incr local residue index ## 
+	    	$residueIndex++;
+        	$lineNumber--;
+	    	## Parse residue hash ##
+	     	my %uniqueAtom;
+		for($i=0;$i<$atomsInRes;$i++)
 		{
-            $lineNumber++;
+            		$lineNumber++;
 			$record = <$PDB>;
 			if($record !~ m/^ATOM|^HETATM/)
 			{smog_quit("PARSE ERROR\n Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
@@ -226,7 +226,7 @@ sub parseATOM
 		}
 		 
 
-		if($i != $resCount){smog_quit ("Total number of atoms of $residue at line $lineNumber doesn't match with .bif declaration");}
+		if($i != $atomsInRes){smog_quit ("Total number of atoms of $residue at line $lineNumber doesn't match with .bif declaration");}
 		
 		$counter++;
         ## HEAD RESIDUE WAIT FOR NEXT RESIDUE TO CONNECT ##
@@ -244,13 +244,13 @@ sub parseATOM
 		{
 		   my @testArr; my $sizeA; my $sizeB;
 		   @connResA = @connResB;
-	       @connResB=@temp;
+	       	   @connResB=@temp;
 		   $consecResidues[0] = $consecResidues[1];
-	       $consecResidues[1] = $residue;   
-           $sizeA = scalar(@connResA);
+	           $consecResidues[1] = $residue;   
+                   $sizeA = scalar(@connResA);
 		   @union = (@connResA,@connResB);
 		   ## Extract Index info ##
-	       connCreateInteractions(\@consecResidues,$sizeA,$counter,$linkFlag,"","","");
+	       	   connCreateInteractions(\@consecResidues,$sizeA,$counter,$linkFlag,"","","");
 		   $headFlag = 0;
 		   $connPDL{$counter}=pdl(@union);
 		   @union = ();
@@ -278,7 +278,7 @@ sub parseATOM
 
 
 
-#########################################################################
+####################################################################
 # parseExternalContacts($filename)
 ####################################################################
 sub parseExternalContacts
@@ -292,13 +292,12 @@ sub parseExternalContacts
 
 
 ####################################################################
-# parseATOMCoarse(\@pdbLines,\%hashRef):extract x, y, and z coordinates, #
-# serial number and element symbol from PDB ATOM record type. 	   #
+# parsePDBATOMS
 ####################################################################
-sub parseATOMCoarse
+sub parsePDBATOMS
 {
 
-  my ($fileName) = @_;
+  my ($fileName,$CGenabled) = @_;
 
   ## INTERNAL VARIABLES ##
   my $counter = 0;
@@ -307,7 +306,7 @@ sub parseATOMCoarse
   my @consecResidues;
   my $x;my $y;my $z;
   my $residue; my $interiorResidue; my $atom;my $atomSerial;
-  my $resCount; my $lineEnd;
+  my $atomsInRes; my $lineEnd;
   my $i; my $putIndex=0; my $strLength;
   my $resType;
   my $angH; my $diheH;
@@ -317,6 +316,8 @@ sub parseATOMCoarse
   my $atomCounter=0;my $singleFlag = 1;
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=1;
+  my $secondcall;
+  my $lineNumber = 0;
   ## OPEN .PDB FILE ##
  unless (open(MYFILE, $fileName)) {
     smog_quit ("Cannot read from '$fileName'.");
@@ -325,20 +326,16 @@ sub parseATOMCoarse
   ## LOOP THROUGH EACH LINE ##
  while(my $record = <MYFILE>)
  {
+ $lineNumber++;
 	## IF TER LINE  ##
 	if($record =~ m/TER|END/)
 	{
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
-			## PREV CHAIN WAS SINGLE ## 
-			if($headFlag == 1)
-			{
-				smog_quit("There is a chain with only one residue. Cannot coarse grain");
-			}
 			## CREATE INTERACTION ##
-            coarseCreateInteractions(\@consecResidues,$counter);
+            		GenerateBondedGeometry(\@consecResidues,$counter);
 		   	$connPDL{$counter}=pdl(@union);
 			@union = ();$counter++;
-            @consecResidues = ();
+            		@consecResidues = ();
 			if($record =~ m/END/){last;}
 			else {next;}
 	} 
@@ -347,35 +344,50 @@ sub parseATOMCoarse
 	if($record =~ m/ATOM/ || $record =~ m/HETATM/)
 	{
 	
+        	$lineNumber--;
 		$outLength = length($record);
 	 	## OBTAIN RESIDUE NAME ##
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
-		$resCount = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
+		## if first iteration, save residueBackup, and use residues
+		if(exists $residueBackup{$residue}){
+			$atomsInRes = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
+			$secondcall=1;
+		}else{
+			$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
+			$secondcall=0;
+		}
 		my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
-		if($atomsInBif != 1)
-                 {smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");}
-		my $atomsInRes=0;
+		if($atomsInBif != 1 && $CGenabled ==1)
+                 {
+			smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
+		}
+		my $atomsmatch=0;
 	 	seek(MYFILE, -$outLength, 1); # place the same line back onto the filehandle
 	
-		for($i=0;$i<$resCount;$i++)
+		for($i=0;$i<$atomsInRes;$i++)
 		{
+ 			$lineNumber++;
 			$record = <MYFILE>;
 
 			$interiorResidue = substr($record,17,4);
 			$interiorResidue =~ s/^\s+|\s+$//g;
+	   		$residue = substr($record,17,4);
+        	        $residue =~ s/^\s+|\s+$//g;
+
+	                if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 			if($interiorResidue !~ /$residue/)
 			{smog_quit ("Residue doesn't conform with coarse grain .bif:: $record");}
 			$atom = substr($record, 12, 4);
 			$atom =~ s/^\s+|\s+$//g;
-			if(!exists $residueBackup{$residue}->{"atoms"}->{$atom})
-			{smog_quit ("$atom doesn't exists in .bif declaration of $residue");}
+			if($secondcall == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
+			{smog_quit ("$atom doesn't exist in .bif declaration of $residue");}
 			
 			## CHECK IF ATOM IS COARSE GRAINED ##
                         if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
-			$atomsInRes++;
+			$atomsmatch++;
 			$x = substr($record, 30, 8);
 			$y = substr($record, 38, 8);
 			$z = substr($record, 46, 8);
@@ -391,12 +403,11 @@ sub parseATOMCoarse
             		$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			$totalAtoms++;
 		}
-
-		if($atomsInRes != $atomsInBif){
-			smog_quit ("Not all atoms in the CG bif appear in the PDB.");
+		if($atomsmatch != $atomsInBif){
+			smog_quit ("Not all atoms in the bif appear in the PDB. See line $lineNumber");
 		}
 
-		if($i != $resCount){smog_quit ("Total number of atoms of $residue doesn't match with .bif declaration");}
+		if($i != $atomsInRes){smog_quit ("Total number of atoms of $residue doesn't match with .bif declaration");}
 		## CONCAT RESIDUE ##
 	  	@union = (@union,@temp);@temp=();
 		push(@consecResidues,$residue);
@@ -405,17 +416,10 @@ sub parseATOMCoarse
 		@tempBond = ();
 		$residueIndex++;
 				
-	}
+	}else{smog_quit(" Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
 	$record = "";
 	
  }
-
-
-			## ONLY SINGLE RESIDUE IN PDB NO COARSE GRAINING ## 
-			if($headFlag == 1)
-			{
-				smog_quit("There is only a single residue in your system, cannot coarse grain.");
-			}
 }
 
 # returnFunction: Return the fType and directive field for a specified function
@@ -513,25 +517,25 @@ sub singleCreateInteractions
 		
 }
 
-sub coarseCreateInteractions {
+sub GenerateBondedGeometry {
 
 	my ($connect,$counter) = @_;
 	## $connect is a list of connected residues ##
-   	my($bH,$angH,$diheH,$map) = createMultiConnections($connect);
-    my @tempArr=();
+   	my($bH,$angH,$diheH,$map,$bondMapHashRev) = GenAnglesDihedrals($connect);
+    	my @tempArr=();
 	## BOND ##
-    for(my $i=0;$i<scalar(@{$bH})-1;$i+=2) {	
+    	for(my $i=0;$i<scalar(@{$bH})-1;$i+=2) {	
 	my $bondStrA = $bH->[$i];
-    $bondStrA = $map->{$bondStrA}->[0];
-    my $bondStrB = $bH->[$i+1];
-    $bondStrB = $map->{$bondStrB}->[0];
-    my $sizeA = $map->{$bH->[$i]}->[2];my $sizeB = $map->{$bH->[$i+1]}->[2];
+    	$bondStrA = $map->{$bondStrA}->[0];
+    	my $bondStrB = $bH->[$i+1];
+    	$bondStrB = $map->{$bondStrB}->[0];
+    	my $sizeA = $map->{$bH->[$i]}->[2];my $sizeB = $map->{$bH->[$i+1]}->[2];
 	my $ra=$connect->[$map->{$bH->[$i]}->[1]];my $rb=$connect->[$map->{$bH->[$i+1]}->[1]];
 	my ($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$bondStrA)
 		       ,getAtomBType($ra,$bondStrA));
 	my ($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$bondStrB)
 		       ,getAtomBType($rb,$bondStrB));
-    my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");	
+    	my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");	
 	push(@tempArr,pdl($ia,$ib,$if));
 	}
 	$connBondFunctionals{$counter}=cat(@tempArr);
@@ -585,15 +589,19 @@ sub coarseCreateInteractions {
 		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
         	
 		## Adjust args for getEnergyGroup() ##
-        ($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
 		my $eG = getEnergyGroup($rb,$rc,$nb,$nc);
 		my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);	
-        $eG = $eGRevTable{$eG};
+        	$eG = $eGRevTable{$eG};
 		## [x,y,z,func,countDihedrals,energyGroup]
 		push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);
 
 	}
-	## DOESN'T SUPPORT IMPROPER ##
+
+
+	for(my $i=0;$i<$#$connect;$i++){
+		appendImpropers($map,$connect,$bondMapHashRev,$i,\@tempArr);
+	}
 	$connDiheFunctionals{$counter} = pdl(@tempArr);
 	@tempArr = ();
 
@@ -870,7 +878,7 @@ sub connCreateInteractions
 	   
 		## Manually add Improper dihedrals ONLY FOR NONBOND Connections##
 		if(!$atomA || !$atomB){
-		appendImpropers($consecResidues[0],$consecResidues[1],$sizeA,\@tempArr,$startFlag);
+		#appendImpropers($consecResidues[0],$consecResidues[1],$sizeA,\@tempArr,$startFlag);
 		}
 		
         if(@tempArr)
@@ -882,62 +890,158 @@ sub connCreateInteractions
 
 sub appendImpropers
 {
- my($resA,$resB,$sizeA,$tempArr,$startFlag) = @_;
+ my($map,$connect,$bondMapHashRev,$resIndA,$tempArr) = @_;
+ my $resA=$connect->[$resIndA];
+ my $resIndB=$resIndA+1;
+ my $resB=$connect->[$resIndB];
  my $resAIp = $residues{"$resA"}->{"impropers"};
  my $resBIp = $residues{"$resB"}->{"impropers"};
  my @connImproper; my $connHandle;
- 
+ my %bondMapHashRev=%{$bondMapHashRev};
  ## WORK RESIDUE B ##
  foreach my $ips(@{$resBIp})
  {
     if(! (defined $ips) ) {next;}
-	my($a,$b,$c,$d) = @{$ips};
-	my($ia,$ta)=($sizeA+getAtomAbsoluteIndex($resB,$a),getAtomBType($resB,$a));
-	my($ib,$tb)=($sizeA+getAtomAbsoluteIndex($resB,$b),getAtomBType($resB,$b));
-	my($ic,$tc)=($sizeA+getAtomAbsoluteIndex($resB,$c),getAtomBType($resB,$c));
-	my($id,$td)=($sizeA+getAtomAbsoluteIndex($resB,$d),getAtomBType($resB,$d));
-	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
-	## [a,b,c,d,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
-	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
+
+		my $ia;my $ib;my $ic;my $id;
+		my $ta;my $tb;my $tc;my $td;
+                my $na;my $nb;my $nc;my $nd;
+		my $ra;my $rb;my $rc;my $rd;
+		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
+		my($a,$b,$c,$d) = @{$ips};
+
+
+ 		$a=$bondMapHashRev{"$a-$resIndB"};
+ 		$b=$bondMapHashRev{"$b-$resIndB"};
+ 		$c=$bondMapHashRev{"$c-$resIndB"};
+ 		$d=$bondMapHashRev{"$d-$resIndB"};
+
+		##[AtomName,ResidueIndex,prevSize]##
+		$na = $map->{$a}->[0];
+		$ra = $connect->[$map->{$a}->[1]];
+ 		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
+		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
+		$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
+		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
+		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
+
+		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
+		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
+		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
+		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
+        	
+		## Adjust args for getEnergyGroup() ##
+        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
+		push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
  }
- 
+
+
  ## WORK ON INTER-RESIDUAL IMPROPERS ##
  ### CHANGE THIS, ONLY HANDLES SINGLE IMPROPERS ###
  $connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}};
  #@connImproper = @{$connHandle->{"improper"}};
  foreach my $ips(@{$connHandle->{"improper"}})
  {
-   	my @atomsHandle = @{$ips->{"atom"}}; 
-  	my ($a,$b,$c,$d) = ('C','C','C','C');
-         ($a,$b,$c,$d) = @atomsHandle;
-  	my($ia,$ta)= ($a !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$a),getAtomBType($resA,$a)) 
- 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
-  	my($ib,$tb)= ($b !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$b),getAtomBType($resA,$b)) 
- 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
-  	my($ic,$tc)= ($c !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$c),getAtomBType($resA,$c)) 
- 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
-  	my($id,$td)= ($d !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$d),getAtomBType($resA,$d)) 
- 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
-  	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
-  	## [x,y,z,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
-  	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);
+		if(exists $ips->{"atom"}){ 
+  		my ($a,$b,$c,$d) = @{$ips->{"atom"}}; 
+		my $ia;my $ib;my $ic;my $id;
+		my $ta;my $tb;my $tc;my $td;
+                my $na;my $nb;my $nc;my $nd;
+		my $ra;my $rb;my $rc;my $rd;
+		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
+		my($an,$bn,$cn,$dn) = @{$ips->{"atom"}};
+
+
+                if($a =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $a found.")};
+                if($b =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $b found.")};
+                if($c =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $c found.")};
+                if($d =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $d found.")};
+
+
+		if( $a =~ s/\+$//g ){
+ 			$a=$bondMapHashRev{"$a-$resIndB"};
+		}else{
+ 			$a=$bondMapHashRev{"$a-$resIndA"};
+		}
+		if( $b =~ s/\+$//g ){
+ 			$b=$bondMapHashRev{"$b-$resIndB"};
+		}else{
+ 			$b=$bondMapHashRev{"$b-$resIndA"};
+		}
+		if( $c =~ s/\+$//g ){
+ 			$c=$bondMapHashRev{"$c-$resIndB"};
+		}else{
+ 			$c=$bondMapHashRev{"$c-$resIndA"};
+		}
+		if( $d =~ s/\+$//g ){
+ 			$d=$bondMapHashRev{"$d-$resIndB"};
+		}else{
+ 			$d=$bondMapHashRev{"$d-$resIndA"};
+		}
+
+		##[AtomName,ResidueIndex,prevSize]##
+		$na = $map->{$a}->[0];
+		$ra = $connect->[$map->{$a}->[1]];
+ 		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
+		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
+		$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
+		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
+		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
+
+		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
+		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
+		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
+		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
+
+
+        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
+		push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
+	}else{
+		print "not sure\n";
+	}
   }	
 
 
-
- if($startFlag == 0) {return;}
+ if($resIndA != 0) {return;}
  
  ## WORK RESIDUE A ##
  foreach my $ips(@{$resAIp})
  {
     if(! (defined $ips) ) {next;}
-	my($a,$b,$c,$d) = @{$ips};
-	my($ia,$ta)=(getAtomAbsoluteIndex($resA,$a),getAtomBType($resA,$a));
-	my($ib,$tb)=(getAtomAbsoluteIndex($resA,$b),getAtomBType($resA,$b));
-	my($ic,$tc)=(getAtomAbsoluteIndex($resA,$c),getAtomBType($resA,$c));
-	my($id,$td)=(getAtomAbsoluteIndex($resA,$d),getAtomBType($resA,$d));
-	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
-	## [x,y,z,func,countDihedrals,energyGroup]
+
+
+		my $ia;my $ib;my $ic;my $id;
+		my $ta;my $tb;my $tc;my $td;
+                my $na;my $nb;my $nc;my $nd;
+		my $ra;my $rb;my $rc;my $rd;
+		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
+		my($a,$b,$c,$d) = @{$ips};
+
+
+ 		$a=$bondMapHashRev{"$a-$resIndA"};
+ 		$b=$bondMapHashRev{"$b-$resIndA"};
+ 		$c=$bondMapHashRev{"$c-$resIndA"};
+ 		$d=$bondMapHashRev{"$d-$resIndA"};
+
+		##[AtomName,ResidueIndex,prevSize]##
+		$na = $map->{$a}->[0];
+		$ra = $connect->[$map->{$a}->[1]];
+ 		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
+		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
+		$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
+		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
+		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
+
+		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
+		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
+		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
+		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
+        	
+		## Adjust args for getEnergyGroup() ##
+        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
 	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
  }
 
@@ -1061,7 +1165,7 @@ sub connWildcardMatchDihes
 
 
 
-sub createMultiConnections
+sub GenAnglesDihedrals
 {
   my($connect) = @_;
   ## $connect is a list of connected residues ##
@@ -1134,7 +1238,7 @@ sub createMultiConnections
         
    }
    ($dihes,$angles,$oneFour)=adjListTraversal(\%union);
-   return (\@connectList,$angles,$dihes,\%bondMapHash);
+   return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev);
 
 }
 
