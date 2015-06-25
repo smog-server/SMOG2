@@ -273,7 +273,11 @@ foreach my $egName(keys %{$energyGroups})
 	$intraRelativeStrength = $energyGroups->{$egName}->{"intraRelativeStrength"};
 	$normalize = $energyGroups->{$egName}->{"normalize"};
 	$termRatios->{$residueType}->{"energyGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
-		
+	if($normalize == 0 && exists $energyGroups->{$egName}->{"intraRelativeStrength"}){
+		smog_quit("Issue in .sif, energy group $egName. intraRelativeStrength only supported when normalization is on.");
+	}elsif($normalize != 1 && $normalize != 0){
+		smog_quit("Issue in .sif, energy group $egName. normalization must be 0, or 1. Found $normalize");
+	}	
 }
 
 my $setflag = 0;$total=0;
