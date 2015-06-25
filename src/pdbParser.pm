@@ -608,13 +608,8 @@ sub coarseCreateInteractions {
 		my $startFlag;
 		if($i==0){$startFlag=1;}else{$startFlag=0};
 		my $sizeA=scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
-		appendImpropers($map,$connect,$bondMapHashRev,$connect->[$i],$connect->[$i+1],$i,$sizeA,\@tempArr,$startFlag);
-
-
-
-
+		appendImpropers($map,$connect,$bondMapHashRev,$i,\@tempArr);
 	}
-	## DOESN'T SUPPORT IMPROPER ##
 	$connDiheFunctionals{$counter} = pdl(@tempArr);
 	@tempArr = ();
 
@@ -906,8 +901,10 @@ sub connCreateInteractions
 
 sub appendImpropers
 {
- my($map,$connect,$bondMapHashRev,$resA,$resB,$resIndA,$sizeA,$tempArr,$startFlag) = @_;
+ my($map,$connect,$bondMapHashRev,$resIndA,$tempArr) = @_;
+ my $resA=$connect->[$resIndA];
  my $resIndB=$resIndA+1;
+ my $resB=$connect->[$resIndB];
  my $resAIp = $residues{"$resA"}->{"impropers"};
  my $resBIp = $residues{"$resB"}->{"impropers"};
  my @connImproper; my $connHandle;
@@ -916,8 +913,6 @@ sub appendImpropers
  foreach my $ips(@{$resBIp})
  {
     if(! (defined $ips) ) {next;}
-
-
 
 		my $ia;my $ib;my $ic;my $id;
 		my $ta;my $tb;my $tc;my $td;
@@ -978,7 +973,7 @@ sub appendImpropers
 
 =cut
 
- if($startFlag == 0) {return;}
+ if($resIndA != 0) {return;}
  
  ## WORK RESIDUE A ##
  foreach my $ips(@{$resAIp})
@@ -994,10 +989,10 @@ sub appendImpropers
 		my($a,$b,$c,$d) = @{$ips};
 
 
- 		$a=$bondMapHashRev{"$a-$resIndB"};
- 		$b=$bondMapHashRev{"$b-$resIndB"};
- 		$c=$bondMapHashRev{"$c-$resIndB"};
- 		$d=$bondMapHashRev{"$d-$resIndB"};
+ 		$a=$bondMapHashRev{"$a-$resIndA"};
+ 		$b=$bondMapHashRev{"$b-$resIndA"};
+ 		$c=$bondMapHashRev{"$c-$resIndA"};
+ 		$d=$bondMapHashRev{"$d-$resIndA"};
 
 		##[AtomName,ResidueIndex,prevSize]##
 		$na = $map->{$a}->[0];
