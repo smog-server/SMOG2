@@ -21,7 +21,7 @@ use PDL; ## LOAD PDL MODULE
 ## DECLEARATION TO SHAR DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL parseATOM catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parseATOMCoarse);
+qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
 
 my @vector;
 my $coorPDL;
@@ -70,7 +70,7 @@ sub parseATOM
   my @temp; my @connResA; my @connResB; my @union;
   my $x;my $y;my $z;
   my $residue; my $interiorResidue; my $atom;my $atomSerial;
-  my $resCount; my $lineEnd;
+  my $atomsInRes; my $lineEnd;
   my $i; my $putIndex=0; my $strLength;
   my $resType;
   my $angH; my $diheH;
@@ -153,25 +153,25 @@ sub parseATOM
 	{
 	
 		$outLength = length($record);
-	    ## OBTAIN RESIDUE NAME ##
+	   	## OBTAIN RESIDUE NAME ##
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
-        $pdbResidueIndex = substr($record,22,5);
-	$pdbResidueIndex =~ s/^\s+|\s+$//g; 
-        if(!exists $residues{$residue}){smog_quit ("PARSE ERROR: \"$residue\" doesn't exist in .bif at line $lineNumber");}
+        	$pdbResidueIndex = substr($record,22,5);
+		$pdbResidueIndex =~ s/^\s+|\s+$//g; 
+        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif at line $lineNumber");}
 
 
-		$resCount = scalar(keys(%{$residues{$residue}->{"atoms"}}));
-	    seek($PDB, -$outLength, 1); # place the same line back onto the filehandle
+		$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
+	    	seek($PDB, -$outLength, 1); # place the same line back onto the filehandle
 	
-	    ## Incr local residue index ## 
-	    $residueIndex++;
-        $lineNumber--;
-	    ## Parse residue hash ##
-	     my %uniqueAtom;
-		for($i=0;$i<$resCount;$i++)
+	    	## Incr local residue index ## 
+	    	$residueIndex++;
+        	$lineNumber--;
+	    	## Parse residue hash ##
+	     	my %uniqueAtom;
+		for($i=0;$i<$atomsInRes;$i++)
 		{
-            $lineNumber++;
+            		$lineNumber++;
 			$record = <$PDB>;
 			if($record !~ m/^ATOM|^HETATM/)
 			{smog_quit("PARSE ERROR\n Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
@@ -226,7 +226,7 @@ sub parseATOM
 		}
 		 
 
-		if($i != $resCount){smog_quit ("Total number of atoms of $residue at line $lineNumber doesn't match with .bif declaration");}
+		if($i != $atomsInRes){smog_quit ("Total number of atoms of $residue at line $lineNumber doesn't match with .bif declaration");}
 		
 		$counter++;
         ## HEAD RESIDUE WAIT FOR NEXT RESIDUE TO CONNECT ##
@@ -278,7 +278,7 @@ sub parseATOM
 
 
 
-#########################################################################
+####################################################################
 # parseExternalContacts($filename)
 ####################################################################
 sub parseExternalContacts
@@ -292,13 +292,12 @@ sub parseExternalContacts
 
 
 ####################################################################
-# parseATOMCoarse(\@pdbLines,\%hashRef):extract x, y, and z coordinates, #
-# serial number and element symbol from PDB ATOM record type. 	   #
+# parsePDBATOMS
 ####################################################################
-sub parseATOMCoarse
+sub parsePDBATOMS
 {
 
-  my ($fileName) = @_;
+  my ($fileName,$CGenabled) = @_;
 
   ## INTERNAL VARIABLES ##
   my $counter = 0;
@@ -307,7 +306,7 @@ sub parseATOMCoarse
   my @consecResidues;
   my $x;my $y;my $z;
   my $residue; my $interiorResidue; my $atom;my $atomSerial;
-  my $resCount; my $lineEnd;
+  my $atomsInRes; my $lineEnd;
   my $i; my $putIndex=0; my $strLength;
   my $resType;
   my $angH; my $diheH;
@@ -318,6 +317,7 @@ sub parseATOMCoarse
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=1;
   my $secondcall;
+  my $lineNumber = 0;
   ## OPEN .PDB FILE ##
  unless (open(MYFILE, $fileName)) {
     smog_quit ("Cannot read from '$fileName'.");
@@ -326,17 +326,13 @@ sub parseATOMCoarse
   ## LOOP THROUGH EACH LINE ##
  while(my $record = <MYFILE>)
  {
+ $lineNumber++;
 	## IF TER LINE  ##
 	if($record =~ m/TER|END/)
 	{
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
-			## PREV CHAIN WAS SINGLE ## 
-			if($headFlag == 1)
-			{
-				smog_quit("There is a chain with only one residue. Cannot coarse grain");
-			}
 			## CREATE INTERACTION ##
-            coarseCreateInteractions(\@consecResidues,$counter);
+            		GenerateBondedGeometry(\@consecResidues,$counter);
 		   	$connPDL{$counter}=pdl(@union);
 			@union = ();$counter++;
             		@consecResidues = ();
@@ -348,28 +344,30 @@ sub parseATOMCoarse
 	if($record =~ m/ATOM/ || $record =~ m/HETATM/)
 	{
 	
+        	$lineNumber--;
 		$outLength = length($record);
 	 	## OBTAIN RESIDUE NAME ##
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
 		## if first iteration, save residueBackup, and use residues
 		if(exists $residueBackup{$residue}){
-			$resCount = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
+			$atomsInRes = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
 			$secondcall=1;
 		}else{
-			$resCount = scalar(keys(%{$residues{$residue}->{"atoms"}}));
+			$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
 			$secondcall=0;
 		}
 		my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
-		if($atomsInBif != 1)
+		if($atomsInBif != 1 && $CGenabled ==1)
                  {
-##			smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
+			smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
 		}
-		my $atomsInRes=0;
+		my $atomsmatch=0;
 	 	seek(MYFILE, -$outLength, 1); # place the same line back onto the filehandle
 	
-		for($i=0;$i<$resCount;$i++)
+		for($i=0;$i<$atomsInRes;$i++)
 		{
+ 			$lineNumber++;
 			$record = <MYFILE>;
 
 			$interiorResidue = substr($record,17,4);
@@ -385,7 +383,7 @@ sub parseATOMCoarse
 			
 			## CHECK IF ATOM IS COARSE GRAINED ##
                         if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
-			$atomsInRes++;
+			$atomsmatch++;
 			$x = substr($record, 30, 8);
 			$y = substr($record, 38, 8);
 			$z = substr($record, 46, 8);
@@ -401,11 +399,11 @@ sub parseATOMCoarse
             		$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			$totalAtoms++;
 		}
-		if($atomsInRes != $atomsInBif){
-			smog_quit ("Not all atoms in the CG bif appear in the PDB.");
+		if($atomsmatch != $atomsInBif){
+			smog_quit ("Not all atoms in the bif appear in the PDB. See line $lineNumber");
 		}
 
-		if($i != $resCount){smog_quit ("Total number of atoms of $residue doesn't match with .bif declaration");}
+		if($i != $atomsInRes){smog_quit ("Total number of atoms of $residue doesn't match with .bif declaration");}
 		## CONCAT RESIDUE ##
 	  	@union = (@union,@temp);@temp=();
 		push(@consecResidues,$residue);
@@ -414,17 +412,10 @@ sub parseATOMCoarse
 		@tempBond = ();
 		$residueIndex++;
 				
-	}
+	}else{smog_quit(" Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
 	$record = "";
 	
  }
-
-
-			## ONLY SINGLE RESIDUE IN PDB NO COARSE GRAINING ## 
-			if($headFlag == 1)
-			{
-				smog_quit("There is only a single residue in your system, cannot coarse grain.");
-			}
 }
 
 # returnFunction: Return the fType and directive field for a specified function
@@ -522,25 +513,25 @@ sub singleCreateInteractions
 		
 }
 
-sub coarseCreateInteractions {
+sub GenerateBondedGeometry {
 
 	my ($connect,$counter) = @_;
 	## $connect is a list of connected residues ##
-   	my($bH,$angH,$diheH,$map,$bondMapHashRev) = createMultiConnections($connect);
-    my @tempArr=();
+   	my($bH,$angH,$diheH,$map,$bondMapHashRev) = GenAnglesDihedrals($connect);
+    	my @tempArr=();
 	## BOND ##
-    for(my $i=0;$i<scalar(@{$bH})-1;$i+=2) {	
+    	for(my $i=0;$i<scalar(@{$bH})-1;$i+=2) {	
 	my $bondStrA = $bH->[$i];
-    $bondStrA = $map->{$bondStrA}->[0];
-    my $bondStrB = $bH->[$i+1];
-    $bondStrB = $map->{$bondStrB}->[0];
-    my $sizeA = $map->{$bH->[$i]}->[2];my $sizeB = $map->{$bH->[$i+1]}->[2];
+    	$bondStrA = $map->{$bondStrA}->[0];
+    	my $bondStrB = $bH->[$i+1];
+    	$bondStrB = $map->{$bondStrB}->[0];
+    	my $sizeA = $map->{$bH->[$i]}->[2];my $sizeB = $map->{$bH->[$i+1]}->[2];
 	my $ra=$connect->[$map->{$bH->[$i]}->[1]];my $rb=$connect->[$map->{$bH->[$i+1]}->[1]];
 	my ($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$bondStrA)
 		       ,getAtomBType($ra,$bondStrA));
 	my ($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$bondStrB)
 		       ,getAtomBType($rb,$bondStrB));
-    my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");	
+    	my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");	
 	push(@tempArr,pdl($ia,$ib,$if));
 	}
 	$connBondFunctionals{$counter}=cat(@tempArr);
@@ -597,7 +588,7 @@ sub coarseCreateInteractions {
         	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
 		my $eG = getEnergyGroup($rb,$rc,$nb,$nc);
 		my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);	
-        $eG = $eGRevTable{$eG};
+        	$eG = $eGRevTable{$eG};
 		## [x,y,z,func,countDihedrals,energyGroup]
 		push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);
 
@@ -1134,7 +1125,7 @@ sub connWildcardMatchDihes
 
 
 
-sub createMultiConnections
+sub GenAnglesDihedrals
 {
   my($connect) = @_;
   ## $connect is a list of connected residues ##
