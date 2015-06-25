@@ -939,30 +939,65 @@ sub appendImpropers
  }
 
 
-=comment  
  ## WORK ON INTER-RESIDUAL IMPROPERS ##
  ### CHANGE THIS, ONLY HANDLES SINGLE IMPROPERS ###
  $connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}};
  #@connImproper = @{$connHandle->{"improper"}};
  foreach my $ips(@{$connHandle->{"improper"}})
  {
-   	my @atomsHandle = @{$ips->{"atom"}}; 
-  	my ($a,$b,$c,$d) = ('C','C','C','C');
-         ($a,$b,$c,$d) = @atomsHandle;
-  	my($ia,$ta)= ($a !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$a),getAtomBType($resA,$a)) 
- 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
-  	my($ib,$tb)= ($b !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$b),getAtomBType($resA,$b)) 
- 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
-  	my($ic,$tc)= ($c !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$c),getAtomBType($resA,$c)) 
- 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
-  	my($id,$td)= ($d !~/([^\?\+]*)[\?\+]+/ ? (getAtomAbsoluteIndex($resA,$d),getAtomBType($resA,$d)) 
- 	: ($sizeA+getAtomAbsoluteIndex($resB,$1),getAtomBType($resB,$1)));
-  	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
-  	## [x,y,z,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
-  	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);
+		if(exists $ips->{"atom"}){ 
+  		my ($a,$b,$c,$d) = @{$ips->{"atom"}}; 
+		my $ia;my $ib;my $ic;my $id;
+		my $ta;my $tb;my $tc;my $td;
+                my $na;my $nb;my $nc;my $nd;
+		my $ra;my $rb;my $rc;my $rd;
+		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
+		my($an,$bn,$cn,$dn) = @{$ips->{"atom"}};
+
+		if( $a =~ s/\+$//g ){
+ 			$a=$bondMapHashRev{"$a-$resIndB"};
+		}else{
+ 			$a=$bondMapHashRev{"$a-$resIndA"};
+		}
+		if( $b =~ s/\+$//g ){
+ 			$b=$bondMapHashRev{"$b-$resIndB"};
+		}else{
+ 			$b=$bondMapHashRev{"$b-$resIndA"};
+		}
+		if( $c =~ s/\+$//g ){
+ 			$c=$bondMapHashRev{"$c-$resIndB"};
+		}else{
+ 			$c=$bondMapHashRev{"$c-$resIndA"};
+		}
+		if( $d =~ s/\+$//g ){
+ 			$d=$bondMapHashRev{"$d-$resIndB"};
+		}else{
+ 			$d=$bondMapHashRev{"$d-$resIndA"};
+		}
+
+		##[AtomName,ResidueIndex,prevSize]##
+		$na = $map->{$a}->[0];
+		$ra = $connect->[$map->{$a}->[1]];
+ 		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
+		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
+		$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
+		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
+		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
+
+		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
+		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
+		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
+		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
+
+
+        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
+		push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
+	}else{
+		print "not sure\n";
+	}
   }	
 
-=cut
 
  if($resIndA != 0) {return;}
  
