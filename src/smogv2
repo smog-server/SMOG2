@@ -14,7 +14,7 @@ use warnings;
 ####################
 use XML::Simple;
 use Data::Dumper;
-use bifParser;
+use templateParser;
 use pdbParser;
 use PDL;
 use mathFunctions;
