@@ -142,9 +142,12 @@ foreach my $res ( keys %{$residueHandle} )
   my %atoms; my $index = 0;
   # Obtain handle to loop through atoms
   my @atomHandle = @{$residueHandle->{$res}->{"atoms"}->[0]->{"atom"}};
+  my %seen;
   foreach my $atom(@atomHandle)
   {
-  
+	my $AT= $atom->{"content"};
+  if(exists $seen{"$AT"}){smog_quit("Error in .bif. Duplicate declaration of atom $AT in residue $res.")};
+  $seen{"$AT"}=1;
     ## atom{atomName} => {nbType,bType,index,pairType}
 	$atoms{$atom->{"content"}} = {"index"=>$index,"nbType" => $atom->{"nbType"},"bType" => $atom->{"bType"},
 	"pairType" => $atom->{"pairType"}};
@@ -152,17 +155,47 @@ foreach my $res ( keys %{$residueHandle} )
 	## Save the different (non)bond type declaration to accomade wild-card character
 	$index++;
   }
+  undef %seen;
+
   ## CREATE IMPROPER ARRAY ##
   my @impropers;my @improperHandle;
   # Obtain handle to loop through impropers
   if(exists $residueHandle->{$res}->{"impropers"})
   	{@improperHandle = @{$residueHandle->{$res}->{"impropers"}->[0]->{"improper"}};}
+  my %seenIMP;
   foreach my $improper(@improperHandle)
   {
     ## [[A,B,C,D],[E,F,G,H],...]
+		if(!exists $improper->{"atom"}->[0]){smog_quit("Declration of residue $res has an improper that lacks atoms\n")};
+  		my %seenAtom;
+		my $atomstring=$improper->{"atom"}->[0];
+		for(my $I=1;$I<4;$I++){
+			my $T=$improper->{"atom"}->[$I];
+			$atomstring=$atomstring . "-" . $T;
+			if(exists $seenAtom{"$T"}){
+				smog_quit("Error in .bif.  Duplicate declaration of atom $T in improper dihedral for residue $res.");
+			}else{
+				$seenAtom{"$T"}=1;
+			}
+		}
+
+		my $atomstringRev=$improper->{"atom"}->[3];
+		for(my $I=2;$I>=0;$I--){
+			my $T=$improper->{"atom"}->[$I];
+			$atomstringRev=$atomstringRev . "-". $T;
+		}
+
+
+		if(exists $seenIMP{"$atomstring"} or exists $seenIMP{"$atomstringRev"}){
+			smog_quit("Error in .bif.  Duplicate declaration of improper dihedral $atomstring for residue $res.");
+		}else{
+			$seenIMP{"$atomstring"}=1;
+			$seenIMP{"$atomstringRev"}=1;
+		}
+  		undef %seenAtom;
 	push(@impropers,$improper->{"atom"});
   }
-  
+  undef %seenIMP;
   ## CREATE BOND HASH ##
   my %bonds; my %energyGroups; my %rigidGroups;
   my @bondHandle;
@@ -174,6 +207,9 @@ foreach my $res ( keys %{$residueHandle} )
     ## bonds{atomA-atomB} = bond info from XML
 	my $atomA = $bond->{"atom"}->[0];
 	my $atomB = $bond->{"atom"}->[1];
+	if(exists $bonds{"$atomA-$atomB"}){
+			smog_quit("Error in .bif.  Duplicate declaration of bond between atoms $atomA and $atomB in residue $res.");
+	}
 	$bonds{"$atomA-$atomB"} = $bond;
 	
 	## If bond is a flexible dihedral
@@ -635,8 +671,8 @@ else{@interHandle = ();}
 foreach my $inter(@interHandle)
 {
 	my $nbtype;my $pairtype;my $type;
- $nbtype = $inter->{"nbType"};$type = "nbType";
- if(!defined($nbtype)) {$pairtype = $inter->{"pairType"};$type="pairType";}
+ 	$nbtype = $inter->{"nbType"};$type = "nbType";
+ 	if(!defined($nbtype)) {$pairtype = $inter->{"pairType"};$type="pairType";}
 	my $typeA = $inter->{$type}->[0];
 	my $typeB = $inter->{$type}->[1];
 	my $func = $inter->{"func"}->[0]->{"func"};
@@ -673,6 +709,10 @@ foreach my $inter(@interHandle)
 	$funcTableRev{"contacts"}->{$counter}->{"func"} = $func;
 	$funcTableRev{"contacts"}->{$counter}->{"contactGroup"} = $cG;
 	$counter++;
+}
+
+if($counter !=1){
+	smog_quit("Currently, due to limitations in how Gromacs handles pairs, you can only\n\t use one contactGroup per model. We are working on extending this capability.\n\t Please email us at info\@smog-server.org, if you are interested in simultaneously\n\t using multiple contact functions in a single simulations.")
 }
 
 ## Obtain default options (ONLY FOR GEN PAIRS) ##
