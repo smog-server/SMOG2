@@ -1,10 +1,8 @@
 #!/usr/bin/perl -w
 #####################################################################
 # xmlParser.pl: Parses all XML files into a hash as diagramed below.
-# Author: Mohit Raghunathan													
-# Date: May 2012															 
 #####################################################################
-package bifParser;
+package templateParser;
 
 
 #####################
@@ -266,24 +264,56 @@ my $totalEnergyGroup;my $totalContactGroup;
 # Contact to Dihedral Group ratio is global
 # Contact ratio is global
 # Dihedral group ratio is residue dependent
-
+my $EG_NORM=0;
 foreach my $egName(keys %{$energyGroups})
 {
 	$residueType = $energyGroups->{$egName}->{"residueType"};
 	$intraRelativeStrength = $energyGroups->{$egName}->{"intraRelativeStrength"};
 	$normalize = $energyGroups->{$egName}->{"normalize"};
 	$termRatios->{$residueType}->{"energyGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
-		
+	if($normalize == 0 && exists $energyGroups->{$egName}->{"intraRelativeStrength"}){
+		smog_quit("Issue in .sif, energy group $egName. intraRelativeStrength only supported when normalization is on.");
+	}elsif($normalize == 1 && !exists $energyGroups->{$egName}->{"intraRelativeStrength"}){
+		smog_quit("Issue in .sif, energy group $egName. intraRelativeStrength must be set if normalization is on.");
+	}elsif($normalize != 1 && $normalize != 0){
+		smog_quit("Issue in .sif, energy group $egName. normalization must be 0, or 1. Found $normalize");
+	}
+	
+	if($normalize==1){
+		$EG_NORM++;
+	}
+	
 }
 
+my $CG_NORM=0;
 my $setflag = 0;$total=0;
 foreach my $egName(keys %{$contactGroups})
 {
 	$intraRelativeStrength = $contactGroups->{$egName}->{"intraRelativeStrength"};
 	$normalize = $contactGroups->{$egName}->{"normalize"};
 	$termRatios->{"contactGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
-	if($normalize){$total+=$intraRelativeStrength;}
+	if($normalize){$total+=$intraRelativeStrength; $CG_NORM++}
+
+	if($normalize == 0 && exists $contactGroups->{$egName}->{"intraRelativeStrength"}){
+		smog_quit("Issue in .sif, contact group $egName. intraRelativeStrength only supported when normalization is on.");
+	}elsif($normalize == 1 && !exists $contactGroups->{$egName}->{"intraRelativeStrength"}){
+		smog_quit("Issue in .sif, contact group $egName. intraRelativeStrength must be set if normalization is on.");
+	}elsif($normalize != 1 && $normalize != 0){
+		smog_quit("Issue in .sif, contact group $egName. normalization must be 0, or 1. Found $normalize");
+	}
+
+
+
 }
+
+if(($CG_NORM > 0 and $EG_NORM ==0) or ($EG_NORM > 0 and $CG_NORM ==0)){
+	smog_quit('Issue in .sif. Normalization only turned on for ContactGroup, or EnergyGroup. Normalization must be off, or on, for both.');
+}
+
+
+
+
+
 ## NOTE:Contact Type is Global ##
 ## Sum of contact scalings ##
 $termRatios->{"cintraRelativeTotal"} = $total;

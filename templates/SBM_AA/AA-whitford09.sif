@@ -39,7 +39,7 @@
 	<energyGroup name="free"  residueType="amino" normalize="0"/>
 
     	<!-- LIGAND ENERGY GROUP -->
-    	<energyGroup residueType="ligand" name="lig" intraRelativeStrength="1" normalize="0"/>
+    	<energyGroup residueType="ligand" name="lig" normalize="0"/>
 
 
  	<!-- Global Contacts Settings -->
