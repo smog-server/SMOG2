@@ -313,7 +313,9 @@ foreach my $egName(keys %{$energyGroups})
 		smog_quit("Issue in .sif, energy group $egName. intraRelativeStrength must be set if normalization is on.");
 	}elsif($normalize != 1 && $normalize != 0){
 		smog_quit("Issue in .sif, energy group $egName. normalization must be 0, or 1. Found $normalize");
-	}
+	}elsif(exists $energyGroups->{$egName}->{"intraRelativeStrength"} && $energyGroups->{$egName}->{"intraRelativeStrength"} <=0 ){
+                smog_quit("intraRelativeStrength must be >= 0.  See energyGroup $egName in .sif.");
+        }
 	
 	if($normalize==1){
 		$EG_NORM++;
@@ -336,6 +338,8 @@ foreach my $egName(keys %{$contactGroups})
 		smog_quit("Issue in .sif, contact group $egName. intraRelativeStrength must be set if normalization is on.");
 	}elsif($normalize != 1 && $normalize != 0){
 		smog_quit("Issue in .sif, contact group $egName. normalization must be 0, or 1. Found $normalize");
+	}elsif(exists $contactGroups->{$egName}->{"intraRelativeStrength"} && $contactGroups->{$egName}->{"intraRelativeStrength"} <=0 ){
+		smog_quit("intraRelativeStrength must be >= 0.  See contactGroup $egName .sif.");
 	}
 
 
@@ -354,7 +358,9 @@ if(($CG_NORM > 0 and $EG_NORM ==0) or ($EG_NORM > 0 and $CG_NORM ==0)){
 ## Sum of contact scalings ##
 $termRatios->{"cintraRelativeTotal"} = $total;
 
-
+if($groupRatios->{"contacts"} <=0 || $groupRatios->{"contacts"} <=0){
+	smog_quit("All values for groupRatios must be greater than zero. See .sif file.")
+}
 ## contact/dihe relative Scale ##
 $termRatios->{"contactRelative"} = $groupRatios->{"contacts"};
 ## dihe/contact relative Scale ##
@@ -400,8 +406,10 @@ elsif($method =~ m/cutoff/)
 # Scaling Parameters #
 if(exists $contactSettings->{"contactScaling"}){
 my $contactScaling = $contactSettings->{"contactScaling"};
+my %seenScaling;
 foreach my $k(keys %{$contactScaling})
 {
+
    my $scale = $contactScaling->{$k}->{"scale"};
    my $deltaMin = $contactScaling->{$k}->{"deltaMin"};
    my $deltaMax = $contactScaling->{$k}->{"deltaMax"};
@@ -413,6 +421,15 @@ foreach my $k(keys %{$contactScaling})
 
    my $A = $contactScaling->{$k}->{"residueType1"};
    my $B = $contactScaling->{$k}->{"residueType2"};
+   if(exists $seenScaling{"$A-$B"}  || exists $seenScaling{"$B-$A"} ){
+   	smog_quit("In .sif file, contactScaling given twice for residueType pair $A-$B.");
+   }else{
+    $seenScaling{"$A-$B"}=1;
+    $seenScaling{"$B-$A"}=1;
+   }
+
+
+
    delete $contactScaling->{$k};
    $contactScaling->{$A}->{$B} 
    = {"deltaMin"=>$deltaMin,"deltaMax"=>$deltaMax,"scale"=>$scale,"atomList"=>\%atomListHash};
@@ -450,9 +467,9 @@ sub funcToInt
  }
 	elsif($interType eq "contacts")
 	{
-				if(exists $funcTable{"contacts"} && exists $funcTable{"contacts"}->{"func"}->{$func})
-				{return $funcTable{"contacts"}->{"func"}->{$func};}
-				else {return -1;}
+		if(exists $funcTable{"contacts"} && exists $funcTable{"contacts"}->{"func"}->{$func})
+		{return $funcTable{"contacts"}->{"func"}->{$func};}
+		else {return -1;}
  }
  else
  {
@@ -650,6 +667,10 @@ my $counter = 0;
 foreach my $inter(@interHandle)
 {
 	my $typeA = $inter->{"nbType"}->[0];
+	if($inter->{"mass"} <=0){
+		my $M=$inter->{"mass"};
+		smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
+	}
 	my $func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
 	"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
 	if(exists $interactions->{"nonbonds"}->{$typeA}){
