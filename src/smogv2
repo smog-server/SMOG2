@@ -68,23 +68,15 @@ our %fTypes = (	'bond_harmonic' => '1',
 sub printOrderedBonds
 {
 
-  my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2,$coarseGrained) = @_;
+  my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2) = @_;
   my @bondCache; ## CACHE BONDS TO ORDER
 
   ## print directive headers ##
   print $OUTPUT "\n[ bonds ]\n";
   print $OUTPUT ";ai     aj      func    r0(nm)  Kb\n";
   ## Cache Bonds ##
-  if($coarseGrained) {
-  calculateBonds($bondFunctHandle1,$whichPDL1,\@bondCache);
-  coarseCalculateBonds($bondHandle2,$whichPDL2,\@bondCache);
-	print "PRINTING HERE!!!!!!!!!!\n";
-  }
-  else
-  {
-	calculateBonds($bondFunctHandle1,$whichPDL1,\@bondCache);
-  	connCalculateBonds($bondHandle2,$whichPDL2,\@bondCache);
-  }
+  calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache);
+  calculateBonds2($bondHandle2,$whichPDL2,\@bondCache);
 
   ## Sort bonds by i then j ## 
   @bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
@@ -97,7 +89,7 @@ sub printOrderedBonds
 
 ##
 # calculate bond angle of a specific residue  PDL
-sub calculateBondsHelper
+sub calculateBondsHelper1
 {
  my($bondHash,$inputPDL,$bondCache) = @_;
  my $bondArr = $bondHash->{"bonds"};
@@ -123,7 +115,7 @@ sub calculateBondsHelper
 ##
 # Setup the calculation of bond angles of all the residues,
 #	then call calculateBondsHelper() with a specific residue
-sub calculateBonds
+sub calculateBonds1
 {
  my($bondFunctHandle,$whichPDL,$bondCache) = @_;
  #print $OUTPUT "\n[ bonds ]\n";
@@ -131,37 +123,26 @@ sub calculateBonds
  foreach my $res(keys %{$bondFunctHandle})
  {
 	if(!exists $whichPDL->{$res}){next;}
-	calculateBondsHelper($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache);
+	calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache);
  }
 }
+
 
 ##
 #Setup the calculate of bond angles of all combined residues,
 #then call connCalculateBondsHelper() with a specific residue
-sub connCalculateBonds
+sub calculateBonds2
 {
  my($bondHandle,$whichPDL,$bondCache) = @_;
  foreach my $counter(keys %{$bondHandle})
  {
-	connCalculateBondsHelper($bondHandle->{$counter},$whichPDL->{$counter},$bondCache);
- }
-}
-
-##
-#Setup the calculate of bond angles of all combined residues,
-#then call connCalculateBondsHelper() with a specific residue
-sub coarseCalculateBonds
-{
- my($bondHandle,$whichPDL,$bondCache) = @_;
- foreach my $counter(keys %{$bondHandle})
- {
-	coarseCalculateBondsHelper($bondHandle->{$counter},$whichPDL->{$counter},$bondCache);
+	calculateBondsHelper2($bondHandle->{$counter},$whichPDL->{$counter},$bondCache);
 
  }
 }
 ##
 #calculate bond angle of a specific combined residue PDL
-sub coarseCalculateBondsHelper
+sub calculateBondsHelper2
 {
  my($bondInfo,$inputPDL,$bondCache) = @_;
  my $size = $bondInfo->dim(1);
@@ -177,24 +158,6 @@ sub coarseCalculateBondsHelper
   #print $OUTPUT bondOutput(intToFunc("bonds",$func,""),$atomOne,$atomOne,$output);
  push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output)};
  }
-}
-
-##
-#calculate bond angle of a specific combined residue PDL
-sub connCalculateBondsHelper
-{
- my($bondInfo,$inputPDL,$bondCache) = @_;
- my $atomOne = sclr(slice($bondInfo,"0:0"));
- my $atomTwo = sclr(slice($bondInfo,"1:1"));
- my $func = sclr(slice($bondInfo,"2:2"));
- my $outer = slice($inputPDL,"0:2,$atomOne,:")-slice($inputPDL,"0:2,$atomTwo,:");
- my $output = sclr(sqrt(inner($outer,$outer))*$angToNano);
- 
- $atomOne = sclr(slice($inputPDL,"3:3,$atomOne,:"));
- $atomTwo = sclr(slice($inputPDL,"3:3,$atomTwo,:"));
- 
- #print $OUTPUT bondOutput(intToFunc("bonds",$func,""),$atomOne,$atomOne,$output);
- push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output)};
 }
 
 ##
@@ -1545,7 +1508,7 @@ sub allAtom
 	readAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,1);
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL);
 	## CALCULATE ANGLES ##
 	print "\nSaving angles\n";
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
@@ -1665,7 +1628,7 @@ sub coarseGrain
 	readAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,1);
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL);
 	## CALCULATE ANGLES ##
 	print "..";
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
@@ -1750,7 +1713,7 @@ sub coarseGrain
 	readAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..\n";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,1);
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL);
 	## CALCULATE ANGLES ##
 	print "Saving angles\n";
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
