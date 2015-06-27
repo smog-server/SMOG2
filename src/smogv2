@@ -1481,7 +1481,7 @@ sub allAtom
         ## PARSE PDB ##
         ###############
 	print "Parsing .pdb... ";
-	parsePDBATOMS($inputPDB,$CGenabled);
+	parsePDBATOMS($inputPDB,0);
 	catPDL();
 	print "Done\n";
 	print "Creating topology for contact calculation.....  ";
@@ -1639,13 +1639,13 @@ sub coarseGrain
         convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	my $SCMparams = setContactParams();
 	my $absAtomCount = keys(%allAtoms);
-    my $memoryMax = "";
-    if($absAtomCount >= 1000000)
-    {
-     $memoryMax = 4000;
-     print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
-     $memoryMax = "-Xmx$memoryMax"."m";
-    } 
+    	my $memoryMax = "";
+    	if($absAtomCount >= 1000000)
+    	{
+     		$memoryMax = 4000;
+     		print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
+     		$memoryMax = "-Xmx$memoryMax"."m";
+    	} 
         if($ignAllContacts ==0){
         print "Finding coarse grained contacts... ";
 	if((!exists $ENV{SMOG_PATH}) || 
@@ -1682,7 +1682,7 @@ sub coarseGrain
     	## PARSE PDB ##
     	###############
 	print "Coarse Graining system.....";
-	parsePDBATOMS($inputPDB,$CGenabled);
+	parsePDBATOMS($inputPDB,1);
 	catPDL();
 	print "Done\n";
 	
