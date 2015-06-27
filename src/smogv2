@@ -1480,11 +1480,11 @@ sub allAtom
 	###############
         ## PARSE PDB ##
         ###############
-	print "Parsing .pdb... ";
+	print "Parsing .pdb...\n";
 	parsePDBATOMS($inputPDB,0);
 	catPDL();
 	print "Done\n";
-	print "Creating topology for contact calculation.....  ";
+	print "Creating topology for contact calculation.....\n";
 	#####################################
 	## DO CALCULATIONS FOR HAMILTONIAN ##
 	#####################################
@@ -1518,7 +1518,6 @@ sub allAtom
     
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
-	print "Done\n";
 	## CALL SHADOW/PARSE CONTACTS ##
 	print "Starting contact calculations ...\n  ";
 	
@@ -1600,7 +1599,7 @@ sub coarseGrain
 	###############
         ## PARSE PDB ##
         ###############
-	print "Parsing .pdb... ";
+	print "Parsing .pdb...\n";
 	parsePDBATOMS($inputPDB,0);
 	catPDL();
 	print "Done\n";

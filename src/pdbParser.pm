@@ -106,7 +106,7 @@ sub parsePDBATOMS
 	{
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
 			## CREATE INTERACTION ##
-            		GenerateBondedGeometry(\@consecResidues,$counter);
+            		GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber);
 		   	$connPDL{$counter}=pdl(@union);
 			@union = ();$counter++;
             		@consecResidues = ();
@@ -117,7 +117,6 @@ sub parsePDBATOMS
 	## ONLY WORK WITH ATOM LINES ##
 	if($record =~ m/ATOM/ || $record =~ m/HETATM/)
 	{
-	
         	$lineNumber--;
 		$outLength = length($record);
 	 	## OBTAIN RESIDUE NAME ##
@@ -184,6 +183,11 @@ sub parsePDBATOMS
             		$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			$totalAtoms++;
 		}
+
+		# check to make sure the last chain is a single connected molecule.
+
+
+
 		if($atomsmatch != $atomsInBif){
 			smog_quit ("Not all atoms in the bif appear in the PDB. See line $lineNumber");
 		}
@@ -298,11 +302,70 @@ sub singleCreateInteractions
 		
 }
 
+sub connectivityHelper
+{
+ my($listHandle,$atomParent,$visitedList) = @_;
+ ## Given an atom loop through all the atoms it is bonded to
+ my @newatoms=();
+ foreach my $atomIn(@{$listHandle->{$atomParent}})
+ {
+    ## If atom has not already considered add to list for next check
+    	if(!exists($visitedList->{$atomIn})){
+		push(@newatoms,$atomIn)
+	}
+ }
+ $visitedList->{"$atomParent"} = 1;
+ return  (\@newatoms);
+}
+
+sub connectivityCheck
+{
+# this routine will see if the atom listed in $unionref are all connected via bonds.
+# This will help catch mistakes in .bif files, where a bond may be omitted.
+	my ($unionref,$chid)=@_;
+	my %union=%{$unionref};
+        my %visitedList; my $visitedString;
+	my @nextround;
+	$nextround[0]=0;
+	while( $#nextround >= 0){
+		my @newlist;
+		foreach my $atomIn(@nextround){
+			my $tmp=connectivityHelper(\%union,$atomIn,\%visitedList); ## Traverse through bond graph
+		push(@newlist,@{$tmp});
+		}
+		@nextround=@newlist
+    	}
+
+	my $found=0; my $missing=0;
+	foreach my $atom(keys %union){
+		if(exists $visitedList{$atom}){
+			$found++;
+		}else{
+			$missing++;
+			print "\n!!!Unable to connect the atom at position $atom of chain $chid to the rest of the chain!!!\n";
+		}
+	}
+	return($found,$missing);
+}
+
 sub GenerateBondedGeometry {
 
-	my ($connect,$counter) = @_;
+	my ($connect,$counter,$chid) = @_;
 	## $connect is a list of connected residues ##
-   	my($bH,$angH,$diheH,$map,$bondMapHashRev) = GenAnglesDihedrals($connect);
+   	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union) = GenAnglesDihedrals($connect);
+	my %union=%{$union};
+	print "Checking connectivity of chain $chid: ";
+	my ($connected,$missed)=connectivityCheck(\%union,$chid);
+
+	if($missed==0){
+		print "$connected atoms connected via covalent bonds \n"; 
+	}else{
+		smog_quit("In chain $chid, unable to connect $missed atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file.\nSee messages above. ")
+	}
+
+	# check that entire unit is a single molecule, connected through bonds
+#	print Dumper($map);
+#	print $map->{}
     	my @tempArr=();
 	## BOND ##
     	for(my $i=0;$i<scalar(@{$bH})-1;$i+=2) {	
@@ -1078,7 +1141,7 @@ sub GenAnglesDihedrals
         
    }
    ($dihes,$angles,$oneFour)=adjListTraversal(\%union);
-   return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev);
+   return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev,\%union);
 
 }
 
