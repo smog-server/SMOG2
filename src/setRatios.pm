@@ -1,8 +1,6 @@
 #!/usr/bin/perl -w
 #####################################################################
 # setRatios.pl: Adjust ratios of strengths as obtained from .sif
-# Author: Mohit Raghunathan													
-# Date: May 2012															 
 #####################################################################
 package setRatios;
 #####################
