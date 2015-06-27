@@ -1858,20 +1858,29 @@ if(($CAdefault == 1 || $AAdefault == 1) and $contactRes ne ""){
 }
 
 if($CAdefault == 1){
-	print "\n -CA given. Will use the default Calpha SMOG model provided with the distribution.\n\n";
+	print "\n -CA given. Will use the default Calpha SMOG model provided with the distribution.\n";
 	my $SMOGDIR=$ENV{'SMOG_PATH'};
-	if(! -d $SMOGDIR){
-		smog_quit("SMOG_PATH set to $SMOGDIR.  $SMOGDIR does not appear to be a valid template directory.");
-	}
-	$CGenabled=1;
 	$inputFolder="$SMOGDIR/SBM_calpha";
 	$contactRes="$SMOGDIR/SBM_AA";
+	print "Will try to use templates found in \n$inputFolder\n and\n$contactRes\n\n";
+	if(! -d $inputFolder){
+		smog_quit("$inputFolder is not a valid template directory.");
+	}
+	if(! -d $contactRes){
+		smog_quit("$contactRes is not a valid template directory.");
+	}
+
+	$CGenabled=1;
 
 }
 if($AAdefault == 1){
-	print "\n -AA given. Will use the default All-Atom SMOG model provided with the distribution.\n\n";
+	print "\n -AA given. Will use the default All-Atom SMOG model provided with the distribution.\n";
 	my $SMOGDIR=$ENV{'SMOG_PATH'};
 	$inputFolder="$SMOGDIR/SBM_AA";
+	print "Will try to use templates found in \n$inputFolder\n\n";
+	if(! -d $inputFolder){
+		smog_quit("$inputFolder is not a valid template directory.");
+	}
 
 }
 

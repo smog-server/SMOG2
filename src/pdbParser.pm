@@ -1,9 +1,7 @@
 #!/usr/bin/perl -w
 ##############################################################################
-# pdbParser.pl: parses PDB file and obtains ATOM, residue and coordinate info.
+# pdbParser: parses PDB file and obtains ATOM, residue and coordinate info.
 # PDB file has to comply to the standard column format for each attributes.
-# Author: Mohit Raghunathan													
-# Date: May 2012															 
 ##############################################################################
 package pdbParser;
 
@@ -316,7 +314,7 @@ sub parsePDBATOMS
   my $atomCounter=0;my $singleFlag = 1;
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=1;
-  my $secondcall;
+  my $secondcall; my $interiorPdbResidueIndex=0;
   my $lineNumber = 0;
   ## OPEN .PDB FILE ##
  unless (open(MYFILE, $fileName)) {
@@ -369,17 +367,24 @@ sub parsePDBATOMS
 		{
  			$lineNumber++;
 			$record = <MYFILE>;
+			if($record !~ m/^ATOM|^HETATM/)
+			{smog_quit("PARSE ERROR\n Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
 
 			$interiorResidue = substr($record,17,4);
 			$interiorResidue =~ s/^\s+|\s+$//g;
 	   		$residue = substr($record,17,4);
         	        $residue =~ s/^\s+|\s+$//g;
+            		$interiorPdbResidueIndex = substr($record,22,5);  
+			$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
+			unless($interiorPdbResidueIndex =~ /^\d+$/){;
+				smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
+			}
 
 	                if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 			if($interiorResidue !~ /$residue/)
-			{smog_quit ("Residue doesn't conform with coarse grain .bif:: $record");}
+			{smog_quit ("Residue doesn't conform with .bif:: $record\n Perhaps the previous residue was missing an atom.");}
 			$atom = substr($record, 12, 4);
 			$atom =~ s/^\s+|\s+$//g;
 			if($secondcall == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
