@@ -1052,23 +1052,49 @@ sub appendImpropers
 sub connWildcardMatchAngles
 {
     my($a,$b,$c) = @_;
+
 	my $angHandle = $interactions->{"angles"};
 	my $funct="";
+		
 	## WILD CARD MATCHING CONDITIONALS ##
-	my $matchScore = 0; my $saveScore = 0;
+	my $matchScore = 0; my $saveScore = 0; my $matchScoreCount=0; my $symmatch=0;
 	foreach my $matches(keys %{$angHandle})
 	{
 		$matchScore = 0;
 		my ($aM,$bM,$cM) = split("-",$matches);
-		if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
+		unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
 			|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-			|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){next;}
+			|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){
 		if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 		if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 		if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 		if($matchScore >= $saveScore)
-		{$saveScore = $matchScore;$funct = $angHandle->{$matches};}
+			{
+			if($aM eq $cM || ($aM eq $bM and $bM eq $cM)){
+				$symmatch=1;
+			}else{
+				$symmatch=0;
+			}
+			## this to make sure that the highest scoring angle is unique
+			if($matchScore == $saveScore){
+				if($saveScore != 0){
+				$matchScoreCount++;
+				}
+			}else{
+				$matchScoreCount=0;
+			}
+			$saveScore = $matchScore;$funct = $angHandle->{$matches};
+		}
+	    }
 	}
+	my $sym=0;
+	if($a eq $c || ($a eq $b and $b eq $c)){
+		$sym=1;
+	}
+	if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
+		smog_quit ("Multiple possible angles match $a-$b-$c equally well. Unclear assignment of function type");
+	}
+
 	if(!defined $funct|| $funct eq ""){smog_quit("There is no function for bType combination $a-$b-$c. Check .b file");}
 	return $funct;
 }
@@ -1143,10 +1169,11 @@ sub connWildcardMatchDihes
 	my $diheHandle = $interactions->{"dihedrals"}->{"$eG"};
 	my $funct="";
 	## WILD CARD MATCHING CONDITIONALS ##
-	my $matchScore = 0; my $saveScore = 0;
+	my $matchScore = 0; my $saveScore = 0;;my $matchScoreCount=0; my $symmatch=0; my $Nd=0;
 	foreach my $matches(keys %{$diheHandle})
 	{
-		$matchScore = 0;
+		$Nd++;
+		$matchScore = 0;my $saveScore = 0;
 		my ($aM,$bM,$cM,$dM) = split("-",$matches);
 		if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
 			|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
@@ -1156,9 +1183,41 @@ sub connWildcardMatchDihes
 		if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 		if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 		if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-		if($matchScore >= $saveScore)
-		{$saveScore = $matchScore;$funct = $diheHandle->{$matches};}
+		if($matchScore >= $saveScore){
+			if(($aM eq $dM and $bM eq $cM) || ($aM eq $bM and $bM eq $cM and $cM eq $dM)){
+				$symmatch=1;
+			}else{
+				$symmatch=0;
+			}
+			## this to make sure that the highest scoring angle is unique
+			if($matchScore == $saveScore){
+				if($saveScore != 0){
+				$matchScoreCount++;
+				}
+			}else{
+				$matchScoreCount=0;
+			}
+			$saveScore = $matchScore;$funct = $diheHandle->{$matches};
+		}
 	}
+
+		if($Nd ==0){
+			smog_quit ("energy group $eG is used in .bif file, but it is not defined in .b file.");
+		}
+		
+		my $sym=0;
+		if(($a eq $d and $b eq $c) || ($a eq $b and $b eq $c and $c eq $d)){
+			$sym=1;
+		}
+		if(($symmatch ==0 && $sym == 1 && $matchScoreCount > 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount > 0)){
+
+			smog_quit ("$symmatch  $sym $matchScoreCount Multiple possible angles match $a-$b-$c-$d, and energyGroup $eG equally well. Can not determine function based on .b file.");
+		}
+
+		if($matchScore == 0){
+			smog_quit ("Dihedral Angle between bTypes $a-$b-$c-$d and energyGroup $eG: Unable to match to a function in .b file.");
+		}
+
 	if(!defined $funct || $funct eq ""){smog_quit("There is no function for bType combination $a-$b-$c-$d with energyGroup=$eG. Check .b file");}
 	return $funct;
 }

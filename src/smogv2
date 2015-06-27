@@ -1,7 +1,6 @@
 #!/usr/bin/perl -w
 #####################################################################
 # smogv2: Generate a structure-based model
-# Authors: Mohit Raghunathan, Jeff Noel, Mariana Levi, Paul Whitford													
 #####################################################################
 
 #####################
@@ -1322,9 +1321,11 @@ for(my $I=0;$I<$headw;$I++){
 print <<EOT;
 
               Thank you for using the Structure-based Model (SMOG) software
+
     This package is the product of contributions from a number of people, including:
                      Jeffrey Noel, Mariana Levi, Mohit Ranghunathan,
                         Ryan Hayes,  Jose Onuchic & Paul Whitford
+
                      Copyright (c) 2015, The SMOG development team at
                         Rice University and Northeastern University
 
