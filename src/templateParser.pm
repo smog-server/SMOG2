@@ -22,7 +22,7 @@ use Storable qw(dclone);
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(getEnergyGroup smog_quit $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %dihedralFunctionals %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory);
+qw(getEnergyGroup smog_quit $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -142,9 +142,12 @@ foreach my $res ( keys %{$residueHandle} )
   my %atoms; my $index = 0;
   # Obtain handle to loop through atoms
   my @atomHandle = @{$residueHandle->{$res}->{"atoms"}->[0]->{"atom"}};
+  my %seen;
   foreach my $atom(@atomHandle)
   {
-  
+	my $AT= $atom->{"content"};
+  if(exists $seen{"$AT"}){smog_quit("Error in .bif. Duplicate declaration of atom $AT in residue $res.")};
+  $seen{"$AT"}=1;
     ## atom{atomName} => {nbType,bType,index,pairType}
 	$atoms{$atom->{"content"}} = {"index"=>$index,"nbType" => $atom->{"nbType"},"bType" => $atom->{"bType"},
 	"pairType" => $atom->{"pairType"}};
@@ -152,17 +155,47 @@ foreach my $res ( keys %{$residueHandle} )
 	## Save the different (non)bond type declaration to accomade wild-card character
 	$index++;
   }
+  undef %seen;
+
   ## CREATE IMPROPER ARRAY ##
   my @impropers;my @improperHandle;
   # Obtain handle to loop through impropers
   if(exists $residueHandle->{$res}->{"impropers"})
   	{@improperHandle = @{$residueHandle->{$res}->{"impropers"}->[0]->{"improper"}};}
+  my %seenIMP;
   foreach my $improper(@improperHandle)
   {
     ## [[A,B,C,D],[E,F,G,H],...]
+		if(!exists $improper->{"atom"}->[0]){smog_quit("Declration of residue $res has an improper that lacks atoms\n")};
+  		my %seenAtom;
+		my $atomstring=$improper->{"atom"}->[0];
+		for(my $I=1;$I<4;$I++){
+			my $T=$improper->{"atom"}->[$I];
+			$atomstring=$atomstring . "-" . $T;
+			if(exists $seenAtom{"$T"}){
+				smog_quit("Error in .bif.  Duplicate declaration of atom $T in improper dihedral for residue $res.");
+			}else{
+				$seenAtom{"$T"}=1;
+			}
+		}
+
+		my $atomstringRev=$improper->{"atom"}->[3];
+		for(my $I=2;$I>=0;$I--){
+			my $T=$improper->{"atom"}->[$I];
+			$atomstringRev=$atomstringRev . "-". $T;
+		}
+
+
+		if(exists $seenIMP{"$atomstring"} or exists $seenIMP{"$atomstringRev"}){
+			smog_quit("Error in .bif.  Duplicate declaration of improper dihedral $atomstring for residue $res.");
+		}else{
+			$seenIMP{"$atomstring"}=1;
+			$seenIMP{"$atomstringRev"}=1;
+		}
+  		undef %seenAtom;
 	push(@impropers,$improper->{"atom"});
   }
-  
+  undef %seenIMP;
   ## CREATE BOND HASH ##
   my %bonds; my %energyGroups; my %rigidGroups;
   my @bondHandle;
@@ -174,6 +207,9 @@ foreach my $res ( keys %{$residueHandle} )
     ## bonds{atomA-atomB} = bond info from XML
 	my $atomA = $bond->{"atom"}->[0];
 	my $atomB = $bond->{"atom"}->[1];
+	if(exists $bonds{"$atomA-$atomB"}){
+			smog_quit("Error in .bif.  Duplicate declaration of bond between atoms $atomA and $atomB in residue $res.");
+	}
 	$bonds{"$atomA-$atomB"} = $bond;
 	
 	## If bond is a flexible dihedral
@@ -277,7 +313,9 @@ foreach my $egName(keys %{$energyGroups})
 		smog_quit("Issue in .sif, energy group $egName. intraRelativeStrength must be set if normalization is on.");
 	}elsif($normalize != 1 && $normalize != 0){
 		smog_quit("Issue in .sif, energy group $egName. normalization must be 0, or 1. Found $normalize");
-	}
+	}elsif(exists $energyGroups->{$egName}->{"intraRelativeStrength"} && $energyGroups->{$egName}->{"intraRelativeStrength"} <=0 ){
+                smog_quit("intraRelativeStrength must be >= 0.  See energyGroup $egName in .sif.");
+        }
 	
 	if($normalize==1){
 		$EG_NORM++;
@@ -300,6 +338,8 @@ foreach my $egName(keys %{$contactGroups})
 		smog_quit("Issue in .sif, contact group $egName. intraRelativeStrength must be set if normalization is on.");
 	}elsif($normalize != 1 && $normalize != 0){
 		smog_quit("Issue in .sif, contact group $egName. normalization must be 0, or 1. Found $normalize");
+	}elsif(exists $contactGroups->{$egName}->{"intraRelativeStrength"} && $contactGroups->{$egName}->{"intraRelativeStrength"} <=0 ){
+		smog_quit("intraRelativeStrength must be >= 0.  See contactGroup $egName .sif.");
 	}
 
 
@@ -318,7 +358,9 @@ if(($CG_NORM > 0 and $EG_NORM ==0) or ($EG_NORM > 0 and $CG_NORM ==0)){
 ## Sum of contact scalings ##
 $termRatios->{"cintraRelativeTotal"} = $total;
 
-
+if($groupRatios->{"contacts"} <=0 || $groupRatios->{"contacts"} <=0){
+	smog_quit("All values for groupRatios must be greater than zero. See .sif file.")
+}
 ## contact/dihe relative Scale ##
 $termRatios->{"contactRelative"} = $groupRatios->{"contacts"};
 ## dihe/contact relative Scale ##
@@ -364,8 +406,10 @@ elsif($method =~ m/cutoff/)
 # Scaling Parameters #
 if(exists $contactSettings->{"contactScaling"}){
 my $contactScaling = $contactSettings->{"contactScaling"};
+my %seenScaling;
 foreach my $k(keys %{$contactScaling})
 {
+
    my $scale = $contactScaling->{$k}->{"scale"};
    my $deltaMin = $contactScaling->{$k}->{"deltaMin"};
    my $deltaMax = $contactScaling->{$k}->{"deltaMax"};
@@ -377,6 +421,15 @@ foreach my $k(keys %{$contactScaling})
 
    my $A = $contactScaling->{$k}->{"residueType1"};
    my $B = $contactScaling->{$k}->{"residueType2"};
+   if(exists $seenScaling{"$A-$B"}  || exists $seenScaling{"$B-$A"} ){
+   	smog_quit("In .sif file, contactScaling given twice for residueType pair $A-$B.");
+   }else{
+    $seenScaling{"$A-$B"}=1;
+    $seenScaling{"$B-$A"}=1;
+   }
+
+
+
    delete $contactScaling->{$k};
    $contactScaling->{$A}->{$B} 
    = {"deltaMin"=>$deltaMin,"deltaMax"=>$deltaMax,"scale"=>$scale,"atomList"=>\%atomListHash};
@@ -414,9 +467,9 @@ sub funcToInt
  }
 	elsif($interType eq "contacts")
 	{
-				if(exists $funcTable{"contacts"} && exists $funcTable{"contacts"}->{"func"}->{$func})
-				{return $funcTable{"contacts"}->{"func"}->{$func};}
-				else {return -1;}
+		if(exists $funcTable{"contacts"} && exists $funcTable{"contacts"}->{"func"}->{$func})
+		{return $funcTable{"contacts"}->{"func"}->{$func};}
+		else {return -1;}
  }
  else
  {
@@ -614,6 +667,10 @@ my $counter = 0;
 foreach my $inter(@interHandle)
 {
 	my $typeA = $inter->{"nbType"}->[0];
+	if($inter->{"mass"} <=0){
+		my $M=$inter->{"mass"};
+		smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
+	}
 	my $func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
 	"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
 	if(exists $interactions->{"nonbonds"}->{$typeA}){
@@ -635,8 +692,8 @@ else{@interHandle = ();}
 foreach my $inter(@interHandle)
 {
 	my $nbtype;my $pairtype;my $type;
- $nbtype = $inter->{"nbType"};$type = "nbType";
- if(!defined($nbtype)) {$pairtype = $inter->{"pairType"};$type="pairType";}
+ 	$nbtype = $inter->{"nbType"};$type = "nbType";
+ 	if(!defined($nbtype)) {$pairtype = $inter->{"pairType"};$type="pairType";}
 	my $typeA = $inter->{$type}->[0];
 	my $typeB = $inter->{$type}->[1];
 	my $func = $inter->{"func"}->[0]->{"func"};
@@ -673,6 +730,10 @@ foreach my $inter(@interHandle)
 	$funcTableRev{"contacts"}->{$counter}->{"func"} = $func;
 	$funcTableRev{"contacts"}->{$counter}->{"contactGroup"} = $cG;
 	$counter++;
+}
+
+if($counter !=1){
+	smog_quit("Currently, due to limitations in how Gromacs handles pairs, you can only\n\t use one contactGroup per model. We are working on extending this capability.\n\t Please email us at info\@smog-server.org, if you are interested in simultaneously\n\t using multiple contact functions in a single simulations.")
 }
 
 ## Obtain default options (ONLY FOR GEN PAIRS) ##
@@ -865,6 +926,7 @@ sub adjListTraversalHelper
  }
 
 }
+
 
 ## Traverse through the adjacency list of bonds
 sub adjListTraversal
