@@ -78,6 +78,7 @@ sub printOrderedBonds
   if($coarseGrained) {
   calculateBonds($bondFunctHandle1,$whichPDL1,\@bondCache);
   coarseCalculateBonds($bondHandle2,$whichPDL2,\@bondCache);
+	print "PRINTING HERE!!!!!!!!!!\n";
   }
   else
   {
@@ -91,9 +92,6 @@ sub printOrderedBonds
   ## Print our sorted bonds ##
   foreach my $p(@bondCache)
   {print $OUTPUT $p->{"v"};}
-
-
-
 }
 
 
@@ -120,7 +118,6 @@ sub calculateBondsHelper
 		$bondIndex++;
 
  }
- 
 }
 
 ##
@@ -167,12 +164,9 @@ sub coarseCalculateBonds
 sub coarseCalculateBondsHelper
 {
  my($bondInfo,$inputPDL,$bondCache) = @_;
-
  my $size = $bondInfo->dim(1);
-
  for(my $i=0;$i<$size;$i++)
  {
-
  my $atomOne = sclr(slice($bondInfo,"0:0,$i:$i"));
  my $atomTwo = sclr(slice($bondInfo,"1:1,$i:$i")); 
  my $func = sclr(slice($bondInfo,"2:2,$i:$i"));
@@ -183,7 +177,6 @@ sub coarseCalculateBondsHelper
   #print $OUTPUT bondOutput(intToFunc("bonds",$func,""),$atomOne,$atomOne,$output);
  push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output)};
  }
- 
 }
 
 ##
@@ -202,7 +195,6 @@ sub connCalculateBondsHelper
  
  #print $OUTPUT bondOutput(intToFunc("bonds",$func,""),$atomOne,$atomOne,$output);
  push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output)};
- 
 }
 
 ##
@@ -232,16 +224,13 @@ sub bondOutput
 	 || $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"})
 	 {print("\n\nWARNING: BOND betwwen atom $i $j exceeded bonds threshold with value $paramArr[0]\n\n");}
 	
-	
  ## Format output <i j function p1 p2 ... pn>
  foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 	$formattedString = sprintf("%9d%9d%6d$paramFormat",$i,$j,$fType,@paramArr);
 	$outputString = "$outputString$formattedString\n";
  }
  return $outputString;
- 
  }
-
 
 ##
 # Given a user defined function parse values
@@ -260,11 +249,9 @@ sub bondFuncParser
 	return ($fType,@paramArr);
 }
 
-
 ######################
 ## CALCULATE ANGLES ##
 ######################
-
 
 ##
 # Combined bond calculation,sorting, and printing
@@ -286,11 +273,7 @@ sub printOrderedAngles
   ## Print our sorted bonds ##
   foreach my $p(@angleCache)
   {print $OUTPUT $p->{"v"};}
-
-
-
 }
-
 
 ##
 # calculate 3 angle value of a specific residue PDL
@@ -304,9 +287,7 @@ sub calculateAnglesHelper
  my $left = norm(slice($inputPDL,"0:2,$atom1,:")-slice($inputPDL,"0:2,$atom2,:"));
 	my $right = norm(slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:"));
 	my $acos = inner($left,$right);
- 
  }
-
 }
 
 ##
@@ -358,7 +339,6 @@ sub connCalculateAnglesHelper
 	if(!$val) {next;}
   	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos)};
  }
-
 }
 
 ## 
@@ -416,18 +396,14 @@ sub angleFuncParser
 	return ($fType,@paramArr);
 }
 
-
-
 #########################
 ## CALCULATE DIHEDRALS ##
 #########################
-
 
 ##
 # Combined dihedral calculation,sorting, and printing
 sub printOrderedDihedrals
 {
-
 		my($connDiheFunctionals,$connPDL) = @_;
   my @diheCache; ## CACHE BONDS TO ORDER
 
@@ -444,9 +420,7 @@ sub printOrderedDihedrals
   ## Print our sorted bonds ##
   foreach my $p(@diheCache)
   {print $OUTPUT $p->{"v"};}
-
   print $OUTPUT "\n";
-
 }
 
 
@@ -462,17 +436,13 @@ sub calculateDihedralsHelper
  my $b1 = slice($inputPDL,"0:2,$atom2,:")-slice($inputPDL,"0:2,$atom1,:");
 	my $b2 = slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:");
 	my $b3 = slice($inputPDL,"0:2,$atom4,:")-slice($inputPDL,"0:2,$atom3,:");
-	
 	my $n1 = norm(crossp($b1,$b2));
 	my $n2 = norm(crossp($b2,$b3));
 	my $m1 = crossp($n1,norm($b2));
-	
 	my $cos = atan2(inner($m1,$n2),inner($n1,$n2));
 	my $negcos = $cos; #$cos->where($cos < 0);
-
 	$negcos*=-1;$negcos+=mathFunctions::pi();
 	my $acos = sclr(mathFunctions::rad_to_deg($cos));
-	
 	my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
 	my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
 	my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
@@ -492,8 +462,6 @@ sub calculateDihedrals
  }
 }
 
-
-
 ##
 # Setup the calculate of bond angles of all combined residues,
 # then call connCalculateBondsHelper() with a specific residue
@@ -510,48 +478,46 @@ sub connCalculateDihedrals
 
 sub connCalculateDihedralsHelper
 {
- my($diheArr,$inputPDL,$diheCache) = @_;
- my $size = $diheArr->dim(1);
- for(my $i=0;$i<$size;$i++)
- {
-		my ($atom1,$atom2,$atom3,$atom4,$func,$cD,$eG) = $diheArr->slice(":,$i:$i")->list;
+	 my($diheArr,$inputPDL,$diheCache) = @_;
+	 my $size = $diheArr->dim(1);
+	 for(my $i=0;$i<$size;$i++)
+	 {
+			my ($atom1,$atom2,$atom3,$atom4,$func,$cD,$eG) = $diheArr->slice(":,$i:$i")->list;
+		
+		   
+	        my $b1 = slice($inputPDL,"0:2,$atom2,:")-slice($inputPDL,"0:2,$atom1,:");
+			my $b2 = slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:");
+			my $b3 = slice($inputPDL,"0:2,$atom4,:")-slice($inputPDL,"0:2,$atom3,:");
+		
+			my $n1 = norm(crossp($b1,$b2));
+			my $n2 = norm(crossp($b2,$b3));
+			my $m1 = crossp($n1,norm($b2));
+		
+			my $cos = atan2(inner($m1,$n2),inner($n1,$n2));
+			my $negcos = $cos;#$cos->where($cos < 0);
 	
-	   
-        my $b1 = slice($inputPDL,"0:2,$atom2,:")-slice($inputPDL,"0:2,$atom1,:");
-		my $b2 = slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:");
-		my $b3 = slice($inputPDL,"0:2,$atom4,:")-slice($inputPDL,"0:2,$atom3,:");
+			$negcos*=-1;$negcos+=mathFunctions::pi();
+			my $acos = sclr(mathFunctions::rad_to_deg($cos));
+		
+			my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
+			my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
+			my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
+			my $atomi4 = sclr(slice($inputPDL,"3:3,$atom4,:"));
 	
-		my $n1 = norm(crossp($b1,$b2));
-		my $n2 = norm(crossp($b2,$b3));
-		my $m1 = crossp($n1,norm($b2));
-	
-		my $cos = atan2(inner($m1,$n2),inner($n1,$n2));
-		my $negcos = $cos;#$cos->where($cos < 0);
-
-		$negcos*=-1;$negcos+=mathFunctions::pi();
-		my $acos = sclr(mathFunctions::rad_to_deg($cos));
-	
-		my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
-		my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
-		my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
-		my $atomi4 = sclr(slice($inputPDL,"3:3,$atom4,:"));
-
-		## $eG >=0 dihedral is proper dihedral of any functional form
-        if($eG >= 0)
-		{
-			my $val = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG);
-			if(!$val) {next;}
-			push @{$diheCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'l' => $atomi4, 'v' => dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG)};
-		}
-		## Improper dihedral
-		else
-		{
-			#print $OUTPUT dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD);
-			push @{$diheCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'l' => $atomi4, 'v' => dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1)};
- 	   }
-
- }
-
+			## $eG >=0 dihedral is proper dihedral of any functional form
+	        if($eG >= 0)
+			{
+				my $val = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG);
+				if(!$val) {next;}
+				push @{$diheCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'l' => $atomi4, 'v' => dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG)};
+			}
+			## Improper dihedral
+			else
+			{
+				#print $OUTPUT dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD);
+				push @{$diheCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'l' => $atomi4, 'v' => dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1)};
+	 	   }
+	 }
 }
 
 ## Convert .b dihedral function format to gromacs function format
@@ -644,7 +610,6 @@ sub diheFuncParser
 	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
 }
-
 
 
 ########################
@@ -1035,7 +1000,7 @@ sub calculateAtomTypes
 	}
 }
 
-sub calculateAtoms
+sub readAtoms
 {
 	my($inputPDB) = @_;
 	open(PDB,$inputPDB);
@@ -1079,8 +1044,6 @@ sub calculateAtoms
 }
 
 
-
-
 sub printDefaultParamsHeader
 {
 	print $OUTPUT "; Structure-based \"SMOG\" model for use with GROMACS, or NAMD\n";
@@ -1105,15 +1068,10 @@ sub printDefaultParamsFooter
 	print $OUTPUT "\n[ system ]\n";
  	print $OUTPUT "; name\n";
  	print $OUTPUT "  Macromolecule\n";
-
  	print $OUTPUT "\n[ molecules ]\n";
  	print $OUTPUT "; name            #molec\n";
  	print $OUTPUT "  Macromolecule   1\n";
-
-
-
 }
-
 
 
 ##
@@ -1196,9 +1154,6 @@ sub convertPDBToGroNdx
 		print GRO $output;
 		
 	 }
-	 	
-
-
 	}
 
 ## default box size if 1nm larger than system size in each direction
@@ -1228,8 +1183,6 @@ sub convertPDBToGroNdx
  }
  close(NDX);
  
-
-
 }
 
 sub validateTemplate
@@ -1241,7 +1194,6 @@ sub validateTemplate
  die "\nFailed at validating $file: $@" if $@;
 
 }
-
 
 sub parseInputFolder
 {
@@ -1335,12 +1287,10 @@ print <<EOT;
 
 EOT
 
-for(my $I=0;$I<$headw;$I++){
-  print "*";
-}
-  print "\n";
-
-
+ for(my $I=0;$I<$headw;$I++){
+   print "*";
+ }
+ print "\n";
 
 }
 
@@ -1592,7 +1542,7 @@ sub allAtom
 	printMoleculeTypes();
 	## PRINT ATOMS HEADER ##
 	print "..";
-	calculateAtoms($inputPDB);
+	readAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..";
 	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,1);
@@ -1712,7 +1662,7 @@ sub coarseGrain
 	printMoleculeTypes();
 	## PRINT ATOMS HEADER ##
 	print "..";
-	calculateAtoms($inputPDB);
+	readAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..";
 	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,1);
@@ -1797,7 +1747,7 @@ sub coarseGrain
 	printMoleculeTypes();
 	## PRINT ATOMS HEADER ##
 	print "..";
-	calculateAtoms($inputPDB);
+	readAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..\n";
 	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL,1);
@@ -1818,10 +1768,6 @@ sub coarseGrain
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
 	close($OUTPUT);
 	printCitation();
-
-
-
-
 }
 
 ##################
@@ -1869,9 +1815,7 @@ if($CAdefault == 1){
 	if(! -d $contactRes){
 		smog_quit("$contactRes is not a valid template directory.");
 	}
-
 	$CGenabled=1;
-
 }
 if($AAdefault == 1){
 	print "\n -AA given. Will use the default All-Atom SMOG model provided with the distribution.\n";
@@ -1881,7 +1825,6 @@ if($AAdefault == 1){
 	if(! -d $inputFolder){
 		smog_quit("$inputFolder is not a valid template directory.");
 	}
-
 }
 
 ## get variables in order
