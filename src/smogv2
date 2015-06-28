@@ -34,7 +34,6 @@ my $OUTPUT;
 my $help;my $inputPDB; my $inputFolder=""; my $bifForSCM;
 my $ignAllContacts=0;
 my $topFile = "smog.top";
-my $topFile2 = "smog2.top";
 my $groFile = "smog.gro";
 my $ContactFile = "";
 my $shadowFile = "smog.contacts";
