@@ -19,7 +19,7 @@ use PDL; ## LOAD PDL MODULE
 ## DECLEARATION TO SHAR DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS smog_quit);
+qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
 
 my @vector;
 my $coorPDL;
@@ -43,19 +43,6 @@ our $contactPDL;
 our %allAtoms;
 
 our %extContacts;
-#####################
-# Error call        #
-# ##################
-
-sub smog_quit
-{
-	my ($LINE)=@_;
-	print "\n\nFATAL ERROR: $LINE\n\n";
-	unless($main::noexit){
-		exit;
-	}
-}
-
 
 ###########################
 ## CLEAR VARIABLE MEMORY ##
