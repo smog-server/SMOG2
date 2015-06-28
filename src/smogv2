@@ -110,9 +110,6 @@ sub printOrderedBonds
 	my @bondCache; ## CACHE BONDS TO ORDER
 
 	## print directive headers ##
-	#print $OUTPUT "\n[ bonds ]\n";
-	#print $OUTPUT ";ai     aj      func    r0(nm)  Kb\n";
-
 	addToTop("bonds","\n[ bonds ]\n");
 	addToTop("bonds",";ai     aj      func    r0(nm)  Kb\n");
 
@@ -126,7 +123,6 @@ sub printOrderedBonds
 	## Print our sorted bonds ##
 	foreach my $p(@bondCache)
 	{
-		#print $OUTPUT $p->{"v"}; 
 		addToTop("bonds",$p->{"v"});
 	}
 }
@@ -163,9 +159,7 @@ sub calculateBondsHelper1
 sub calculateBonds1
 {
  my($bondFunctHandle,$whichPDL,$bondCache) = @_;
- #print $OUTPUT "\n[ bonds ]\n";
- #print $OUTPUT ";ai     aj      func    r0(nm)  Kb\n";
- foreach my $res(keys %{$bondFunctHandle})
+  foreach my $res(keys %{$bondFunctHandle})
  {
 	if(!exists $whichPDL->{$res}){next;}
 	calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache);
@@ -269,8 +263,6 @@ sub printOrderedAngles
 	my @angleCache; ## CACHE BONDS TO ORDER
 
 	## print directive headers ##
-	#print $OUTPUT "\n[ angles ]\n";
-	#print $OUTPUT ";ai  aj   ak  func  th0(deg)   Ka\n";
 	addToTop("angles","\n[ angles ]\n");
 	addToTop("angles",";ai  aj   ak  func  th0(deg)   Ka\n");
 	## Cache Bonds ##
@@ -282,7 +274,6 @@ sub printOrderedAngles
 	## Print our sorted bonds ##
   	foreach my $p(@angleCache)
   	{
-	  	#print $OUTPUT $p->{"v"};
   		addToTop("angles",$p->{"v"});
 	}
 }
@@ -320,9 +311,7 @@ sub calculateAngles
 sub connCalculateAngles
 {
  my($angleFunctHandle,$whichPDL,$angleCache) = @_;
- #print $OUTPUT "\n[ angles ]\n";
- #print $OUTPUT ";ai  aj   ak  func  th0(deg)   Ka\n";
-
+ 
  foreach my $res(keys %{$angleFunctHandle})
  {
 	connCalculateAnglesHelper($angleFunctHandle->{$res},$whichPDL->{$res},$angleCache);
@@ -420,8 +409,6 @@ sub printOrderedDihedrals
   my @diheCache; ## CACHE BONDS TO ORDER
 
   ## print directive headers ##
-		#print $OUTPUT "\n[ dihedrals ]\n";
- 	#print $OUTPUT ";ai  aj  ak  al  func  phi0(deg) kd mult\n";
 	addToTop("dihedrals","\n[ dihedrals ]\n");
 	addToTop("dihedrals",";ai  aj  ak  al  func  phi0(deg) kd mult\n");
 
@@ -434,10 +421,8 @@ sub printOrderedDihedrals
   ## Print our sorted bonds ##
   foreach my $p(@diheCache)
   {
-	  #print $OUTPUT $p->{"v"};
   	addToTop("dihedrals",$p->{"v"});
   }
-  #print $OUTPUT "\n";
   addToTop("dihedrals","\n");
 }
 
@@ -486,8 +471,6 @@ sub calculateDihedrals
 sub connCalculateDihedrals
 {
  my($diheFunctHandle,$whichPDL,$diheCache) = @_;
- #print $OUTPUT "\n[ dihedrals ]\n";
- #print $OUTPUT ";ai  aj  ak  al  func  phi0(deg) kd mult\n";
  foreach my $res(keys %{$diheFunctHandle})
  {
 		connCalculateDihedralsHelper($diheFunctHandle->{$res},$whichPDL->{$res},$diheCache);
@@ -650,8 +633,6 @@ sub calculateContacts
 	my $contactIntraTotal;	
 	my $count;
 	
-	#print $OUTPUT "\n\n[ pairs ]\n";
-	#print $OUTPUT "; ai aj type, A, B\n";
 	addToTop("pairs","\n[ pairs ]\n");
 	addToTop("pairs","; ai aj type, A, B\n");
 	## REMOVE ##
@@ -731,7 +712,6 @@ sub calculateContacts
 			if(!$normalize) {
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
-			#print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
 			addToTop("pairs",contactOutput($funct,$atoma,$atomb,$c0,$epsilon));
 			addToTop("pairs","\n");
 			}	
@@ -754,7 +734,6 @@ sub calculateContacts
 	  		$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 	  		$c0=$dist;
 	  		$totalEpsilon+=$epsilon;
-			#print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
 			addToTop("pairs",contactOutput($funct,$atoma,$atomb,$c0,$epsilon));
 			addToTop("pairs","\n");
 			}
@@ -977,8 +956,6 @@ sub calculateExclusions
 	my($contactPDL,$numCon) = @_;
 	my $atoma; my $atomb;
 
-	#print $OUTPUT "\n[ exclusions ]\n";
-	#print $OUTPUT "; ai	aj\n";
 	addToTop("exclusions","\n[ exclusions ]\n");
 	addToTop("exclusions","; ai	aj\n");
 	#print an exclusion for every contact
@@ -986,7 +963,6 @@ sub calculateExclusions
 	{
 		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
 		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-		#print $OUTPUT $atoma,"	",$atomb,"\n";
 		addToTop("exclusions",$atoma."	".$atomb."\n");
 	}
 }
@@ -995,8 +971,6 @@ sub calculateAtomTypes
 {
 	my($uniqeHandle) = @_;
 	my $formattedString = "";	
-	#print $OUTPUT "\n [ atomtypes ] \n";
-	#print $OUTPUT "; name mass   charge ptype c6            c12\n";
 	addToTop("atomtypes","\n [ atomtypes ] \n");
 	addToTop("atomtypes","; name mass   charge ptype c6            c12\n");
 	
@@ -1022,7 +996,6 @@ sub calculateAtomTypes
 		{smog_quit("Nonbond Params at atom types not set for nbType $nbtype");}
 		
 		$formattedString = sprintf("  %-4s %-6.3f %-5.3f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
-		#print $OUTPUT $formattedString,"\n";
 		addToTop("atomtypes",$formattedString."\n");
 		$obtained{$nbtype}=1;
 	}
@@ -1033,8 +1006,6 @@ sub readAtoms
 	my($inputPDB) = @_;
 	open(PDB,$inputPDB);
 	my $line = "";
-	#print $OUTPUT "\n[ atoms ]\n";	
-	#print $OUTPUT ";nr  type  resnr residue atom  cgnr\n";
 	addToTop("atoms","\n[ atoms ]\n");
 	addToTop("atoms",";nr  type  resnr residue atom  cgnr\n");
 	my $atomName;my $atomNum; my $resName; my $resNum;
@@ -1076,26 +1047,15 @@ sub readAtoms
 
 sub printDefaultParamsHeader
 {
-	#print $OUTPUT "; Structure-based \"SMOG\" model for use with GROMACS, or NAMD\n";
-	#print $OUTPUT "; Generated by the SMOG tool version $VERSION\n";
-	#print $OUTPUT "\n[ defaults ]\n";
-	#print $OUTPUT "; nbfunc comb-rule gen-pairs\n";
-	#print $OUTPUT "  1      1         no\n";
 	addToTop("defaults", "; Structure-based \"SMOG\" model for use with GROMACS, or NAMD\n");
 	addToTop("defaults", "; Generated by the SMOG tool version $VERSION\n");
 	addToTop("defaults", "\n[ defaults ]\n");
 	addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
 	addToTop("defaults", "  1      1         no\n");
-	
-
 }
 
 sub printMoleculeTypes
 {
-
-	#print $OUTPUT "\n[ moleculetype ]\n";
-	#print $OUTPUT "; name            nrexcl\n";
-	#print $OUTPUT "  Macromolecule   3\n";
 	addToTop("moleculetype","\n[ moleculetype ]\n");
 	addToTop("moleculetype","; name            nrexcl\n");
 	addToTop("moleculetype","  Macromolecule   3\n");
@@ -1103,13 +1063,6 @@ sub printMoleculeTypes
 
 sub printDefaultParamsFooter
 {
-    #print $OUTPUT "\n[ system ]\n";
-    #print $OUTPUT "; name\n";
-    #print $OUTPUT "  Macromolecule\n";
-    #print $OUTPUT "\n[ molecules ]\n";
-    #print $OUTPUT "; name            #molec\n";
-    #print $OUTPUT "  Macromolecule   1\n";
-
 	addToTop("system","\n[ system ]\n");
  	addToTop("system","; name\n");
  	addToTop("system","  Macromolecule\n");
