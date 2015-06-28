@@ -59,27 +59,16 @@ our %fTypes = (	'bond_harmonic' => '1',
 		'contact_2'=>'1',
 		'contact_gaussian'=>'6'
 		);
-#		"defaults","atomtypes","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","system","molecules"
+## this is the topfile buffer stuff
 our %headings = ("defaults",1,"atomtypes",2,"moleculetype",3,"atoms",4,"bonds",5,"angles",6,"dihedrals",7,"pairs",8,"exclusions",9,"system",10,"molecules",11);
-
-#our @headingsList=("bonds","pairs","angles","dihedrals");
 our @headingsList=("defaults","atomtypes","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","system","molecules");
 our @topFileBuffer;
 our @linesInHeadings;
 initializeHeadings();
 
-sub initializeHeadings {
-	for (keys %headings) { $linesInHeadings[$headings{$_}]=0; }
-}
-
-#adds something to the topfile at the bottom of a directive
-sub addToTop {
-	my($heading,$stuff) = @_;
-	#print "I want to add ",$stuff," to ",$heading,"\n";
-	push  @{$topFileBuffer[$headings{$heading}][$linesInHeadings[$headings{$heading}]++]}, $stuff;
-}
-
-#Prints the topfile buffer to the file
+####################
+## OUTPUT TOPFILE ##
+####################
 sub printTop {
 	open($OUTPUT, ">$topFile2");
 	my $i;
@@ -95,7 +84,18 @@ sub printTop {
 	}
 	close($OUTPUT);
 }
-	
+# utility method to set all the initial heading line counts to zero
+sub initializeHeadings {
+	for (keys %headings) { $linesInHeadings[$headings{$_}]=0; }
+}
+#adds something to the topfile at the bottom of a directive
+sub addToTop {
+	my($heading,$stuff) = @_;
+	#print "I want to add ",$stuff," to ",$heading,"\n";
+	push  @{$topFileBuffer[$headings{$heading}][$linesInHeadings[$headings{$heading}]++]}, $stuff;
+}
+
+
 #####################
 ## CALCULATE BONDS ##
 #####################
