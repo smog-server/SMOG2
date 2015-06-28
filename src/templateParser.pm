@@ -22,7 +22,7 @@ use Storable qw(dclone);
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives);
+qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives smog_quit);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -75,9 +75,19 @@ our $bif = "bif.xml";
 our $sif = "sif.xml";
 our $bondxml = "b.xml";
 our $nbondxml = "nb.xml";
-
 	
+#####################
+# Error call        #
+# ##################
 
+sub smog_quit
+{
+	my ($LINE)=@_;
+	print "\n\nFATAL ERROR: $LINE\n\n";
+	unless($main::noexit){
+		exit;
+	}
+}
 
 
 ###########################
@@ -274,7 +284,19 @@ sub parseSif {
 $data = $xml->XMLin($sif,ForceArray=>1);
 ## Parse function data
 $functions = $data->{"functions"}->[0]->{"function"};
+foreach my $funcName(keys %{$functions}){
 
+	if($functions->{$funcName}->{"directive"} eq "pairs" 
+		&& !exists $functions->{$funcName}->{"exclusions"}){
+		smog_quit( "Since $funcName is of directive \"pairs\", the \"exclusions\" element must be defined (0/1). See .sif file.\n");
+	}elsif(exists $functions->{$funcName}->{"exclusions"} && $functions->{$funcName}->{"exclusions"} ==1 
+		&& $functions->{$funcName}->{"exclusions"} ==0){
+		smog_quit("function $funcName element exclusions must be 0, or 1.");
+	}elsif($functions->{$funcName}->{"directive"} ne "pairs"
+                && exists $functions->{$funcName}->{"exclusions"}){
+		print "\nNOTE: Element \"exclusions\" is defined for function $funcName. This is likely unnecessary, since the \"exclusions\" element is only relevant for contacts.\n";
+	}
+}
 ## Parse settings data
 $settings = $data->{"settings"}->[0];
 our $energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};
