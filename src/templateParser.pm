@@ -22,7 +22,7 @@ use Storable qw(dclone);
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(getEnergyGroup smog_quit $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory);
+qw(getEnergyGroup smog_quit $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -57,7 +57,7 @@ my $settings; our $termRatios;
 our $interactions;my %bondTypes;my %nboneTypes;
 our %funcTable;our %funcTableRev;
 our %eGTable;our %eGRevTable;
-
+our @topFileBuffer;our @linesInDirectives;
 ## SORTED FUNCTIONALS ##
 our %bondFunctionals;
 our %dihedralFunctionals;
@@ -100,6 +100,8 @@ undef %eGRevTable;
 undef %bondFunctionals;undef %dihedralFunctionals;
 undef %angleFunctionals;undef %connections;
 undef %dihedralAdjList;
+undef @topFileBuffer;
+undef @linesInDirectives;
 }
 
 

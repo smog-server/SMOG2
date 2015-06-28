@@ -60,39 +60,40 @@ our %fTypes = (	'bond_harmonic' => '1',
 		'contact_gaussian'=>'6'
 		);
 ## this is the topfile buffer stuff
-our %headings = ("defaults",1,"atomtypes",2,"moleculetype",3,"atoms",4,"bonds",5,"angles",6,"dihedrals",7,"pairs",8,"exclusions",9,"system",10,"molecules",11);
-our @headingsList=("defaults","atomtypes","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","system","molecules");
+our %directives = ("defaults",1,"atomtypes",2,"moleculetype",3,"atoms",4,"bonds",5,"angles",6,"dihedrals",7,"pairs",8,"exclusions",9,"system",10,"molecules",11);
+our @directivesList=("defaults","atomtypes","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","system","molecules");
 our @topFileBuffer;
-our @linesInHeadings;
-initializeHeadings();
+our @linesInDirectives;
 
 ####################
 ## OUTPUT TOPFILE ##
 ####################
 sub printTop {
-	open($OUTPUT, ">$topFile2");
+	open($OUTPUT, ">$topFile");
 	my $i;
 	my $j;
-	my $heading;
-	foreach $heading (@headingsList) { #order of list defines order in top
-		foreach $i (0 .. scalar @{$topFileBuffer[$headings{$heading}]}-1) {
-			foreach $j (0 .. scalar @{$topFileBuffer[$headings{$heading}][$i]}-1) {
-				#print $topFileBuffer[$headings{"bonds"}][$i][$j];
-				print $OUTPUT $topFileBuffer[$headings{$heading}][$i][$j];
+	my $directive;
+	foreach $directive (@directivesList) { #order of list defines order in top
+		foreach $i (0 .. scalar @{$topFileBuffer[$directives{$directive}]}-1) {
+			foreach $j (0 .. scalar @{$topFileBuffer[$directives{$directive}][$i]}-1) {
+				print $OUTPUT $topFileBuffer[$directives{$directive}][$i][$j];
 			}
 		}
 	}
 	close($OUTPUT);
 }
-# utility method to set all the initial heading line counts to zero
-sub initializeHeadings {
-	for (keys %headings) { $linesInHeadings[$headings{$_}]=0; }
+# utility method to set all the initial directive line counts to zero
+sub initializeDirectives {
+	for (keys %directives) { 
+		$linesInDirectives[$directives{$_}]=0; 
+		#need this because we are going to output a top without pairs but want it to not die when it is not initialized
+		push @{$topFileBuffer[$directives{$_}][$linesInDirectives[$directives{$_}]++]}, ""; 
+	}
 }
 #adds something to the topfile at the bottom of a directive
 sub addToTop {
-	my($heading,$stuff) = @_;
-	#print "I want to add ",$stuff," to ",$heading,"\n";
-	push  @{$topFileBuffer[$headings{$heading}][$linesInHeadings[$headings{$heading}]++]}, $stuff;
+	my($directive,$stuff) = @_;
+	push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
 }
 
 
@@ -105,26 +106,29 @@ sub addToTop {
 sub printOrderedBonds
 {
 
-  my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2) = @_;
-  my @bondCache; ## CACHE BONDS TO ORDER
+	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2) = @_;
+	my @bondCache; ## CACHE BONDS TO ORDER
 
-  ## print directive headers ##
-  print $OUTPUT "\n[ bonds ]\n";
-  print $OUTPUT ";ai     aj      func    r0(nm)  Kb\n";
-  
-  addToTop("bonds","\n[ bonds ]\n");
-  addToTop("bonds",";ai     aj      func    r0(nm)  Kb\n");
-  
-  ## Cache Bonds ##
-  calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache);
-  calculateBonds2($bondHandle2,$whichPDL2,\@bondCache);
+	## print directive headers ##
+	#print $OUTPUT "\n[ bonds ]\n";
+	#print $OUTPUT ";ai     aj      func    r0(nm)  Kb\n";
 
-  ## Sort bonds by i then j ## 
-  @bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
-  
-  ## Print our sorted bonds ##
-  foreach my $p(@bondCache)
-  {print $OUTPUT $p->{"v"}; addToTop("bonds",$p->{"v"});}
+	addToTop("bonds","\n[ bonds ]\n");
+	addToTop("bonds",";ai     aj      func    r0(nm)  Kb\n");
+
+	## Cache Bonds ##
+	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache);
+	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache);
+
+	## Sort bonds by i then j ## 
+	@bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
+
+	## Print our sorted bonds ##
+	foreach my $p(@bondCache)
+	{
+		#print $OUTPUT $p->{"v"}; 
+		addToTop("bonds",$p->{"v"});
+	}
 }
 
 
@@ -261,23 +265,26 @@ sub bondFuncParser
 # Combined bond calculation,sorting, and printing
 sub printOrderedAngles
 {
-		my($connAngleFunctionals,$connPDL) = @_;
-  my @angleCache; ## CACHE BONDS TO ORDER
+	my($connAngleFunctionals,$connPDL) = @_;
+	my @angleCache; ## CACHE BONDS TO ORDER
 
-  ## print directive headers ##
-  print $OUTPUT "\n[ angles ]\n";
-  print $OUTPUT ";ai  aj   ak  func  th0(deg)   Ka\n";
-  addToTop("angles","\n[ angles ]\n");
-  addToTop("angles",";ai  aj   ak  func  th0(deg)   Ka\n");
-  ## Cache Bonds ##
-  connCalculateAngles($connAngleFunctionals,$connPDL,\@angleCache);
+	## print directive headers ##
+	#print $OUTPUT "\n[ angles ]\n";
+	#print $OUTPUT ";ai  aj   ak  func  th0(deg)   Ka\n";
+	addToTop("angles","\n[ angles ]\n");
+	addToTop("angles",";ai  aj   ak  func  th0(deg)   Ka\n");
+	## Cache Bonds ##
+	connCalculateAngles($connAngleFunctionals,$connPDL,\@angleCache);
 
-  ## Sort angles by i,j then k ## 
-  @angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
-  
-  ## Print our sorted bonds ##
-  foreach my $p(@angleCache)
-  {print $OUTPUT $p->{"v"};addToTop("angles",$p->{"v"});}
+	## Sort angles by i,j then k ## 
+	@angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
+
+	## Print our sorted bonds ##
+  	foreach my $p(@angleCache)
+  	{
+	  	#print $OUTPUT $p->{"v"};
+  		addToTop("angles",$p->{"v"});
+	}
 }
 
 ##
@@ -413,8 +420,8 @@ sub printOrderedDihedrals
   my @diheCache; ## CACHE BONDS TO ORDER
 
   ## print directive headers ##
-		print $OUTPUT "\n[ dihedrals ]\n";
- 	print $OUTPUT ";ai  aj  ak  al  func  phi0(deg) kd mult\n";
+		#print $OUTPUT "\n[ dihedrals ]\n";
+ 	#print $OUTPUT ";ai  aj  ak  al  func  phi0(deg) kd mult\n";
 	addToTop("dihedrals","\n[ dihedrals ]\n");
 	addToTop("dihedrals",";ai  aj  ak  al  func  phi0(deg) kd mult\n");
 
@@ -426,8 +433,11 @@ sub printOrderedDihedrals
   
   ## Print our sorted bonds ##
   foreach my $p(@diheCache)
-  {print $OUTPUT $p->{"v"};addToTop("dihedrals",$p->{"v"});}
-  print $OUTPUT "\n";
+  {
+	  #print $OUTPUT $p->{"v"};
+  	addToTop("dihedrals",$p->{"v"});
+  }
+  #print $OUTPUT "\n";
   addToTop("dihedrals","\n");
 }
 
@@ -640,9 +650,9 @@ sub calculateContacts
 	my $contactIntraTotal;	
 	my $count;
 	
-	print $OUTPUT "\n\n[ pairs ]\n";
-	print $OUTPUT "; ai aj type, A, B\n";
-	addToTop("pairs","\n\n[ pairs ]\n");
+	#print $OUTPUT "\n\n[ pairs ]\n";
+	#print $OUTPUT "; ai aj type, A, B\n";
+	addToTop("pairs","\n[ pairs ]\n");
 	addToTop("pairs","; ai aj type, A, B\n");
 	## REMOVE ##
 	my $totalEpsilon=0;
@@ -721,7 +731,7 @@ sub calculateContacts
 			if(!$normalize) {
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
-			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
+			#print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
 			addToTop("pairs",contactOutput($funct,$atoma,$atomb,$c0,$epsilon));
 			addToTop("pairs","\n");
 			}	
@@ -744,7 +754,7 @@ sub calculateContacts
 	  		$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 	  		$c0=$dist;
 	  		$totalEpsilon+=$epsilon;
-			print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
+			#print $OUTPUT contactOutput($funct,$atoma,$atomb,$c0,$epsilon),"\n";
 			addToTop("pairs",contactOutput($funct,$atoma,$atomb,$c0,$epsilon));
 			addToTop("pairs","\n");
 			}
@@ -967,8 +977,8 @@ sub calculateExclusions
 	my($contactPDL,$numCon) = @_;
 	my $atoma; my $atomb;
 
-	print $OUTPUT "\n[ exclusions ]\n";
-	print $OUTPUT "; ai	aj\n";
+	#print $OUTPUT "\n[ exclusions ]\n";
+	#print $OUTPUT "; ai	aj\n";
 	addToTop("exclusions","\n[ exclusions ]\n");
 	addToTop("exclusions","; ai	aj\n");
 	#print an exclusion for every contact
@@ -976,7 +986,7 @@ sub calculateExclusions
 	{
 		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
 		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-		print $OUTPUT $atoma,"	",$atomb,"\n";
+		#print $OUTPUT $atoma,"	",$atomb,"\n";
 		addToTop("exclusions",$atoma."	".$atomb."\n");
 	}
 }
@@ -985,8 +995,8 @@ sub calculateAtomTypes
 {
 	my($uniqeHandle) = @_;
 	my $formattedString = "";	
-	print $OUTPUT "\n [ atomtypes ] \n";
-	print $OUTPUT "; name mass   charge ptype c6            c12\n";
+	#print $OUTPUT "\n [ atomtypes ] \n";
+	#print $OUTPUT "; name mass   charge ptype c6            c12\n";
 	addToTop("atomtypes","\n [ atomtypes ] \n");
 	addToTop("atomtypes","; name mass   charge ptype c6            c12\n");
 	
@@ -1012,7 +1022,7 @@ sub calculateAtomTypes
 		{smog_quit("Nonbond Params at atom types not set for nbType $nbtype");}
 		
 		$formattedString = sprintf("  %-4s %-6.3f %-5.3f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
-		print $OUTPUT $formattedString,"\n";
+		#print $OUTPUT $formattedString,"\n";
 		addToTop("atomtypes",$formattedString."\n");
 		$obtained{$nbtype}=1;
 	}
@@ -1023,8 +1033,8 @@ sub readAtoms
 	my($inputPDB) = @_;
 	open(PDB,$inputPDB);
 	my $line = "";
-	print $OUTPUT "\n[ atoms ]\n";	
-	print $OUTPUT ";nr  type  resnr residue atom  cgnr\n";
+	#print $OUTPUT "\n[ atoms ]\n";	
+	#print $OUTPUT ";nr  type  resnr residue atom  cgnr\n";
 	addToTop("atoms","\n[ atoms ]\n");
 	addToTop("atoms",";nr  type  resnr residue atom  cgnr\n");
 	my $atomName;my $atomNum; my $resName; my $resNum;
@@ -1054,7 +1064,7 @@ sub readAtoms
 			if(!$residues{$resName}->{"atoms"}->{$atomName}){next;}
 			$counter++;$atomNum=$counter;
 			$atomType = $residues{$resName}->{"atoms"}->{$atomName}->{"nbType"};
-			printf $OUTPUT "%6d %10s %6d %6s %6s %6d\n", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum;
+			#printf $OUTPUT "%6d %10s %6d %6s %6s %6d\n", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum;
 			addToTop("atoms",sprintf("%6d %10s %6d %6s %6s %6d\n", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum));
 
 		}
@@ -1066,11 +1076,11 @@ sub readAtoms
 
 sub printDefaultParamsHeader
 {
-	print $OUTPUT "; Structure-based \"SMOG\" model for use with GROMACS, or NAMD\n";
-	print $OUTPUT "; Generated by the SMOG tool version $VERSION\n";
-	print $OUTPUT "\n[ defaults ]\n";
-	print $OUTPUT "; nbfunc comb-rule gen-pairs\n";
-	print $OUTPUT "  1      1         no\n";
+	#print $OUTPUT "; Structure-based \"SMOG\" model for use with GROMACS, or NAMD\n";
+	#print $OUTPUT "; Generated by the SMOG tool version $VERSION\n";
+	#print $OUTPUT "\n[ defaults ]\n";
+	#print $OUTPUT "; nbfunc comb-rule gen-pairs\n";
+	#print $OUTPUT "  1      1         no\n";
 	addToTop("defaults", "; Structure-based \"SMOG\" model for use with GROMACS, or NAMD\n");
 	addToTop("defaults", "; Generated by the SMOG tool version $VERSION\n");
 	addToTop("defaults", "\n[ defaults ]\n");
@@ -1083,9 +1093,9 @@ sub printDefaultParamsHeader
 sub printMoleculeTypes
 {
 
-	print $OUTPUT "\n[ moleculetype ]\n";
-	print $OUTPUT "; name            nrexcl\n";
-	print $OUTPUT "  Macromolecule   3\n";
+	#print $OUTPUT "\n[ moleculetype ]\n";
+	#print $OUTPUT "; name            nrexcl\n";
+	#print $OUTPUT "  Macromolecule   3\n";
 	addToTop("moleculetype","\n[ moleculetype ]\n");
 	addToTop("moleculetype","; name            nrexcl\n");
 	addToTop("moleculetype","  Macromolecule   3\n");
@@ -1093,12 +1103,12 @@ sub printMoleculeTypes
 
 sub printDefaultParamsFooter
 {
-    print $OUTPUT "\n[ system ]\n";
-    print $OUTPUT "; name\n";
-    print $OUTPUT "  Macromolecule\n";
-    print $OUTPUT "\n[ molecules ]\n";
-    print $OUTPUT "; name            #molec\n";
-    print $OUTPUT "  Macromolecule   1\n";
+    #print $OUTPUT "\n[ system ]\n";
+    #print $OUTPUT "; name\n";
+    #print $OUTPUT "  Macromolecule\n";
+    #print $OUTPUT "\n[ molecules ]\n";
+    #print $OUTPUT "; name            #molec\n";
+    #print $OUTPUT "  Macromolecule   1\n";
 
 	addToTop("system","\n[ system ]\n");
  	addToTop("system","; name\n");
@@ -1527,15 +1537,15 @@ sub allAtom
         ## TEST IF SMOG PATH EXISTS ##
         if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
 	$| = 1;
-	## OPEN .top handle ##
-	open($OUTPUT, ">$topFile");
+	## OPEN .top handle ## don't do this here since we buffered the output now
+	#open($OUTPUT, ">$topFile"); 
         print "Parsing All-Atom Templates... ";
 	parseInputFolder($inputFolder); ## PARSE FOLDER --> FILE
 
 	#####################
         ## PARSE TEMPLATES ##
         #####################
-
+	initializeDirectives();
 	## parse .bif File ##
 	parseBif();
 	## parse .sif File ##
@@ -1590,10 +1600,10 @@ sub allAtom
     
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
+	## print intermediate top for SCM.jar to read ##
+	printTop();
 	## CALL SHADOW/PARSE CONTACTS ##
 	print "Starting contact calculations ...\n  ";
-	
-	
 	my $SCMparams = setContactParams();
 	my $absAtomCount = keys(%allAtoms);
     my $memoryMax = "";
@@ -1646,8 +1656,8 @@ sub coarseGrain
 	## TEST IF SMOG PATH EXISTS ##
         if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
 
-	## OPEN .top handle ##
-	open($OUTPUT, ">$topFile");
+	## OPEN .top handle ## don't do this here since we are buffering the output
+	#open($OUTPUT, ">$topFile");
 	
 
 	##############################
@@ -1655,6 +1665,7 @@ sub coarseGrain
         ##############################
         print "\n\n		PREPROCESSING\n\nWill use contact-specific templates\n";
 	parseInputFolder($inputFolder);
+	initializeDirectives();
 	## parse Bif File ##
 	parseBif();
 	## parse Sif File ##
@@ -1707,7 +1718,9 @@ sub coarseGrain
 	print "..";
 	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
 	print "..\n";
-        convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
+    convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
+	## print intermediate top for SCM.jar to read ##
+	printTop();
 	my $SCMparams = setContactParams();
 	my $absAtomCount = keys(%allAtoms);
     	my $memoryMax = "";
@@ -1730,11 +1743,12 @@ sub coarseGrain
 	###################################
         ## PARSE COARSEGRAINED TEMPLATES ##
         ###################################
-	## OPEN .top handle ##
-	open($OUTPUT, ">$topFile");
+	## OPEN .top handle ## don't do this here since we are buffering output
+	#open($OUTPUT, ">$topFile");
         print "\n\n	     FINAL PROCESSING\n\nWill use templates for final model\n\n";
 	print "Parsing Coarse Grained Templates... ";
 	parseInputFolder($coarseFolder);
+	initializeDirectives();
 	## parse Bif File ##
 	parseBif();
 	## parse Sif File ##
