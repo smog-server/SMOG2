@@ -1561,7 +1561,6 @@ sub allAtom
 	print "Parsing .pdb...\n";
 	parsePDBATOMS($inputPDB,0);
 	catPDL();
-	print "Done\n";
 	print "Creating topology for contact calculation.....\n";
 	#####################################
 	## DO CALCULATIONS FOR HAMILTONIAN ##
@@ -1682,7 +1681,6 @@ sub coarseGrain
 	print "Parsing .pdb...\n";
 	parsePDBATOMS($inputPDB,0);
 	catPDL();
-	print "Done\n";
 
 	#####################################
 	## DO CALCULATIONS FOR HAMILTONIAN ##

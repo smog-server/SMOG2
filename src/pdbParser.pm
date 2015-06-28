@@ -128,11 +128,10 @@ sub parsePDBATOMS
     my $resBIdx = $allAtoms{$idxB}->[2];
 
     my $sizeA = scalar(keys %{$residues{$resA}->{"atoms"}});
-    $counter++;
     my $union;
     $union=($tempPDL{$resA}->{$resAIdx})->glue(1,$tempPDL{$resB}->{$resBIdx});
     print "\nNOTE:";
-    print "Generating ad-hoc BOND between atoms $atoma,$atomb\n";
+    print "Generating user-specified bonded interaction between chain-atom pair $chaina-$atoma,$chainb-$atomb.\nWill assign to energy group $eG.\n";
     $connPDL{$counter}=$union;
     ## Check if improper directive is present ##
     if($record =~ m/IMPROPER/)
@@ -143,6 +142,7 @@ sub parsePDBATOMS
      print "IMPROPER DETECTED @impAtoms\n";
     }
     connCreateInteractionsBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
+    $counter++;
     next;
  }
 
@@ -1152,7 +1152,7 @@ sub connWildcardMatchDihes
 	}
 
 		if($Nd ==0){
-			smog_quit ("energy group $eG is used in .bif file, but it is not defined in .b file.");
+			smog_quit ("energy group $eG is used in .bif file, or a BOND line, but it is not defined in .sif file.");
 		}
 		
 		my $sym=0;
