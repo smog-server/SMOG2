@@ -67,6 +67,7 @@
 <xs:complexType name="functionType">
     <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="directive" type="directiveType" use="required"/>
+    <xs:attribute name="exclusions" type="booleanType" use="optional"/>
 </xs:complexType>
 
  <!-- GROUPS TYPE -->
