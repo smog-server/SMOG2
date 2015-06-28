@@ -664,7 +664,8 @@ sub calculateContacts
 			my $deltaMin=-1;my $scale=-1;my $deltaMax=-1;
 			my $resIdxA=0;my $resIdxB=0;
 			my $atomA="";my $atomB="";
-			
+			my $outputString;
+			my $directive;
 	  		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
 	  		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
 			$nbtypea = $atomTypes->{$atoma}->[0];
@@ -711,8 +712,9 @@ sub calculateContacts
 			if(!$normalize) {
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
-			addToTop("pairs",contactOutput($funct,$atoma,$atomb,$c0,$epsilon));
-			addToTop("pairs","\n");
+			($directive,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
+			addToTop($directive,$outputString."\n");
+			#addToTop("pairs","\n");
 			}	
 			
 			else {	
@@ -733,8 +735,9 @@ sub calculateContacts
 	  		$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 	  		$c0=$dist;
 	  		$totalEpsilon+=$epsilon;
-			addToTop("pairs",contactOutput($funct,$atoma,$atomb,$c0,$epsilon));
-			addToTop("pairs","\n");
+			($directive,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
+			addToTop($directive,$outputString."\n");
+			#addToTop("pairs","\n");
 			}
 	}
 }
@@ -753,13 +756,13 @@ sub contactOutput
  my $outputString="";
  my @paramArr;
  my $fname;
+ my $directive;
  my $fType=""; my $formattedString;
  ## Parse each part of the function ##
  foreach my $fun(@funcs)
  {
 	my $paramFormat="";
-	($fType,$fname,@paramArr) = contactFuncParser($fun);
-
+	($fType,$fname,$directive,@paramArr) = contactFuncParser($fun);
 	## LJ CONTACTS N-M polynomial, sigma and epsilon usage ##	
     if($fname eq "contact_1"){
 		contactParseNM1(\@paramArr,$c0,$epsilon);
@@ -776,6 +779,12 @@ sub contactOutput
 	if($fType != 6){smog_quit ("Only fType=6 is supported with contacts contact_gaussian")}
 
     }
+	## harmonic bond type 6 ##
+    elsif($fname eq "bond_type6"){
+	contactParseBond6(\@paramArr,$c0,$epsilon);
+	if($fType != 6){smog_quit ("Only fType=6 is supported with contacts of bond_type6")}
+
+    }
     else{smog_quit("Contact function name $fname is not supported");}
 
  	## Format output <i j function p1 p2 ... pn>
@@ -783,7 +792,7 @@ sub contactOutput
 	$formattedString = sprintf("%d %d %d$paramFormat",$i,$j,$fType,@paramArr);
 	$outputString = "$outputString$formattedString";
  }
- return $outputString;
+ return ($directive,$outputString);
  
 }
 
@@ -923,7 +932,33 @@ sub contactParseGaussian
   @{$paramArr}=($A,$r0,$sigma_G,$a);
 
 }
+##
+# Parse Bond type 6
+sub contactParseBond6
+{
+ my($paramArr,$r0,$epsilon) = @_;
+ my $k;
+  ##i=0 is r##
+  ##i=1 is k#
 
+  ## k ##
+  if($paramArr->[1] =~ /\?/)
+  {smog_quit("CONTACT FUNCTION PARSING:: contact bond_type6 can't have ? in the stiffness.");}
+  $paramArr->[1] = eval($paramArr->[1]);
+  
+  ## r ##
+  if($paramArr->[0] =~ /\?/)
+  {
+     #Replace ? with $r0 
+     $paramArr->[0] =~ s/\?/$r0/g;
+  }
+  #Eval expression
+  $paramArr->[0] = eval($paramArr->[0]);
+  
+  ($r0,$k) = ($paramArr->[0],$paramArr->[1]);
+  @{$paramArr}=($r0,$k);
+
+}
 
 ##
 # Given a user defined contact function parse values
@@ -937,10 +972,11 @@ sub contactFuncParser
  	$funcName = $1;
 	$params = $2;
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "pairs"){smog_quit ("$funcName is not a valid pairs(contacts) function");}
+	if($directive ne "pairs" && $directive ne "bonds"){smog_quit ("$funcName is a contact type function and should only go into pairs or bonds directives");}
  	@paramArr = split(",",$params); ## Parse all parameters
  	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
-	return ($fType,$funcName,@paramArr);
+	#if($funcName eq "bond_type6") { print @paramArr;}
+	return ($fType,$funcName,$directive,@paramArr);
 }
 
 
