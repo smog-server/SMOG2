@@ -19,7 +19,7 @@ use PDL; ## LOAD PDL MODULE
 ## DECLEARATION TO SHAR DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
+qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS smog_quit);
 
 my @vector;
 my $coorPDL;
@@ -43,6 +43,18 @@ our $contactPDL;
 our %allAtoms;
 
 our %extContacts;
+#####################
+# Error call        #
+# ##################
+
+sub smog_quit
+{
+	my ($LINE)=@_;
+	print "\n\nFATAL ERROR: $LINE\n\n";
+	unless($main::noexit){
+		exit;
+	}
+}
 
 
 ###########################
@@ -106,7 +118,7 @@ sub parsePDBATOMS
 	{
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
 			## CREATE INTERACTION ##
-            		GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber);
+            		GenerateBondedGeometry(\@consecResidues,$counter);
 		   	$connPDL{$counter}=pdl(@union);
 			@union = ();$counter++;
             		@consecResidues = ();
@@ -350,11 +362,13 @@ sub connectivityCheck
 
 sub GenerateBondedGeometry {
 
-	my ($connect,$counter,$chid) = @_;
+	my ($connect,$counter) = @_;
+	my $chid=$counter+1;
 	## $connect is a list of connected residues ##
    	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union) = GenAnglesDihedrals($connect);
+	my $union2=$union;
 	my %union=%{$union};
-	print "Checking connectivity of chain $chid: ";
+	print "Attempting to connect all atoms in chain $chid to the first residue: ";
 	my ($connected,$missed)=connectivityCheck(\%union,$chid);
 
 	if($missed==0){
@@ -444,8 +458,9 @@ sub GenerateBondedGeometry {
 
 
 	for(my $i=0;$i<$#$connect;$i++){
-		appendImpropers($map,$connect,$bondMapHashRev,$i,\@tempArr);
+		appendImpropers($map,$connect,$bondMapHashRev,$i,\@tempArr,\%union);
 	}
+
 	$connDiheFunctionals{$counter} = pdl(@tempArr);
 	@tempArr = ();
 
@@ -734,7 +749,8 @@ sub connCreateInteractions
 
 sub appendImpropers
 {
- my($map,$connect,$bondMapHashRev,$resIndA,$tempArr) = @_;
+ my($map,$connect,$bondMapHashRev,$resIndA,$tempArr,$union) = @_;
+ my %union=%{$union};
  my $resA=$connect->[$resIndA];
  my $resIndB=$resIndA+1;
  my $resB=$connect->[$resIndB];
@@ -760,6 +776,19 @@ sub appendImpropers
  		$c=$bondMapHashRev{"$c-$resIndB"};
  		$d=$bondMapHashRev{"$d-$resIndB"};
 
+		my $IMPFLAG1=0;
+		my $IMPFLAG2=0;
+		my @TMPARR2 = ($a,$b,$c,$d);
+		for(my $I=0;$I<4;$I++){
+			foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
+				if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
+					$IMPFLAG1++;
+				}
+			}
+			if($IMPFLAG1==3){$IMPFLAG2=1;}
+			$IMPFLAG1=0;
+		}
+
 		##[AtomName,ResidueIndex,prevSize]##
 		$na = $map->{$a}->[0];
 		$ra = $connect->[$map->{$a}->[1]];
@@ -773,7 +802,11 @@ sub appendImpropers
 		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
 		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
 		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
-        	
+        		if($IMPFLAG2==0){
+			smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
+		}
+
+	
 		## Adjust args for getEnergyGroup() ##
         	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
 		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
@@ -823,6 +856,18 @@ sub appendImpropers
 		}else{
  			$d=$bondMapHashRev{"$d-$resIndA"};
 		}
+		my $IMPFLAG1=0;
+		my $IMPFLAG2=0;
+		my @TMPARR2 = ($a,$b,$c,$d);
+		for(my $I=0;$I<4;$I++){
+			foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
+				if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
+					$IMPFLAG1++;
+				}
+			}
+			if($IMPFLAG1==3){$IMPFLAG2=1;}
+			$IMPFLAG1=0;
+		}
 
 		##[AtomName,ResidueIndex,prevSize]##
 		$na = $map->{$a}->[0];
@@ -838,6 +883,9 @@ sub appendImpropers
 		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
 		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
 
+        	if($IMPFLAG2==0){
+			smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
+		}
 
         	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
 		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
@@ -868,6 +916,18 @@ sub appendImpropers
  		$b=$bondMapHashRev{"$b-$resIndA"};
  		$c=$bondMapHashRev{"$c-$resIndA"};
  		$d=$bondMapHashRev{"$d-$resIndA"};
+		my $IMPFLAG1=0;
+		my $IMPFLAG2=0;
+		my @TMPARR2 = ($a,$b,$c,$d);
+		for(my $I=0;$I<4;$I++){
+			foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
+				if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
+					$IMPFLAG1++;
+				}
+			}
+			if($IMPFLAG1==3){$IMPFLAG2=1;}
+			$IMPFLAG1=0;
+		}
 
 		##[AtomName,ResidueIndex,prevSize]##
 		$na = $map->{$a}->[0];
@@ -882,7 +942,11 @@ sub appendImpropers
 		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
 		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
 		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
-        	
+         	if($IMPFLAG2==0){
+			smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
+		}
+       	
+
 		## Adjust args for getEnergyGroup() ##
         	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
 		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
@@ -1101,9 +1165,9 @@ sub GenAnglesDihedrals
 	}
 	foreach my $atom(keys %{$resABonds})
     {
-     my @tempArr = map {$bondMapHashRev{"$_-$i"}} @{$resABonds->{$atom}};
-	 my $atomKey = $bondMapHashRev{"$atom-$i"}; 
-     $union{$atomKey} = \@tempArr;
+     	my @tempArr = map {$bondMapHashRev{"$_-$i"}} @{$resABonds->{$atom}};
+	my $atomKey = $bondMapHashRev{"$atom-$i"}; 
+     	$union{$atomKey} = \@tempArr;
     }
 
     #print Dumper %union; print Dumper $resABonds;exit;
