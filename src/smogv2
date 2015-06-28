@@ -88,6 +88,9 @@ sub initializeDirectives {
 		#need this because we are going to output a top without pairs but want it to not die when it is not initialized
 		push @{$topFileBuffer[$directives{$_}][$linesInDirectives[$directives{$_}]++]}, ""; 
 	}
+	#can put all of them here at some point
+	addToTop("exclusions","\n[ exclusions ]\n");
+	addToTop("exclusions","; ai	aj\n");
 }
 #adds something to the topfile at the bottom of a directive
 sub addToTop {
@@ -715,6 +718,8 @@ sub calculateContacts
 			($directive,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
 			addToTop($directive,$outputString."\n");
 			#addToTop("pairs","\n");
+			#this is always done for now, make it depend on sif file in future
+			addToTop("exclusions",$atoma."	".$atomb."\n");
 			}	
 			
 			else {	
@@ -737,6 +742,8 @@ sub calculateContacts
 	  		$totalEpsilon+=$epsilon;
 			($directive,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
 			addToTop($directive,$outputString."\n");
+			#this is always done for now, make it depend on sif file in future
+			addToTop("exclusions",$atoma."	".$atomb."\n");
 			#addToTop("pairs","\n");
 			}
 	}
@@ -986,13 +993,13 @@ sub contactFuncParser
 ##########################
 
 
+#deprecated!
 sub calculateExclusions
 {
 	my($contactPDL,$numCon) = @_;
 	my $atoma; my $atomb;
 
-	addToTop("exclusions","\n[ exclusions ]\n");
-	addToTop("exclusions","; ai	aj\n");
+
 	#print an exclusion for every contact
 	for(my $i=0;$i<$numCon;$i++)
 	{
@@ -1621,7 +1628,7 @@ sub allAtom
 	print "Completing final details...";
 	## CALCULATE PAIRS and EXCLUSION ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	calculateExclusions($contactPDL,$numContacts);
+	#calculateExclusions($contactPDL,$numContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
@@ -1798,7 +1805,7 @@ sub coarseGrain
 	if($numContacts == 0){smog_quit ("There are 0 contacts,check shadow.error log file for possible errors");}
 	## CALCULATE PAIRS and EXCLUSION ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	calculateExclusions($contactPDL,$numContacts);
+	#calculateExclusions($contactPDL,$numContacts);
 	## PRINT TOPOLOGY FOOTERS ##
 	printDefaultParamsFooter();
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
