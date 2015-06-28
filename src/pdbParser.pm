@@ -90,6 +90,7 @@ sub parsePDBATOMS
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=1;
   my $secondcall; my $interiorPdbResidueIndex=0;
+  my %indexMap;
   my $lineNumber = 0;
   ## OPEN .PDB FILE ##
  unless (open(MYFILE, $fileName)) {
@@ -100,12 +101,59 @@ sub parsePDBATOMS
  while(my $record = <MYFILE>)
  {
  $lineNumber++;
+
+ my @impAtoms = ();
+ ## PARSE BOND LINES ##
+ if($record =~ m/^BOND/)
+ {
+    chomp($record);
+   
+    my @TMP = split(/\s+/,$record);
+    if(@TMP <= 5){
+     smog_quit("Directive BOND must have 5 arguments. Offending line:\n$record");
+    }
+    my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
+    
+    #internally, chains are indexed 0,1...
+    $chaina--;
+    $chainb--;
+
+    my $idxA = $indexMap{"$chaina-$atoma"};
+    my $idxB = $indexMap{"$chainb-$atomb"};
+    my $resA = $allAtoms{$idxA}->[5];
+    my $resB = $allAtoms{$idxB}->[5];
+    my $atomA = $allAtoms{$idxA}->[3];
+    my $atomB = $allAtoms{$idxB}->[3];
+    my $resAIdx = $allAtoms{$idxA}->[2];
+    my $resBIdx = $allAtoms{$idxB}->[2];
+
+    my $sizeA = scalar(keys %{$residues{$resA}->{"atoms"}});
+    $counter++;
+    my $union;
+    $union=($tempPDL{$resA}->{$resAIdx})->glue(1,$tempPDL{$resB}->{$resBIdx});
+    print "\nNOTE:";
+    print "Generating ad-hoc BOND between atoms $atoma,$atomb\n";
+    $connPDL{$counter}=$union;
+    ## Check if improper directive is present ##
+    if($record =~ m/IMPROPER/)
+    {
+     my($left,$right) = split(/IMPROPER/,$record);
+     $right =~ s/^\s+|\s+$//g;
+     @impAtoms = split(/\s+/,$right);
+     print "IMPROPER DETECTED @impAtoms\n";
+    }
+    connCreateInteractionsBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
+    next;
+ }
+
+
+
 	## IF TER LINE  ##
 	if($record =~ m/TER|END/)
 	{
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
 			## CREATE INTERACTION ##
-            		GenerateBondedGeometry(\@consecResidues,$counter);
+            		GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber);
 		   	$connPDL{$counter}=pdl(@union);
 			@union = ();$counter++;
             		@consecResidues = ();
@@ -178,6 +226,14 @@ sub parsePDBATOMS
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 			$residueType = $residues{$residue}->{"residueType"};
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
+			my $pdbIndex = substr($record,6,5);
+			$pdbIndex =~ s/^\s+|\s+$//g;
+			if(exists $indexMap{"$chainNumber-$pdbIndex"}){
+				my $chainID=$chainNumber+1;
+				smog_quit("Atom numbers must be unique within each chain. Offending line:\n$record");
+			}
+			$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
+			
 			$temp[$putIndex]=[$x,$y,$z,$atomSerial];
             		$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			$totalAtoms++;
@@ -349,8 +405,7 @@ sub connectivityCheck
 
 sub GenerateBondedGeometry {
 
-	my ($connect,$counter) = @_;
-	my $chid=$counter+1;
+	my ($connect,$counter,$chid) = @_;
 	## $connect is a list of connected residues ##
    	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union) = GenAnglesDihedrals($connect);
 	my $union2=$union;
