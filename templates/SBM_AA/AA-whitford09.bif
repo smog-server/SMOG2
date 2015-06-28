@@ -7443,7 +7443,7 @@
 			<connection name="amino-amino" residueType1="amino" residueType2="amino">
 			<bond energyGroup="r_a" >
 				<atom>C</atom>
-				<atom>N</atom>
+				<atom>C</atom>
 			</bond>
 
 

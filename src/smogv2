@@ -44,7 +44,7 @@ my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $contactRes = ""; ## Duplicate ##
 my $AAdefault = 0; ## Duplicate ##
 my $CAdefault = 0; ## Duplicate ##
-my $softTerm=0; ## Boolean to for soft termination
+my $noexit=0;
 our $CGenabled=0; ## enable coarse-graining
 ## this is the array that defines how function names are converted to gromacs function types
 our %fTypes = (	'bond_harmonic' => '1',
@@ -58,6 +58,20 @@ our %fTypes = (	'bond_harmonic' => '1',
 		'contact_2'=>'1',
 		'contact_gaussian'=>'6'
 		);
+
+
+#####################
+# Error call        #
+# ##################
+
+sub smog_quit
+{
+	my ($LINE)=@_;
+	print "\n\nFATAL ERROR: $LINE\n\n";
+	unless($noexit){
+		exit;
+	}
+}
 
 #####################
 ## CALCULATE BONDS ##
@@ -185,7 +199,7 @@ sub bondOutput
 	 ## Check bonds threshold ##
 	 if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
 	 || $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"})
-	 {print("\n\nWARNING: BOND betwwen atom $i $j exceeded bonds threshold with value $paramArr[0]\n\n");}
+	 {print("\n\nWARNING: Distance between atoms $i and $j is larger than bonds threshold: r=$paramArr[0]\n\n");}
 	
  ## Format output <i j function p1 p2 ... pn>
  foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
@@ -327,9 +341,9 @@ sub angleOutput
 	
 		## Check angles threshold ##
 	 	if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"})
-	 	 {print("\n\nWARNING: ANGLES between atom $i $j $k lower than angles threshold with value $paramArr[0]\n\n");}
+	 	 {print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$paramArr[0]\n\n");}
 	 	if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"})
-	 	 {print("\n\nWARNING: ANGLES between atom $i $j $k greater than angles threshold with value $paramArr[0]\n\n");}
+	 	 {print("\n\nWARNING: ANGLE between atoms $i $j $k greater than largeAngles (see .sif): theta=$paramArr[0]\n\n");}
 	
  		## Format output <i j k function p1 p2 ... pn>
  		foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
@@ -1278,7 +1292,8 @@ usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
 	-s [smog.contacts]: Output .contacts file name
 	-n [smog.ndx]: Output .ndx file name
 	-c [contacts.txt]: Input contact map file
-	-dname [name]: Default name to use for all output files.
+	-dname [smog]: Default name to use for all output files.
+	-exit [yes]: Exit if an error occurs (only use "no" if you are sure the errors are harmless)
 EOT
   exit;
 }
@@ -1737,18 +1752,28 @@ sub coarseGrain
 ##################
 
 my $DNAME="";
+my $exit;
 ## parse command line options ##
 # -o output top file name, default is smog.top
-# -v verbose option
-usage() if (@ARGV < 1 or !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
-	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME,
-	 'softTerm' => \$softTerm)
+	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'exit=s' => \$exit)
           or defined $help 
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $contactRes));
 
 header();
+
+if(defined $exit && $exit eq "no"){
+	$noexit=1;
+	print "\n\n-noexit selected.  Will not intentionally exit when an error is encountered.\n Be cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
+}elsif(defined $exit && $exit eq "yes"){
+	$noexit=0;
+}elsif(defined $exit){
+	smog_quit('-exit can only accept \"yes\" or \"no\" as an argument.');
+}
+
+
 if($CAdefault == 1 and $AAdefault == 1){
 	smog_quit('Can not use -CA and -AA flags at the same time.');
 }

@@ -354,7 +354,7 @@ sub GenerateBondedGeometry {
 	## $connect is a list of connected residues ##
    	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union) = GenAnglesDihedrals($connect);
 	my %union=%{$union};
-	print "Checking connectivity of chain $chid: ";
+	print "Attempting to connect all atoms in chain $chid to the first residue: ";
 	my ($connected,$missed)=connectivityCheck(\%union,$chid);
 
 	if($missed==0){
