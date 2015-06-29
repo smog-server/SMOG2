@@ -869,43 +869,52 @@ foreach my $res (keys %residues)
 
 sub getContactFunctionals
 {
-		my($typeA,$typeB) = @_;
-		## WILD CARD MATCHING CONDITIONALS ##
-		my $matchScore = 0; my $saveScore = 0;
-		my $funct=""; my $cG = "";
- 
-		## If both contact types exists ##
-		if(exists $interactions->{"contacts"}->{"func"}->{$typeA}
-			&& exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB})
-		{
-				$funct = $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB};
-				$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{$typeB};
-		}
-		
+	my($typeA,$typeB) = @_;
+	## WILD CARD MATCHING CONDITIONALS ##
+	my $matchScore = 0; my $saveScore = 0;
+	my $funct=""; my $cG = "";
+	my $assigned=0; 
+	## If contact type is specifically defined ##
+	if(exists $interactions->{"contacts"}->{"func"}->{$typeA}
+		&& exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB})
+	{
+		$funct = $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB};
+		$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{$typeB};
+		$assigned++;
+	}else{
+	
 		## If typeA exists while TypeB is a wildcard ##
-		elsif (exists $interactions->{"contacts"}->{"func"}->{$typeA}
-			&& !(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}))
+		if (exists $interactions->{"contacts"}->{"func"}->{$typeA}
+			&& (exists $interactions->{"contacts"}->{"func"}->{$typeA}->{"*"}))
 		{
-				$funct = $interactions->{"contacts"}->{"func"}->{$typeA}->{"*"};
-				$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{"*"};
+			$funct = $interactions->{"contacts"}->{"func"}->{$typeA}->{"*"};
+			$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{"*"};
+			$assigned++;
 		}
 		
 		## If typeA is a wildcard while TypeB exists ##
-		elsif(!(exists $interactions->{"contacts"}->{"func"}->{$typeA}) &&
-				exists $interactions->{"contacts"}->{"func"}->{"*"}->{$typeB})
+		if((exists $interactions->{"contacts"}->{"func"}->{$typeB}) &&
+				exists $interactions->{"contacts"}->{"func"}->{$typeB}->{"*"})
 		{
-				$funct = $interactions->{"contacts"}->{"func"}->{"*"}->{$typeB};
-				$cG = $interactions->{"contacts"}->{"contactGroup"}->{"*"}->{$typeB};
+			$funct = $interactions->{"contacts"}->{"func"}->{$typeB}->{"*"};
+			$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeB}->{"*"};
+			$assigned++;
 		}
 		
-		## If both types are wildcard ## 
-		else
-		{
-				$funct = $interactions->{"contacts"}->{"func"}->{"*"}->{"*"};
-				$cG = $interactions->{"contacts"}->{"contactGroup"}->{"*"}->{"*"};
-		}
+		## If both types are wildcard, and double wildcard interaction is defined ## 
+		if($assigned==0 && exists $interactions->{"contacts"}->{"func"}->{"*"}->{"*"}){
 
-		return ($funct,$cG);
+			$funct = $interactions->{"contacts"}->{"func"}->{"*"}->{"*"};
+			$cG = $interactions->{"contacts"}->{"contactGroup"}->{"*"}->{"*"};
+			$assigned++;
+		}
+	}
+	if($typeB eq $typeA){
+		smog_quit("Can\'t unambiguously assign a contact interaction between atoms of $typeA and $typeB.  See .nb for contact group definitions.\n");
+
+	}
+
+	return ($funct,$cG);
 }
 
 

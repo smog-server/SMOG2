@@ -665,6 +665,7 @@ sub calculateContacts
 			$resTypea = $atomTypes->{$atoma}->[1];
 			$resTypeb = $atomTypes->{$atomb}->[1];
 			($funct,$cG) = getContactFunctionals($nbtypea,$nbtypeb);
+
 			if(!$funct || !$cG)
 			{smog_quit("No contact Function defined for nbType contacts $nbtypea-$nbtypeb");}
 			$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
