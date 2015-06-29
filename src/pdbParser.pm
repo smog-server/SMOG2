@@ -275,9 +275,13 @@ sub parsePDBATOMS
 sub returnFunction
 {
  my($funcString) = @_;
+ my $addExclusions;
  if(!exists $fTypes{"$funcString"}){smog_quit ("$funcString is not a supported function type in SMOG");}
  if(!exists $functions->{$funcString}){smog_quit ("Function $funcString is being used, but is not defined in .sif file");}
- return ($fTypes{"$funcString"},$functions->{$funcString}->{"directive"});
+ #Sometimes exclusions are not defined for contacts that go under other directives. Need to set it to zero.
+ if(!exists $functions->{$funcString}->{"exclusions"}){ $addExclusions = 0; }
+ else { $addExclusions = $functions->{$funcString}->{"exclusions"}; }
+ return ($fTypes{"$funcString"},$functions->{$funcString}->{"directive"},$addExclusions);
 
 }
 

@@ -667,7 +667,7 @@ sub calculateContacts
 			my $resIdxA=0;my $resIdxB=0;
 			my $atomA="";my $atomB="";
 			my $outputString;
-			my $directive;
+			my $directive;my $addExclusions;
 	  		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
 	  		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
 			$nbtypea = $atomTypes->{$atoma}->[0];
@@ -714,11 +714,9 @@ sub calculateContacts
 			if(!$normalize) {
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
-			($directive,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
+			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
 			addToTop($directive,$outputString."\n");
-			#addToTop("pairs","\n");
-			#this is always done for now, make it depend on sif file in future
-			addToTop("exclusions",$atoma."	".$atomb."\n");
+			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
 			}	
 			
 			else {	
@@ -739,11 +737,10 @@ sub calculateContacts
 	  		$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 	  		$c0=$dist;
 	  		$totalEpsilon+=$epsilon;
-			($directive,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
+			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
 			addToTop($directive,$outputString."\n");
-			#this is always done for now, make it depend on sif file in future
-			addToTop("exclusions",$atoma."	".$atomb."\n");
-			#addToTop("pairs","\n");
+			#print $directive," ",$addExclusions," ",$outputString,"\n";
+			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
 			}
 	}
 }
@@ -763,12 +760,13 @@ sub contactOutput
  my @paramArr;
  my $fname;
  my $directive;
+ my $addExclusions;
  my $fType=""; my $formattedString;
  ## Parse each part of the function ##
  foreach my $fun(@funcs)
  {
 	my $paramFormat="";
-	($fType,$fname,$directive,@paramArr) = contactFuncParser($fun);
+	($fType,$fname,$directive,$addExclusions,@paramArr) = contactFuncParser($fun);
 	## LJ CONTACTS N-M polynomial, sigma and epsilon usage ##	
     if($fname eq "contact_1"){
 		contactParseNM1(\@paramArr,$c0,$epsilon);
@@ -798,7 +796,7 @@ sub contactOutput
 	$formattedString = sprintf("%d %d %d$paramFormat",$i,$j,$fType,@paramArr);
 	$outputString = "$outputString$formattedString";
  }
- return ($directive,$outputString);
+ return ($directive,$addExclusions,$outputString);
  
 }
 
@@ -971,18 +969,18 @@ sub contactParseBond6
 sub contactFuncParser
 {
 	my($contactFunc) = @_;
-	my $fType;my @paramArr;my $directive;
+	my $fType;my @paramArr;my $directive;my $addExclusions;
 	my $funcName = ""; my $params = "";
  	#($contactFunc =~ m/(.*)\((.*)\)/);
  	($contactFunc =~ /^([^(]+)\((.*)\)$/);
  	$funcName = $1;
 	$params = $2;
-	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
+	($fType,$directive,$addExclusions) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "pairs" && $directive ne "bonds"){smog_quit ("$funcName is a contact type function and should only go into pairs or bonds directives");}
  	@paramArr = split(",",$params); ## Parse all parameters
  	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	#if($funcName eq "bond_type6") { print @paramArr;}
-	return ($fType,$funcName,$directive,@paramArr);
+	return ($fType,$funcName,$directive,$addExclusions,@paramArr);
 }
 
 
@@ -1343,12 +1341,12 @@ usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
 
    Required Inputs
 	-i [filename.pdb]: Input PDB to generate Hamiltonian
-	-t [templateFolder]: Folder containing templates of molecular and interaction definitions
    Optional Input/Output parameters
 	-AA: Use default All-atom model
 	-CA: Use default Calpha protein model
+	-t [templateFolder]: Folder containing templates of molecular and interaction definitions. Required when defaults are not used.
+	-t_contacts [templateFolder]: Folder containing templates for determining native contact map. Only necessary when -CG enabled.
 	-CG: enable coarse-graining
-	-t_contacts [templateFolder]: Folder containing templates for determining native contact map. Only necessary when -CG enabled
 	-g [smog.gro]: Output .gro file name
 	-o [smog.top]: Output .top file name
 	-s [smog.contacts]: Output .contacts file name
