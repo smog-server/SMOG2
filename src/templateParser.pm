@@ -101,13 +101,9 @@ sub smog_quit
 {
 	my ($LINE)=@_;
 	if($main::noexit){
-		print "\n\nERROR:";
+		warn("$LINE");
 	}else{
-		print "\n\nFATAL ERROR:";
-	}
- 	print " $LINE\n\n";
-	unless($main::noexit){
-		exit;
+		print "\n\nFATAL ERROR:  $LINE\n\n";
 	}
 }
 

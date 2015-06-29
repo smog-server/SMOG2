@@ -667,7 +667,7 @@ sub connCreateInteractionsBOND
 	}
         if(@tempArr)
         {$connAngleFunctionals{$counter} = cat(@tempArr);}
-        else{#warn("PDB PARSE WARN:: There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);}
+        else{warn("PDB PARSE WARN:: There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);
         }
 		@tempArr = ();
 			
@@ -719,7 +719,7 @@ sub connCreateInteractionsBOND
 		
         if(@tempArr)
         {$connDiheFunctionals{$counter} = pdl(@tempArr);}
-        else{#warn("PDB PARSE WARN:: There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
+        else{warn("PDB PARSE WARN:: There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
             }
 				@tempArr = ();
 }

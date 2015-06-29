@@ -1369,7 +1369,7 @@ usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
 	-c [contacts.txt]: Input contact map file
 	-dname [smog]: Default name to use for all output files
 	-bu [yes]: Back up any pre-existing output files
-	-exit [yes]: Exit if an error occurs (only use "no" if you are sure the errors are harmless)
+	-warnonly: Convert fatal errors to warnings (Caution: Consult manual before using this option)
 EOT
   exit;
 }
@@ -1831,18 +1831,24 @@ sub coarseGrain
 ##################
 
 my $DNAME="";
-my $exit;
+my $warnonly=0;
 my $backup="yes";
 ## parse command line options ##
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
-	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'exit=s' => \$exit, 'bu=s' => \$backup)
+	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 'bu=s' => \$backup)
           or defined $help 
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $contactRes));
 
 header();
+if($warnonly){
+	$noexit=1;
+	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
+}else{
+	$noexit=0;
+}
 
 if($inputFolder eq "" && $CAdefault==0 && $AAdefault==0){
 	smog_quit("No model specified. You must use either -t, -AA, or -CA. Try -help for usage information.");
@@ -1853,15 +1859,6 @@ if($backup ne "yes" and $backup ne "no"){
 }elsif($backup eq "no"){
 	print "-bu no issued.  Will overwrite any existing output files.\n";
 }
-if(defined $exit && $exit eq "no"){
-	$noexit=1;
-	print "\n\n-noexit selected.  Will not intentionally exit when an error is encountered.\n Be cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
-}elsif(defined $exit && $exit eq "yes"){
-	$noexit=0;
-}elsif(defined $exit){
-	smog_quit('-exit can only accept \"yes\" or \"no\" as an argument.');
-}
-
 
 if($CAdefault == 1 and $AAdefault == 1){
 	smog_quit('Can not use -CA and -AA flags at the same time.');
