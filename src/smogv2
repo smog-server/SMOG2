@@ -87,7 +87,6 @@ sub initializeDirectives {
 		#need this because we are going to output a top without pairs but want it to not die when it is not initialized
 		push @{$topFileBuffer[$directives{$_}][$linesInDirectives[$directives{$_}]++]}, ""; 
 	}
-	#can put all of them here at some point
 	addToTop("bonds","\n[ bonds ]\n");
 	addToTop("bonds",";ai     aj      func    r0(nm)  Kb\n");
 	addToTop("angles","\n[ angles ]\n");
@@ -1536,8 +1535,8 @@ sub allAtom
 	createDihedralAngleFunctionals();
 
 	###############
-        ## PARSE PDB ##
-        ###############
+    ## PARSE PDB ##
+    ###############
 	print "Parsing .pdb...\n";
 	parsePDBATOMS($inputPDB,0);
 	catPDL();
@@ -1551,20 +1550,13 @@ sub allAtom
 	## SET DIHEDRAL RATIOS ##
 	print "..";
 	setRatios(\%connDiheFunctionals,\%connPDL,$totalAtoms,\%allAtoms);
-	## PRINT TOPOLOGY HEADERS ##
-	print "..";
-	## CALCULATE ATOM TYPE HEADERS ##
 	print "..";
 	calculateAtomTypes(\%allAtoms);
-	## PRINT MOLECULE TYPE ##
-	print "..";
-	## PRINT ATOMS HEADER ##
 	print "..";
 	readAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..";
 	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL);
-
 	## CALCULATE ANGLES ##
 	print "\nSaving angles\n";
 	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
@@ -1605,10 +1597,8 @@ sub allAtom
 	if($numContacts == 0){smog_quit ("There are 0 contacts,check log file for possible errors");}
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
 	print "Completing final details...";
-	## CALCULATE PAIRS and EXCLUSION ##
+	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	#calculateExclusions($contactPDL,$numContacts);
-	## PRINT TOPOLOGY FOOTERS ##
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
 	close($OUTPUT);
 	printCitation();
@@ -1634,9 +1624,9 @@ sub coarseGrain
 	
 
 	##############################
-        ## PARSE ALL ATOM TEMPLATES ##
-        ##############################
-        print "\n\n		PREPROCESSING\n\nWill use contact-specific templates\n";
+    ## PARSE ALL ATOM TEMPLATES ##
+    ##############################
+    print "\n\n		PREPROCESSING\n\nWill use contact-specific templates\n";
 	parseInputFolder($inputFolder);
 	initializeDirectives();
 	## parse Bif File ##
@@ -1653,8 +1643,8 @@ sub coarseGrain
 	## Find Angles ##
 	createDihedralAngleFunctionals();
 	###############
-        ## PARSE PDB ##
-        ###############
+    ## PARSE PDB ##
+    ###############
 	print "Parsing .pdb...\n";
 	parsePDBATOMS($inputPDB,0);
 	catPDL();
@@ -1668,14 +1658,7 @@ sub coarseGrain
 	## SET DIHEDRAL RATIOS ##
 	print "..";
 	setRatios(\%connDiheFunctionals,\%connPDL,$totalAtoms,\%allAtoms);
-	## PRINT TOPOLOGY HEADERS ##
-	print "..";
-	## CALCULATE ATOM TYPE HEADERS ##
-	print "..";
 	calculateAtomTypes(\%allAtoms);
-	## PRINT MOLECULE TYPE ##
-	print "..";
-	## PRINT ATOMS HEADER ##
 	print "..";
 	readAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
@@ -1707,7 +1690,7 @@ sub coarseGrain
 	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams ");
         }
 	## CLEAR ALL-ATOM MEMORY ##
-        clearBifMemory();clearPDBMemory();
+    clearBifMemory();clearPDBMemory();
 
  
 	###################################
@@ -1754,14 +1737,8 @@ sub coarseGrain
 	## SET DIHEDRAL RATIOS ##
 	print "..";
 	setRatios(\%connDiheFunctionals,\%connPDL,$totalAtoms,\%allAtoms);
-	## PRINT TOPOLOGY HEADERS ##
-	print "..";
-	## CALCULATE ATOM TYPE HEADERS ##
 	print "..";
 	calculateAtomTypes(\%allAtoms);
-	## PRINT MOLECULE TYPE ##
-	print "..";
-	## PRINT ATOMS HEADER ##
 	print "..";
 	readAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
@@ -1776,10 +1753,8 @@ sub coarseGrain
 
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignAllContacts,1);
 	if($numContacts == 0){smog_quit ("There are 0 contacts,check shadow.error log file for possible errors");}
-	## CALCULATE PAIRS and EXCLUSION ##
+	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	#calculateExclusions($contactPDL,$numContacts);
-	## PRINT TOPOLOGY FOOTERS ##
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
 	close($OUTPUT);
 	printCitation();
