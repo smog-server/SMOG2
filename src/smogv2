@@ -1343,12 +1343,12 @@ usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
 
    Required Inputs
 	-i [filename.pdb]: Input PDB to generate Hamiltonian
-	-t [templateFolder]: Folder containing templates of molecular and interaction definitions
    Optional Input/Output parameters
 	-AA: Use default All-atom model
 	-CA: Use default Calpha protein model
+	-t [templateFolder]: Folder containing templates of molecular and interaction definitions. Required when defaults are not used.
+	-t_contacts [templateFolder]: Folder containing templates for determining native contact map. Only necessary when -CG enabled.
 	-CG: enable coarse-graining
-	-t_contacts [templateFolder]: Folder containing templates for determining native contact map. Only necessary when -CG enabled
 	-g [smog.gro]: Output .gro file name
 	-o [smog.top]: Output .top file name
 	-s [smog.contacts]: Output .contacts file name
