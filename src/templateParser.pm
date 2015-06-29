@@ -83,7 +83,12 @@ our $nbondxml = "nb.xml";
 sub smog_quit
 {
 	my ($LINE)=@_;
-	print "\n\nFATAL ERROR: $LINE\n\n";
+	if($main::noexit){
+		print "\n\nERROR:";
+	}else{
+		print "\n\nFATAL ERROR:";
+	}
+ 	print " $LINE\n\n";
 	unless($main::noexit){
 		exit;
 	}
