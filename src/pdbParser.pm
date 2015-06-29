@@ -133,10 +133,6 @@ sub parsePDBATOMS
     my $resB = $allAtoms{$idxB}->[5];
     my $atomA = $allAtoms{$idxA}->[3];
     my $atomB = $allAtoms{$idxB}->[3];
-	
-
-
-  
     my $resAIdx = $allAtoms{$idxA}->[2];
     my $resBIdx = $allAtoms{$idxB}->[2];
 
@@ -153,7 +149,7 @@ sub parsePDBATOMS
     if(exists $connectedatom{$idxB}){ 
      smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
     }
-   # $connPDL{$counter}=$union;
+    $connPDL{$counter}=$union;
     ## Check if improper directive is present ##
     if($record =~ m/IMPROPER/)
     {
@@ -163,7 +159,7 @@ sub parsePDBATOMS
      print "IMPROPER DETECTED @impAtoms\n";
     }
     connCreateInteractionsBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
-    #$counter++;
+    $counter++;
     next;
  }
 
@@ -184,8 +180,7 @@ sub parsePDBATOMS
 			@union = ();$counter++;
             		@consecResidues = ();
 			$lastchainstart=$atomSerial;
-			if($record =~ m/END/){last;}
-			else {next;}
+			next;
 	} 
 	
 	## ONLY WORK WITH ATOM LINES ##
