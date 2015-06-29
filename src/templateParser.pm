@@ -83,7 +83,12 @@ our $nbondxml = "nb.xml";
 sub smog_quit
 {
 	my ($LINE)=@_;
-	print "\n\nFATAL ERROR: $LINE\n\n";
+	if($main::noexit){
+		print "\n\nERROR:";
+	}else{
+		print "\n\nFATAL ERROR:";
+	}
+ 	print " $LINE\n\n";
 	unless($main::noexit){
 		exit;
 	}
@@ -288,7 +293,7 @@ foreach my $funcName(keys %{$functions}){
 
 	if($functions->{$funcName}->{"directive"} eq "pairs" 
 		&& !exists $functions->{$funcName}->{"exclusions"}){
-		smog_quit( "Since $funcName is of directive \"pairs\", the \"exclusions\" element must be defined (0/1). See .sif file.\n");
+		smog_quit( "Since $funcName is of directive \"pairs\", boolean element \"exclusions\" must be included in the function declaration in the .sif file.\n");
 	}elsif(exists $functions->{$funcName}->{"exclusions"} && $functions->{$funcName}->{"exclusions"} ==1 
 		&& $functions->{$funcName}->{"exclusions"} ==0){
 		smog_quit("function $funcName element exclusions must be 0, or 1.");
