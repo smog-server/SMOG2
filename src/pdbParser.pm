@@ -92,6 +92,8 @@ sub parsePDBATOMS
   my $secondcall; my $interiorPdbResidueIndex=0;
   my %indexMap;
   my $lineNumber = 0;
+  my %connectedatom;
+  my $lastchainstart=0;
   ## OPEN .PDB FILE ##
  unless (open(MYFILE, $fileName)) {
     smog_quit ("Cannot read from '$fileName'.");
@@ -131,6 +133,10 @@ sub parsePDBATOMS
     my $resB = $allAtoms{$idxB}->[5];
     my $atomA = $allAtoms{$idxA}->[3];
     my $atomB = $allAtoms{$idxB}->[3];
+	
+
+
+  
     my $resAIdx = $allAtoms{$idxA}->[2];
     my $resBIdx = $allAtoms{$idxB}->[2];
 
@@ -141,7 +147,13 @@ sub parsePDBATOMS
     my $chaina1=$chaina+1;
     my $chainb1=$chainb+1;
     print "Generating user-specified bonded interaction between chain-atom pair $chaina1-$atoma,$chainb1-$atomb.\nWill assign to energy group $eG.\n";
-    $connPDL{$counter}=$union;
+    if(exists $connectedatom{$idxA}){ 
+     smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomA, in $resA$resAIdx) and line:$record");
+    }
+    if(exists $connectedatom{$idxB}){ 
+     smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
+    }
+   # $connPDL{$counter}=$union;
     ## Check if improper directive is present ##
     if($record =~ m/IMPROPER/)
     {
@@ -151,7 +163,7 @@ sub parsePDBATOMS
      print "IMPROPER DETECTED @impAtoms\n";
     }
     connCreateInteractionsBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
-    $counter++;
+    #$counter++;
     next;
  }
 
@@ -162,10 +174,16 @@ sub parsePDBATOMS
 	{
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
 			## CREATE INTERACTION ##
-            		GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber);
+            		my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber);
+			my @connset=@{$connset};
+			foreach my $I(@connset){
+				my $T=$I+$lastchainstart+1;
+				$connectedatom{$T}=1;
+			}
 		   	$connPDL{$counter}=pdl(@union);
 			@union = ();$counter++;
             		@consecResidues = ();
+			$lastchainstart=$atomSerial;
 			if($record =~ m/END/){last;}
 			else {next;}
 	} 
@@ -420,7 +438,7 @@ sub GenerateBondedGeometry {
 
 	my ($connect,$counter,$chid) = @_;
 	## $connect is a list of connected residues ##
-   	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union) = GenAnglesDihedrals($connect);
+   	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union,$ConnectedAtoms) = GenAnglesDihedrals($connect);
 	my $union2=$union;
 	my %union=%{$union};
 	print "Attempting to connect all atoms in chain $chid to the first residue: ";
@@ -432,9 +450,19 @@ sub GenerateBondedGeometry {
 		smog_quit("In chain $chid, unable to connect $missed atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file.\nSee messages above. ")
 	}
 
+	# convert and save the connected atoms' numbering, so that we can avoid trouble if we include BONDs later
+	my @ConnectedAtoms=@{$ConnectedAtoms};
+	my @ConnectedAtoms2;
+	foreach my $I(@ConnectedAtoms){
+		my $bondStrA = $map->{$I}->[0];
+		my $sizeA=$map->{$I}->[2];
+		my $ra=$connect->[$map->{$I}->[1]];
+		my $ia=$sizeA+getAtomAbsoluteIndex($ra,$bondStrA);
+		push(@ConnectedAtoms2,$ia);
+	}
+
+
 	# check that entire unit is a single molecule, connected through bonds
-#	print Dumper($map);
-#	print $map->{}
     	my @tempArr=();
 	## BOND ##
     	for(my $i=0;$i<scalar(@{$bH})-1;$i+=2) {	
@@ -462,7 +490,6 @@ sub GenerateBondedGeometry {
 		my $ra;my $rb;my $rc;
 		my $sizeA; my $sizeB;my $sizeC;
 		my($a,$b,$c) = split("-",$angs);
-		##[AtomName,ResidueIndex,prevSize]##
 		$na = $map->{$a}->[0];$ra = $connect->[$map->{$a}->[1]];
  		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
 		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
@@ -518,7 +545,7 @@ sub GenerateBondedGeometry {
 
 	$connDiheFunctionals{$counter} = pdl(@tempArr);
 	@tempArr = ();
-
+	return(\@ConnectedAtoms2);
 }
 
 
@@ -680,7 +707,7 @@ sub connCreateInteractionsBOND
 		}
 		
         if(@tempArr)
-        {print "reaching here\n";$connDiheFunctionals{$counter} = pdl(@tempArr);}
+        {$connDiheFunctionals{$counter} = pdl(@tempArr);}
         else{#warn("PDB PARSE WARN:: There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
             }
 				@tempArr = ();
@@ -1084,6 +1111,7 @@ sub GenAnglesDihedrals
   my %bondMapHash; ##[AtomName,ResidueIndex,prevSize]##
   my %bondMapHashRev;
   my @connectList;
+  my @AtomsInConnections;
   my $leftAtom;my $rightAtom;
   my $leftResidue;my $rightResidue;
   my $prevSize = 0;
@@ -1109,7 +1137,6 @@ sub GenAnglesDihedrals
      	$union{$atomKey} = \@tempArr;
     }
 
-    #print Dumper %union; print Dumper $resABonds;exit;
 	## Start of chain no inter residue connection ##
     #  but setup leftAtom and leftResidue sizes #
     if($i == 0) 
@@ -1126,6 +1153,8 @@ sub GenAnglesDihedrals
 	$connHandle = $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}};
 	$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
     $rightAtom = $bondMapHashRev{"$rightAtom-$i"};
+	push(@AtomsInConnections,$leftAtom);
+	push(@AtomsInConnections,$rightAtom);
 	push(@connectList,$leftAtom);
 	push(@connectList,$rightAtom);
     
@@ -1144,7 +1173,7 @@ sub GenAnglesDihedrals
         
    }
    ($dihes,$angles,$oneFour)=adjListTraversal(\%union);
-   return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev,\%union);
+   return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev,\%union,\@AtomsInConnections);
 
 }
 
