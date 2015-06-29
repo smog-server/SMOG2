@@ -30,7 +30,9 @@ my $VERSION="2.0";
 my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
-my $help;my $inputPDB; my $inputFolder=""; my $bifForSCM;
+my $help;
+my $inputPDB="molecule.pdb"; 
+my $inputFolder=""; my $bifForSCM;
 my $ignAllContacts=0;
 my $topFile = "smog.top";
 my $groFile = "smog.gro";
@@ -1339,7 +1341,7 @@ sub usage
 
 usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
 
-   Required Inputs
+   Required Input
 	-i [filename.pdb]: Input PDB to generate Hamiltonian
    Optional Input/Output parameters
 	-AA: Use default All-atom model
@@ -1828,6 +1830,10 @@ usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=
           or (!defined $inputFolder  && !defined $contactRes));
 
 header();
+
+if($inputFolder eq "" && $CAdefault==0 && $AAdefault==0){
+	smog_quit("No model specified. You must use either -t, -AA, or -CA. Try -help for usage information.");
+}
 
 if($backup ne "yes" and $backup ne "no"){
 	smog_quit("Can not understand -bu flag. Usage -bu [yes/no]");
