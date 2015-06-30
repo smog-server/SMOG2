@@ -261,7 +261,9 @@ sub bondOutput
 	 ## Check bonds threshold ##
 	 if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
 	 || $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"})
-	 {print("\n\nWARNING: Distance between atoms $i and $j is larger than bonds threshold: r=$paramArr[0]\n\n");}
+	 {
+	  my $DIST=int($paramArr[0]*100)/100.0;
+	  print("\n\nWARNING: Distance between atoms $i and $j is outside of bond threshold range: r=$DIST nm\n\n");}
 	
  ## Format output <i j function p1 p2 ... pn>
  foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
@@ -400,9 +402,13 @@ sub angleOutput
 	
 		## Check angles threshold ##
 	 	if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"})
-	 	 {print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$paramArr[0]\n\n");}
+	 	 { 
+	          my $THETA=int($paramArr[0]*100)/100.0;
+	          print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\n");}
 	 	if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"})
-	 	 {print("\n\nWARNING: ANGLE between atoms $i $j $k greater than largeAngles (see .sif): theta=$paramArr[0]\n\n");}
+	 	 {
+	          my $THETA=int($paramArr[0]*100)/100.0;
+	          print("\n\nWARNING: ANGLE between atoms $i $j $k greater than largeAngles (see .sif): theta=$THETA degrees\n\n");}
 	
  		## Format output <i j k function p1 p2 ... pn>
  		foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
