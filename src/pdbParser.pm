@@ -1311,7 +1311,7 @@ sub parseCONTACT
 			$dist2 = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
 			## NOTE RESIDUE INDEX == CONTACT ##
 			if($dist2 < $interactionThreshold->{"contacts"}->{"shortContacts"})
-			{smog_quit("CONTACTS between atoms $contact1 $contact2 exceed contacts threshold with value $dist");}
+			{smog_quit("CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist");}
 
 			push(@interiorTempPDL,[0,$contact1,$contact2,$dist2]);
 			$numContacts++;
@@ -1330,7 +1330,7 @@ sub parseCONTACT
 			if(!exists $allAtoms{$contact1}){warn("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if(!exists $allAtoms{$contact2}){warn("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
-			{smog_quit("CONTACTS between atoms $contact1 $contact2 exceed contacts threshold with value $dist");}
+			{smog_quit("CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist");}
 			push(@interiorTempPDL,[1,$contact1,$contact2,$dist]);
 			$numContacts++;
 		}
