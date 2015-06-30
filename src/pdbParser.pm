@@ -113,6 +113,7 @@ sub parsePDBATOMS
   my $lastchainstart=0;
   my $endfound=0;
   ## OPEN .PDB FILE ##
+  
  unless (open(MYFILE, $fileName)) {
     smog_quit ("Cannot read from '$fileName'.");
 }
@@ -269,7 +270,7 @@ sub parsePDBATOMS
 			if($secondcall == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
 			{smog_quit ("$atom doesn't exist in .bif declaration of $residue");}
 			
-			## CHECK IF ATOM IS COARSE GRAINED ##
+			## CHECK IF ATOM EXISTS IN MODEL ##
                         if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
 			$atomsmatch++;
 			$x = substr($record, 30, 8);
@@ -283,11 +284,16 @@ sub parsePDBATOMS
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 			$residueType = $residues{$residue}->{"residueType"};
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
-			my $pdbIndex = substr($record,6,5);
+			my $pdbIndex;
+			if($CGenabled==1){
+				$pdbIndex = $interiorPdbResidueIndex;
+			}else{
+				$pdbIndex = substr($record,6,5);
+			}
 			$pdbIndex =~ s/^\s+|\s+$//g;
 			if(exists $indexMap{"$chainNumber-$pdbIndex"}){
 				my $chainID=$chainNumber+1;
-				smog_quit("Atom numbers must be unique within each chain. Offending line:\n$record");
+				smog_quit("Atom/Residue numbers must be unique within each chain. Offending line:\n$record");
 			}
 			$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
 			$temp[$putIndex]=[$x,$y,$z,$atomSerial];
