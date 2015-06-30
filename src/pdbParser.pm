@@ -45,6 +45,7 @@ my %residuePDL=();
 our %tempPDL = ();
 our %resPDL;
 our %connPDL;
+my $angToNano = 0.1;
 
 
 our %connAngleFunctionals;
@@ -281,7 +282,7 @@ sub parsePDBATOMS
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 			$residueType = $residues{$residue}->{"residueType"};
-			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
+			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
 			my $pdbIndex = substr($record,6,5);
 			$pdbIndex =~ s/^\s+|\s+$//g;
 			if(exists $indexMap{"$chainNumber-$pdbIndex"}){
@@ -289,7 +290,6 @@ sub parsePDBATOMS
 				smog_quit("Atom numbers must be unique within each chain. Offending line:\n$record");
 			}
 			$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
-			
 			$temp[$putIndex]=[$x,$y,$z,$atomSerial];
             		$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			$totalAtoms++;
@@ -307,7 +307,7 @@ sub parsePDBATOMS
 		## CONCAT RESIDUE ##
 	  	@union = (@union,@temp);@temp=();
 		push(@consecResidues,$residue);
-		$headFlag = 0;
+		$headFlag = 0;		
         	$tempPDL{$residue}->{$residueIndex}=pdl(@tempBond);
 		@tempBond = ();
 		$residueIndex++;
@@ -1284,8 +1284,9 @@ sub parseCONTACT
 	my($fileName,$fileName2,$ignAllContacts,$coarseGraining) = @_;
 	my $numContacts = 0; my $garbage = 0;
 	my $line = "";
-	my $type1;my $type2; my $contact1; my $contact2;
-	my $dist;
+	my $chain1;my $chain2; my $contact1; my $contact2;
+	my $dist;my $dist2;
+	my $x1;my $x2;my $y1;my $y2;my $z1;my $z2;
 	my @interiorTempPDL; #usage: push(@interiorTempPDL,[1,$contact1,$contact2,$dist]);
 	#Format for this PDL has a boolean as the first argument
 	#it is unused for now, but could be useful in future to use
@@ -1298,12 +1299,15 @@ sub parseCONTACT
 		}
 		while($line = <MYFILE>)
 		{
-			($contact1,$type1,$contact2,$type2,$dist) = split(/\s+/,$line);
+			($chain1,$contact1,$chain2,$contact2) = split(/\s+/,$line);
+			$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
+			$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
+			$dist2 = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
 			## NOTE RESIDUE INDEX == CONTACT ##
-			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
-			{smog_quit("CONTACTS between atoms $type1 $type2 exceed contacts threshold with value $dist");}
+			if($dist2 < $interactionThreshold->{"contacts"}->{"shortContacts"})
+			{smog_quit("CONTACTS between atoms $contact1 $contact2 exceed contacts threshold with value $dist");}
 
-			push(@interiorTempPDL,[0,$type1,$type2,$dist]);
+			push(@interiorTempPDL,[0,$contact1,$contact2,$dist2]);
 			$numContacts++;
 		}
 	} else { #read in contact from file

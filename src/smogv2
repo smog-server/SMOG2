@@ -1370,14 +1370,14 @@ sub setContactParams
 					my $radius = $contactSettings->{"shadowRadius"};
 					my $radiusBonded = $contactSettings->{"shadowRadiusBonded"};
 					my $dist = $contactSettings->{"contactDistance"};
-				    return "-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --distance --smog2output --showProgress";
+				    return "-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --smog2output --showProgress";
 			}
 			elsif($method =~ m/cutoff/) 
 			{
 			  my $dist = $contactSettings->{"contactDistance"};
 		 	  my $radius = 0.0;
 			  my $radiusBonded = 0.0;
-			  return "-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --distance --smog2output --showProgress";
+			  return "-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --smog2output --showProgress";
 			
 			}
 			else {smog_quit ("Contact map method $method is not supported.");}
@@ -1963,5 +1963,6 @@ if($CGenabled == 0){allAtom($inputFolder,$inputPDB,$groFile,$ndxFile,$shadowFile
 ## COARSE-GRAIN ## 
 else{coarseGrain($inputFolder,$coarseFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile);}
 
+#print $allAtoms{1}[6]," ",$allAtoms{1}[7];
 printTop();
 ## END ##
