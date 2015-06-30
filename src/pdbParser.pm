@@ -1,4 +1,20 @@
 #!/usr/bin/perl -w
+#########################################################################################
+#
+#                          Structure-based Model (SMOG) software
+#    This package is the product of contributions from a number of people, including:
+#                     Jeffrey Noel, Mariana Levi, Mohit Ranghunathan,
+#                         Ryan Hayes, Jose Onuchic & Paul Whitford
+#
+#                     Copyright (c) 2015, The SMOG development team at
+#                        Rice University and Northeastern University
+#
+#              SMOG v2 & Shadow are available at http://smog-server.org
+#
+#                        Direct questions to: info@smog-server.org
+#
+#########################################################################################
+
 ##############################################################################
 # pdbParser: parses PDB file and obtains ATOM, residue and coordinate info.
 # PDB file has to comply to the standard column format for each attributes.
@@ -95,6 +111,7 @@ sub parsePDBATOMS
   my $lineNumber = 0;
   my %connectedatom;
   my $lastchainstart=0;
+  my $endfound=0;
   ## OPEN .PDB FILE ##
  unless (open(MYFILE, $fileName)) {
     smog_quit ("Cannot read from '$fileName'.");
@@ -107,8 +124,24 @@ sub parsePDBATOMS
 
  my @impAtoms = ();
  ## PARSE BOND LINES ##
+
+ if($record =~ m/^COMMENT/){
+   next;
+# make sure BOND appears after END
+ }elsif($record !~ m/^BOND/ && $endfound ==1){
+  smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END.");
+ }
+
  if($record =~ m/^BOND/)
  {
+
+  if($CGenabled==1){
+   smog_quit("User-defined bonds, via BOND declaration, are not supported with Coarse-Grained models. Remove BOND lines and try again.");
+   next;
+  }elsif($endfound ==0){
+   smog_quit("PDB format issue: User-defined bonds given by BOND should be listed immediately after END.");
+  }
+
     chomp($record);
    
     my @TMP = split(/\s+/,$record);
@@ -169,18 +202,19 @@ sub parsePDBATOMS
 	## IF TER LINE  ##
 	if($record =~ m/TER|END/)
 	{
-			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
-			## CREATE INTERACTION ##
-            		my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber);
-			my @connset=@{$connset};
-			foreach my $I(@connset){
-				my $T=$I+$lastchainstart+1;
-				$connectedatom{$T}=1;
-			}
-		   	$connPDL{$counter}=pdl(@union);
-			@union = ();$counter++;
-            		@consecResidues = ();
-			$lastchainstart=$atomSerial;
+		$chainNumber++; ## INCREMENT CHAIN NUMBER ##
+		## CREATE INTERACTION ##
+        	my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber);
+		my @connset=@{$connset};
+		foreach my $I(@connset){
+			my $T=$I+$lastchainstart+1;
+			$connectedatom{$T}=1;
+		}
+	   	$connPDL{$counter}=pdl(@union);
+		@union = ();$counter++;
+        	@consecResidues = ();
+		$lastchainstart=$atomSerial;
+		if($record =~ m/END/){$endfound=1;}
 			next;
 	} 
 	
@@ -651,7 +685,7 @@ sub connCreateInteractionsBOND
 	}
         if(@tempArr)
         {$connAngleFunctionals{$counter} = cat(@tempArr);}
-        else{#warn("PDB PARSE WARN:: There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);}
+        else{warn("PDB PARSE WARN:: There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);
         }
 		@tempArr = ();
 			
@@ -703,7 +737,7 @@ sub connCreateInteractionsBOND
 		
         if(@tempArr)
         {$connDiheFunctionals{$counter} = pdl(@tempArr);}
-        else{#warn("PDB PARSE WARN:: There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
+        else{warn("PDB PARSE WARN:: There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
             }
 				@tempArr = ();
 }
