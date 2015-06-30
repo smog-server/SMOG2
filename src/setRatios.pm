@@ -1,6 +1,22 @@
 #!/usr/bin/perl -w
+#########################################################################################
+#
+#                          Structure-based Model (SMOG) software
+#    This package is the product of contributions from a number of people, including:
+#                     Jeffrey Noel, Mariana Levi, Mohit Ranghunathan,
+#                         Ryan Hayes, Jose Onuchic & Paul Whitford
+#
+#                     Copyright (c) 2015, The SMOG development team at
+#                        Rice University and Northeastern University
+#
+#              SMOG v2 & Shadow are available at http://smog-server.org
+#
+#                        Direct questions to: info@smog-server.org
+#
+#########################################################################################
+
 #####################################################################
-# setRatios.pl: Adjust ratios of strengths as obtained from .sif
+# setRatios: Adjust ratios of strengths as obtained from .sif
 #####################################################################
 package setRatios;
 #####################

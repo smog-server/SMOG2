@@ -1,6 +1,23 @@
 #!/usr/bin/perl -w
+
+#########################################################################################
+#
+#                          Structure-based Model (SMOG) software
+#    This package is the product of contributions from a number of people, including:
+#                     Jeffrey Noel, Mariana Levi, Mohit Ranghunathan,
+#                         Ryan Hayes, Jose Onuchic & Paul Whitford
+#
+#                     Copyright (c) 2015, The SMOG development team at
+#                        Rice University and Northeastern University
+#
+#              SMOG v2 & Shadow are available at http://smog-server.org
+#
+#                        Direct questions to: info@smog-server.org
+#
+#########################################################################################
+
 #####################################################################
-# xmlParser.pl: Parses all XML files into a hash as diagramed below.
+# templateParser: Parses all XML files into a hash 
 #####################################################################
 package templateParser;
 
@@ -84,12 +101,9 @@ sub smog_quit
 {
 	my ($LINE)=@_;
 	if($main::noexit){
-		print "\n\nERROR:";
+		warn("$LINE");
 	}else{
-		print "\n\nFATAL ERROR:";
-	}
- 	print " $LINE\n\n";
-	unless($main::noexit){
+		print "\n\nFATAL ERROR:  $LINE\n\n";
 		exit;
 	}
 }
@@ -856,43 +870,55 @@ foreach my $res (keys %residues)
 
 sub getContactFunctionals
 {
-		my($typeA,$typeB) = @_;
-		## WILD CARD MATCHING CONDITIONALS ##
-		my $matchScore = 0; my $saveScore = 0;
-		my $funct=""; my $cG = "";
- 
-		## If both contact types exists ##
-		if(exists $interactions->{"contacts"}->{"func"}->{$typeA}
-			&& exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB})
-		{
-				$funct = $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB};
-				$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{$typeB};
-		}
-		
+	my($typeA,$typeB) = @_;
+	## WILD CARD MATCHING CONDITIONALS ##
+	my $matchScore = 0; my $saveScore = 0;
+	my $funct=""; my $cG = "";
+	my $assigned=0; 
+	## If contact type is specifically defined ##
+	if(exists $interactions->{"contacts"}->{"func"}->{$typeA}
+		&& exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB})
+	{
+		$funct = $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB};
+		$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{$typeB};
+		$assigned++;
+	}else{
+	
 		## If typeA exists while TypeB is a wildcard ##
-		elsif (exists $interactions->{"contacts"}->{"func"}->{$typeA}
-			&& !(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}))
+		if (exists $interactions->{"contacts"}->{"func"}->{$typeA}
+			&& (exists $interactions->{"contacts"}->{"func"}->{$typeA}->{"*"}))
 		{
-				$funct = $interactions->{"contacts"}->{"func"}->{$typeA}->{"*"};
-				$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{"*"};
+			$funct = $interactions->{"contacts"}->{"func"}->{$typeA}->{"*"};
+			$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{"*"};
+			$assigned++;
 		}
 		
 		## If typeA is a wildcard while TypeB exists ##
-		elsif(!(exists $interactions->{"contacts"}->{"func"}->{$typeA}) &&
-				exists $interactions->{"contacts"}->{"func"}->{"*"}->{$typeB})
+		if((exists $interactions->{"contacts"}->{"func"}->{$typeB}) &&
+				exists $interactions->{"contacts"}->{"func"}->{$typeB}->{"*"})
 		{
-				$funct = $interactions->{"contacts"}->{"func"}->{"*"}->{$typeB};
-				$cG = $interactions->{"contacts"}->{"contactGroup"}->{"*"}->{$typeB};
+			$funct = $interactions->{"contacts"}->{"func"}->{$typeB}->{"*"};
+			$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeB}->{"*"};
+			$assigned++;
 		}
 		
-		## If both types are wildcard ## 
-		else
-		{
-				$funct = $interactions->{"contacts"}->{"func"}->{"*"}->{"*"};
-				$cG = $interactions->{"contacts"}->{"contactGroup"}->{"*"}->{"*"};
-		}
+		## If both types are wildcard, and double wildcard interaction is defined ## 
+		if($assigned==0 && exists $interactions->{"contacts"}->{"func"}->{"*"}->{"*"}){
 
-		return ($funct,$cG);
+			$funct = $interactions->{"contacts"}->{"func"}->{"*"}->{"*"};
+			$cG = $interactions->{"contacts"}->{"contactGroup"}->{"*"}->{"*"};
+			$assigned++;
+		}
+	}
+	if($typeB eq $typeA){
+		$assigned--;
+	}
+
+	if($assigned >0){
+		smog_quit("Can\'t unambiguously assign a contact interaction between atoms of $typeA and $typeB.  See .nb for contact group definitions.\n");
+	}
+
+	return ($funct,$cG);
 }
 
 
