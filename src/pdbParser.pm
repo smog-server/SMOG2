@@ -113,6 +113,7 @@ sub parsePDBATOMS
   my $lastchainstart=0;
   my $endfound=0;
   ## OPEN .PDB FILE ##
+  
  unless (open(MYFILE, $fileName)) {
     smog_quit ("Cannot read from '$fileName'.");
 }
@@ -283,11 +284,16 @@ sub parsePDBATOMS
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 			$residueType = $residues{$residue}->{"residueType"};
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
-			my $pdbIndex = substr($record,6,5);
+			my $pdbIndex;
+			if($CGenabled==1){
+				$pdbIndex = $interiorPdbResidueIndex;
+			}else{
+				$pdbIndex = substr($record,6,5);
+			}
 			$pdbIndex =~ s/^\s+|\s+$//g;
 			if(exists $indexMap{"$chainNumber-$pdbIndex"}){
 				my $chainID=$chainNumber+1;
-				smog_quit("Atom numbers must be unique within each chain. Offending line:\n$record");
+				smog_quit("Atom/Residue numbers must be unique within each chain. Offending line:\n$record");
 			}
 			$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
 			$temp[$putIndex]=[$x,$y,$z,$atomSerial];
