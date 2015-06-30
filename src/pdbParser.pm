@@ -124,17 +124,23 @@ sub parsePDBATOMS
  my @impAtoms = ();
  ## PARSE BOND LINES ##
 
- if($record =~ m/^COMMENT/){next;}
-
+ if($record =~ m/^COMMENT/){
+   next;
 # make sure BOND appears after END
- if($record =~ m/^BOND/ && $endfound ==0){
-  smog_quit("PDB format issue: User-defined bonds given by BOND be listed immediately after END.");
  }elsif($record !~ m/^BOND/ && $endfound ==1){
   smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END.");
  }
 
  if($record =~ m/^BOND/)
  {
+
+  if($CGenabled==1){
+   smog_quit("User-defined bonds, via BOND declaration, are not supported with Coarse-Grained models. Remove BOND lines and try again.");
+   next;
+  }elsif($endfound ==0){
+   smog_quit("PDB format issue: User-defined bonds given by BOND should be listed immediately after END.");
+  }
+
     chomp($record);
    
     my @TMP = split(/\s+/,$record);
