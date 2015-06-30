@@ -104,6 +104,7 @@ sub smog_quit
 		warn("$LINE");
 	}else{
 		print "\n\nFATAL ERROR:  $LINE\n\n";
+		exit;
 	}
 }
 
@@ -910,8 +911,11 @@ sub getContactFunctionals
 		}
 	}
 	if($typeB eq $typeA){
-		smog_quit("Can\'t unambiguously assign a contact interaction between atoms of $typeA and $typeB.  See .nb for contact group definitions.\n");
+		$assigned--;
+	}
 
+	if($assigned >0){
+		smog_quit("Can\'t unambiguously assign a contact interaction between atoms of $typeA and $typeB.  See .nb for contact group definitions.\n");
 	}
 
 	return ($funct,$cG);

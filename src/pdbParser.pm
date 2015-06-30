@@ -110,6 +110,7 @@ sub parsePDBATOMS
   my $lineNumber = 0;
   my %connectedatom;
   my $lastchainstart=0;
+  my $endfound=0;
   ## OPEN .PDB FILE ##
  unless (open(MYFILE, $fileName)) {
     smog_quit ("Cannot read from '$fileName'.");
@@ -122,6 +123,16 @@ sub parsePDBATOMS
 
  my @impAtoms = ();
  ## PARSE BOND LINES ##
+
+ if($record =~ m/^COMMENT/){next;}
+
+# make sure BOND appears after END
+ if($record =~ m/^BOND/ && $endfound ==0){
+  smog_quit("PDB format issue: User-defined bonds given by BOND be listed immediately after END.");
+ }elsif($record !~ m/^BOND/ && $endfound ==1){
+  smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END.");
+ }
+
  if($record =~ m/^BOND/)
  {
     chomp($record);
@@ -184,18 +195,19 @@ sub parsePDBATOMS
 	## IF TER LINE  ##
 	if($record =~ m/TER|END/)
 	{
-			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
-			## CREATE INTERACTION ##
-            		my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber);
-			my @connset=@{$connset};
-			foreach my $I(@connset){
-				my $T=$I+$lastchainstart+1;
-				$connectedatom{$T}=1;
-			}
-		   	$connPDL{$counter}=pdl(@union);
-			@union = ();$counter++;
-            		@consecResidues = ();
-			$lastchainstart=$atomSerial;
+		$chainNumber++; ## INCREMENT CHAIN NUMBER ##
+		## CREATE INTERACTION ##
+        	my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber);
+		my @connset=@{$connset};
+		foreach my $I(@connset){
+			my $T=$I+$lastchainstart+1;
+			$connectedatom{$T}=1;
+		}
+	   	$connPDL{$counter}=pdl(@union);
+		@union = ();$counter++;
+        	@consecResidues = ();
+		$lastchainstart=$atomSerial;
+		if($record =~ m/END/){$endfound=1;}
 			next;
 	} 
 	
