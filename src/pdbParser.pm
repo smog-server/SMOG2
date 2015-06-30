@@ -268,7 +268,7 @@ sub parsePDBATOMS
 			if($secondcall == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
 			{smog_quit ("$atom doesn't exist in .bif declaration of $residue");}
 			
-			## CHECK IF ATOM IS COARSE GRAINED ##
+			## CHECK IF ATOM EXISTS IN MODEL ##
                         if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
 			$atomsmatch++;
 			$x = substr($record, 30, 8);
