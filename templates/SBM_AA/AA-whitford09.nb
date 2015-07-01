@@ -13,11 +13,6 @@
 	<pairType>*</pairType>
 	<pairType>*</pairType>
 </contact>
-<contact func="contact_1(6,12,?,?)" contactGroup="c2">
-	<pairType>CA</pairType>
-	<pairType>CA</pairType>
-</contact>
-
 
 </nb>
 
