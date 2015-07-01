@@ -16,7 +16,7 @@
 	<energyGroup residueType="amino" name="bb" normalize="0"/>
 
  <!-- Global Contacts Settings -->
-	<contactGroup residueType="mixed" name="c"  normalize="0"/>
+	<contactGroup name="c"  normalize="0"/>
 
  <!-- Contact/Dihedral Group ratio: This is only used if normalization is turned on-->
        <groupRatios contacts="1" dihedrals="1"/>

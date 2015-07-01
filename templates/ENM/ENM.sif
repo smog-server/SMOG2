@@ -21,8 +21,8 @@
 <Groups>
 	<!-- NUCLEIC ENERGY GROUPS -->
 	<!-- Normalized -->
-	<energyGroup name="bb_n" residueType="nucleic" intraRelativeStrength="1" normalize="1"/>
-	<energyGroup name="sc_n" residueType="nucleic" intraRelativeStrength="1" normalize="1"/>
+	<energyGroup name="bb_n" residueType="nucleic" normalize="0"/>
+	<energyGroup name="sc_n" residueType="nucleic" normalize="0"/>
 	<!-- Not-Normalized -->
 	<energyGroup name="pr_n" residueType="nucleic" normalize="0"/>
 	<energyGroup name="ip_n" residueType="nucleic" normalize="0"/>
@@ -30,8 +30,8 @@
 
 	<!-- AMINO ENERGY GROUPS --> 
 	<!-- Normalized -->
-	<energyGroup name="bb_a" residueType="amino" intraRelativeStrength="1" normalize="1"/>
-	<energyGroup name="sc_a" residueType="amino" intraRelativeStrength="0.5" normalize="1"/>
+	<energyGroup name="bb_a" residueType="amino" normalize="0"/>
+	<energyGroup name="sc_a" residueType="amino" normalize="0"/>
 	<!-- Not-Normalized -->
 	<energyGroup name="pr_a" residueType="amino" normalize="0"/>
 	<energyGroup name="ip_a" residueType="amino" normalize="0"/>
@@ -43,7 +43,8 @@
 
 
  	<!-- Global Contacts Settings -->
-	<contactGroup name="c" intraRelativeStrength="1" normalize="1"/>
+	<!-- contactGroup residueType="mixed" name="c" intraRelativeStrength="1" normalize="1"/  -->
+	<contactGroup residueType="mixed" name="e" normalize="0"/>
 
  	<!-- Contact/Dihedral Group ratio: These are only used when normalization is turned on for energy groups-->
         <groupRatios contacts="2" dihedrals="1"/>
