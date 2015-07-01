@@ -31,7 +31,6 @@ use warnings;
 ## MODULE HEADERS ##
 ####################
 use XML::Simple;
-use Data::Dumper;
 use Exporter;
 use String::Util 'trim';
 use Storable qw(dclone);
@@ -379,13 +378,10 @@ foreach my $egName(keys %{$contactGroups})
 	}elsif(exists $contactGroups->{$egName}->{"intraRelativeStrength"} && $contactGroups->{$egName}->{"intraRelativeStrength"} <=0 ){
 		smog_quit("intraRelativeStrength must be >= 0.  See contactGroup $egName .sif.");
 	}
-
-
-
 }
 
 if(($CG_NORM > 0 and $EG_NORM ==0) or ($EG_NORM > 0 and $CG_NORM ==0)){
-	smog_quit('Issue in .sif. Normalization only turned on for ContactGroup, or EnergyGroup. Normalization must be off, or on, for both.');
+	smog_quit('Issue in .sif. Normalization only turned on for ContactGroups, or EnergyGroups. Normalization must be off, or on, for both.');
 }
 
 

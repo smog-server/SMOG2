@@ -27,7 +27,6 @@ use warnings;
 ####################
 ## MODULE HEADERS ##
 ####################
-use Data::Dumper;
 use Exporter;
 use PDL;
 use templateParser;

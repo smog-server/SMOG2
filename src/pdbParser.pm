@@ -25,7 +25,6 @@ use templateParser;
 use setRatios;
 use strict;
 use warnings;
-use Data::Dumper;
 use Exporter;
 use PDL; ## LOAD PDL MODULE
 

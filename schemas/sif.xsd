@@ -12,7 +12,6 @@
 
 <!-- contactGroup TYPE -->
 <xs:complexType name="contactGroupType">
-    <xs:attribute name="residueType" type="xs:string" use="required"/>
     <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="intraRelativeStrength" type="xs:decimal"/>
     <xs:attribute name="normalize" type="booleanType" use="required"/>
