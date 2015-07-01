@@ -31,7 +31,6 @@ use warnings;
 ## MODULE HEADERS ##
 ####################
 use XML::Simple;
-use Data::Dumper;
 use Exporter;
 use String::Util 'trim';
 use Storable qw(dclone);
@@ -379,13 +378,10 @@ foreach my $egName(keys %{$contactGroups})
 	}elsif(exists $contactGroups->{$egName}->{"intraRelativeStrength"} && $contactGroups->{$egName}->{"intraRelativeStrength"} <=0 ){
 		smog_quit("intraRelativeStrength must be >= 0.  See contactGroup $egName .sif.");
 	}
-
-
-
 }
 
 if(($CG_NORM > 0 and $EG_NORM ==0) or ($EG_NORM > 0 and $CG_NORM ==0)){
-	smog_quit('Issue in .sif. Normalization only turned on for ContactGroup, or EnergyGroup. Normalization must be off, or on, for both.');
+	smog_quit('Issue in .sif. Normalization only turned on for ContactGroups, or EnergyGroups. Normalization must be off, or on, for both.');
 }
 
 
@@ -771,7 +767,7 @@ foreach my $inter(@interHandle)
 }
 
 if($counter !=1){
-	smog_quit("Currently, due to limitations in how Gromacs handles pairs, you can only\n\t use one contactGroup per model. We are working on extending this capability.\n\t Please email us at info\@smog-server.org, if you are interested in simultaneously\n\t using multiple contact functions in a single simulations.")
+	warn("\n\nWARNING: Gromacs does not support simultaneous use of all possible combinations\n\tof function types in a single simulation. If you attempt to use multiple contact\n\tfunctions at once, you should verify everything is behaving as expected.\n\tFor more information, please email us at info\@smog-server.org")
 }
 
 ## Obtain default options (ONLY FOR GEN PAIRS) ##
