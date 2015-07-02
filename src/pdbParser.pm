@@ -241,20 +241,29 @@ sub parsePDBATOMS
 		}
 		my $atomsmatch=0;
 	 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
-		print "$atomSerial $atomsInRes\n";	
+		my $resname=$residue;
+                my $resindex = substr($record,22,5);
+		print "$resindex ";
+		my %uniqueAtom;
+
 		for($i=0;$i<$atomsInRes;$i++)
 		{
  			$lineNumber++;
 			$record = <PDBFILE>;
-			print "$record\n";
 			if($record !~ m/^ATOM|^HETATM/)
-			{smog_quit("Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
+			{smog_quit("Expected ATOM or HETATM at line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
 
 			$interiorResidue = substr($record,17,4);
 			$interiorResidue =~ s/^\s+|\s+$//g;
 	   		$residue = substr($record,17,4);
         	        $residue =~ s/^\s+|\s+$//g;
+			if($resname ne $residue){
+				smog_quit("Inconsistent residue naming detected at line $lineNumber. Problem may be with previous residue.");
+			}
             		$interiorPdbResidueIndex = substr($record,22,5);  
+			if($resindex ne $interiorPdbResidueIndex){
+				smog_quit("Inconsistent residue numbering detected at line $lineNumber. Problem may be with previous residue.");
+			}
 			$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
 			unless($interiorPdbResidueIndex =~ /^\d+$/){;
 				smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
@@ -263,10 +272,15 @@ sub parsePDBATOMS
 	                if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
-			if($interiorResidue !~ /$residue/)
+			if($interiorResidue ne /$residue/)
 			{smog_quit ("Residue doesn't conform with .bif:: $record\n Perhaps the previous residue was missing an atom.");}
 			$atom = substr($record, 12, 4);
 			$atom =~ s/^\s+|\s+$//g;
+
+                       if(exists $uniqueAtom{$atom})
+                        {smog_quit("$atom appears twice in $residue at line $lineNumber\n");}
+                        else {$uniqueAtom{$atom}=1;}
+
 			if($secondcall == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
 			{smog_quit ("$atom doesn't exist in .bif declaration of $residue");}
 			
