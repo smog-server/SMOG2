@@ -25,7 +25,6 @@ use warnings;
 ## MODULE HEADERS ##
 ####################
 use XML::Simple;
-use Data::Dumper;
 use templateParser;
 use pdbParser;
 use PDL;

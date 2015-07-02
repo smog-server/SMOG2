@@ -36,7 +36,6 @@ cpan):
 
 String::Util
 XML::Simple
-Data::Dumper
 Exporter
 perl PDL
 
