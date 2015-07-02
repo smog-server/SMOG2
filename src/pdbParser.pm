@@ -243,7 +243,6 @@ sub parsePDBATOMS
 	 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 		my $resname=$residue;
                 my $resindex = substr($record,22,5);
-		print "$resindex ";
 		my %uniqueAtom;
 
 		for($i=0;$i<$atomsInRes;$i++)
@@ -272,7 +271,7 @@ sub parsePDBATOMS
 	                if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
-			if($interiorResidue ne /$residue/)
+			if($interiorResidue !~ /$residue/)
 			{smog_quit ("Residue doesn't conform with .bif:: $record\n Perhaps the previous residue was missing an atom.");}
 			$atom = substr($record, 12, 4);
 			$atom =~ s/^\s+|\s+$//g;
