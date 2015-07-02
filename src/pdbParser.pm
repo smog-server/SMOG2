@@ -256,6 +256,11 @@ sub parsePDBATOMS
 			$interiorResidue =~ s/^\s+|\s+$//g;
 	   		$residue = substr($record,17,4);
         	        $residue =~ s/^\s+|\s+$//g;
+	   		my $altlocator = substr($record,16,1);
+			if($altlocator ne " "){
+				smog_quit("Alternate location indicator found at line $lineNumber.  Alt. Loc. Indic. not supported by SMOG.");
+			}
+
 			if($resname ne $residue){
 				smog_quit("Inconsistent residue naming detected at line $lineNumber. Problem may be with previous residue.");
 			}
