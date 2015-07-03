@@ -1335,7 +1335,6 @@ EOT
 sub usage
 {
   header();
-  print "Unknown option: @_\n" if ( @_ );
   print <<EOT;
 
 usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
@@ -1357,7 +1356,11 @@ usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
 	-backup [yes]: Back up any pre-existing output files
 	-warnonly: Convert fatal errors to warnings (Caution: Consult manual before using this option)
 EOT
-  exit;
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit;
+  }
 }
 
 sub setContactParams
@@ -1788,11 +1791,12 @@ my $DNAME="smog";
 my $warnonly=0;
 my $backup="yes";
 
+
 ## parse command line options ##
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
-	 'CG' => \$CGenabled, 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 'backup=s' => \$backup)
+	 'CG' => \$CGenabled, 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 'backup=s' => \$backup, '<>' => \&usage)
           or defined $help 
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $coarseFolder));
