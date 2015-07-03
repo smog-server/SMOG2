@@ -113,12 +113,12 @@ sub parsePDBATOMS
   my $endfound=0;
   ## OPEN .PDB FILE ##
   
- unless (open(MYFILE, $fileName)) {
+ unless (open(PDBFILE, $fileName)) {
     smog_quit ("Cannot read from '$fileName'.");
 }
 
   ## LOOP THROUGH EACH LINE ##
- while(my $record = <MYFILE>)
+ while(my $record = <PDBFILE>)
  {
  $lineNumber++;
 
@@ -240,20 +240,34 @@ sub parsePDBATOMS
 			smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
 		}
 		my $atomsmatch=0;
-	 	seek(MYFILE, -$outLength, 1); # place the same line back onto the filehandle
-	
+	 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
+		my $resname=$residue;
+                my $resindex = substr($record,22,5);
+		my %uniqueAtom;
+
 		for($i=0;$i<$atomsInRes;$i++)
 		{
  			$lineNumber++;
-			$record = <MYFILE>;
+			$record = <PDBFILE>;
 			if($record !~ m/^ATOM|^HETATM/)
-			{smog_quit("PARSE ERROR\n Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
+			{smog_quit("Expected ATOM or HETATM at line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
 
 			$interiorResidue = substr($record,17,4);
 			$interiorResidue =~ s/^\s+|\s+$//g;
 	   		$residue = substr($record,17,4);
         	        $residue =~ s/^\s+|\s+$//g;
+	   		my $altlocator = substr($record,16,1);
+			if($altlocator ne " "){
+				smog_quit("Alternate location indicator found at line $lineNumber.  Alt. Loc. Indic. not supported by SMOG.");
+			}
+
+			if($resname ne $residue){
+				smog_quit("Inconsistent residue naming detected at line $lineNumber. Problem may be with previous residue.");
+			}
             		$interiorPdbResidueIndex = substr($record,22,5);  
+			if($resindex ne $interiorPdbResidueIndex){
+				smog_quit("Inconsistent residue numbering detected at line $lineNumber. Problem may be with previous residue.");
+			}
 			$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
 			unless($interiorPdbResidueIndex =~ /^\d+$/){;
 				smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
@@ -266,6 +280,11 @@ sub parsePDBATOMS
 			{smog_quit ("Residue doesn't conform with .bif:: $record\n Perhaps the previous residue was missing an atom.");}
 			$atom = substr($record, 12, 4);
 			$atom =~ s/^\s+|\s+$//g;
+
+                       if(exists $uniqueAtom{$atom})
+                        {smog_quit("$atom appears twice in $residue at line $lineNumber\n");}
+                        else {$uniqueAtom{$atom}=1;}
+
 			if($secondcall == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
 			{smog_quit ("$atom doesn't exist in .bif declaration of $residue");}
 			
@@ -625,7 +644,7 @@ sub appendImpropersBOND
  	if(returnResidueIndexFromIndex($c)!=$resIDA && returnResidueIndexFromIndex($c)!=$resIDB)
  	{smog_quit("Ad-hoc Improper Create Error: Atom $c is part of neither residue $resIDA or $resIDB");}
  	if(returnResidueIndexFromIndex($d)!=$resIDA && returnResidueIndexFromIndex($d)!=$resIDB)
- 	{smog_quit("ERROR: Ad-hoc Improper Create Error: Atom $d is part of neither residue $resIDA or $resIDB");}
+ 	{smog_quit("Ad-hoc Improper Create Error: Atom $d is part of neither residue $resIDA or $resIDB");}
  	
 	my($ia)= (returnResidueIndexFromIndex($a)==$resIDA ? (getAtomAbsoluteIndex($resA,$iia)) 
 	: ($sizeA+getAtomAbsoluteIndex($resB,$iia)));
@@ -1299,10 +1318,10 @@ sub parseCONTACT
 
 	if(!$ignAllContacts){ #use shadow generated contact map
 		## OPEN .contact FILE ##
-		unless (open(MYFILE, $fileName)) {
+		unless (open(CONTFILE, $fileName)) {
 			smog_quit ("Internal contact file can not be read.  See shadow.log for more information.");
 		}
-		while($line = <MYFILE>)
+		while($line = <CONTFILE>)
 		{
 			($chain1,$contact1,$chain2,$contact2) = split(/\s+/,$line);
 			$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
@@ -1319,12 +1338,12 @@ sub parseCONTACT
 		print "\nNOTE: Not calculating contact map\n";
 		print "Reading contacts from $fileName2\n";
 		## OPEN user provided contact FILE ##
-		unless (open(MYFILE1, $fileName2)) {
+		unless (open(CONTFILE1, $fileName2)) {
 			smog_quit ("Cannot read contact file '$fileName2'.");
 		}
 		## User contact map should be in format ##
 		## atom1 atom2 dist(nm) ##
-		while($line = <MYFILE1>) {
+		while($line = <CONTFILE1>) {
 			my ($contact1,$contact2,$dist) = split(/\s+/,$line);
 			if(!exists $allAtoms{$contact1}){warn("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if(!exists $allAtoms{$contact2}){warn("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
