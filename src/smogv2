@@ -46,11 +46,11 @@ my $help;
 my $inputPDB="molecule.pdb"; 
 my $inputFolder=""; my $bifForSCM;
 my $ignAllContacts=0;
-my $topFile = "smog.top";
-my $groFile = "smog.gro";
+my $topFile = "";
+my $groFile = "";
 my $ContactFile = "";
-my $shadowFile = "smog.contacts";
-my $ndxFile = "smog.ndx";
+my $shadowFile = "";
+my $ndxFile = "";
 my $mapOpt = "shadow";my $contactOpt = "6 1";
 my $numContacts = 0;
 my $coarseFolder = ""; ## Coarse Grain Folder ##
@@ -1784,9 +1784,10 @@ sub coarseGrain
 ## PARSE INPUTS ##
 ##################
 
-my $DNAME="";
+my $DNAME="smog";
 my $warnonly=0;
 my $backup="yes";
+
 ## parse command line options ##
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
@@ -1862,12 +1863,10 @@ if($ContactFile ne ""){
 
 ## Ensure we only write out files with gromacs-compatible suffices
 my $maxbu=10;
-if ($DNAME ne ""){
-	$topFile=$DNAME;
-	$groFile=$DNAME;
-	$shadowFile=$DNAME;
-	$ndxFile=$DNAME;
-}
+if($topFile eq ""){$topFile=$DNAME};
+if($groFile eq ""){$groFile=$DNAME};
+if($shadowFile eq ""){$shadowFile=$DNAME};
+if($ndxFile eq ""){$ndxFile=$DNAME};
 my ($ext)=$topFile =~ /(\.[^.]+)$/;
 if($topFile !~ /(\.[^.]+)$/){
 	$topFile = $topFile . ".top";
