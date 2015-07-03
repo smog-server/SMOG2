@@ -282,7 +282,7 @@ foreach my $connname (keys %{$conHandle})
 	$resA = $conHandle->{$connname}->{"residueType1"};
 	$resB = $conHandle->{$connname}->{"residueType2"};
 	if(exists $connections{$resA}->{$resB}){
-		smog_quit ("Duplicate assignment of connections between residue types $resA and $resB");
+		smog_quit ("Duplicate assignment of connections between residueTypes $resA and $resB");
 	}
 	$connections{$resA}->{$resB}=$conHandle->{$connname};
 }
