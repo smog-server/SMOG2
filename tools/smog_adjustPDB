@@ -41,7 +41,7 @@ my $prevResTypeRNA;
 
 sub exitSmog{
 	my @msg = @_;
-	print "\n\nERROR: @msg\n\n";
+	print "\n\nERROR: @msg\n\n\tReformatting incomplete...\n\n";
 	exit;
 }
 
@@ -84,8 +84,7 @@ while(my $line = <MAP>)
   if($#entries != 2){
    my $count=$#entries+1;
    exitSmog("Looking for 3 fields in $mapOption, but found $count.\n
-   				Offending line: $line\n
-   				Reformatting incomplete...");
+   				Offending line: $line");
   }
   $map{$entries[0]}{"head"} = $entries[1];
   $map{$entries[0]}{"tail"} = $entries[2];
