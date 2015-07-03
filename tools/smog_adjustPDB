@@ -245,7 +245,7 @@ sub adjustInputFile(){
 		
 		## If the line is niether ATOM,BOND,COMMENT,TER or END - exit. ##
 		else{
-			exitSmog("Issue at line $k: $pArr[$k]\n is not supported by SMOG.\n Lines supported: ATOM,TER,COMMENT and END.");
+			exitSmog("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM,TER,COMMENT and END.");
 		}
 	}
 	
