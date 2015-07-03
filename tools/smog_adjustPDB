@@ -41,12 +41,12 @@ my $prevResTypeRNA;
 
 sub exitSmog{
 	my @msg = @_;
-	print "\n@msg\n";
+	print "\n\nERROR: @msg\n\n";
 	exit;
 }
 
 ## CHECK INPUT ##
-if(scalar(@ARGV) < 3){
+if(scalar(@ARGV) != 3){
 	exitSmog("Usage: ./smog-adjustPDB <PDB> <-f filename | default> <output file>\n 
 For default templates use the option default, else provide a filename with the option -f \n");
 }
@@ -83,9 +83,9 @@ while(my $line = <MAP>)
   #map-->residue-->{head|tail} 
   if($#entries != 2){
    my $count=$#entries+1;
-   exitSmog("\nERROR: Looking for 3 fields in $mapOption, but only found $count.\n
+   exitSmog("Looking for 3 fields in $mapOption, but found $count.\n
    				Offending line: $line\n
-   				Reformatting incomplete...\n");
+   				Reformatting incomplete...");
   }
   $map{$entries[0]}{"head"} = $entries[1];
   $map{$entries[0]}{"tail"} = $entries[2];
@@ -130,14 +130,14 @@ sub adjustInputFile(){
 		$pArr[$k] =~ s/^\s+|\s+$//g;
 		
 		## If end of file: ##
-		if ($pArr[$k] eq "END"){
+		if ($pArr[$k] =~ m/^END/){
 			print NEWPDB "END\n";
 			$endFlag = 1;
 			last;
 		}
 		
 		## If TER line: ##
-		elsif($pArr[$k] eq "TER"){
+		elsif($pArr[$k] =~ m/^TER/){
 			print NEWPDB "TER\n";
 			$atomCount=0;
 			$isHead = 1;
@@ -147,7 +147,7 @@ sub adjustInputFile(){
 
 		## Exit if there's a BOND line in PDB: ##
 		elsif($pArr[$k] =~ /^BOND/){
-			exitSmog("\nError in line $k: BOND lines in the input PDB file are not supported by adjustPDB in this Smog version.\n");
+			exitSmog("Issue at line $k: BOND lines in the input PDB file are not supported by adjustPDB in this Smog version.");
 		}
 
 		elsif ($pArr[$k] =~ /^COMMENT/){
@@ -168,7 +168,7 @@ sub adjustInputFile(){
 			$resName =~ s/^\s+|\s+$//g;
 			my $altLoc = substr($pArr[$k],16,1);
 			if ($altLoc ne " "){
-				exitSmog("\nError in line $k: Alternate location indicators are not supported by SMOG.\n");
+				exitSmog("Issue at line $k: Alternate location indicators are not supported by SMOG.");
 			}
 			
 			$chainName = substr($pArr[$k],21,1);
@@ -205,13 +205,13 @@ sub adjustInputFile(){
 
 			## Adjust Tail\Head names ##
 			if ($isHead){
-				if(!exists $map{$resName}{"head"}){exitSmog("\nError in residue $resName - please check the map file to make sure the residue name is defined.\n");}
+				if(!exists $map{$resName}{"head"}){exitSmog("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 				my $newResName = $map{$resName}{"head"};
 				$resName = $newResName;
 			}
 			if ($isTail){
 				if (not($prevResTypeRNA)){	#check that it's not an amino-accilated tRNA
-				if(!exists $map{$resName}{"tail"}){exitSmog("\nError in residue $resName - please check the map file to make sure the residue name is defined.\n");}
+				if(!exists $map{$resName}{"tail"}){exitSmog("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 					my $newResName = $map{$resName}{"tail"};
 					$resName = 	$newResName;
 				}
@@ -245,7 +245,7 @@ sub adjustInputFile(){
 		
 		## If the line is niether ATOM,BOND,COMMENT,TER or END - exit. ##
 		else{
-			exitSmog("\nLine $k: $pArr[$k]\n is not supported by SMOG.\n Lines supported: ATOM,TER,COMMENT and END.\n");
+			exitSmog("Issue at line $k: $pArr[$k]\n is not supported by SMOG.\n Lines supported: ATOM,TER,COMMENT and END.");
 		}
 	}
 	
