@@ -144,11 +144,12 @@ sub adjustInputFile(){
 
 		## Exit if there's a BOND line in PDB: ##
 		if($pArr[$k] =~ /^BOND/){
-			exitSmog("\nBOND lines in the input PDB file are not supported by adjustPDB in this Smog version.\n");
+			exitSmog("\nError in line $k: BOND lines in the input PDB file are not supported by adjustPDB in this Smog version.\n");
 		}
 
 		if ($pArr[$k] =~ /^COMMENT/){
 			print  print NEWPDB "$pArr[$k]\n";
+			$k++;
 			next;
 		}
 		
@@ -162,6 +163,10 @@ sub adjustInputFile(){
 			
 			$resName = substr($pArr[$k],17,4);
 			$resName =~ s/^\s+|\s+$//g;
+			my $altLoc = substr($pArr[$k],16,1);
+			if ($altLoc ne " "){
+				exitSmog("\nError in line $k: Alternate location indicators are not supported by SMOG.\n");
+			}
 			
 			$chainName = substr($pArr[$k],21,1);
 			
