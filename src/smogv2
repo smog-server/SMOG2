@@ -46,15 +46,14 @@ my $help;
 my $inputPDB="molecule.pdb"; 
 my $inputFolder=""; my $bifForSCM;
 my $ignAllContacts=0;
-my $topFile = "smog.top";
-my $groFile = "smog.gro";
+my $topFile = "";
+my $groFile = "";
 my $ContactFile = "";
-my $shadowFile = "smog.contacts";
-my $ndxFile = "smog.ndx";
+my $shadowFile = "";
+my $ndxFile = "";
 my $mapOpt = "shadow";my $contactOpt = "6 1";
 my $numContacts = 0;
 my $coarseFolder = ""; ## Coarse Grain Folder ##
-my $contactRes = ""; ## Duplicate ##
 my $AAdefault = 0; ## Duplicate ##
 my $CAdefault = 0; ## Duplicate ##
 our $noexit=0;
@@ -1336,7 +1335,6 @@ EOT
 sub usage
 {
   header();
-  print "Unknown option: @_\n" if ( @_ );
   print <<EOT;
 
 usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
@@ -1347,7 +1345,7 @@ usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
 	-AA: Use default All-atom model
 	-CA: Use default Calpha protein model
 	-t [templateFolder]: Folder containing templates of molecular and interaction definitions. Required when defaults are not used.
-	-t_contacts [templateFolder]: Folder containing templates for determining native contact map. Only necessary when -CG enabled.
+	-tCG [templateFolder]: Folder containing templates Coarse Graining. Only necessary when -CG is enabled.
 	-CG: enable coarse-graining
 	-g [smog.gro]: Output .gro file name
 	-o [smog.top]: Output .top file name
@@ -1355,10 +1353,14 @@ usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
 	-n [smog.ndx]: Output .ndx file name
 	-c [contacts.txt]: Input contact map file
 	-dname [smog]: Default name to use for all output files
-	-bu [yes]: Back up any pre-existing output files
+	-backup [yes]: Back up any pre-existing output files
 	-warnonly: Convert fatal errors to warnings (Caution: Consult manual before using this option)
 EOT
-  exit;
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit;
+  }
 }
 
 sub setContactParams
@@ -1785,17 +1787,19 @@ sub coarseGrain
 ## PARSE INPUTS ##
 ##################
 
-my $DNAME="";
+my $DNAME="smog";
 my $warnonly=0;
 my $backup="yes";
+
+
 ## parse command line options ##
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
-	 'CG' => \$CGenabled, 't_contacts=s' => \$contactRes, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 'bu=s' => \$backup)
+	 'CG' => \$CGenabled, 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 'backup=s' => \$backup, '<>' => \&usage)
           or defined $help 
           or !defined $inputPDB 
-          or (!defined $inputFolder  && !defined $contactRes));
+          or (!defined $inputFolder  && !defined $coarseFolder));
 
 header();
 if($warnonly){
@@ -1810,38 +1814,38 @@ if($inputFolder eq "" && $CAdefault==0 && $AAdefault==0){
 }
 
 if($backup ne "yes" and $backup ne "no"){
-	smog_quit("Can not understand -bu flag. Usage -bu [yes/no]");
+	smog_quit("Can not understand -backup flag. Usage -bu [yes/no]");
 }elsif($backup eq "no"){
 	print "-bu no issued.  Will overwrite any existing output files.\n";
 }
 
 if($CAdefault == 1 and $AAdefault == 1){
-	smog_quit('Can not use -CA and -AA flags at the same time.');
+	smog_quit('Can not use -CA and -AA options at the same time.');
 }
 if($CAdefault == 1 and $CGenabled == 1){
-	smog_quit('Can not use -CG and -AA flags at the same time.');
+	smog_quit('Can not use -CG and -AA options at the same time.');
 }
 if($CAdefault == 1 and $inputFolder ne ""){
-	smog_quit('Can not use -CA and -t flags at the same time.');
+	smog_quit('Can not use -CA and -t options at the same time.');
 }
 if($AAdefault == 1 and $inputFolder ne ""){
-	smog_quit('Can not use -AA and -t flags at the same time.');
+	smog_quit('Can not use -AA and -t options at the same time.');
 }
-if(($CAdefault == 1 || $AAdefault == 1) and $contactRes ne ""){
-	smog_quit('Can not use -AA, or -CA with -t_contacts.');
+if(($CAdefault == 1 || $AAdefault == 1) and $coarseFolder ne ""){
+	smog_quit('Can not use -AA, or -CA with -tCG.');
 }
 
 if($CAdefault == 1){
 	print "\n -CA given. Will use the default Calpha SMOG model provided with the distribution.\n";
 	my $SMOGDIR=$ENV{'SMOG_PATH'};
-	$inputFolder="$SMOGDIR/SBM_calpha";
-	$contactRes="$SMOGDIR/SBM_AA";
-	print "Will try to use templates found in \n$inputFolder\n and\n$contactRes\n\n";
+	$inputFolder="$SMOGDIR/SBM_AA";
+	$coarseFolder="$SMOGDIR/SBM_calpha";
+	print "Will try to use templates found in \n$inputFolder\n and\n$coarseFolder\n\n";
 	if(! -d $inputFolder){
 		smog_quit("$inputFolder is not a valid template directory.");
 	}
-	if(! -d $contactRes){
-		smog_quit("$contactRes is not a valid template directory.");
+	if(! -d $coarseFolder){
+		smog_quit("$coarseFolder is not a valid template directory.");
 	}
 	$CGenabled=1;
 }
@@ -1855,15 +1859,6 @@ if($AAdefault == 1){
 	}
 }
 
-## get variables in order
-# if CG is enabled, then the templates are CG templates
-if($CGenabled != 0){
-	$coarseFolder=$inputFolder;
-}
-
-# if contact templates are provided, and CG is turned on, then use contact templates for first round
-if($contactRes ne "" && $CGenabled != 0)
-{$inputFolder=$contactRes;} 
 
 # if a contact file is provided, then don't calculate contacts
 if($ContactFile ne ""){
@@ -1872,12 +1867,10 @@ if($ContactFile ne ""){
 
 ## Ensure we only write out files with gromacs-compatible suffices
 my $maxbu=10;
-if ($DNAME ne ""){
-	$topFile=$DNAME;
-	$groFile=$DNAME;
-	$shadowFile=$DNAME;
-	$ndxFile=$DNAME;
-}
+if($topFile eq ""){$topFile=$DNAME};
+if($groFile eq ""){$groFile=$DNAME};
+if($shadowFile eq ""){$shadowFile=$DNAME};
+if($ndxFile eq ""){$ndxFile=$DNAME};
 my ($ext)=$topFile =~ /(\.[^.]+)$/;
 if($topFile !~ /(\.[^.]+)$/){
 	$topFile = $topFile . ".top";
@@ -1930,7 +1923,7 @@ foreach my $filen($inputPDB,$ContactFile){
 	}
 }
 # directories we will access
-foreach my $filen($inputFolder,$contactRes){
+foreach my $filen($inputFolder,$coarseFolder){
 	if($filen ne "" && ! -d $filen){
 		smog_quit ("Can't find directory $filen !! ");
 	}
@@ -1938,18 +1931,18 @@ foreach my $filen($inputFolder,$contactRes){
 
 ## check for compatibility of options
 # if CG is not enabled, but contact templates are provided, stop
-if($CGenabled == 0 && $contactRes ne ""){
-	smog_quit ("t_contacts only supported when using a CG model.  Did you forget to specify \"-CG\"?");
+if($CGenabled == 0 && $coarseFolder ne ""){
+	smog_quit ("tCG only supported when using a CG model.  Did you forget to specify \"-CG\"?");
 }
 
 # if contact templates and a contact file are provided, complain
-if($ContactFile ne "" && $contactRes ne "")
-{smog_quit("You can only specify a t_contacts directory, or a contact file, not both");}
+if($ContactFile ne "" && $coarseFolder ne "")
+{smog_quit("You can only specify a tCG directory, or a contact file, not both");}
 
 
-# if contact templates are not provided, and contact file is not provided, but CG is turned on, complain
-if($contactRes eq "" && $CGenabled != 0 && $ContactFile eq "")
-{smog_quit("You need to specify t_contacts, or provide a contact map, when using coarse-graining");}
+# if CG templates are not provided, and contact file is not provided, but CG is turned on, complain
+if($coarseFolder eq "" && $CGenabled != 0 && $ContactFile eq "")
+{smog_quit("You need to specify tCG, or provide a contact map, when using coarse-graining");}
 
 
 ####################
