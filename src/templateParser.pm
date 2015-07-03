@@ -561,7 +561,7 @@ sub getEnergyGroup
 		$residueTypea =$residues{$residuea}->{"residueType"};
 		$residueTypeb =$residues{$residueb}->{"residueType"};
 		if(!exists $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"}){
-			smog_quit("Connection not defined for resTypes $residueTypea-$residueTypeb";)
+			smog_quit("Connection not defined for resTypes $residueTypea-$residueTypeb");
 		}
 		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
 	}
