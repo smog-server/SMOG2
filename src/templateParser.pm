@@ -561,7 +561,7 @@ sub getEnergyGroup
 		$residueTypea =$residues{$residuea}->{"residueType"};
 		$residueTypeb =$residues{$residueb}->{"residueType"};
 		if(!exists $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"}){
-			smog_quit("Connection not defined for resTypes $residueTypea-$residueTypeb";)
+			smog_quit("Connection not defined for resTypes $residueTypea-$residueTypeb");
 		}
 		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
 	}
@@ -912,8 +912,8 @@ sub getContactFunctionals
 	if($typeB eq $typeA){
 		$assigned--;
 	}
-
-	if($assigned >0){
+	#JEFFERROR changed to >1 because I think that is the correct logic
+	if($assigned >1){
 		smog_quit("Can\'t unambiguously assign a contact interaction between atoms of $typeA and $typeB.  See .nb for contact group definitions.\n");
 	}
 
