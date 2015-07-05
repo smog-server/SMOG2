@@ -895,7 +895,7 @@ sub getContactFunctionals
 		$assigned++;
 	}else{
 	
-		## If typeA exists while TypeB is a wildcard ##
+		## If typeA matches and TypeB matches a wildcard ##
 		if (exists $interactions->{"contacts"}->{"func"}->{$typeA}
 			&& (exists $interactions->{"contacts"}->{"func"}->{$typeA}->{"*"}))
 		{
@@ -904,7 +904,7 @@ sub getContactFunctionals
 			$assigned++;
 		}
 		
-		## If typeA is a wildcard while TypeB exists ##
+		## If typeB matches and TypeA matches a wildcard ##
 		if((exists $interactions->{"contacts"}->{"func"}->{$typeB}) &&
 				exists $interactions->{"contacts"}->{"func"}->{$typeB}->{"*"})
 		{
@@ -912,8 +912,12 @@ sub getContactFunctionals
 			$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeB}->{"*"};
 			$assigned++;
 		}
-		
-		## If both types are wildcard, and double wildcard interaction is defined ## 
+		## if types are the same, then it is ok that we had matched the same interaction twice
+		if($assigned ==2 && $typeB eq $typeA){
+			$assigned=1;
+		}
+	
+		## If nothing has matched, and double wildcard interaction is defined ## 
 		if($assigned==0 && exists $interactions->{"contacts"}->{"func"}->{"*"}->{"*"}){
 
 			$funct = $interactions->{"contacts"}->{"func"}->{"*"}->{"*"};
@@ -921,12 +925,11 @@ sub getContactFunctionals
 			$assigned++;
 		}
 	}
-	if($typeB eq $typeA){
-		$assigned--;
-	}
-	#JEFFERROR changed to >1 because I think that is the correct logic
-	if($assigned >1){
-		smog_quit("Can\'t unambiguously assign a contact interaction between atoms of $typeA and $typeB.  See .nb for contact group definitions.\n");
+	
+	if($assigned ==0){
+		smog_quit("Can\'t find a contact interaction that matches atomtype pair $typeA and $typeB.  See .nb for contact group definitions.\n");
+	}elsif($assigned >1){
+		smog_quit("Can\'t unambiguously assign a contact interaction between atoms of type $typeA and $typeB.  See .nb for contact group definitions.\n");
 	}
 
 	return ($funct,$cG);
