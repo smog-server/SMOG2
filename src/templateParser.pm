@@ -556,15 +556,27 @@ sub getEnergyGroup
 		else{smog_quit("A specified energy group for $residuea:$atoma, $residueb:$atomb doesn't exists");}
 	}
  	## If Bond is between two residues ##
-	else
+	elsif($atomb =~/(.*)\?/)
 	{
 		$residueTypea =$residues{$residuea}->{"residueType"};
 		$residueTypeb =$residues{$residueb}->{"residueType"};
 		if(!exists $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"}){
-			smog_quit("Connection not defined for resTypes $residueTypea-$residueTypeb");
+			smog_quit("1Connection not defined for resTypes $residueTypea-$residueTypeb (residues $residuea $residueb)");
+		}
+		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
+	}elsif($atoma =~/(.*)\?/)
+	{
+		my $res1=$residuea;
+		$residuea=$residueb;
+		$residueb=$res1;
+		$residueTypea =$residues{$residuea}->{"residueType"};
+		$residueTypeb =$residues{$residueb}->{"residueType"};
+		if(!exists $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"}){
+			smog_quit("2Connection not defined for resTypes $residueTypea-$residueTypeb (residues $residuea $residueb)");
 		}
 		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
 	}
+
 
 }
 

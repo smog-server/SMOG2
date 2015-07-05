@@ -583,7 +583,11 @@ sub GenerateBondedGeometry {
 		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
         	
 		## Adjust args for getEnergyGroup() ##
-        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+		if($map->{$b}->[1]-$map->{$c}->[1]>0){
+			($nb,$nc)=("$nb?",$nc);	
+		}elsif($map->{$b}->[1]-$map->{$c}->[1]<0){
+			($nb,$nc)=($nb,"$nc?");	
+		}
 		my $eG = getEnergyGroup($rb,$rc,$nb,$nc);
 		my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);	
         	$eG = $eGRevTable{$eG};
