@@ -263,7 +263,7 @@ sub parsePDBATOMS
 			}
 
 			if($resname ne $residue){
-				smog_quit("Inconsistent residue naming detected at line $lineNumber. Problem may be with previous residue.");
+				smog_quit("Inconsistent residue naming detected at line $lineNumber. \n$record\nProblem may be with previous residue.");
 			}
             		$interiorPdbResidueIndex = substr($record,22,5);  
 			if($resindex ne $interiorPdbResidueIndex){
