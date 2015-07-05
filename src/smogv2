@@ -1632,7 +1632,7 @@ sub appendContactsAndFinish { #finish up if all atom
 	my($fileName,$fileName2,$userProvidedMap) = @_;
 	#Parse the contact map, either the generated one or the user provided one
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap);
-	if($numContacts == 0){smog_quit ("There are 0 contacts,check shadow.error log file for possible errors");}
+	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
 	print "Completing final details...";
