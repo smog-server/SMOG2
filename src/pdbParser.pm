@@ -516,24 +516,25 @@ sub GenerateBondedGeometry {
 	}
 
 
-	# check that entire unit is a single molecule, connected through bonds
     	my @tempArr=();
 	## BOND ##
     	for(my $i=0;$i<scalar(@{$bH})-1;$i+=2) {	
-	my $bondStrA = $bH->[$i];
-    	$bondStrA = $map->{$bondStrA}->[0];
-    	my $bondStrB = $bH->[$i+1];
-    	$bondStrB = $map->{$bondStrB}->[0];
-    	my $sizeA = $map->{$bH->[$i]}->[2];my $sizeB = $map->{$bH->[$i+1]}->[2];
-	my $ra=$connect->[$map->{$bH->[$i]}->[1]];my $rb=$connect->[$map->{$bH->[$i+1]}->[1]];
-	my ($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$bondStrA)
-		       ,getAtomBType($ra,$bondStrA));
-	my ($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$bondStrB)
-		       ,getAtomBType($rb,$bondStrB));
-    	my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");	
-	push(@tempArr,pdl($ia,$ib,$if));
+  	  my $bondStrA = $bH->[$i];
+      	  $bondStrA = $map->{$bondStrA}->[0];
+      	  my $bondStrB = $bH->[$i+1];
+      	  $bondStrB = $map->{$bondStrB}->[0];
+      	  my $sizeA = $map->{$bH->[$i]}->[2];my $sizeB = $map->{$bH->[$i+1]}->[2];
+  	  my $ra=$connect->[$map->{$bH->[$i]}->[1]];my $rb=$connect->[$map->{$bH->[$i+1]}->[1]];
+  	  my ($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$bondStrA)
+  	  	       ,getAtomBType($ra,$bondStrA));
+  	  my ($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$bondStrB)
+  	  	       ,getAtomBType($rb,$bondStrB));
+      	  my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");	
+  	  push(@tempArr,pdl($ia,$ib,$if));
 	}
-	$connBondFunctionals{$counter}=cat(@tempArr);
+	if(@tempArr){
+		$connBondFunctionals{$counter}=cat(@tempArr);
+	}
 	@tempArr=();
 	## ANGLES ##
 	foreach my $angs(@{$angH})
@@ -556,7 +557,9 @@ sub GenerateBondedGeometry {
         	my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
         	push(@tempArr,pdl($ia,$ib,$ic,$if));		
 	}
+	if(@tempArr){
 		$connAngleFunctionals{$counter} = cat(@tempArr);
+	}
 		@tempArr = ();
 
 
@@ -1195,6 +1198,8 @@ sub GenAnglesDihedrals
      	$union{$atomKey} = \@tempArr;
     }
 
+    # if this is a single residue chain, then don't try to connect it to the next residue
+        if($#$connect == 0) {last;}
 	## Start of chain no inter residue connection ##
     #  but setup leftAtom and leftResidue sizes #
     if($i == 0) 
@@ -1222,16 +1227,14 @@ sub GenAnglesDihedrals
     $leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
     $leftAtom = $bondMapHashRev{"$leftAtom-$i"};
     $prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
-
-  }
-   ## Create Inter residue connection ##
-   for($i=0;$i<scalar(@connectList)-1;$i+=2) {
-  	push(@{$union{$connectList[$i]}},$connectList[$i+1]);
-	push(@{$union{$connectList[$i+1]}},$connectList[$i]);
-        
    }
-   ($dihes,$angles,$oneFour)=adjListTraversal(\%union);
-   return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev,\%union,\@AtomsInConnections);
+  ## Create Inter residue connection ##
+  for($i=0;$i<scalar(@connectList)-1;$i+=2) {
+   push(@{$union{$connectList[$i]}},$connectList[$i+1]);
+   push(@{$union{$connectList[$i+1]}},$connectList[$i]);
+  }
+  ($dihes,$angles,$oneFour)=adjListTraversal(\%union);
+  return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev,\%union,\@AtomsInConnections);
 
 }
 
