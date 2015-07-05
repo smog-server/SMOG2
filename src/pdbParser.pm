@@ -466,6 +466,12 @@ sub connectivityCheck
 	my %union=%{$unionref};
         my %visitedList; my $visitedString;
 	my @nextround;
+	my $size =keys %union;
+	if($size == 0){
+		smog_quit("Found 0 atoms in chain $chid.  Perhaps TER appears on consecutive lines, or TER is immediately followed by END.");
+	}
+	print "There are $size atoms in chain $chid. ";
+
 	$nextround[0]=0;
 	while( $#nextround >= 0){
 		my @newlist;
@@ -495,11 +501,11 @@ sub GenerateBondedGeometry {
    	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union,$ConnectedAtoms) = GenAnglesDihedrals($connect);
 	my $union2=$union;
 	my %union=%{$union};
-	print "Attempting to connect all atoms in chain $chid to the first residue: ";
+	print "Attempting to connect all atoms in chain $chid to the first atom: ";
 	my ($connected,$missed)=connectivityCheck(\%union,$chid);
 
 	if($missed==0){
-		print "$connected atoms connected via covalent bonds \n"; 
+		print "All $connected atoms connected via covalent bonds \n"; 
 	}else{
 		smog_quit("In chain $chid, unable to connect $missed atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file.\nSee messages above. ")
 	}
