@@ -519,10 +519,12 @@ sub connCalculateDihedralsHelper
 	 my $size = $diheArr->dim(1);
 	 for(my $i=0;$i<$size;$i++)
 	 {
+			my @TMP=$diheArr->slice(":,$i:$i")->list;
+			if(@TMP < 7){next;}
 			my ($atom1,$atom2,$atom3,$atom4,$func,$cD,$eG) = $diheArr->slice(":,$i:$i")->list;
 		
 		   
-	        my $b1 = slice($inputPDL,"0:2,$atom2,:")-slice($inputPDL,"0:2,$atom1,:");
+	        	my $b1 = slice($inputPDL,"0:2,$atom2,:")-slice($inputPDL,"0:2,$atom1,:");
 			my $b2 = slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:");
 			my $b3 = slice($inputPDL,"0:2,$atom4,:")-slice($inputPDL,"0:2,$atom3,:");
 		

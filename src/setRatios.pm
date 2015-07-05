@@ -44,9 +44,7 @@ sub getDiheCountsHelper
  for(my $i=0;$i<$size;$i++)
  {
  	my @A = $diheArr->slice(":,$i:$i")->list;
- 	unless($#A > 0){ 
- 		smog_quit ("Unable to construct a dihedral angle.\n        This typically means there is a chain with fewer than 4 atoms (e.g. a 1-bead per residue CG model with a 3-residues chain.)");
- 	}
+ 	if($#A == 0){next;} 
 	my $a=$A[0];
 	my $b=$A[1];
 	my $c=$A[2];
@@ -78,6 +76,7 @@ sub setDiheCountsHelper
 	{
 	#	my ($a,$b,$c,$d,$func,$cD,$eG) = $diheArr->slice(":,$i:$i")->list;
 		my @A = $diheArr->slice(":,$i:$i")->list; 
+ 		if($#A == 0){next;} 
 #		if($#A >0){ 
 			my $a=$A[0];
 			my $b=$A[1];
@@ -151,6 +150,7 @@ sub adjustFactorsHelper1
  	my $size = $diheArr->dim(1);
  	for(my $i=0;$i<$size;$i++)
  	{
+	if($size <6){last;}
 	my($a,$b,$c,$d,$func,$count,$eG) = $diheArr->slice("0:6,$i:$i")->list;
 	## Convert from relative index to absolute indexing ##
     	$a = sclr(slice($inputPDL,"3:3,$a,:"));
@@ -217,6 +217,7 @@ sub adjustFactorsHelper2
 
 for(my $i=0;$i<$size;$i++)
  {
+	if($size <6){last;}
 	my($a,$b,$c,$d,$func,$count,$eG) = $diheArr->slice("0:6,$i:$i")->list;
 	## Convert from relative index to absolute indexing ##
 	$a = sclr(slice($inputPDL,"3:3,$a,:"));
