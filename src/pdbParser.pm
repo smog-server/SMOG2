@@ -44,6 +44,7 @@ my %residuePDL=();
 our %tempPDL = ();
 our %resPDL;
 our %connPDL;
+our %indexMap;
 my $angToNano = 0.1;
 
 
@@ -67,7 +68,8 @@ sub clearPDBMemory {
 undef %tempPDL;undef %resPDL;undef %connPDL;
 undef %connAngleFunctionals;undef %connDiheFunctionals;
 undef %connBondFunctionals;undef $totalAtoms;
-undef $contactPDL; undef %allAtoms;
+#undef $contactPDL; 
+undef %allAtoms; undef %indexMap;
 }
 
 
@@ -106,7 +108,6 @@ sub parsePDBATOMS
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=1;
   my $secondcall; my $interiorPdbResidueIndex=0;
-  my %indexMap;
   my $lineNumber = 0;
   my %connectedatom;
   my $lastchainstart=0;
@@ -1305,18 +1306,18 @@ sub catPDL
 sub parseCONTACT
 {
 	#lets leave this as two filename inputs in case we want to allow two sources of contacts in the future (i.e. user and shadow)
-	my($fileName,$fileName2,$ignAllContacts,$coarseGraining) = @_;
+	my($fileName,$fileName2,$userProvidedMap) = @_;
 	my $numContacts = 0; my $garbage = 0;
 	my $line = "";
-	my $chain1;my $chain2; my $contact1; my $contact2;
-	my $dist;my $dist2;
+	my $chain1;my $chain2; my $contact1; my $contact2; my $pdbNum1; my $pdbNum2;
+	my $dist;
 	my $x1;my $x2;my $y1;my $y2;my $z1;my $z2;
 	my @interiorTempPDL; #usage: push(@interiorTempPDL,[1,$contact1,$contact2,$dist]);
 	#Format for this PDL has a boolean as the first argument
 	#it is unused for now, but could be useful in future to use
 	#as a flag to differentiate between user generated and smog generated contacts
 
-	if(!$ignAllContacts){ #use shadow generated contact map
+	if(!$userProvidedMap){ #use shadow generated contact map
 		## OPEN .contact FILE ##
 		unless (open(CONTFILE, $fileName)) {
 			smog_quit ("Internal contact file can not be read.  See shadow.log for more information.");
@@ -1326,12 +1327,11 @@ sub parseCONTACT
 			($chain1,$contact1,$chain2,$contact2) = split(/\s+/,$line);
 			$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
 			$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
-			$dist2 = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
-			## NOTE RESIDUE INDEX == CONTACT ##
-			if($dist2 < $interactionThreshold->{"contacts"}->{"shortContacts"})
+			$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
+			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
 			{smog_quit("CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist");}
 
-			push(@interiorTempPDL,[0,$contact1,$contact2,$dist2]);
+			push(@interiorTempPDL,[0,$contact1,$contact2,$dist]);
 			$numContacts++;
 		}
 	} else { #read in contact from file
@@ -1341,10 +1341,16 @@ sub parseCONTACT
 		unless (open(CONTFILE1, $fileName2)) {
 			smog_quit ("Cannot read contact file '$fileName2'.");
 		}
-		## User contact map should be in format ##
-		## atom1 atom2 dist(nm) ##
+		## User contact map should be in format below and use input PDB numbering ##
+		## chain1 atom1 chain2 atom2 ##
 		while($line = <CONTFILE1>) {
-			my ($contact1,$contact2,$dist) = split(/\s+/,$line);
+			my ($chain1,$pdbNum1,$chain2,$pdbNum2) = split(/\s+/,$line);
+			$chain1--;$chain2--; #moving to zero based numbering
+			$contact1 = $indexMap{"$chain1-$pdbNum1"};
+			$contact2 = $indexMap{"$chain2-$pdbNum2"};
+			$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
+			$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
+			$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
 			if(!exists $allAtoms{$contact1}){warn("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if(!exists $allAtoms{$contact2}){warn("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})

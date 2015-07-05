@@ -45,7 +45,7 @@ my $OUTPUT;
 my $help;
 my $inputPDB="molecule.pdb"; 
 my $inputFolder=""; my $bifForSCM;
-my $ignAllContacts=0;
+my $userProvidedMap=0;
 my $topFile = "";
 my $groFile = "";
 my $ContactFile = "";
@@ -80,6 +80,7 @@ our @linesInDirectives;
 ## OUTPUT TOPFILE ##
 ####################
 sub printTop {
+	my($topFile) = @_;
 	open($OUTPUT, ">$topFile");
 	my $i;
 	my $j;
@@ -1365,23 +1366,25 @@ EOT
 
 sub setContactParams
 {
-			my $method = $contactSettings->{"method"};
-			if($method =~ m/shadow/)
-			{
-					my $radius = $contactSettings->{"shadowRadius"};
-					my $radiusBonded = $contactSettings->{"shadowRadiusBonded"};
-					my $dist = $contactSettings->{"contactDistance"};
-				    return "-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --smog2output --showProgress";
-			}
-			elsif($method =~ m/cutoff/) 
-			{
-			  my $dist = $contactSettings->{"contactDistance"};
-		 	  my $radius = 0.0;
-			  my $radiusBonded = 0.0;
-			  return "-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --smog2output --showProgress";
-			
-			}
-			else {smog_quit ("Contact map method $method is not supported.");}
+	my $method = $contactSettings->{"method"};
+	my $params = "";
+	if($method =~ m/shadow/)
+	{
+		my $radius = $contactSettings->{"shadowRadius"};
+		my $radiusBonded = $contactSettings->{"shadowRadiusBonded"};
+		my $dist = $contactSettings->{"contactDistance"};
+		$params="-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --smog2output --showProgress --ignoreH";
+	}
+	elsif($method =~ m/cutoff/) 
+	{
+		my $dist = $contactSettings->{"contactDistance"};
+		my $radius = 0.0;
+		my $radiusBonded = 0.0;
+		$params="-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --smog2output --showProgress";
+	}
+	else {smog_quit ("Contact map method $method is not supported.");}
+	if($CGenabled == 1) { $params = $params." --coarse CA"; }
+	return $params;
 }
 
 
@@ -1521,28 +1524,20 @@ undef %connBondFunctionals;undef $contactPDL;
 }
 
 
-##
-## ALL-ATOM PROGRAM DRIVER ##
-## Perform All-Atom Topology Generation
-sub allAtom
+sub parseTemplates
 {
-	my ($inputFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile) = @_;
-
-	print "\n*****************************************************\n";
-	print   "******* ALL-ATOM SMOG MODEL WILL BE GENERATED *******";
-	print "\n*****************************************************\n";
-        
-        ## TEST IF SMOG PATH EXISTS ##
-        if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
+	my ($inputFolder,$inputPDB,$allowCG) = @_;
+    
+    ## TEST IF SMOG PATH EXISTS ##
+    if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
 	$| = 1;
 	## OPEN .top handle ## don't do this here since we buffered the output now
 	#open($OUTPUT, ">$topFile"); 
-        print "Parsing All-Atom Templates... ";
 	parseInputFolder($inputFolder); ## PARSE FOLDER --> FILE
 
 	#####################
-        ## PARSE TEMPLATES ##
-        #####################
+    ## PARSE TEMPLATES ##
+    #####################
 	initializeDirectives();
 	## parse .bif File ##
 	parseBif();
@@ -1550,24 +1545,21 @@ sub allAtom
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
-        print "\nDone parsing templates.\n";
-
+    print "\nDone parsing templates.\n";
 	## Find Bonds ##
 	createBondFunctionals();
 	## Find Angles ##
 	createDihedralAngleFunctionals();
-
 	###############
     ## PARSE PDB ##
     ###############
 	print "Parsing .pdb...\n";
-	parsePDBATOMS($inputPDB,0);
+	parsePDBATOMS($inputPDB,$allowCG);
 	catPDL();
-	print "Creating topology for contact calculation.....\n";
-	#####################################
-	## DO CALCULATIONS FOR HAMILTONIAN ##
-	#####################################
-	## COUNT NUMBER OF DIHEDRALS ##
+}
+
+sub printBondedTopOutput {
+	my ($inputPDB,$groFile,$ndxFile) = @_;
 	print "Generating angles and dihedrals...";
 	getSetDiheCounts(\%connDiheFunctionals,\%connPDL);
 	## SET DIHEDRAL RATIOS ##
@@ -1586,16 +1578,18 @@ sub allAtom
 	## CALCULATE DIHEDRALS ##
 	print "Saving dihedrals\n";
 	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
-    
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	## print intermediate top for SCM.jar to read ##
-	printTop();
+}
+
+sub generateContactMap {
+	my ($groFile,$ndxFile,$shadowFile,$topFile) = @_;
 	## CALL SHADOW/PARSE CONTACTS ##
 	print "Starting contact calculations ...\n  ";
 	my $SCMparams = setContactParams();
-	my $absAtomCount = keys(%allAtoms);
     my $memoryMax = "";
+	my $absAtomCount = keys(%allAtoms);
     if($absAtomCount >= 1000000)
     {
      $memoryMax = 4000;
@@ -1611,175 +1605,21 @@ sub allAtom
 	
 	if((!exists $ENV{SMOG_PATH}) || 
 		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){smog_quit ("Can't find Shadow executable. Make sure SMOG_PATH is set correctly.")}
-	if($ignAllContacts==0){
 		print "Calling $ENV{SMOG_PATH}/tools/SCM.jar \n";
-	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");}
-	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignAllContacts,0);
+	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
+}
 
-
-	if($numContacts == 0){smog_quit ("There are 0 contacts,check log file for possible errors");}
+sub appendContactsAndFinish { #finish up if all atom
+	my($fileName,$fileName2,$userProvidedMap) = @_;
+	#Parse the contact map, either the generated one or the user provided one
+	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap);
+	if($numContacts == 0){smog_quit ("There are 0 contacts,check shadow.error log file for possible errors");}
+	my $absAtomCount = keys(%allAtoms);
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
 	print "Completing final details...";
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
-	close($OUTPUT);
-	printCitation();
-}
-
-##
-## COARSE GRAIN PROGRAM DRIVER ##
-## Perform Coarse Grain Topology Generation
-sub coarseGrain
-{
-	my ($inputFolder,$coarseFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile) = @_;
-	print "\n*****************************************************\n";
-	print   "**** COARSE-GRAINED SMOG MODEL WILL BE GENERATED ****";
-	print "\n*****************************************************\n";
-        
-
-	$| = 1;
-	## TEST IF SMOG PATH EXISTS ##
-        if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
-
-	## OPEN .top handle ## don't do this here since we are buffering the output
-	#open($OUTPUT, ">$topFile");
-	
-
-	##############################
-    ## PARSE ALL ATOM TEMPLATES ##
-    ##############################
-    print "\n\n		PREPROCESSING\n\nWill use contact-specific templates\n";
-	parseInputFolder($inputFolder);
-	initializeDirectives();
-	## parse Bif File ##
-	parseBif();
-	## parse Sif File ##
-        print "\nNote: Contact definitions given in templates $inputFolder are being used\n";
-	parseSif();
-	## parse Bonds/Nonbonds File
-	parseBonds();parseNonBonds();
-        print "\nDone parsing template files.\n";
-
-	## Find Bonds ##
-	createBondFunctionals();
-	## Find Angles ##
-	createDihedralAngleFunctionals();
-	###############
-    ## PARSE PDB ##
-    ###############
-	print "Parsing .pdb...\n";
-	parsePDBATOMS($inputPDB,0);
-	catPDL();
-
-	#####################################
-	## DO CALCULATIONS FOR HAMILTONIAN ##
-	#####################################
-	## COUNT NUMBER OF DIHEDRALS ##
-	print "Preparing system for contact evaluations...";
-	getSetDiheCounts(\%connDiheFunctionals,\%connPDL);
-	## SET DIHEDRAL RATIOS ##
-	print "..";
-	setRatios(\%connDiheFunctionals,\%connPDL,$totalAtoms,\%allAtoms);
-	calculateAtomTypes(\%allAtoms);
-	print "..";
-	readAtoms($inputPDB);
-	## CALCULATE BONDS/CONNECTED BONDS ##
-	print "..";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL);
-	## CALCULATE ANGLES ##
-	print "..";
-	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
-	## CALCULATE DIHEDRALS ##
-	print "..";
-	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
-	print "..\n";
-    convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
-	## print intermediate top for SCM.jar to read ##
-	printTop();
-	my $SCMparams = setContactParams();
-	my $absAtomCount = keys(%allAtoms);
-    	my $memoryMax = "";
-    	if($absAtomCount >= 1000000)
-    	{
-     		$memoryMax = 4000;
-     		print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
-     		$memoryMax = "-Xmx$memoryMax"."m";
-    	} 
-        if($ignAllContacts ==0){
-        print "Finding coarse grained contacts... ";
-	if((!exists $ENV{SMOG_PATH}) || 
-		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){smog_quit ("Can't find Shadow executable. Make sure SMOG_PATH is set correctly.")}
-	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar --coarse CA -g $groFile -t $topFile -ch $ndxFile -o $shadowFile $SCMparams ");
-        }
-	## CLEAR ALL-ATOM MEMORY ##
-    clearBifMemory();clearPDBMemory();
-
- 
-	###################################
-        ## PARSE COARSEGRAINED TEMPLATES ##
-        ###################################
-	## OPEN .top handle ## don't do this here since we are buffering output
-	#open($OUTPUT, ">$topFile");
-        print "\n\n	     FINAL PROCESSING\n\nWill use templates for final model\n\n";
-	print "Parsing Coarse Grained Templates... ";
-	parseInputFolder($coarseFolder);
-	initializeDirectives();
-	## parse Bif File ##
-	parseBif();
-	## parse Sif File ##
-        print "\nNote: Contact definitions given in templates $coarseFolder are NOT being used.\n";
-	parseSif();
-	## parse Bonds/Nonbonds File
-	parseBonds();parseNonBonds();
-        print "Done parsing templates\n";
-
-	## Find Bonds ##
-	createBondFunctionals();
-	## Find Angles ##
-	createDihedralAngleFunctionals();
-        
-	###############
-    	## PARSE PDB ##
-    	###############
-	print "Coarse Graining system.....";
-	parsePDBATOMS($inputPDB,1);
-	catPDL();
-	print "Done\n";
-	
-	## CREATE GRO FILE ##
-	print "Creating .gro.....";
-	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
-	print "Done\n";
-	$absAtomCount = keys(%allAtoms);
-	print "NOTE: Total atom count: $absAtomCount\n";
-	
-	## COUNT NUMBER OF DIHEDRALS ##
-	print "Constructing final model...";
-	getSetDiheCounts(\%connDiheFunctionals,\%connPDL);
-	## SET DIHEDRAL RATIOS ##
-	print "..";
-	setRatios(\%connDiheFunctionals,\%connPDL,$totalAtoms,\%allAtoms);
-	print "..";
-	calculateAtomTypes(\%allAtoms);
-	print "..";
-	readAtoms($inputPDB);
-	## CALCULATE BONDS/CONNECTED BONDS ##
-	print "..\n";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL);
-	## CALCULATE ANGLES ##
-	print "Saving angles\n";
-	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
-	## CALCULATE DIHEDRALS ##
-	print "Saving dihedrals\n";
-	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
-
-	$numContacts = parseCONTACT($shadowFile,$ContactFile,$ignAllContacts,1);
-	if($numContacts == 0){smog_quit ("There are 0 contacts,check shadow.error log file for possible errors");}
-	## CALCULATE PAIRS and EXCLUSIONS ##
- 	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
-	close($OUTPUT);
 	printCitation();
 }
 
@@ -1816,7 +1656,7 @@ if($inputFolder eq "" && $CAdefault==0 && $AAdefault==0){
 if($backup ne "yes" and $backup ne "no"){
 	smog_quit("Can not understand -backup flag. Usage -bu [yes/no]");
 }elsif($backup eq "no"){
-	print "-bu no issued.  Will overwrite any existing output files.\n";
+	print "-backup no issued.  Will overwrite any existing output files.\n";
 }
 
 if($CAdefault == 1 and $AAdefault == 1){
@@ -1862,7 +1702,7 @@ if($AAdefault == 1){
 
 # if a contact file is provided, then don't calculate contacts
 if($ContactFile ne ""){
-	$ignAllContacts=1;
+	$userProvidedMap=1;
 }
 
 ## Ensure we only write out files with gromacs-compatible suffices
@@ -1936,25 +1776,51 @@ if($CGenabled == 0 && $coarseFolder ne ""){
 }
 
 # if contact templates and a contact file are provided, complain
-if($ContactFile ne "" && $coarseFolder ne "")
-{smog_quit("You can only specify a tCG directory, or a contact file, not both");}
+# JEFFERROR no longer valid error, you can add your contacts even if you coarse grain
+# if($ContactFile ne "" && $coarseFolder ne "")
+# {smog_quit("You can only specify a tCG directory, or a contact file, not both");}
 
 
 # if CG templates are not provided, and contact file is not provided, but CG is turned on, complain
-if($coarseFolder eq "" && $CGenabled != 0 && $ContactFile eq "")
-{smog_quit("You need to specify tCG, or provide a contact map, when using coarse-graining");}
+# JEFFERROR, no need to mention contact map - that is separate
+if($coarseFolder eq "" && $CGenabled != 0)
+{smog_quit("You need to specify tCG when using coarse-graining");}
+#{smog_quit("You need to specify tCG, or provide a contact map, when using coarse-graining");}
 
 
 ####################
 ## PROGRAM DRIVER ##
 ####################
 
-## PROCESS All-Atom or Coarse Grain ##
-## ALL-ATOM ##
-if($CGenabled == 0){allAtom($inputFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile);}
-## COARSE-GRAIN ## 
-else{coarseGrain($inputFolder,$coarseFolder,$inputPDB,$groFile,$ndxFile,$shadowFile,$topFile);}
-
-#print $allAtoms{1}[6]," ",$allAtoms{1}[7];
-printTop();
+if($CGenabled == 0) {
+	print "\n*****************************************************\n";
+	print   "******* ALL-ATOM SMOG MODEL WILL BE GENERATED *******";
+	print "\n*****************************************************\n";
+} else {
+	print "\n*****************************************************\n";
+	print   "**** COARSE-GRAINED SMOG MODEL WILL BE GENERATED ****";
+	print "\n*****************************************************\n";
+}
+my $allowCG = 0;
+print "Parsing templates corresponding to input PDB... ";
+parseTemplates($inputFolder,$inputPDB,$allowCG);
+if($CGenabled == 0) {
+	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
+} elsif ($CGenabled == 1 && $userProvidedMap == 0) { #CG but we still need full .top to make a map
+	print "Creating topology for contact calculation.....\n";
+	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
+}
+if($userProvidedMap == 0) { #use SCM.jar if user doesn't provide a map
+	printTop($topFile);
+	generateContactMap($groFile,$ndxFile,$shadowFile,$topFile);
+}
+if($CGenabled == 1) { #Coarse graining, do everything over with new templates
+    clearBifMemory();clearPDBMemory();
+	$allowCG = 1;
+	print "\nParsing templates for coarse graining... ";
+	parseTemplates($coarseFolder,$inputPDB,$allowCG);
+	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
+}
+appendContactsAndFinish($shadowFile,$ContactFile,$userProvidedMap);
+printTop($topFile);
 ## END ##

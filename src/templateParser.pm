@@ -912,8 +912,8 @@ sub getContactFunctionals
 	if($typeB eq $typeA){
 		$assigned--;
 	}
-
-	if($assigned >0){
+	#JEFFERROR changed to >1 because I think that is the correct logic
+	if($assigned >1){
 		smog_quit("Can\'t unambiguously assign a contact interaction between atoms of $typeA and $typeB.  See .nb for contact group definitions.\n");
 	}
 
