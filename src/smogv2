@@ -1777,17 +1777,9 @@ if($CGenabled == 0 && $coarseFolder ne ""){
 	smog_quit ("tCG only supported when using a CG model.  Did you forget to specify \"-CG\"?");
 }
 
-# if contact templates and a contact file are provided, complain
-# JEFFERROR no longer valid error, you can add your contacts even if you coarse grain
-# if($ContactFile ne "" && $coarseFolder ne "")
-# {smog_quit("You can only specify a tCG directory, or a contact file, not both");}
-
-
 # if CG templates are not provided, and contact file is not provided, but CG is turned on, complain
-# JEFFERROR, no need to mention contact map - that is separate
 if($coarseFolder eq "" && $CGenabled != 0)
 {smog_quit("You need to specify tCG when using coarse-graining");}
-#{smog_quit("You need to specify tCG, or provide a contact map, when using coarse-graining");}
 
 
 ####################
