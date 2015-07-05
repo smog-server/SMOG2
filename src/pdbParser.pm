@@ -263,7 +263,7 @@ sub parsePDBATOMS
 			}
 
 			if($resname ne $residue){
-				smog_quit("Inconsistent residue naming detected at line $lineNumber. Problem may be with previous residue.");
+				smog_quit("Inconsistent residue naming detected at line $lineNumber. \n$record\nProblem may be with previous residue.");
 			}
             		$interiorPdbResidueIndex = substr($record,22,5);  
 			if($resindex ne $interiorPdbResidueIndex){
@@ -516,24 +516,25 @@ sub GenerateBondedGeometry {
 	}
 
 
-	# check that entire unit is a single molecule, connected through bonds
     	my @tempArr=();
 	## BOND ##
     	for(my $i=0;$i<scalar(@{$bH})-1;$i+=2) {	
-	my $bondStrA = $bH->[$i];
-    	$bondStrA = $map->{$bondStrA}->[0];
-    	my $bondStrB = $bH->[$i+1];
-    	$bondStrB = $map->{$bondStrB}->[0];
-    	my $sizeA = $map->{$bH->[$i]}->[2];my $sizeB = $map->{$bH->[$i+1]}->[2];
-	my $ra=$connect->[$map->{$bH->[$i]}->[1]];my $rb=$connect->[$map->{$bH->[$i+1]}->[1]];
-	my ($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$bondStrA)
-		       ,getAtomBType($ra,$bondStrA));
-	my ($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$bondStrB)
-		       ,getAtomBType($rb,$bondStrB));
-    	my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");	
-	push(@tempArr,pdl($ia,$ib,$if));
+  	  my $bondStrA = $bH->[$i];
+      	  $bondStrA = $map->{$bondStrA}->[0];
+      	  my $bondStrB = $bH->[$i+1];
+      	  $bondStrB = $map->{$bondStrB}->[0];
+      	  my $sizeA = $map->{$bH->[$i]}->[2];my $sizeB = $map->{$bH->[$i+1]}->[2];
+  	  my $ra=$connect->[$map->{$bH->[$i]}->[1]];my $rb=$connect->[$map->{$bH->[$i+1]}->[1]];
+  	  my ($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$bondStrA)
+  	  	       ,getAtomBType($ra,$bondStrA));
+  	  my ($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$bondStrB)
+  	  	       ,getAtomBType($rb,$bondStrB));
+      	  my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");	
+  	  push(@tempArr,pdl($ia,$ib,$if));
 	}
-	$connBondFunctionals{$counter}=cat(@tempArr);
+	if(@tempArr){
+		$connBondFunctionals{$counter}=cat(@tempArr);
+	}
 	@tempArr=();
 	## ANGLES ##
 	foreach my $angs(@{$angH})
@@ -556,7 +557,9 @@ sub GenerateBondedGeometry {
         	my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
         	push(@tempArr,pdl($ia,$ib,$ic,$if));		
 	}
+	if(@tempArr){
 		$connAngleFunctionals{$counter} = cat(@tempArr);
+	}
 		@tempArr = ();
 
 
@@ -583,7 +586,11 @@ sub GenerateBondedGeometry {
 		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
         	
 		## Adjust args for getEnergyGroup() ##
-        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+		if($map->{$b}->[1]-$map->{$c}->[1]>0){
+			($nb,$nc)=("$nb?",$nc);	
+		}elsif($map->{$b}->[1]-$map->{$c}->[1]<0){
+			($nb,$nc)=($nb,"$nc?");	
+		}
 		my $eG = getEnergyGroup($rb,$rc,$nb,$nc);
 		my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);	
         	$eG = $eGRevTable{$eG};
@@ -1191,6 +1198,8 @@ sub GenAnglesDihedrals
      	$union{$atomKey} = \@tempArr;
     }
 
+    # if this is a single residue chain, then don't try to connect it to the next residue
+        if($#$connect == 0) {last;}
 	## Start of chain no inter residue connection ##
     #  but setup leftAtom and leftResidue sizes #
     if($i == 0) 
@@ -1218,16 +1227,14 @@ sub GenAnglesDihedrals
     $leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
     $leftAtom = $bondMapHashRev{"$leftAtom-$i"};
     $prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
-
-  }
-   ## Create Inter residue connection ##
-   for($i=0;$i<scalar(@connectList)-1;$i+=2) {
-  	push(@{$union{$connectList[$i]}},$connectList[$i+1]);
-	push(@{$union{$connectList[$i+1]}},$connectList[$i]);
-        
    }
-   ($dihes,$angles,$oneFour)=adjListTraversal(\%union);
-   return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev,\%union,\@AtomsInConnections);
+  ## Create Inter residue connection ##
+  for($i=0;$i<scalar(@connectList)-1;$i+=2) {
+   push(@{$union{$connectList[$i]}},$connectList[$i+1]);
+   push(@{$union{$connectList[$i+1]}},$connectList[$i]);
+  }
+  ($dihes,$angles,$oneFour)=adjListTraversal(\%union);
+  return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev,\%union,\@AtomsInConnections);
 
 }
 
@@ -1329,7 +1336,15 @@ sub parseCONTACT
 			$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
 			$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
 			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
-			{smog_quit("CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist");}
+			{
+			  if($main::setContacttoLimit){
+			    $dist=$interactionThreshold->{"contacts"}->{"shortContacts"};
+                            print "NOTE: Contact between atoms $contact1 $contact2 exceed contacts threshold with value $dist\n";
+			    print "-limitcontactlength is being used, will set distance of contact to $dist\n\n";
+			  }else{
+                            smog_quit("Contact between atoms $contact1 $contact2 exceed contacts threshold with value $dist");
+ 			  }
+			}
 
 			push(@interiorTempPDL,[0,$contact1,$contact2,$dist]);
 			$numContacts++;
@@ -1354,7 +1369,16 @@ sub parseCONTACT
 			if(!exists $allAtoms{$contact1}){warn("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if(!exists $allAtoms{$contact2}){warn("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
-			{smog_quit("CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist");}
+			{
+
+			  if($main::setContacttoLimit){
+			    $dist=$interactionThreshold->{"contacts"}->{"shortContacts"};
+                            print "CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist\n";
+			    print "-limitcontactlength is being used, will set distance of contact to $dist\n\n";
+			  }else{
+                            smog_quit("CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist");
+ 			  }
+		        }
 			push(@interiorTempPDL,[1,$contact1,$contact2,$dist]);
 			$numContacts++;
 		}
