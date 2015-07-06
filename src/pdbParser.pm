@@ -107,7 +107,7 @@ sub parsePDBATOMS
   my $atomCounter=0;my $singleFlag = 1;
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=1;
-  my $secondcall; my $interiorPdbResidueIndex=0;
+  my $interiorPdbResidueIndex=0;
   my $lineNumber = 0;
   my %connectedatom;
   my $lastchainstart=0;
@@ -228,12 +228,11 @@ sub parsePDBATOMS
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
 		## if first iteration, save residueBackup, and use residues
-		if(exists $residueBackup{$residue}){
+		#if(exists $residueBackup{$residue}){
+		if($CGenabled == 1){
 			$atomsInRes = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
-			$secondcall=1;
 		}else{
 			$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
-			$secondcall=0;
 		}
 		my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
 		if($atomsInBif != 1 && $CGenabled ==1)
@@ -286,7 +285,7 @@ sub parsePDBATOMS
                         {smog_quit("$atom appears twice in $residue at line $lineNumber\n");}
                         else {$uniqueAtom{$atom}=1;}
 
-			if($secondcall == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
+			if($CGenabled == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
 			{smog_quit ("$atom doesn't exist in .bif declaration of $residue");}
 			
 			## CHECK IF ATOM EXISTS IN MODEL ##
