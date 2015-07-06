@@ -27,6 +27,8 @@ use strict;
 use warnings;
 use Exporter;
 use PDL; ## LOAD PDL MODULE
+use Storable qw(dclone);
+
 
 ## DELETE LATER ##
 #use Devel::Size qw(size total_size);
@@ -58,6 +60,7 @@ my @consecResidues;
 our $totalAtoms;
 our $contactPDL;
 our %allAtoms;
+our %allAtomsBackup;
 
 our %extContacts;
 
@@ -69,7 +72,10 @@ undef %tempPDL;undef %resPDL;undef %connPDL;
 undef %connAngleFunctionals;undef %connDiheFunctionals;
 undef %connBondFunctionals;undef $totalAtoms;
 #undef $contactPDL; 
-undef %allAtoms; undef %indexMap;
+undef %indexMap;
+#for coarse graining contact maps we need to know the atomNum<->resNum mapping
+%allAtomsBackup = %{ dclone (\%allAtoms) };
+undef %allAtoms; 
 }
 
 
@@ -112,6 +118,7 @@ sub parsePDBATOMS
   my %connectedatom;
   my $lastchainstart=0;
   my $endfound=0;
+  my $residueSerial=0;
   ## OPEN .PDB FILE ##
   
  unless (open(PDBFILE, $fileName)) {
@@ -244,7 +251,7 @@ sub parsePDBATOMS
 		my $resname=$residue;
                 my $resindex = substr($record,22,5);
 		my %uniqueAtom;
-
+		$residueSerial++;
 		for($i=0;$i<$atomsInRes;$i++)
 		{
  			$lineNumber++;
@@ -301,7 +308,8 @@ sub parsePDBATOMS
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 			$residueType = $residues{$residue}->{"residueType"};
-			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z]; ## SAVE UNIQUE NBTYPES --> obtain info from nbtype
+			## SAVE UNIQUE NBTYPES --> obtain info from nbtype
+			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial]; 
 			my $pdbIndex;
 			if($CGenabled==1){
 				$pdbIndex = $interiorPdbResidueIndex;
@@ -1315,15 +1323,19 @@ sub catPDL
    }
 }
 
+sub coarseGrainContactMap {
+}
+
 sub parseCONTACT
 {
 	#lets leave this as two filename inputs in case we want to allow two sources of contacts in the future (i.e. user and shadow)
-	my($fileName,$fileName2,$userProvidedMap) = @_;
+	my($fileName,$fileName2,$userProvidedMap,$CGenabled) = @_;
 	my $numContacts = 0; my $garbage = 0;
 	my $line = "";
-	my $chain1;my $chain2; my $contact1; my $contact2; my $pdbNum1; my $pdbNum2;
+	my $chain1;my $chain2; my $contact1; my $contact2; my $pdbNum1; my $pdbNum2; my $res1; my $res2;
 	my $dist;
 	my $x1;my $x2;my $y1;my $y2;my $z1;my $z2;
+	my %resContactHash; my $skip = 0; my $COARSECONT;
 	my @interiorTempPDL; #usage: push(@interiorTempPDL,[1,$contact1,$contact2,$dist]);
 	#Format for this PDL has a boolean as the first argument
 	#it is unused for now, but could be useful in future to use
@@ -1334,26 +1346,44 @@ sub parseCONTACT
 		unless (open(CONTFILE, $fileName)) {
 			smog_quit ("Internal contact file can not be read.  See shadow.log for more information.");
 		}
+		my $coarseFile = $fileName.".CG";
+		if($CGenabled == 1) { unless (open($COARSECONT,">$coarseFile")) {
+			smog_quit ("Internal contact file cannot be written.");
+		} }
 		while($line = <CONTFILE>)
 		{
 			($chain1,$contact1,$chain2,$contact2) = split(/\s+/,$line);
-			$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
-			$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
-			$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
-			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
-			{
-			  if($main::setContacttoLimit){
-			    $dist=$interactionThreshold->{"contacts"}->{"shortContacts"};
-                            print "NOTE: Contact between atoms $contact1 $contact2 exceed contacts threshold with value $dist\n";
-			    print "-limitcontactlength is being used, will set distance of contact to $dist\n\n";
-			  }else{
-                            smog_quit("Contact between atoms $contact1 $contact2 exceed contacts threshold with value $dist");
- 			  }
+			if($CGenabled == 1) {
+				#if we are coarse graining then we need to map AA to residue contacts
+				#first see which residues they belong
+				$res1 = $allAtomsBackup{$contact1}[9]; $res2 = $allAtomsBackup{$contact2}[9];
+				$skip = 1; 	#skip if this res1-res2 has already been added
+				if(!exists $resContactHash{"$res1,$res2"}) {
+					$resContactHash{"$res1,$res2"} = 1;
+					$skip = 0;
+					$contact1 = $res1; $contact2 = $res2;
+					print $COARSECONT "$res1 $res2\n";
+				}
 			}
-
-			push(@interiorTempPDL,[0,$contact1,$contact2,$dist]);
-			$numContacts++;
+			if($skip == 0) { #maybe we skip sometimes if coarse graining				
+				$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
+				$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
+				$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
+				if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
+				{
+				  if($main::setContacttoLimit){
+				    $dist=$interactionThreshold->{"contacts"}->{"shortContacts"};
+	                            print "NOTE: Contact between atoms $contact1 $contact2 exceed contacts threshold with value $dist\n";
+				    print "-limitcontactlength is being used, will set distance of contact to $dist\n\n";
+				  }else{
+	                            smog_quit("Contact between atoms $contact1 $contact2 exceed contacts threshold with value $dist");
+	 			  }
+				}
+				push(@interiorTempPDL,[0,$contact1,$contact2,$dist]);
+				$numContacts++;
+			}
 		}
+		if($CGenabled == 1) { close($COARSECONT); }
 	} else { #read in contact from file
 		print "\nNOTE: Not calculating contact map\n";
 		print "Reading contacts from $fileName2\n";

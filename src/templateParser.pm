@@ -113,7 +113,7 @@ sub smog_quit
 ###########################
 sub clearBifMemory {
 ## Store bif info for PDB looping
-%residueBackup = %{ dclone (\%residues) };; 
+%residueBackup = %{ dclone (\%residues) };
 undef %residues;undef $functions;
 undef $contactSettings;undef $termRatios;
 undef $interactions;undef %bondTypes;

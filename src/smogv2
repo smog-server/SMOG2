@@ -1367,8 +1367,7 @@ usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
 	-AA: Use default All-atom model
 	-CA: Use default Calpha protein model
 	-t [templateFolder]: Folder containing templates of molecular and interaction definitions. Required when defaults are not used.
-	-tCG [templateFolder]: Folder containing templates Coarse Graining. Only necessary when -CG is enabled.
-	-CG: enable coarse-graining
+	-tCG [templateFolder]: Folder containing templates Coarse Graining. Indicates that the program should coarse grain.
 	-g [smog.gro]: Output .gro file name
 	-o [smog.top]: Output .top file name
 	-s [smog.contacts]: Output .contacts file name
@@ -1406,7 +1405,7 @@ sub setContactParams
 		$params="-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --smog2output --showProgress";
 	}
 	else {smog_quit ("Contact map method $method is not supported.");}
-	if($CGenabled == 1) { $params = $params." --coarse CA"; }
+	#if($CGenabled == 1) { $params = $params." --coarse CA"; }
 	return $params;
 }
 
@@ -1632,10 +1631,10 @@ sub generateContactMap {
 	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
 }
 
-sub appendContactsAndFinish { #finish up if all atom
+sub appendContactsAndFinish {
 	my($fileName,$fileName2,$userProvidedMap) = @_;
 	#Parse the contact map, either the generated one or the user provided one
-	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap);
+	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled);
 	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
@@ -1643,6 +1642,7 @@ sub appendContactsAndFinish { #finish up if all atom
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
+	if($CGenabled) { print "\t$shadowFile.CG\n"; }
 	printCitation();
 }
 
@@ -1658,7 +1658,7 @@ my $backup="yes";
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile,
-	 'CG' => \$CGenabled, 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 
+	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 
          'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, '<>' => \&usage)
           or defined $help 
           or !defined $inputPDB 
@@ -1676,6 +1676,8 @@ if($inputFolder eq "" && $CAdefault==0 && $AAdefault==0){
 	smog_quit("No model specified. You must use either -t, -AA, or -CA. Try -help for usage information.");
 }
 
+if($coarseFolder ne "") { $CGenabled = 1; }
+
 if($backup ne "yes" and $backup ne "no"){
 	smog_quit("Can not understand -backup flag. Usage -bu [yes/no]");
 }elsif($backup eq "no"){
@@ -1686,7 +1688,7 @@ if($CAdefault == 1 and $AAdefault == 1){
 	smog_quit('Can not use -CA and -AA options at the same time.');
 }
 if($CAdefault == 1 and $CGenabled == 1){
-	smog_quit('Can not use -CG and -AA options at the same time.');
+	smog_quit('Can not use -tCG and -AA options at the same time.');
 }
 if($CAdefault == 1 and $inputFolder ne ""){
 	smog_quit('Can not use -CA and -t options at the same time.');
@@ -1791,16 +1793,6 @@ foreach my $filen($inputFolder,$coarseFolder){
 		smog_quit ("Can't find directory $filen !! ");
 	}
 }
-
-## check for compatibility of options
-# if CG is not enabled, but contact templates are provided, stop
-if($CGenabled == 0 && $coarseFolder ne ""){
-	smog_quit ("tCG only supported when using a CG model.  Did you forget to specify \"-CG\"?");
-}
-
-# if CG templates are not provided, and contact file is not provided, but CG is turned on, complain
-if($coarseFolder eq "" && $CGenabled != 0)
-{smog_quit("You need to specify tCG when using coarse-graining");}
 
 
 ####################
