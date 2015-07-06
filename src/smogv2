@@ -1405,7 +1405,7 @@ sub setContactParams
 		$params="-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --smog2output --showProgress";
 	}
 	else {smog_quit ("Contact map method $method is not supported.");}
-	if($CGenabled == 1) { $params = $params." --coarse CA"; }
+	#if($CGenabled == 1) { $params = $params." --coarse CA"; }
 	return $params;
 }
 
@@ -1634,7 +1634,7 @@ sub generateContactMap {
 sub appendContactsAndFinish {
 	my($fileName,$fileName2,$userProvidedMap) = @_;
 	#Parse the contact map, either the generated one or the user provided one
-	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap);
+	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled);
 	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
