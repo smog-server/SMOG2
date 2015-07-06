@@ -1642,6 +1642,7 @@ sub appendContactsAndFinish {
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
+	if($CGenabled) { print "\t$shadowFile.CG\n"; }
 	printCitation();
 }
 

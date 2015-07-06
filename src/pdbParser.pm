@@ -1335,7 +1335,7 @@ sub parseCONTACT
 	my $chain1;my $chain2; my $contact1; my $contact2; my $pdbNum1; my $pdbNum2; my $res1; my $res2;
 	my $dist;
 	my $x1;my $x2;my $y1;my $y2;my $z1;my $z2;
-	my %resContactHash; my $skip = 0;
+	my %resContactHash; my $skip = 0; my $COARSECONT;
 	my @interiorTempPDL; #usage: push(@interiorTempPDL,[1,$contact1,$contact2,$dist]);
 	#Format for this PDL has a boolean as the first argument
 	#it is unused for now, but could be useful in future to use
@@ -1346,6 +1346,10 @@ sub parseCONTACT
 		unless (open(CONTFILE, $fileName)) {
 			smog_quit ("Internal contact file can not be read.  See shadow.log for more information.");
 		}
+		my $coarseFile = $fileName.".CG";
+		if($CGenabled == 1) { unless (open($COARSECONT,">$coarseFile")) {
+			smog_quit ("Internal contact file cannot be written.");
+		} }
 		while($line = <CONTFILE>)
 		{
 			($chain1,$contact1,$chain2,$contact2) = split(/\s+/,$line);
@@ -1358,6 +1362,7 @@ sub parseCONTACT
 					$resContactHash{"$res1,$res2"} = 1;
 					$skip = 0;
 					$contact1 = $res1; $contact2 = $res2;
+					print $COARSECONT "$res1 $res2\n";
 				}
 			}
 			if($skip == 0) { #maybe we skip sometimes if coarse graining				
@@ -1378,6 +1383,7 @@ sub parseCONTACT
 				$numContacts++;
 			}
 		}
+		if($CGenabled == 1) { close($COARSECONT); }
 	} else { #read in contact from file
 		print "\nNOTE: Not calculating contact map\n";
 		print "Reading contacts from $fileName2\n";
