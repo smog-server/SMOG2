@@ -790,8 +790,12 @@ if($counter !=1){
 if(exists $interactions->{"gen-pairs"}){
 	smog_quit ("default declaration is given multiple times. Check .nb file.");
 }
-$interactions->{"gen-pairs"} = $interHandle[0]->{"gen-pairs"};
-
+if(exists $interHandle[0]->{"gen-pairs"}) {
+	$interactions->{"gen-pairs"} = $interHandle[0]->{"gen-pairs"};
+}
+if(exists $interHandle[0]->{"gmx-combination-rule"}) {
+$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
+}
 
 }
 

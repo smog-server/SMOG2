@@ -112,6 +112,8 @@ sub initializeDirectives {
 	addToTop("defaults", "; Called with PDB: $inputPDB\n");
 	addToTop("defaults", "; Created using templates found in directory: $inputFolder\n");
 	addToTop("defaults", "; Your input arguments were: $inputArguments\n");
+	addToTop("defaults", "\n[ defaults ]\n");
+	addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
 	addToTop("bonds","\n[ bonds ]\n");
 	addToTop("bonds",";ai     aj      func    r0(nm)  Kb\n");
 	addToTop("angles","\n[ angles ]\n");
@@ -126,9 +128,6 @@ sub initializeDirectives {
 	addToTop("atomtypes","; name mass   charge ptype c6            c12\n");
 	addToTop("atoms","\n[ atoms ]\n");
 	addToTop("atoms",";nr  type  resnr residue atom  cgnr\n");
-	addToTop("defaults", "\n[ defaults ]\n");
-	addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
-	addToTop("defaults", "  1      1         no\n");
 	addToTop("moleculetype","\n[ moleculetype ]\n");
 	addToTop("moleculetype","; name            nrexcl\n");
 	addToTop("moleculetype","  Macromolecule   3\n");
@@ -1645,6 +1644,13 @@ sub appendContactsAndFinish {
 	print "Completing final details...";
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
+	#print defaults
+	my $combrule = 1; my $genpairs = "no";
+	if(exists $interactions->{"gmx-combination-rule"}) { 
+		$combrule = $interactions->{"gmx-combination-rule"};
+	}
+	if(exists $interactions->{"gen-pairs"} && $interactions->{"gen-pairs"} == 1) { $genpairs = "yes"; }
+	addToTop("defaults", "  1      $combrule         $genpairs\n");
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
 	if($CGenabled) { print "\t$shadowFile.CG\n"; }
 	printCitation();
