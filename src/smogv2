@@ -4,7 +4,7 @@
 #
 #                          Structure-based Model (SMOG) software
 #    This package is the product of contributions from a number of people, including:
-#                     Jeffrey Noel, Mariana Levi, Mohit Ranghunathan,
+#                      Jeffrey Noel, Mariana Levi, Mohit Raghunathan,
 #                         Ryan Hayes, Jose Onuchic & Paul Whitford
 #
 #                     Copyright (c) 2015, The SMOG development team at
@@ -272,17 +272,17 @@ sub bondOutput
 	 {
 	  my $DIST=int($paramArr[0]*100)/100.0;
 	  if($setBondtoLimit){
-	  print("\n\nNOTE: Distance between atoms $i and $j is outside of bond threshold range: r=$DIST nm\n\n");
-	   print "-limitbondlength is being used, will set length to";
+	  print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.\n\n");
+	   print "-limitbondlength is being used, will set length to ";
 	   if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
 	    $paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
-	    print "$paramArr[0]\n\n";
+	    print "$paramArr[0] nm\n\n";
 	   }elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
 	    $paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
-	    print "$paramArr[0]\n\n";
+	    print "$paramArr[0] nm\n\n";
            }
           }else{
-	    smog_quit("Distance between atoms $i and $j is outside of bond threshold range: r=$DIST nm");
+	    smog_quit("Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.");
 	  }
 	 }
 	
@@ -1338,7 +1338,7 @@ print <<EOT;
               Thank you for using the Structure-based Model (SMOG) software
 
     This package is the product of contributions from a number of people, including:
-                     Jeffrey Noel, Mariana Levi, Mohit Ranghunathan,
+                      Jeffrey Noel, Mariana Levi, Mohit Raghunathan,
                          Ryan Hayes, Jose Onuchic & Paul Whitford
 
                      Copyright (c) 2015, The SMOG development team at
