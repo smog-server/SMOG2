@@ -15,6 +15,10 @@ The software is written such that you may also design
 your own form of structure-based models without having
 to modify the source code.
 
+This README provides the absolute basics for using
+SMOG v2.  For more advanced usage information, consult
+the manual, available at smog-server.org
+
 We encourage everyone to provide feedback/suggestions
 on usage, extensions and bugs to info@smog-server.org.
 
