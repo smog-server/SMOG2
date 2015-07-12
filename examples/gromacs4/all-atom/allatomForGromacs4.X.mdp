@@ -36,11 +36,11 @@ ns_type 		 = grid
 ; ** the same domain decomposition box. One would have to
 ; ** increase the cutoff if using non-bonded electrostatics
 ;cut-off distance for the short-range neighbor list
-rlist			 = 1.0
+rlist			 = 1.2
 ;treatment of electrostatic interactions
-rcoulomb 		 = 1.0
+rcoulomb 		 = 1.2
 ;treatment of van der waals interactions
-rvdw			 = 1.0
+rvdw			 = 1.2
 ; No need to use pbc for 4.5 or 4.6 which is simpler 
 ; but have to use comm_mode to keep protein in place
 ; Periodic boudary conditions in all the directions 

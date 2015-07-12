@@ -1,5 +1,5 @@
 Jeff-Noels-Computer:CI2test jknoel$ source ../configure.smog2 #source your config file if you haven't in the terminal yet
-Jeff-Noels-Computer:CI2test jknoel$ smog2 -i CI2.AA.pdb -t $SMOG_PATH/SBM_AA #run smog to generate the input files
+Jeff-Noels-Computer:CI2test jknoel$ smog2 -i CI2.AA.pdb -AA #run smog to generate the input files
 
 *****************************************************************************************
 ******* ******* ******* ******* ******* SMOG v2.0 ******* ******* ******* ******* *******

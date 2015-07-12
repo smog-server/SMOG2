@@ -25,15 +25,11 @@ nstlist = 20
 ;Make a grid in the box and only check atoms in neighboring grid cells 
 ;when constructing a new neighbor list every nstlist steps. 
 ns_type = grid 
-; ** cutoffs are short because it is only for the non-bonded
-; ** [ pairs ] are always calculated provided they are in 
-; ** the same domain decomposition box. One would have to
-; ** increase the cutoff if using non-bonded electrostatics
-rlist = 1.2 
+rlist = 3.0
 ;treatment of electrostatic interactions 
-rcoulomb = 1.2 
+rcoulomb = 3.0 
 ;treatment of van der waals interactions 
-rvdw = 1.2
+rvdw = 3.0
 ;this tells gromacs to use the tables that we give it, instead of the standard interaction types 
 coulombtype = User 
 vdwtype = User 
