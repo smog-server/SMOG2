@@ -1263,7 +1263,7 @@ sub GenAnglesDihedrals
    $includedatoms[$atom]=1;
   }
   for(my $I=0;$I<$chainlength;$I++){
-   if($includedatoms[$I]==0){
+   if($includedatoms[$I]==0 && $chainlength !=1){
 	my $atomname=$bondMapHash{$I}->[0];
 	my $residue=$bondMapHash{$I}->[1];
 	$residue++;
