@@ -5,7 +5,7 @@ print <<EOT;
 *****************************************************************************************
                                      smog_tablegen                                   
 
-     smog-tablegen is part of the SMOG v2 distribution, available at smog-server.org     
+     smog_tablegen is part of the SMOG v2 distribution, available at smog-server.org     
 
  This tool will generate a table for native contacts and Debye-Huckel electrostatic 
  interactions, for use with Structure-based Models in Gromacs. 
@@ -43,7 +43,7 @@ sub tablequit
 # Gromacs automatically multiplies by an 'electric conversion factor,' 
 #   equal to 138.935485. We want to undo that, hence the division by 138.
 if (scalar(@ARGV) != 7 ){
- tablequit("Incorrect number of arguments.\n\nUsage: smog-tablegen <M> <N> <ion conc.> <elec. switch dist.> <elec. truncate dist.> <table length> <output name>");
+ tablequit("Incorrect number of arguments.\n\nUsage: smog_tablegen <M> <N> <ion conc.> <elec. switch dist.> <elec. truncate dist.> <table length> <output name>");
 }
 
 my $prefactor=332.0/138.935485;
