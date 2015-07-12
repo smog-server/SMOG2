@@ -47,7 +47,7 @@ sub exitSmog{
 
 ## CHECK INPUT ##
 if(scalar(@ARGV) != 3){
-	exitSmog("Usage: ./smog-adjustPDB <PDB> <-f filename | default> <output file>\n 
+	exitSmog("Usage: smog_adjustPDB <PDB> <-f filename | default> <output file>\n 
 For default templates use the option default, else provide a filename with the option -f \n");
 }
 if(!exists $ENV{"SMOG_PATH"}){
