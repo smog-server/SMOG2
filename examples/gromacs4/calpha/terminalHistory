@@ -1,64 +1,55 @@
-Jeff-Noels-Computer:calpha jknoel$ smog2 -i CI2.AA.pdb -t $SMOG_PATH/SBM_calpha -CG -t_contact $SMOG_PATH/SBM_AA #run smog to generate the input files, use all the atoms to determine the contact map
+Jeff-Noels-Computer:calpha jknoel$ smog2 -i CI2.AA.pdb -CA #run smog to generate the input files
 
 *****************************************************************************************
 ******* ******* ******* ******* ******* SMOG v2.0 ******* ******* ******* ******* *******
-
               Thank you for using the Structure-based Model (SMOG) software
+
     This package is the product of contributions from a number of people, including:
-                      Mohit Ranghunathan, Mariana Levi, Ryan Hayes,
-                       Jeffrey Noel, Jose Onuchic & Paul Whitford
+                      Jeffrey Noel, Mariana Levi, Mohit Raghunathan,
+                         Ryan Hayes, Jose Onuchic & Paul Whitford
 
                      Copyright (c) 2015, The SMOG development team at
-                       Rice University and Northeastern University
+                        Rice University and Northeastern University
 
+              SMOG v2.0 & Shadow are available at http://smog-server.org
 
-                SMOG v2.0 & Shadow are available at http://smog-server.org
-
-                      Direct questions to: info@smog-server.org
-
-            We kindly ask that you cite the appropriate primary references
-           when using SMOG models. See http://www.smog-server.org/refs.html
-
---C-alpha Model-- 
-Clementi C, Nymeyer H, Onuchic JN (2000) Journal of Molecular Biology 298, 937-953. 
-
---Contact Potentials--
-Shadow Algorithm: Noel JK, Whitford PC, Onuchic, JN (2012) J Phys Chem, 116, 8692-8702.
+                        Direct questions to: info@smog-server.org
 
 *****************************************************************************************
+-backup no issued.  Will overwrite any existing output files.
+
+ -CA given. Will use the default Calpha SMOG model provided with the distribution.
+Will try to use templates found in 
+/Users/jknoel/Dropbox/git/smog2/SBM_AA
+ and
+/Users/jknoel/Dropbox/git/smog2/SBM_calpha
+
 
 *****************************************************
 **** COARSE-GRAINED SMOG MODEL WILL BE GENERATED ****
 *****************************************************
-
-
-		PREPROCESSING
-
-Will use templates given with -t_contacts
-
+Parsing templates corresponding to input PDB... 
 Found .b file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.b
 Found .bif file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.bif
 Found .nb file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.nb
 Found .sif file /Users/jknoel/Dropbox/git/smog2/SBM_AA/AA-whitford09.sif
-Done parsing template files.
-Parsing .pdb... Done
-Preparing system for contact evaluations.....................
-Finding coarse grained contacts... 	
+Done parsing templates.
+Parsing .pdb...
+Attempting to connect all atoms in chain 1 to the first atom: There are 504 atoms in chain 1. All 504 atoms connected via covalent bonds 
+Creating topology for contact calculation.....
+Generating angles and dihedrals...........
+Saving angles
+Saving dihedrals
+Starting contact calculations ...
+  Calling /Users/jknoel/Dropbox/git/smog2/tools/SCM.jar 
+	
 	Shadow Contact Map Java Application (SCM)
 	More information at: http://smog-server.org/Shadow.html
 	Version 1.32
 	Using protein residue definitions from supplied .bif.
 	Reading grofile: smog.gro.
-	Found 504 atoms.
 	Reading Chains from smog.ndx.
 	Found 1 chains.
-	Reading Topology.
-	Initializing connected list.
-	Found 1 atom types.
-	Found 0 pairs.
-	Found 511 bonds.
-	Found 693 angles.
-	Found 1572 dihedrals.
 	Calculating contacts.
 		10% done and 27 contacts.
 		20% done and 38 contacts.
@@ -69,33 +60,30 @@ Finding coarse grained contacts...
 		70% done and 573 contacts.
 		80% done and 599 contacts.
 		90% done and 599 contacts.
-	Printing residue-residue contacts to file: smog.contacts.
+	Printing contacts to file: smog.contacts.
 	******* Parameters Used for determination of contacts *********
-	Atom shadowing size: 1.0 nm
-	Cutoff radius: 6.0 nm
-	Minimum sequence distance between protein contacts: 3
-	Shadowing size of bonded atom: 0.5 nm
+	Using type: Shadow
+	Atom shadowing size: 1.0 angstrom
+	Shadowing size of bonded atom: 0.5 angstrom
+	Cutoff radius: 6.0 angstrom
+	Minimum sequence distance between protein contacts: |i-j|>3
 	***************************************************************
 	Finished with contacts. 
 
 
-
-	     FINAL PROCESSING
-
-Will use templates given with -t
-
-Parsing Coarse Grained Templates... 
+Parsing templates for coarse graining... 
 Found .b file /Users/jknoel/Dropbox/git/smog2/SBM_calpha/CA-clementi00.b
 Found .bif file /Users/jknoel/Dropbox/git/smog2/SBM_calpha/CA-clementi00.bif
 Found .nb file /Users/jknoel/Dropbox/git/smog2/SBM_calpha/CA-clementi00.nb
-Found .sif file /Users/jknoel/Dropbox/git/smog2/SBM_calpha/CA-clementi00.sifDone
-Coarse Graining system.....Done
-Creating .gro.....Done
-NOTE: Total atom count: 64
-Constructing final model...............
+Found .sif file /Users/jknoel/Dropbox/git/smog2/SBM_calpha/CA-clementi00.sif
+Done parsing templates.
+Parsing .pdb...
+Attempting to connect all atoms in chain 1 to the first atom: There are 64 atoms in chain 1. All 64 atoms connected via covalent bonds 
+Generating angles and dihedrals...........
 Saving angles
 Saving dihedrals
-
+NOTE: Total number of atoms included in normalization is 64, and 64 atoms are in the system.
+Completing final details...
 Your Structure-based Model is ready!
 
 Files generated: 
@@ -103,6 +91,25 @@ Files generated:
 	smog.gro
 	smog.contacts
 	smog.ndx
+
+########################################################################################
+
+              We kindly ask that you cite the appropriate primary references
+             when using SMOG models. See http://www.smog-server.org/refs.html
+
+--Software-- 
+Noel JK, Levi M, Rangunathan M, Hayes R, Onuchic JN, and Whitford PC.
+SMOG V2, A Versatile Software Package for Generating Structure-Based Models 
+2015, In preparation. 
+
+--C-alpha Model-- 
+Clementi C, Nymeyer H, Onuchic JN (2000) Journal of Molecular Biology 298, 937-953. 
+
+--Contact Potentials--
+Shadow Algorithm: Noel JK, Whitford PC, Onuchic, JN (2012) J Phys Chem, 116, 8692-8702.
+
+########################################################################################
+
 Jeff-Noels-Computer:calpha jknoel$ ls
 CI2.AA.pdb    smog.contacts smog.gro      smog.ndx      smog.top
 Jeff-Noels-Computer:calpha jknoel$ #this is calpha and we want a 10-12 LJ potential, better make a table!

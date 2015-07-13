@@ -1652,7 +1652,7 @@ sub appendContactsAndFinish {
 	if(exists $interactions->{"gen-pairs"} && $interactions->{"gen-pairs"} == 1) { $genpairs = "yes"; }
 	addToTop("defaults", "  1      $combrule         $genpairs\n");
 	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
-	if($CGenabled) { print "\t$shadowFile.CG\n"; }
+	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
 	printCitation();
 }
 
