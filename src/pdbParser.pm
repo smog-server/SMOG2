@@ -1416,13 +1416,33 @@ sub parseCONTACT
 		## User contact map should be in format below and use input PDB numbering ##
 		## chain1 atom1 chain2 atom2 ##
 		while($line = <CONTFILE1>) {
-			my ($chain1,$pdbNum1,$chain2,$pdbNum2) = split(/\s+/,$line);
+			my ($chain1,$pdbNum1,$chain2,$pdbNum2,$dist) = split(/\s+/,$line);
 			$chain1--;$chain2--; #moving to zero based numbering
+			if(!exists $indexMap{"$chain1-$pdbNum1"}) { 
+				$chain1++;
+				smog_quit("Seems that PDB number $pdbNum1 in chain $chain1 does not exist. Check input contact map.\n");
+			}
+			if(!exists $indexMap{"$chain2-$pdbNum2"}) { 
+				$chain2++;
+				smog_quit("Seems that PDB number $pdbNum2 in chain $chain2 does not exist. Check input contact map.\n");
+			}
 			$contact1 = $indexMap{"$chain1-$pdbNum1"};
 			$contact2 = $indexMap{"$chain2-$pdbNum2"};
-			$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
-			$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
-			$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
+			if($dist) { #check if distance provided
+				if(whatAmI($dist)!=3) { #check if it is numeric
+					if($dist < 0 || $dist > 1000) { #check that it is a sensible number
+						$chain1++;$chain2++;
+						smog_quit("Input contact map has distance for contact $chain1 $pdbNum1 $chain2 $pdbNum2 less than 0 or greater than 1000nm. Maybe something is wrong? Distance is: $dist.\n");
+					} 
+				} else {
+					$chain1++;$chain2++;
+					smog_quit("Input contact map has non-numeric distance for contact $chain1 $pdbNum1 $chain2 $pdbNum2: $dist.\n");
+				}
+			} else { #distace was not provided, lets calculate it from structure
+				$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
+				$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
+				$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
+			}
 			if(!exists $allAtoms{$contact1}){warn("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if(!exists $allAtoms{$contact2}){warn("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
@@ -1445,5 +1465,10 @@ sub parseCONTACT
   
 }
 
+sub whatAmI {
+	if($_[0] =~ /^[0-9,eE]+$/) {return 1;} #integer
+	if($_[0] =~ /^[0-9,.Ee+-]+$/) {return 2;} #float
+	return 3; #not integer or float
+}
 
 1;
