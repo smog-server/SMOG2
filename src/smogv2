@@ -1079,7 +1079,12 @@ sub calculateAtomTypes
         {
           smog_quit("Atom $atoms has no nbType");
         }
-
+		my $tmptype=$nbtype;
+		foreach my $name(keys %{$interactions->{"nonbonds"}}){
+                        if($nbtype =~ /\Q$name\E/) {$tmptype=$name; last; }# exact match found
+                        if($name =~ /\Q*\E/) { $tmptype=$name; }# not exact match.  maybe use it, but keep looking
+		}
+		$nbtype=$tmptype;
 		if(exists $obtained{$nbtype}){next;}
 		$c6 = $interactions->{"nonbonds"}->{$nbtype}->{"c6"};
 		$c12 = $interactions->{"nonbonds"}->{$nbtype}->{"c12"};
