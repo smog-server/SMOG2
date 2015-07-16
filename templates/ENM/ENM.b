@@ -14,34 +14,23 @@
 
 <!-- ANGLES -->
 <angles>
-	<angle func="angle_harmonic(?,0)">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</angle>
 	<angle func="angle_free()">
-	<bType>freeb</bType>
-	<bType>freeb</bType>
-	<bType>freeb</bType>
+		<bType>*</bType>
+        <bType>*</bType>
+        <bType>*</bType>
 	</angle>
 
 </angles>
 
 <!-- DIHEDRALS -->
 <dihedrals>	
+	<dihedral func="dihedral_free()" energyGroup="free">
+	<bType>*</bType>
+	<bType>*</bType>
+	<bType>*</bType>
+	<bType>*</bType>
+	</dihedral>
 	<!-- NUCLEIC DIHEDRALS -->
-	<dihedral func="dihedral_cosine(?,0,1)+dihedral_cosine(?,0,3)" energyGroup="bb_n">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
-	<dihedral func="dihedral_cosine(?,0,1)+dihedral_cosine(?,0,3)" energyGroup="sc_n">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
 	<dihedral func="dihedral_harmonic(?,40)" energyGroup="pr_n">
 	<bType>*</bType>
 	<bType>*</bType>
@@ -54,26 +43,8 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="dihedral_free()" energyGroup="free">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
 
 	<!-- AMINO DIHEDRALS -->
-	<dihedral func="dihedral_cosine(?,0,1)+dihedral_cosine(?,0,3)" energyGroup="bb_a">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
-	<dihedral func="dihedral_cosine(?,0,1)+dihedral_cosine(?,0,3)" energyGroup="sc_a">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
 	<dihedral func="dihedral_harmonic(?,40)" energyGroup="pr_a">
 	<bType>*</bType>
 	<bType>*</bType>
@@ -87,12 +58,12 @@
 	<bType>*</bType>
 	</dihedral>
 	<!-- LIGAND DIHEDRALS -->
-        <dihedral func="dihedral_harmonic(?,10)" energyGroup="lig">
-        <bType>*</bType>
-        <bType>*</bType>
-        <bType>*</bType>
-        <bType>*</bType>
-        </dihedral>
+    <dihedral func="dihedral_harmonic(?,10)" energyGroup="lig">
+    <bType>*</bType>
+    <bType>*</bType>
+    <bType>*</bType>
+    <bType>*</bType>
+    </dihedral>
 </dihedrals>
 
 <!-- IMPROPERS -->

@@ -19,27 +19,9 @@
 </angles>
 
 <!-- DIHEDRALS -->
-<dihedrals>																															
+<dihedrals>
 <!-- AMINO DIHEDRALS -->
-	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="bb_a">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
-	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="sc_a">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
-	<dihedral func="dihedral_harmonic(?,40)" energyGroup="pr_a">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
-	<dihedral func="dihedral_harmonic(?,10)" energyGroup="r_a">
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="bb">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
@@ -48,7 +30,7 @@
 </dihedrals>
 <!-- IMPROPERS -->
 <impropers>
-	<improper func="dihedral_harmonic(?,10)">
+	<improper func="not_defined(?,?)">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>

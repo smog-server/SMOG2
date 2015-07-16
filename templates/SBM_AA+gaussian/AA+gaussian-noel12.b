@@ -2,11 +2,11 @@
 <b>
 <!-- BONDS -->
 <bonds>
-	<bond func="bond_harmonic(?,20000)">
+	<bond func="bond_harmonic(?,10000)">
 	<bType>*</bType>
 	<bType>*</bType>
         </bond>
-	<bond func="bond_harmonic_6(?,200)">
+	<bond func="bond_type6(?,200)">
 	<bType>*</bType>
     	<bType>MG</bType>
         </bond>
@@ -14,23 +14,29 @@
 
 <!-- ANGLES -->
 <angles>
-	<angle func="angle_harmonic(?,40)">
+	<angle func="angle_harmonic(?,80)">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</angle>
+	<angle func="angle_free()">
+	<bType>energyGroup="free"</bType>
+	<bType>energyGroup="free"</bType>
+	<bType>energyGroup="free"</bType>
+	</angle>
+
 </angles>
 
 <!-- DIHEDRALS -->
 <dihedrals>	
 	<!-- NUCLEIC DIHEDRALS -->
-	<dihedral func="dihedral_cosine(?,?,1)+dihedral_cosine(?,?*0.5,3)" energyGroup="bb_n">
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="bb_n">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="dihedral_cosine(?,?,1)+dihedral_cosine(?,?*0.5,3)" energyGroup="sc_n">
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="sc_n">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
@@ -48,14 +54,21 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<!-- AMINO DIHEDRALS -->
-	<dihedral func="dihedral_cosine(?,?,1)+dihedral_cosine(?,?*0.5,3)" energyGroup="bb_a">
+	<dihedral func="dihedral_free()" energyGroup="free">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="dihedral_cosine(?,?,1)+dihedral_cosine(?,?*0.5,3)" energyGroup="sc_a">
+
+	<!-- AMINO DIHEDRALS -->
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="bb_a">
+	<bType>*</bType>
+	<bType>*</bType>
+	<bType>*</bType>
+	<bType>*</bType>
+	</dihedral>
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="sc_a">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
@@ -91,7 +104,5 @@
 	<bType>*</bType>
 	</improper>
 </impropers>
-
-
 
 </b>

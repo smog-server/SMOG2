@@ -4,7 +4,7 @@
 					<!-- LIGANDS -->
 
 <!--ADP-->
-		<residue name="ADP" type="ligand" atomCount="0">
+		<residue name="ADP" residueType="ligand" atomCount="0">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">PA</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1A</atom>
@@ -184,7 +184,7 @@
 
 					<!-- AMINO RESIDUES -->
 <!--ALANINE-->
-		<residue name="ALA" type="amino">
+		<residue name="ALA" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -223,7 +223,7 @@
 		</residue>
 
 <!--ALANINE-TERMINAL-->
-		<residue name="ALAT" type="amino">
+		<residue name="ALAT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -241,10 +241,6 @@
 				<bond energyGroup="bb_a">
 					<atom>CA</atom>
 					<atom>C</atom>
-				</bond>
-				<bond energyGroup="bb_a">
-					<atom>C</atom>
-					<atom>O</atom>
 				</bond>
 				<bond energyGroup="bb_a">
 					<atom>C</atom>
@@ -271,7 +267,7 @@
 		</residue>
 		
 <!--THREONINE-->
-		<residue name="THR" type="amino">
+		<residue name="THR" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -327,7 +323,7 @@
 
 
 <!--THREONINE-TERMINAL-->
-		<residue name="THRT" type="amino">
+		<residue name="THRT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -389,7 +385,7 @@
 
 
 <!--PHENYLALANINE-->
-		<residue name="PHE" type="amino">
+		<residue name="PHE" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -462,7 +458,7 @@
 		</residue>
 
 <!--PHENYLALANINE-TERMINAL-->
-		<residue name="PHET" type="amino">
+		<residue name="PHET" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -542,7 +538,7 @@
 
 		
 <!--VALINE-->
-		<residue name="VAL" type="amino">
+		<residue name="VAL" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -597,7 +593,7 @@
 		</residue>
 
 <!--VALINE-TERMINAL-->
-		<residue name="VALT" type="amino">
+		<residue name="VALT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -658,7 +654,7 @@
 
 
 <!--METHIONINE-->
-		<residue name="MET" type="amino">
+		<residue name="MET" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -713,7 +709,7 @@
 		</residue>
 
 <!--METHIONINE-TERMINAL-->
-		<residue name="METT" type="amino">
+		<residue name="METT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -773,7 +769,7 @@
 
 		
 <!--HISTIDINE-->
-		<residue name="HIS" type="amino">
+		<residue name="HIS" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -843,7 +839,7 @@
 
 
 <!--HISTIDINE-TERMINAL-->
-		<residue name="HIST" type="amino">
+		<residue name="HIST" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -917,7 +913,7 @@
 
 		
 <!--GLUTAMIC ACID-->
-		<residue name="GLU" type="amino">
+		<residue name="GLU" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -976,7 +972,7 @@
 		</residue>
 
 <!--GLUTAMIC ACID-TERMINAL-->
-		<residue name="GLUT" type="amino">
+		<residue name="GLUT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1040,7 +1036,7 @@
 		</residue>
 		
 <!--CYSTEINE-->
-		<residue name="CYS" type="amino">
+		<residue name="CYS" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1084,7 +1080,7 @@
 		</residue>
 
 <!--CYSTEINE-TERMINAL-->
-		<residue name="CYST" type="amino">
+		<residue name="CYST" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1133,7 +1129,7 @@
 		</residue>
 		
 <!--GLYCINE-->
-		<residue name="GLY" type="amino">
+		<residue name="GLY" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1156,14 +1152,11 @@
 				</bond>
 	<!--FUNCTIONAL GROUP-->
 			</bonds>
-			<impropers>
-				<improper></improper>
-			</impropers>
 		</residue>
 
 		
 <!--GLYCINE-TERMINAL-->
-		<residue name="GLYT" type="amino">
+		<residue name="GLYT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1191,14 +1184,11 @@
 				</bond>
 	<!--FUNCTIONAL GROUP-->
 			</bonds>
-			<impropers>
-				<improper></improper>
-			</impropers>
 		</residue>		
 		
 
 <!--ASPARTIC ACID-->
-		<residue name="ASP" type="amino">
+		<residue name="ASP" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1252,7 +1242,7 @@
 		</residue>
 
 <!--ASPARTIC ACID-TERMINAL-->
-		<residue name="ASPT" type="amino">
+		<residue name="ASPT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1313,7 +1303,7 @@
 
 	
 <!--TYROSINE-->
-		<residue name="TYR" type="amino">
+		<residue name="TYR" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1392,7 +1382,7 @@
 
 
 <!--TYROSINE-TERMINAL-->
-		<residue name="TYRT" type="amino">
+		<residue name="TYRT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1476,7 +1466,7 @@
 
 
 <!--LEUCINE-->
-		<residue name="LEU" type="amino">
+		<residue name="LEU" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1537,7 +1527,7 @@
 
 
 <!--LEUCINE-TERMINAL-->
-		<residue name="LEUT" type="amino">
+		<residue name="LEUT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1603,7 +1593,7 @@
 
 
 <!--ISOLEUCINE-->
-		<residue name="ILE" type="amino">
+		<residue name="ILE" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1663,7 +1653,7 @@
 		</residue>
 
 <!--ISOLEUCINE-TERMINAL-->
-		<residue name="ILET" type="amino">
+		<residue name="ILET" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1728,7 +1718,7 @@
 		</residue>
 		
 <!--ASPARGINE-->
-		<residue name="ASN" type="amino">
+		<residue name="ASN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1783,7 +1773,7 @@
 
 
 <!--ASPARGINE-TERMINAL-->
-		<residue name="ASNT" type="amino">
+		<residue name="ASNT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1842,7 +1832,7 @@
 		</residue>
 
 <!--SERINE-->
-		<residue name="SER" type="amino">
+		<residue name="SER" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1885,7 +1875,7 @@
 			</impropers>
 		</residue>	
 <!--SERINE-TERMINAL-->
-		<residue name="SERT" type="amino">
+		<residue name="SERT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -1935,7 +1925,7 @@
 
 
 <!--ARGININE-->		
-		<residue name="ARG" type="amino">
+		<residue name="ARG" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2006,7 +1996,7 @@
 
 
 <!--ARGININE-TERMINAL-->		
-		<residue name="ARGT" type="amino">
+		<residue name="ARGT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2081,7 +2071,7 @@
 
 
 <!--GLUTAMINE-->
-		<residue name="GLN" type="amino">
+		<residue name="GLN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2141,7 +2131,7 @@
 
 
 <!--GLUTAMINE-TERMINAL-->
-		<residue name="GLNT" type="amino">
+		<residue name="GLNT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2205,7 +2195,7 @@
 		</residue>
 
 <!--PROLINE-->
-		<residue name="PRO" type="amino">
+		<residue name="PRO" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2257,7 +2247,7 @@
 			</impropers>
 		</residue>
 <!--PROLINE-TERMINAL-->
-		<residue name="PROT" type="amino">
+		<residue name="PROT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2316,7 +2306,7 @@
 
 		
 <!--LYSINE-->
-		<residue name="LYS" type="amino">
+		<residue name="LYS" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2376,7 +2366,7 @@
 
 
 <!--LYSINE-TERMINAL-->
-		<residue name="LYST" type="amino">
+		<residue name="LYST" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2440,7 +2430,7 @@
 		</residue>
 
 <!--TRYPTOPHAN-->
-		<residue name="TRP" type="amino">
+		<residue name="TRP" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2534,7 +2524,7 @@
 
 
 <!--TRYPTOPHAN-TERMINAL-->
-		<residue name="TRPT" type="amino">
+		<residue name="TRPT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2630,7 +2620,7 @@
 			</impropers>
 		</residue>	
 <!--ALANINE-NTERMINAL-->
-		<residue name="ALAN" type="amino">
+		<residue name="ALAN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2652,10 +2642,6 @@
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
-					<atom>C</atom>
-					<atom>O</atom>
-				</bond>
 	<!--FUNCTIONAL GROUP-->
 				<bond energyGroup="sc_a">
 					<atom>CA</atom>
@@ -2672,7 +2658,7 @@
 			</impropers>
 		</residue>	
 <!--THREONINE-NTERMINAL-->
-		<residue name="THRN" type="amino">
+		<residue name="THRN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2726,7 +2712,7 @@
 			</impropers>
 		</residue>	
 <!--PHENYLALANINE-NTERMINAL-->
-		<residue name="PHEN" type="amino">
+		<residue name="PHEN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2798,7 +2784,7 @@
 			</impropers>
 		</residue>	
 <!--VALINE-NTERMINAL-->
-		<residue name="VALN" type="amino">
+		<residue name="VALN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2852,7 +2838,7 @@
 			</impropers>
 		</residue>	
 <!--METHIONINE-NTERMINAL-->
-		<residue name="METN" type="amino">
+		<residue name="METN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2905,7 +2891,7 @@
 			</impropers>
 		</residue>	
 <!--HISTIDINE-NTERMINAL-->
-		<residue name="HISN" type="amino">
+		<residue name="HISN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -2972,7 +2958,7 @@
 			</impropers>
 		</residue>	
 <!--GLUTAMIC ACID-NTERMINAL-->
-		<residue name="GLUN" type="amino">
+		<residue name="GLUN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3030,7 +3016,7 @@
 			</impropers>
 		</residue>	
 <!--CYSTEINE-NTERMINAL-->
-		<residue name="CYSN" type="amino">
+		<residue name="CYSN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3072,8 +3058,8 @@
 				</improper>
 			</impropers>
 		</residue>	
-<!--GLYCINE-NTERMINAL-->
-		<residue name="GLYN" type="amino">
+<!--	CINE-NTERMINAL-->
+		<residue name="GLYN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3096,12 +3082,9 @@
 				</bond>
 	<!--FUNCTIONAL GROUP-->
 			</bonds>
-			<impropers>
-				<improper></improper>
-			</impropers>
 		</residue>	
 <!--ASPARTIC ACID-NTERMINAL-->
-		<residue name="ASPN" type="amino">
+		<residue name="ASPN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3154,7 +3137,7 @@
 			</impropers>
 		</residue>	
 <!--TYROSINE-NTERMINAL-->
-		<residue name="TYRN" type="amino">
+		<residue name="TYRN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3231,7 +3214,7 @@
 			</impropers>
 		</residue>	
 <!--LEUCINE-NTERMINAL-->
-		<residue name="LEUN" type="amino">
+		<residue name="LEUN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3290,7 +3273,7 @@
 			</impropers>
 		</residue>	
 <!--ISOLEUCINE-NTERMINAL-->
-		<residue name="ILEN" type="amino">
+		<residue name="ILEN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3349,7 +3332,7 @@
 			</impropers>
 		</residue>	
 <!--ASPARGINE-NTERMINAL-->
-		<residue name="ASNN" type="amino">
+		<residue name="ASNN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3402,7 +3385,7 @@
 			</impropers>
 		</residue>	
 <!--SERINE-NTERMINAL-->
-		<residue name="SERN" type="amino">
+		<residue name="SERN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3445,7 +3428,7 @@
 			</impropers>
 		</residue>	
 <!--ARGININE-NTERMINAL-->		
-		<residue name="ARGN" type="amino">
+		<residue name="ARGN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3513,7 +3496,7 @@
 			</impropers>
 		</residue>	
 <!--GLUTAMINE-NTERMINAL-->
-		<residue name="GLNN" type="amino">
+		<residue name="GLNN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3571,7 +3554,7 @@
 			</impropers>
 		</residue>	
 <!--PROLINE-NTERMINAL-->
-		<residue name="PRON" type="amino">
+		<residue name="PRON" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3623,7 +3606,7 @@
 			</impropers>
 		</residue>	
 <!--LYSINE-NTERMINAL-->
-		<residue name="LYSN" type="amino">
+		<residue name="LYSN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3681,7 +3664,7 @@
 			</impropers>
 		</residue>	
 <!--TRYPTOPHAN-NTERMINAL-->
-		<residue name="TRPN" type="amino">
+		<residue name="TRPN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_P" pairType="P_1">N</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
@@ -3775,7 +3758,7 @@
 					<!-- NUCLEIC RESIDUES -->
 
 <!--RNA A-->
-		<residue name="A" type="nucleic">
+		<residue name="A" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -3929,7 +3912,7 @@
 		</residue>
 
 <!--RNA A5' 0 P-->
-		<residue name="A0P" type="nucleic">
+		<residue name="A0P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
@@ -4068,7 +4051,7 @@
 		</residue>
 
 <!--RNA A5' 1 P-->
-		<residue name="A5" type="nucleic">
+		<residue name="A5" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -4227,7 +4210,7 @@
 		</residue>
 
 <!--RNA A5' 3 P-->
-		<residue name="A3P" type="nucleic">
+		<residue name="A3P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">PG</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1G</atom>
@@ -4426,7 +4409,7 @@
 		</residue>
 
 <!--RNA G-->
-		<residue name="G" type="nucleic">
+		<residue name="G" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -4585,7 +4568,7 @@
 		</residue>
 
 <!--RNA G5' 0 P-->
-		<residue name="G0P" type="nucleic">
+		<residue name="G0P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
@@ -4729,7 +4712,7 @@
 		</residue>
 
 <!--RNA G5' 1 P-->
-		<residue name="G5" type="nucleic">
+		<residue name="G5" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -4893,7 +4876,7 @@
 		</residue>
 
 <!--RNA G5' 3 P-->
-		<residue name="G3P" type="nucleic">
+		<residue name="G3P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">PG</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1G</atom>
@@ -5097,7 +5080,7 @@
 		</residue>
 
 <!--RNA U-->
-		<residue name="U" type="nucleic">
+		<residue name="U" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -5237,7 +5220,7 @@
 		</residue>
 
 <!--RNA U5' 0 P-->
-		<residue name="U0P" type="nucleic">
+		<residue name="U0P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
@@ -5362,7 +5345,7 @@
 		</residue>
 
 <!--RNA U5' 1 P-->
-		<residue name="U5" type="nucleic">
+		<residue name="U5" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -5507,7 +5490,7 @@
 		</residue>
 
 <!--RNA U5' 3 P-->
-		<residue name="U3P" type="nucleic">
+		<residue name="U3P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">PG</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1G</atom>
@@ -5692,7 +5675,7 @@
 		</residue>
 
 <!--RNA C-->
-		<residue name="C" type="nucleic">
+		<residue name="C" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -5832,7 +5815,7 @@
 		</residue>
 
 <!--RNA C5' 0 P-->
-		<residue name="C0P" type="nucleic">
+		<residue name="C0P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
@@ -5957,7 +5940,7 @@
 		</residue>
 
 <!--RNA C5' 1 P-->
-		<residue name="C5" type="nucleic">
+		<residue name="C5" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -6102,7 +6085,7 @@
 		</residue>
 
 <!--RNA C5' 3 P-->
-		<residue name="C3P" type="nucleic">
+		<residue name="C3P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">PG</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1G</atom>
@@ -6287,7 +6270,7 @@
 		</residue>
 
 <!--DNA A-->
-		<residue name="DA" type="nucleic">
+		<residue name="DA" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -6426,7 +6409,7 @@
 		</residue>
 
 <!--DNA A5' 0 P-->
-		<residue name="DA0P" type="nucleic">
+		<residue name="DA0P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
@@ -6550,7 +6533,7 @@
 		</residue>
 
 <!--DNA A5' 1 P-->
-		<residue name="DA5" type="nucleic">
+		<residue name="DA5" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -6694,7 +6677,7 @@
 		</residue>
 
 <!--DNA A5' 3 P-->
-		<residue name="DA3P" type="nucleic">
+		<residue name="DA3P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">PG</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1G</atom>
@@ -6878,7 +6861,7 @@
 		</residue>
 
 <!--DNA G-->
-		<residue name="DG" type="nucleic">
+		<residue name="DG" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -7022,7 +7005,7 @@
 		</residue>
 
 <!--DNA G5' 0 P-->
-		<residue name="DG0P" type="nucleic">
+		<residue name="DG0P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
@@ -7151,7 +7134,7 @@
 		</residue>
 
 <!--DNA G5' 1 P-->
-		<residue name="DG5" type="nucleic">
+		<residue name="DG5" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -7300,7 +7283,7 @@
 		</residue>
 
 <!--DNA G5' 3 P-->
-		<residue name="DG3P" type="nucleic">
+		<residue name="DG3P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">PG</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1G</atom>
@@ -7489,7 +7472,7 @@
 		</residue>
 
 <!--DNA T-->
-		<residue name="DT" type="nucleic">
+		<residue name="DT" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -7619,7 +7602,7 @@
 		</residue>
 
 <!--DNA T5' 0 P-->
-		<residue name="DT0P" type="nucleic">
+		<residue name="DT0P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
@@ -7734,7 +7717,7 @@
 		</residue>
 
 <!--DNA T5' 1 P-->
-		<residue name="DT5" type="nucleic">
+		<residue name="DT5" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -7869,7 +7852,7 @@
 		</residue>
 
 <!--DNA T5' 3 P-->
-		<residue name="DT3P" type="nucleic">
+		<residue name="DT3P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">PG</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1G</atom>
@@ -8044,7 +8027,7 @@
 		</residue>
 
 <!--DNA C-->
-		<residue name="DC" type="nucleic">
+		<residue name="DC" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -8169,7 +8152,7 @@
 		</residue>
 
 <!--DNA C5' 0 P-->
-		<residue name="DC0P" type="nucleic">
+		<residue name="DC0P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
@@ -8279,7 +8262,7 @@
 		</residue>
 
 <!--DNA C5' 1 P-->
-		<residue name="DC5" type="nucleic">
+		<residue name="DC5" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_Nfat" pairType="P_1">P</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1P</atom>
@@ -8409,7 +8392,7 @@
 		</residue>
 
 <!--DNA C5' 3 P-->
-		<residue name="DC3P" type="nucleic">
+		<residue name="DC3P" residueType="nucleic">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">PG</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1G</atom>
@@ -8583,7 +8566,7 @@
 
 	<!-- NUCLEIC/NUCLEIC -->
 	<connections>
-		<connection name="nucleic-nucleic" resTypeA="nucleic" resTypeB="nucleic">
+		<connection name="nucleic-nucleic" residueType1="nucleic" residueType2="nucleic">
 			<bond energyGroup="bb_n" >
 				<atom>O3*</atom>
 				<atom>P</atom>
@@ -8592,7 +8575,7 @@
 		
 		
 		<!-- AMINO/AMINO -->
-			<connection name="amino-amino" resTypeA="amino" resTypeB="amino">
+			<connection name="amino-amino" residueType1="amino" residueType2="amino">
 			<bond energyGroup="r_a" >
 				<atom>C</atom>
 				<atom>N</atom>
