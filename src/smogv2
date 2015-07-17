@@ -1084,15 +1084,14 @@ sub calculateAtomTypes
                         if($nbtype =~ /\Q$name\E/) {$tmptype=$name; last; }# exact match found
                         if($name =~ /\Q*\E/) { $tmptype=$name; }# not exact match.  maybe use it, but keep looking
 		}
-		$nbtype=$tmptype;
-		if(exists $obtained{$nbtype}){next;}
-		$c6 = $interactions->{"nonbonds"}->{$nbtype}->{"c6"};
-		$c12 = $interactions->{"nonbonds"}->{$nbtype}->{"c12"};
-		$ptype = $interactions->{"nonbonds"}->{$nbtype}->{"ptype"};
-		$mass = $interactions->{"nonbonds"}->{$nbtype}->{"mass"};
-		$charge = $interactions->{"nonbonds"}->{$nbtype}->{"charge"};
+		if(exists $obtained{$tmptype}){next;}
+		$c6 = $interactions->{"nonbonds"}->{$tmptype}->{"c6"};
+		$c12 = $interactions->{"nonbonds"}->{$tmptype}->{"c12"};
+		$ptype = $interactions->{"nonbonds"}->{$tmptype}->{"ptype"};
+		$mass = $interactions->{"nonbonds"}->{$tmptype}->{"mass"};
+		$charge = $interactions->{"nonbonds"}->{$tmptype}->{"charge"};
 		if(!$c6 || !$c12 || !$ptype || !$mass || !$charge)
-		{smog_quit("Nonbond Params at atom types not set for nbType $nbtype");}
+		{smog_quit("Nonbond Params at atom types not set for nbType $tmptype");}
 		
 		$formattedString = sprintf("  %-4s %-6.3f %-5.3f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
 		addToTop("atomtypes",$formattedString."\n");
@@ -1837,7 +1836,7 @@ if($userProvidedMap == 0) { #use SCM.jar if user doesn't provide a map
 	generateContactMap($groFile,$ndxFile,$shadowFile,$topFile);
 }
 if($CGenabled == 1) { #Coarse graining, do everything over with new templates
-    clearBifMemory();clearPDBMemory();
+    	clearBifMemory();clearPDBMemory();
 	$allowCG = 1;
 	print "\nParsing templates for coarse graining... ";
 	parseTemplates($coarseFolder,$inputPDB,$allowCG);

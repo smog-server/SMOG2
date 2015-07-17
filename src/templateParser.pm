@@ -178,7 +178,6 @@ foreach my $res ( keys %{$residueHandle} )
    my $T=$atom->{"nbType"};
    smog_quit("Only letters, numbers and _ can appear in nbType definitions. nbType \"$T\" found in residue $res");
   }
-  print $atom->{"nbType"};
     ## atom{atomName} => {nbType,bType,index,pairType}
 	$atoms{$atom->{"content"}} = {"index"=>$index,"nbType" => $atom->{"nbType"},"bType" => $atom->{"bType"},
 	"pairType" => $atom->{"pairType"}};
