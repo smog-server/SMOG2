@@ -173,6 +173,12 @@ foreach my $res ( keys %{$residueHandle} )
 	my $AT= $atom->{"content"};
   if(exists $seen{"$AT"}){smog_quit("Error in .bif. Duplicate declaration of atom $AT in residue $res.")};
   $seen{"$AT"}=1;
+  
+  unless($atom->{"nbType"} =~ m/^[a-zA-Z0-9_-]+$/){
+   my $T=$atom->{"nbType"};
+   smog_quit("Only letters, numbers, _ and - can appear in nbType definitions. nbType \"$T\" found in residue $res");
+  }
+  print $atom->{"nbType"};
     ## atom{atomName} => {nbType,bType,index,pairType}
 	$atoms{$atom->{"content"}} = {"index"=>$index,"nbType" => $atom->{"nbType"},"bType" => $atom->{"bType"},
 	"pairType" => $atom->{"pairType"}};
