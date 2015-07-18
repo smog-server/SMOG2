@@ -194,20 +194,20 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
@@ -234,24 +234,24 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
@@ -279,28 +279,28 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>OG1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG2</atom>
 				</bond>
@@ -336,32 +336,32 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>OG1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG2</atom>
 				</bond>
@@ -401,24 +401,24 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
@@ -475,28 +475,28 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
@@ -550,28 +550,28 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG2</atom>
 				</bond>
@@ -606,32 +606,32 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG2</atom>
 				</bond>
@@ -667,33 +667,33 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 				
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>SD</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>SD</atom>
 					<atom>CE</atom>
 				</bond>
@@ -723,36 +723,36 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>SD</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>SD</atom>
 					<atom>CE</atom>
 				</bond>
@@ -784,24 +784,24 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
@@ -855,28 +855,28 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
@@ -927,36 +927,36 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>OE1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>OE2</atom>
 				</bond>
@@ -987,40 +987,40 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>OE1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>OE2</atom>
 				</bond>
@@ -1047,24 +1047,24 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>SG</atom>
 				</bond>
@@ -1092,28 +1092,28 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>SG</atom>
 				</bond>
@@ -1138,15 +1138,15 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
@@ -1166,19 +1166,19 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
@@ -1201,32 +1201,32 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>OD1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>OD2</atom>
 				</bond>
@@ -1256,36 +1256,36 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>OD1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>OD2</atom>
 				</bond>
@@ -1320,24 +1320,24 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
@@ -1365,7 +1365,7 @@
 					<atom>CE2</atom>
 					<atom>CZ</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CZ</atom>
 					<atom>OH</atom>
 				</bond>
@@ -1400,28 +1400,28 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
@@ -1449,7 +1449,7 @@
 					<atom>CE2</atom>
 					<atom>CZ</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CZ</atom>
 					<atom>OH</atom>
 				</bond>
@@ -1479,32 +1479,32 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD2</atom>
 				</bond>
@@ -1541,36 +1541,36 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD2</atom>
 				</bond>
@@ -1606,32 +1606,32 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG2</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG1</atom>
 					<atom>CD1</atom>
 				</bond>
@@ -1667,36 +1667,36 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG2</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG1</atom>
 					<atom>CD1</atom>
 				</bond>
@@ -1731,32 +1731,32 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>OD1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>ND2</atom>
 				</bond>
@@ -1787,36 +1787,36 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>OD1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>ND2</atom>
 				</bond>
@@ -1843,24 +1843,24 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>OG</atom>
 				</bond>
@@ -1887,28 +1887,28 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>OG</atom>
 				</bond>
@@ -1941,44 +1941,44 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>NE</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>NE</atom>
 					<atom>CZ</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CZ</atom>
 					<atom>NH1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CZ</atom>
 					<atom>NH2</atom>
 				</bond>
@@ -2013,48 +2013,48 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>NE</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>NE</atom>
 					<atom>CZ</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CZ</atom>
 					<atom>NH1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CZ</atom>
 					<atom>NH2</atom>
 				</bond>
@@ -2085,36 +2085,36 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>OE1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>NE2</atom>
 				</bond>
@@ -2146,40 +2146,40 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>OE1</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>NE2</atom>
 				</bond>
@@ -2211,11 +2211,11 @@
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
@@ -2264,15 +2264,15 @@
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
@@ -2320,36 +2320,36 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>CE</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CE</atom>
 					<atom>NZ</atom>
 				</bond>
@@ -2381,40 +2381,40 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CG</atom>
 					<atom>CD</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CD</atom>
 					<atom>CE</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CE</atom>
 					<atom>NZ</atom>
 				</bond>
@@ -2449,24 +2449,24 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
@@ -2544,28 +2544,28 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>N</atom>
 					<atom>CA</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>C</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>O</atom>
 				</bond>
-				<bond energyGroup="bb_a">
+				<bond energyGroup="free">
 					<atom>C</atom>
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="sc_a">
+				<bond energyGroup="free">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
@@ -2651,56 +2651,56 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -2802,44 +2802,44 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -2945,60 +2945,60 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O3P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -3112,92 +3112,92 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O1G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O2G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O1B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O2B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -3303,56 +3303,56 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -3459,44 +3459,44 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -3607,60 +3607,60 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O3P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -3779,92 +3779,92 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O1G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O2G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O1B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O2B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -3971,56 +3971,56 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -4108,44 +4108,44 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -4237,60 +4237,60 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O3P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -4390,92 +4390,92 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O1G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O2G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O1B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O2B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -4566,56 +4566,56 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -4703,44 +4703,44 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -4832,60 +4832,60 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O3P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -4985,92 +4985,92 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O1G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O2G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O1B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O2B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -5162,52 +5162,52 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -5298,40 +5298,40 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -5426,56 +5426,56 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O3P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -5578,88 +5578,88 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O1G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O2G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O1B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O2B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -5754,52 +5754,52 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -5895,40 +5895,40 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -6028,56 +6028,56 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O3P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -6185,88 +6185,88 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O1G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O2G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O1B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O2B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N9</atom>
 				</bond>
@@ -6363,52 +6363,52 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -6490,40 +6490,40 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -6609,56 +6609,56 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O3P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -6752,88 +6752,88 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O1G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O2G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O1B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O2B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -6917,52 +6917,52 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -7039,40 +7039,40 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -7153,56 +7153,56 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O1P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O2P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O3P</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>P</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -7291,88 +7291,88 @@
 			</atoms>
 			<bonds>
 	<!--BACKBONE-->
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O1G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O2G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3G</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PG</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O1B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O2B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PB</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>PA</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>O5*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C5*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C3*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C2*</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="bb_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="sc_n">
+				<bond energyGroup="free">
 					<atom>C1*</atom>
 					<atom>N1</atom>
 				</bond>
@@ -7433,7 +7433,7 @@
 	<!-- NUCLEIC/NUCLEIC -->
 	<connections>
 		<connection name="nucleic-nucleic" residueType1="nucleic" residueType2="nucleic">
-			<bond energyGroup="bb_n" >
+			<bond energyGroup="free" >
 				<atom>O3*</atom>
 				<atom>P</atom>
 			</bond>

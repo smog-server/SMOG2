@@ -1,4 +1,3 @@
-#!/usr/bin/perl -w
 
 #########################################################################################
 #
@@ -196,7 +195,7 @@ foreach my $res ( keys %{$residueHandle} )
   foreach my $improper(@improperHandle)
   {
     ## [[A,B,C,D],[E,F,G,H],...]
-		if(!exists $improper->{"atom"}->[0]){smog_quit("Declration of residue $res has an improper that lacks atoms\n")};
+		if(!exists $improper->{"atom"}->[0]){smog_quit("Declaration of residue $res has an improper that lacks atoms\n")};
   		my %seenAtom;
 		my $atomstring=$improper->{"atom"}->[0];
 		for(my $I=1;$I<4;$I++){

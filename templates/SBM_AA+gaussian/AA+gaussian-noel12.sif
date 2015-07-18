@@ -6,11 +6,13 @@
 	<function name="bond_harmonic" directive="bonds"/>
     	<function name="bond_type6" directive="bonds"/>
 	<function name="angle_harmonic" directive="angles"/>
+	<function name="angle_free" directive="angles"/>
 	<function name="dihedral_cosine" directive="dihedrals"/>
 	<function name="dihedral_harmonic" directive="dihedrals"/>
-    	<function name="contact_1" directive="pairs"/>
-    	<function name="contact_2" directive="pairs"/>
-    	<function name="contact_gaussian" directive="pairs"/>
+	<function name="dihedral_free" directive="dihedrals"/>
+    	<function name="contact_1" directive="pairs" exclusions="1"/>
+    	<function name="contact_2" directive="pairs" exclusions="1"/>
+    	<function name="contact_gaussian" directive="pairs" exclusions="1"/>
 </functions>
 
 <!-- HAMILTONIAN SETTINGS -->
@@ -19,36 +21,39 @@
 <Groups>
 	<!-- NUCLEIC ENERGY GROUPS -->
 	<!-- Normalized -->
-	<energyGroup residueType="nucleic" name="bb_n" intraRelativeStrength="1" normalize="1"/>
-	<energyGroup residueType="nucleic" name="sc_n" intraRelativeStrength="1" normalize="1"/>
+	<energyGroup name="bb_n" residueType="nucleic" intraRelativeStrength="1" normalize="1"/>
+	<energyGroup name="sc_n" residueType="nucleic" intraRelativeStrength="1" normalize="1"/>
 	<!-- Not-Normalized -->
-	<energyGroup residueType="nucleic" name="pr_n" normalize="0"/>
-	<energyGroup residueType="nucleic" name="ip_n" normalize="0"/>
-	<energyGroup residueType="nucleic" name="r_n" normalize="0"/>
+	<energyGroup name="pr_n" residueType="nucleic" normalize="0"/>
+	<energyGroup name="ip_n" residueType="nucleic" normalize="0"/>
+	<energyGroup name="r_n"  residueType="nucleic" normalize="0"/>
 
 	<!-- AMINO ENERGY GROUPS --> 
 	<!-- Normalized -->
-	<energyGroup residueType="amino" name="bb_a" intraRelativeStrength="1" normalize="1"/>
-	<energyGroup residueType="amino" name="sc_a" intraRelativeStrength="0.5" normalize="1"/>
+	<energyGroup name="bb_a" residueType="amino" intraRelativeStrength="1" normalize="1"/>
+	<energyGroup name="sc_a" residueType="amino" intraRelativeStrength="0.5" normalize="1"/>
 	<!-- Not-Normalized -->
-	<energyGroup residueType="amino" name="pr_a" normalize="0"/>
-	<energyGroup residueType="amino" name="ip_a" normalize="0"/>
-	<energyGroup residueType="amino" name="r_a"  normalize="0"/>
+	<energyGroup name="pr_a" residueType="amino" normalize="0"/>
+	<energyGroup name="ip_a" residueType="amino" normalize="0"/>
+	<energyGroup name="r_a"  residueType="amino" normalize="0"/>
+	<energyGroup name="free"  residueType="amino" normalize="0"/>
 
-    <!-- LIGAND ENERGY GROUP -->
-    <energyGroup residueType="ligand" name="lig" intraRelativeStrength="1" normalize="0"/>
+    	<!-- LIGAND ENERGY GROUP -->
+    	<energyGroup residueType="ligand" name="lig" normalize="0"/>
 
 
- <!-- Global Contacts Settings -->
-	<contactGroup residueType="mixed" name="c" intraRelativeStrength="1" normalize="1"/>
+ 	<!-- Global Contacts Settings -->
+	<contactGroup name="c" intraRelativeStrength="1" normalize="1"/>
 
- <!-- Contact/Dihedral Group ratio -->
-       <groupRatios contacts="2" dihedrals="1"/>
+ 	<!-- Contact/Dihedral Group ratio: These are only used when normalization is turned on for energy groups-->
+        <groupRatios contacts="2" dihedrals="1"/>
 
 </Groups>
+
 <!-- CONTACT MAP SETTINGS -->
-<Contacts method="shadow" contactDistance="6" shadowRadius="1">
-<contactScaling name="stackingScale" resTypeA="nucleic" resTypeB="nucleic" scale="1" deltaMin="1" deltaMax="1"
+<!-- NOTE: If another template is provided with the -t_contacts flag, then these settings will be ignored-->
+<Contacts method="shadow" contactDistance="6" shadowRadius="1" shadowRadiusBonded="0.5">
+<contactScaling name="stackingScale" residueType1="nucleic" residueType2="nucleic" scale="1" deltaMin="1" deltaMax="1"
 atomList="N1 N2 N3 N4 N5 N6 N7 N8 N9 C1 C2 C3 C4 C5 C6 C7 C8 C9 O1 O2 O3 O4 O5 O6 O7 O8 O9"/>
 </Contacts>
 

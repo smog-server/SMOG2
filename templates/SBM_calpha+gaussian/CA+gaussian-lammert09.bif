@@ -3,258 +3,237 @@
 	<residues>
 <!-- AMINO CALPHA RESIDUES -->
 <!--ALANINE-->
-		<residue name="ALA" type="amino">
+		<residue name="ALA" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="ALAT" type="amino">
+		<residue name="ALAT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 <!--THREONINE-->
-		<residue name="THR" type="amino">
+		<residue name="THR" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-<!--THREONINE-JIANPENG-->
-		<residue name="THRJ" type="amino">
-			<atoms>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-			</atoms>
-		</residue>
-		<residue name="THRT" type="amino">
+		<residue name="THRT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 <!--PHENYLALANINE-->
-		<residue name="PHE" type="amino">
+		<residue name="PHE" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="PHET" type="amino">
+		<residue name="PHET" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>		
 <!--VALINE-->
-		<residue name="VAL" type="amino">
+		<residue name="VAL" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="VALT" type="amino">
+		<residue name="VALT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 <!--METHIONINE-->
-		<residue name="MET" type="amino">
+		<residue name="MET" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="METT" type="amino">
+		<residue name="METT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 <!--HISTIDINE-->
-		<residue name="HIS" type="amino">
+		<residue name="HIS" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
-        </residue>
- <!-- METHISTIDINE-->
-		<residue name="HMS" type="amino">
-			<atoms>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-			</atoms>
-		</residue>
-	       
-		<residue name="HIST" type="amino">
+        	</residue>
+		<residue name="HIST" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>	
 <!--GLUTAMIC ACID-->
-		<residue name="GLU" type="amino">
+		<residue name="GLU" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="GLUT" type="amino">
+		<residue name="GLUT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 <!--CYSTEINE-->
-		<residue name="CYS" type="amino">
+		<residue name="CYS" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="CYST" type="amino">
+		<residue name="CYST" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 		
 <!--GLYCINE-->
-		<residue name="GLY" type="amino">
+		<residue name="GLY" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="GLYT" type="amino">
+		<residue name="GLYT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 <!--ASPARTIC ACID-->
-		<residue name="ASP" type="amino">
+		<residue name="ASP" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="ASPT" type="amino">
+		<residue name="ASPT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 	
 <!--TYROSINE-->
-		<residue name="TYR" type="amino">
+		<residue name="TYR" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="TYRT" type="amino">
+		<residue name="TYRT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 <!--LEUCINE-->
-		<residue name="LEU" type="amino">
+		<residue name="LEU" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="LEUT" type="amino">
+		<residue name="LEUT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 
 <!--ISOLEUCINE-->
-		<residue name="ILE" type="amino">
+		<residue name="ILE" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="ILET" type="amino">
+		<residue name="ILET" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 <!--ASPARGINE-->
-		<residue name="ASN" type="amino">
+		<residue name="ASN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="ASNT" type="amino">
+		<residue name="ASNT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 <!--SERINE-->
-		<residue name="SER" type="amino">
+		<residue name="SER" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-			
 			</atoms>
 		</residue>
-		<residue name="SERT" type="amino">
+		<residue name="SERT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			
 			</atoms>
 		</residue>	
-
 <!--ARGININE-->		
-		<residue name="ARG" type="amino">
+		<residue name="ARG" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="ARGT" type="amino">
+		<residue name="ARGT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 <!--GLUTAMINE-->
-		<residue name="GLN" type="amino">
+		<residue name="GLN" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-				
 			</atoms>
 		</residue>
-		<residue name="GLNT" type="amino">
+		<residue name="GLNT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-				
 			</atoms>
 		</residue>
 
 <!--PROLINE-->
-		<residue name="PRO" type="amino">
+		<residue name="PRO" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-				
 			</atoms>
 		</residue>
-		<residue name="PROT" type="amino">
+		<residue name="PROT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-				
 			</atoms>
 		</residue>
 <!--LYSINE-->
-		<residue name="LYS" type="amino">
+		<residue name="LYS" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
-		<residue name="LYST" type="amino">
+		<residue name="LYST" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
 			</atoms>
 		</residue>
 
 <!--TRYPTOPHAN-->
-		<residue name="TRP" type="amino">
+		<residue name="TRP" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-				
 			</atoms>
 		</residue>
-		<residue name="TRPT" type="amino">
+		<residue name="TRPT" residueType="amino">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">CA</atom>
-				
 			</atoms>
 		</residue>
 </residues>
 <!-- CONNECTIONS -->
 	<connections>
 		<!-- AMINO/AMINO -->
-			<connection name="amino-amino" resTypeA="amino" resTypeB="amino">
-			<bond energyGroup="bb_a" >
+			<connection name="amino-amino" residueType1="amino" residueType2="amino">
+			<bond energyGroup="bb" >
 				<atom>CA</atom>
 				<atom>CA</atom>
 			</bond>

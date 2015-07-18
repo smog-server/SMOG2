@@ -20,18 +20,12 @@
 	<!-- ENERGY/CONTACT GROUPS -->
 <Groups>
 	<!-- NUCLEIC ENERGY GROUPS -->
-	<!-- Normalized -->
-	<energyGroup name="bb_n" residueType="nucleic" normalize="0"/>
-	<energyGroup name="sc_n" residueType="nucleic" normalize="0"/>
 	<!-- Not-Normalized -->
 	<energyGroup name="pr_n" residueType="nucleic" normalize="0"/>
 	<energyGroup name="ip_n" residueType="nucleic" normalize="0"/>
 	<energyGroup name="r_n"  residueType="nucleic" normalize="0"/>
 
 	<!-- AMINO ENERGY GROUPS --> 
-	<!-- Normalized -->
-	<energyGroup name="bb_a" residueType="amino" normalize="0"/>
-	<energyGroup name="sc_a" residueType="amino" normalize="0"/>
 	<!-- Not-Normalized -->
 	<energyGroup name="pr_a" residueType="amino" normalize="0"/>
 	<energyGroup name="ip_a" residueType="amino" normalize="0"/>
@@ -43,8 +37,7 @@
 
 
  	<!-- Global Contacts Settings -->
-	<!-- contactGroup residueType="mixed" name="c" intraRelativeStrength="1" normalize="1"/  -->
-	<contactGroup residueType="mixed" name="e" normalize="0"/>
+	<contactGroup name="e" normalize="0"/>
 
  	<!-- Contact/Dihedral Group ratio: These are only used when normalization is turned on for energy groups-->
         <groupRatios contacts="2" dihedrals="1"/>
@@ -52,8 +45,8 @@
 </Groups>
 
 <!-- CONTACT MAP SETTINGS -->
-<!-- NOTE: If another template is provided with the -t_contacts flag, then these settings will be ignored-->
-<Contacts method="shadow" contactDistance="6" shadowRadius="1" shadowRadiusBonded="0.5">
+<!-- NOTE: If another template is provided with the -t flag, then these settings will be ignored-->
+<Contacts method="cutoff" contactDistance="6">
 <contactScaling name="stackingScale" residueType1="nucleic" residueType2="nucleic" scale="1" deltaMin="1" deltaMax="1"
 atomList="N1 N2 N3 N4 N5 N6 N7 N8 N9 C1 C2 C3 C4 C5 C6 C7 C8 C9 O1 O2 O3 O4 O5 O6 O7 O8 O9"/>
 </Contacts>
