@@ -1,11 +1,10 @@
-#!/usr/bin/perl -w
 #########################################################################################
 # smogv2 containt the main routines
 #
 #                          Structure-based Model (SMOG) software
 #    This package is the product of contributions from a number of people, including:
 #                      Jeffrey Noel, Mariana Levi, Mohit Raghunathan,
-#                         Ryan Hayes, Jose Onuchic & Paul Whitford
+#                 Heiko Lammert, Ryan Hayes, Jose Onuchic & Paul Whitford
 #
 #                     Copyright (c) 2015, The SMOG development team at
 #                        Rice University and Northeastern University
@@ -1444,7 +1443,7 @@ print <<EOT;
              when using SMOG models. See http://www.smog-server.org/refs.html
 
 --Software-- 
-Noel JK, Levi M, Rangunathan M, Hayes R, Onuchic JN, and Whitford PC.
+Noel JK, Levi M, Rangunathan M, Lammert H, Hayes R, Onuchic JN, and Whitford PC.
 SMOG V2, A Versatile Software Package for Generating Structure-Based Models 
 2015, In preparation. 
 
