@@ -1,5 +1,5 @@
 #########################################################################################
-# smogv2 containt the main routines
+# smogv2 contains the main routines
 #
 #                          Structure-based Model (SMOG) software
 #    This package is the product of contributions from a number of people, including:
@@ -23,6 +23,7 @@ use warnings;
 ####################
 ## MODULE HEADERS ##
 ####################
+&checkForModules;
 use XML::Simple;
 use templateParser;
 use pdbParser;
@@ -78,6 +79,25 @@ our @directivesList=("defaults","atomtypes","moleculetype","atoms","bonds","angl
 our @topFileBuffer;
 our @linesInDirectives;
 our $inputArguments=join(' ',@ARGV);
+
+
+sub checkForModules {
+        my $checkPackage; my $sum=0;
+        $checkPackage=`perl -e "use XML::Simple" 2>&1 | wc -l | awk '{print \$1}'`;
+        if($checkPackage > 0) { print "Perl module XML::Simple not installed!\n"; $sum++;}
+        $checkPackage=`perl -e "use XML::Validator::Schema" 2>&1 | wc -l | awk '{print \$1}'`;
+        if($checkPackage > 0) { print "Perl module XML::Validator::Schema not installed!\n"; $sum++;}
+        $checkPackage=`perl -e "use Exporter" 2>&1 | wc -l | awk '{print \$1}'`;
+        if($checkPackage > 0) { print "Perl module Exporter not installed!\n"; $sum++;}
+        $checkPackage=`perl -e "use String::Util" 2>&1 | wc -l | awk '{print \$1}'`;
+        if($checkPackage > 0) { print "Perl module String::Util not installed!\n"; $sum++;}
+        $checkPackage=`perl -e "use PDL" 2>&1 | wc -l | awk '{print \$1}'`;
+        if($checkPackage > 0) { print "Perl Data Language not installed!\n"; $sum++;}
+        $checkPackage=`which java | wc -l | awk '{print \$1}'`;
+        if($checkPackage < 1) { print "Java might not be installed. This package assumes Java 1.7 or greater is in the path as 'java'.\n"; $sum++;}
+        if($sum > 0) { smog_quit("Need above packages before smog2 can run. Consult SMOG manual."); }
+}
+
 
 ####################
 ## OUTPUT TOPFILE ##
