@@ -235,6 +235,7 @@ sub parsePDBATOMS
 	 	## OBTAIN RESIDUE NAME ##
 		$residue = substr($record,17,4);
 		$residue =~ s/^\s+|\s+$//g;
+		if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 		## if first iteration, save residueBackup, and use residues
 		#if(exists $residueBackup{$residue}){
 		if($CGenabled == 1){
@@ -250,7 +251,7 @@ sub parsePDBATOMS
 		my $atomsmatch=0;
 	 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 		my $resname=$residue;
-                my $resindex = substr($record,22,5);
+        my $resindex = substr($record,22,5);
 		my %uniqueAtom;
 		$residueSerial++;
 		for($i=0;$i<$atomsInRes;$i++)
@@ -280,8 +281,7 @@ sub parsePDBATOMS
 			unless($interiorPdbResidueIndex =~ /^\d+$/){;
 				smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
 			}
-
-	                if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
+	        if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 			if($interiorResidue !~ /$residue/)
