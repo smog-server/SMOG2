@@ -1,10 +1,5 @@
-#!/usr/bin/perl -w
-
-# USAGE ./adjustPDB <pdb> <map file> <output file>
 use strict;
 use warnings;
-use Carp;
-use Data::Dumper;
 
 print <<EOT;
 *****************************************************************************************
@@ -20,8 +15,6 @@ print <<EOT;
             For questions regarding this script, contact info\@smog-server.org              
 *****************************************************************************************
 EOT
-
-
 
 my %map;
 
