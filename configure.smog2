@@ -1,6 +1,6 @@
 #!/bin/bash
 # Configuring script for SMOG V2.0
-#NOTE: MAKE SURE YOU HAVE INSTALLED String::Util, XML::Simple, Data::Dumper, Exporter and perl PDL
+#NOTE: MAKE SURE YOU HAVE INSTALLED String::Util, XML::Simple, Exporter and perl PDL
 
 ## You need to set smog2dir and perl4smog.  smog2dir is the main directory of the smog2 package(not the src directory).  perl4smog is the version of perl that you prefer to use.  
 smog2dir=""
