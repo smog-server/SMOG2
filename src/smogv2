@@ -413,10 +413,10 @@ sub connCalculateAnglesHelper
 	my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
 	my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
 	my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
-
+	if($atomi1 > $atomi3) { my $temp = $atomi1; $atomi1 = $atomi3; $atomi3 = $temp; }
   	my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos);
 	if(!$val) {next;}
-  	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos)};
+  	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => 	angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos)};
  }
 }
 
@@ -504,45 +504,6 @@ sub printOrderedDihedrals
   addToTop("dihedrals","\n");
 }
 
-
-##
-# calculate dihedral angle of a specific residue PDL
-sub calculateDihedralsHelper
-{
- my($diheArr,$inputPDL) = @_;
- foreach my $dihedrals(@{$diheArr})
- {
-	my ($atom1,$atom2,$atom3,$atom4) = split("-",$dihedrals);
-	
- my $b1 = slice($inputPDL,"0:2,$atom2,:")-slice($inputPDL,"0:2,$atom1,:");
-	my $b2 = slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:");
-	my $b3 = slice($inputPDL,"0:2,$atom4,:")-slice($inputPDL,"0:2,$atom3,:");
-	my $n1 = norm(crossp($b1,$b2));
-	my $n2 = norm(crossp($b2,$b3));
-	my $m1 = crossp($n1,norm($b2));
-	my $cos = atan2(inner($m1,$n2),inner($n1,$n2));
-	my $negcos = $cos; #$cos->where($cos < 0);
-	$negcos*=-1;$negcos+=mathFunctions::pi();
-	my $acos = sclr(mathFunctions::rad_to_deg($cos));
-	my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
-	my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
-	my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
-	my $atomi4 = sclr(slice($inputPDL,"3:3,$atom4,:"));
- }
-}
-
-##
-# Setup the calculate of dihedral angles of all the residues,
-# then call calculateDihedralsHelper() with a specific residue
-sub calculateDihedrals
-{
- my($diheFunctHandle,$whichPDL) = @_;
- foreach my $res(keys %{$whichPDL})
- {
-	calculateDihedralsHelper($diheFunctHandle->{$res}->{"dihedrals"},$whichPDL->{$res});
- }
-}
-
 ##
 # Setup the calculate of bond angles of all combined residues,
 # then call connCalculateBondsHelper() with a specific residue
@@ -584,7 +545,10 @@ sub connCalculateDihedralsHelper
 			my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
 			my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
 			my $atomi4 = sclr(slice($inputPDL,"3:3,$atom4,:"));
-	
+			if($atomi1 > $atomi4) { #then reverse order
+				my $temp = $atomi1; $atomi1 = $atomi4; $atomi4 = $temp;
+				$temp = $atomi2; $atomi2 = $atomi3; $atomi3 = $temp;
+			}
 			## $eG >=0 dihedral is proper dihedral of any functional form
 	        if($eG >= 0)
 			{
