@@ -84,7 +84,7 @@ our $inputArguments=join(' ',@ARGV);
 sub checkForModules {
 	my $checkPackage; my $sum=0;
 	$checkPackage=`echo \$perl4smog | wc | awk '{print \$3}'`;
-	if($checkPackage < 2) { print "Environment variable perl4smog not set, maybe you need to edit the configure.smog2 script and run it with \"source configure.smog2\"\n"; $sum++;}
+	if($checkPackage < 2) { print "Environment  perl4smog not set, maybe you need to edit the configure.smog2 script and run it with \"source configure.smog2\"\n"; $sum++;}
 	$checkPackage=`\$perl4smog -e "use XML::Simple" 2>&1 | wc -l | awk '{print \$1}'`;
 	if($checkPackage > 0) { print "Perl module XML::Simple not installed!\n"; $sum++;}
 	$checkPackage=`\$perl4smog -e "use XML::Validator::Schema" 2>&1 | wc -l | awk '{print \$1}'`;
@@ -413,10 +413,10 @@ sub connCalculateAnglesHelper
 	my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
 	my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
 	my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
-
+	my @sortList = ($atomi1,$atomi2,$atomi3);	($atomi1,$atomi2,$atomi3) = sort @sortList;
   	my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos);
 	if(!$val) {next;}
-  	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos)};
+  	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => 	angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos)};
  }
 }
 
@@ -584,7 +584,7 @@ sub connCalculateDihedralsHelper
 			my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
 			my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
 			my $atomi4 = sclr(slice($inputPDL,"3:3,$atom4,:"));
-	
+			
 			## $eG >=0 dihedral is proper dihedral of any functional form
 	        if($eG >= 0)
 			{
