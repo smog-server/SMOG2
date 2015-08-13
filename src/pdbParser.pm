@@ -124,6 +124,7 @@ sub parsePDBATOMS
     smog_quit ("Cannot read from '$fileName'.");
 }
 
+ my $lastresindex="null";
   ## LOOP THROUGH EACH LINE ##
  while(my $record = <PDBFILE>)
  {
@@ -204,11 +205,10 @@ sub parsePDBATOMS
     next;
  }
 
-
-
 	## IF TER LINE  ##
 	if($record =~ m/TER|END/)
 	{
+ 		$lastresindex="null";
 		$chainNumber++; ## INCREMENT CHAIN NUMBER ##
 		## CREATE INTERACTION ##
 		my $chainlength=$atomSerial-$lastchainstart;
@@ -251,7 +251,11 @@ sub parsePDBATOMS
 		my $atomsmatch=0;
 	 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 		my $resname=$residue;
-        my $resindex = substr($record,22,5);
+        	my $resindex = substr($record,22,5);
+		if ($lastresindex ne "null" && $resindex-$lastresindex != 1){
+			smog_quit("Nonsequential residue numbers ($lastresindex,$resindex) appear at line $lineNumber.");
+		}
+		$lastresindex=$resindex;
 		my %uniqueAtom;
 		$residueSerial++;
 		for($i=0;$i<$atomsInRes;$i++)
@@ -281,11 +285,9 @@ sub parsePDBATOMS
 			unless($interiorPdbResidueIndex =~ /^\d+$/){;
 				smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
 			}
-	        if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
+	        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
-			if($interiorResidue !~ /$residue/)
-			{smog_quit ("Residue doesn't conform with .bif:: $record\n Perhaps the previous residue was missing an atom.");}
 			$atom = substr($record, 12, 4);
 			$atom =~ s/^\s+|\s+$//g;
 
