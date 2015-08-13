@@ -493,7 +493,7 @@ sub printOrderedDihedrals
   ## Cache Bonds ##
   connCalculateDihedrals($connDiheFunctionals,$connPDL,\@diheCache);
 
-  ## Sort dihedrals by i,j then k ## 
+  ## Sort dihedrals by i, then j then k then l ## 
   @diheCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"l"} <=> $b->{"l"}) } @diheCache;
   
   ## Print our sorted bonds ##
