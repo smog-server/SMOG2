@@ -283,8 +283,8 @@ sub bondOutput
  {
 	my $paramFormat="";
 	($fType,@paramArr) = bondFuncParser($fun);
-     ## $paramArr[0] is bond angle
-	if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## non-native option used
+     	## $paramArr[0] is bond length
+	if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## native option used
 	 
 	 ## Check bonds threshold ##
 	 if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
