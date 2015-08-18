@@ -13,6 +13,10 @@
 #
 #                        Direct questions to: info@smog-server.org
 #
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #########################################################################################
 
 #####################
@@ -1640,7 +1644,8 @@ sub appendContactsAndFinish {
 	}
 	if(exists $interactions->{"gen-pairs"} && $interactions->{"gen-pairs"} == 1) { $genpairs = "yes"; }
 	addToTop("defaults", "  1      $combrule         $genpairs\n");
-	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$shadowFile\n\t$ndxFile\n";
+	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$ndxFile\n";
+	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
 	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
 	printCitation();
 }
