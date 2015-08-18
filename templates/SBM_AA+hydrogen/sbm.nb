@@ -1,0 +1,152 @@
+<?xml version='1.0'?>
+<nb>
+ <!-- DEFAULTS -->
+ <defaults gen-pairs="0"/>
+ <!-- PROTEIN NONBONDS -->
+ <!-- HEAVY ATOMS -->
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.422718"  c12="3.529824e-04">
+   <nbType>C</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.422718"  c12="4.5773e-04">
+   <nbType>CT</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.404108"  c12="7.1128e-04">
+   <nbType>N</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.368039"  c12="8.7864e-04">
+   <nbType>O</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.381288"  c12="8.80314e-04">
+   <nbType>OH</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.4431"  c12="1.046e-03">
+   <nbType>S</nbType>
+ </nonbond>
+
+ <!-- HYDROGENS -->
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.13293"  c12="6.56888e-05">
+   <nbType>H</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.0"  c12="0.0">
+   <nbType>HO</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.323242"  c12="6.276e-05">
+   <nbType>HA</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.329445"  c12="6.56888e-05">
+   <nbType>HC</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.243706"  c12="6.56888e-05">
+   <nbType>HP</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.30729"  c12="6.56888e-05">
+   <nbType>H1</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.312164"  c12="6.276e-05">
+   <nbType>H4</nbType>
+ </nonbond>
+
+ <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.301087"  c12="6.276e-05">
+   <nbType>H5</nbType>
+ </nonbond>
+
+ <!-- CONTACTS -->
+
+  <contact func="contact_gaussian(?,4.68553e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>C</pairType> <pairType>C</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,5.28468e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>C</pairType> <pairType>CT</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,5.04353e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>C</pairType> <pairType>N</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,3.28222e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>C</pairType> <pairType>O</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,4.01029e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>C</pairType> <pairType>OH</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,1.06324e-07,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>C</pairType> <pairType>S</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,5.96044e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>CT</pairType> <pairType>CT</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,5.68846e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>CT</pairType> <pairType>N</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,3.70192e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>CT</pairType> <pairType>O</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,4.52309e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>CT</pairType> <pairType>OH</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,1.1992e-07,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>CT</pairType> <pairType>S</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,5.39598e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>N</pairType> <pairType>N</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,3.46757e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>N</pairType> <pairType>O</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,4.257e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>N</pairType> <pairType>OH</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,1.15177e-07,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>N</pairType> <pairType>S</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,2.17069e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>O</pairType> <pairType>O</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,2.69142e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>O</pairType> <pairType>OH</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,7.59477e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>O</pairType> <pairType>S</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,3.32457e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>OH</pairType> <pairType>OH</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,9.23346e-08,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>OH</pairType> <pairType>S</pairType>
+  </contact>
+
+  <contact func="contact_gaussian(?,2.39669e-07,?/sqrt(50*log(2)),?)" contactGroup="c">
+    <pairType>S</pairType> <pairType>S</pairType>
+  </contact>  
+
+</nb>
+
+

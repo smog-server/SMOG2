@@ -1,0 +1,5 @@
+These templates are relatively untested, and largely included as they can help explain how the templates work since many changes have to be incorporated in order to include hydrogen excluded volume and heterogeneous heavy atom radii. The basic purpose of this template is to reproduce the excluded volume of an amber simulation.
+
+The hydrogen pair types are not defined in this template, and so the option `-ignH' needs to be given to SMOG2, which means that hydrogens are ignored for contact calculations. Thus, the contact map will be identical to a pdb without hydrogens.
+
+Created by Heiko Lammert and Jeffrey Noel
