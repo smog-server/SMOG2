@@ -1447,92 +1447,6 @@ EOT
 ##
 ## MEMORY MANAGEMENT ROUTINES
 ##
-sub determine_optimal_memory {
-
-    # We'll set a ceiling for the memory allocation.  On a 32-bit OS this is going
-    # to be 1500m (the max it can safely handle), on a 64-bit OS we won't take more
-    # than 6GB
-    my $max_memory = 1500;
-
-    # We need not only a 64 bit OS but 64 bit java as well. It's easiest to just test
-    # java since the OS support must be there if you have a 64 bit JRE.
-
-    my ($in,$out);
-    open3(\*IN,\*OUT,\*OUT,"java -version") or print_error("Can't find java");
-    close IN;
-    while (<OUT>) {
-        if (/64-Bit/) {
-            $max_memory = 12000;
-        }
-    }
-    close OUT;
-    # The way we determine the amount of physical memory is OS dependent.
-    my $os = $^O;
-
-    my $physical;
-    if ($os =~ /Win/) {
-        smog_quit("SMOG2 does not run on windows");
-    }
-    elsif ($os =~/darwin/ or $os =~ /bsd/i) {
-        $physical = get_osx_memory($max_memory);
-    }
-    else {
-        $physical = get_linux_memory($max_memory);
-    }
-
-    warn "Raw physical free memory is $physical\n";
-
-    # We then set the memory to be the minimum of 2/3 of the physical
-    # memory or the ceiling, whichever is lower.
-    $physical = int(($physical/3)*2);
-
-    if ($max_memory < $physical) {
-        return $max_memory;
-    }
-
-    warn "Using $physical MB of RAM to launch seqmonk\n";
-    return $physical;
-
-}
-
-sub get_linux_memory {
-    # We get the amount of physical memory on linux by parsing the output of free
-
-    open (MEM,"free -m |") or print_error("Can't launch free on linux: $!");
-
-    while (<MEM>) {
-        if (/^Mem:\s+(\d+)/) {
-            return $1;
-        }
-    }
-
-    close MEM;
-
-    smog_quit("Couldn't parse physical memory from the output of free");
-}
-
-sub get_osx_memory {
-
-    # We get the amount of physical memory on OSX by parsing the output of top
-
-    open (MEM,"top -l 1 -n 0 |") or print_error("Can't get amount of memory on OSX: $!");
-
-    my $total_mem = 0;
-
-    while (<MEM>) {
-        if (/^PhysMem:.*,\s+(\d+)M\s+unused/) {
-            $total_mem += $1;
-        }    
-    }
-
-    close MEM;
-    unless ($total_mem) {
-        smog_quit("Couldn't parse physical memory from the output of top");
-    }
-
-    return $total_mem;
-
-}
 
 sub freeMemoryForShadow
 {
@@ -1563,7 +1477,7 @@ sub parseTemplates
 	parseSif();
 	## parse Bonds/Nonbonds File
 	parseBonds();parseNonBonds();
-    print "\nDone parsing templates.\n";
+    	print "\nDone parsing templates.\n";
 	## Find Bonds ##
 	createBondFunctionals();
 	## Find Angles ##
