@@ -1462,7 +1462,7 @@ sub determine_optimal_memory {
     close IN;
     while (<OUT>) {
         if (/64-Bit/) {
-            $max_memory = 6000;
+            $max_memory = 12000;
         }
     }
     close OUT;
