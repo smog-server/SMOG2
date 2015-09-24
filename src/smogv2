@@ -1096,10 +1096,11 @@ sub readAtoms
 	my $atomName;my $atomNum; my $resName; my $resNum;
 	my $charge = 0; my $mass = 1; my $atomType="none";
 	my $counter=0; my $resCounter=1;my $resNumCurr="null";
+	my $endreached=0;
 	while($line = <PDB>)
 	{
-		if($line =~ m/END/) {last;}
-		if($line =~ m/ATOM/ || $line =~ m/HETATM/)
+		if($line =~ m/^END/) {$endreached=1;last;}
+		if($line =~ m/^ATOM/ || $line =~ m/^HETATM/)
 		{
 			$atomName = substr($line, 12, 4);
 			$atomName =~ s/^\s+|\s+$//g;
@@ -1126,6 +1127,7 @@ sub readAtoms
 		}
 	}
 
+	unless($endreached){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 
 }
 
@@ -1158,9 +1160,9 @@ sub convertPDBToGroNdx
 	while($line=<PDB>)
 	{
 		
-	 if($line =~ m/END/) {last;}
-  	 if($line =~ m/TER/) {$chainCounter++;next;}
-         if($line =~ m/ATOM|HETATM/)
+	 if($line =~ m/^END/) {last;}
+  	 if($line =~ m/^TER/) {$chainCounter++;next;}
+         if($line =~ m/^ATOM|^HETATM/)
          {
 		$atomName = substr($line, 12, 4);
 		$atomName =~ s/^\s+|\s+$//g;

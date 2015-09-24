@@ -1,8 +1,8 @@
 ########################################################
 
-                  README for SMOG 2.0
+                 README for SMOG 2.0.1
 
-SMOG v2 is a downloadable software package for 
+SMOG 2 is a downloadable software package for 
 generating structure-based models, as provided by the 
 smog-server.org webserver (i.e. SMOG v1). These models 
 may be used to perform simulations using Gromacs, 
@@ -11,7 +11,7 @@ or NAMD.
 SMOG2 is free software, distributed under the GNU 
 General Public License. See COPYING.
 
-This distribution of SMOG v2 includes two versions of 
+This distribution of SMOG 2 includes two versions of 
 SMOG models, the C-alpha model (Clementi et al JMB 2000)
 and the all-atom model (Whitford et al. Proteins 2009).
 The software is written such that you may also design
@@ -19,7 +19,7 @@ your own form of structure-based models without having
 to modify the source code.
 
 This README provides the absolute basics for using
-SMOG v2.  For more advanced usage information, consult
+SMOG 2.  For more advanced usage information, consult
 the manual, available at smog-server.org
 
 We encourage everyone to provide feedback/suggestions
@@ -32,12 +32,12 @@ on usage, extensions and bugs to info@smog-server.org.
 
 ########################################################
 
-		  CONFIGURING SMOG v2
+		  CONFIGURING SMOG 2
 
 Before using SMOG v2, you need to configure your settings.
 This is a relatively simple  process.
 
-1) SMOG v2 is written in Perl, and requires the 
+1) SMOG 2 is written in Perl, and requires the 
 following  modules to be installed (available through 
 cpan):
 
@@ -57,7 +57,7 @@ variables:
 smog2dir=""
 perl4smog=""
 
-smog2dir is the main SMOG v2 directory (this will have 
+smog2dir is the main SMOG 2 directory (this will have 
 src and share as subdirectories), and perl4smog is the
 version of perl that you prefer to use.  On linux, the
 most common value for perl4smog is "/usr/bin/perl".  
