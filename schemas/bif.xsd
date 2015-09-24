@@ -22,14 +22,14 @@
 
 <!-- BOND TYPE -->
 <xs:complexType name="bondType">
-  <xs:element name="atom" type="atomTypeSimple" minOccues="2" maxOccurs="2"/>
+  <xs:element name="atom" type="atomTypeSimple" minOccurs="2" maxOccurs="2"/>
   <xs:attribute name="energyGroup" type="xs:string" use="required"/>
 </xs:complexType>
 
 
 <!-- IMPROPER TYPE -->
 <xs:complexType name="improperType">
-   <xs:element name="atom" type="atomTypeSimple" minOccues="4" maxOccurs="4"/>
+   <xs:element name="atom" type="atomTypeSimple" minOccurs="4" maxOccurs="4"/>
 </xs:complexType>
 
 
