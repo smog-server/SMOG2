@@ -29,26 +29,26 @@
 
 <!--bond TYPE -->
 <xs:complexType name="bondType">
-    <xs:element name="bType" type="bTypeType" minOccur="2" maxOccur="2"/>
+    <xs:element name="bType" type="bTypeType" minOccurs="2" maxOccurs="2"/>
      <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
 </xs:complexType>
 
 <!--angle TYPE -->
 <xs:complexType name="angleType">
-    <xs:element name="bType" type="bTypeType" minOccur="3" maxOccur="3"/>
+    <xs:element name="bType" type="bTypeType" minOccurs="3" maxOccurs="3"/>
      <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
 </xs:complexType>
 
 <!--dihedral TYPE -->
 <xs:complexType name="dihedralType">
-    <xs:element name="bType" type="bTypeType" minOccur="4" maxOccur="4"/>
+    <xs:element name="bType" type="bTypeType" minOccurs="4" maxOccurs="4"/>
     <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
     <xs:attribute name="energyGroup" type="xs:string" use="required"/> 
 </xs:complexType>
 
 <!--improper TYPE -->
 <xs:complexType name="improperType">
-    <xs:element name="bType" type="bTypeType" minOccur="4" maxOccur="4"/>
+    <xs:element name="bType" type="bTypeType" minOccurs="4" maxOccurs="4"/>
     <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
 </xs:complexType>
 

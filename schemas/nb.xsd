@@ -54,7 +54,7 @@
 
 <!--pairs TYPE -->
 <xs:complexType name="pairType">
-    <xs:element name="nbType" type="nbTypeType" minOccur="2" maxOccur="2"/>
+    <xs:element name="nbType" type="nbTypeType" minOccurs="2" maxOccurs="2"/>
     <xs:attribute name="func" type="funcTypeTypeC"/>
 </xs:complexType>
 
