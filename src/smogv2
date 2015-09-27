@@ -1153,8 +1153,7 @@ sub convertPDBToGroNdx
 	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
  	open(PDB,$inputPDB); ## INPUT PDB
 	if(-e "meta.Gro"){
-		print "meta.Gro is a reserved file name.  It appears to already exist.  Please move and try again\n";
-		die;
+		smog_quit("meta.Gro is a reserved file name.  It appears to already exist.  Please move and try again\n");
 	}
 	open(GRO,">meta.Gro");
 	while($line=<PDB>)
@@ -1248,7 +1247,17 @@ sub validateTemplate
  my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/schemas/$type.xsd");
  my $parser = XML::SAX::ParserFactory->parser(Handler => $validator);
  eval { $parser->parse_uri($file) };
- die "\nFailed at validating $file: $@" if $@;
+ smog_quit("Failed at validating $file: $@ \nThis is due to an XML formatting issue.  The most common issue is that an element is missing a tagline. For example, something like this may appear in your file,
+  <child>
+    <subchild>.....
+  </child>
+
+whereas the following is more appropriate:
+  <child>
+    <subchild>.....
+
+    </subchild>
+  </child>") if $@;
 
 }
 

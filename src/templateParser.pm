@@ -147,7 +147,6 @@ sub setInputFileName {
 ## PARSE BIF FILE ##
 ####################
 sub parseBif {
-
 ## Read .bif ##
 my $data = $xml->XMLin($bif,KeyAttr=>{residue=>"name",connection=>"name"},ForceArray=>1);
 
