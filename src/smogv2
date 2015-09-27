@@ -1232,11 +1232,13 @@ sub convertPDBToGroNdx
  ## CREATE NDX FILE ##
  open(NDX,">$outputNDX");
  my $c;my $v;
- while(($c,$v) =  each %chainHash)
+ 
+ #while(($c,$v) =  each (sort keys %chainHash))
+ foreach my $chain (sort keys %chainHash) 
  {
-			print NDX "[ $c ]\n";
-   print NDX join("\n",@{$v});
-   print NDX "\n";
+	print NDX "[ $chain ]\n";
+	print NDX join("\n",@{$chainHash{$chain}});
+	print NDX "\n";
  }
  close(NDX);
  
