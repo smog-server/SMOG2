@@ -1254,7 +1254,7 @@ sub validateTemplate
     <subchild>.....
   </child>
 
-whereas the following is more appropriate:
+whereas the following would be appropriate:
   <child>
     <subchild>.....
 
