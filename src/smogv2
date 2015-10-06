@@ -1233,7 +1233,7 @@ sub convertPDBToGroNdx
  my $c;my $v;
  
  #while(($c,$v) =  each (sort keys %chainHash))
- foreach my $chain (sort keys %chainHash) 
+ foreach my $chain (sort {$a <=> $b} keys %chainHash) 
  {
 	print NDX "[ $chain ]\n";
 	print NDX join("\n",@{$chainHash{$chain}});
