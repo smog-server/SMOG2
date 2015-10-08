@@ -68,6 +68,7 @@ my $ignoreHydrogen=0; #if you don't want contact map generation to consider hydr
 ## this is the array that defines how function names are converted to gromacs function types
 our %fTypes = (	'bond_harmonic' => '1',
 		'bond_type6' => '6',
+		'bond_free' => '0',
 		'angle_harmonic' => '1',
 		'angle_free' => '0',
 		'dihedral_cosine'=>'1',
@@ -288,6 +289,8 @@ sub bondOutput
 	my $paramFormat="";
 	($fType,@paramArr) = bondFuncParser($fun);
      	## $paramArr[0] is bond length
+	if($fType != 0){
+	
 	if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## native option used
 	 
 	 ## Check bonds threshold ##
@@ -314,6 +317,7 @@ sub bondOutput
  foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 	$formattedString = sprintf("%9d%9d%6d$paramFormat",$i,$j,$fType,@paramArr);
 	$outputString = "$outputString$formattedString\n";
+ }
  }
  return $outputString;
  }
@@ -669,7 +673,7 @@ sub calculateContacts
 {
 	my($contactPDL,$inputPDL,$atomTypes,$numCon,$numAtom) = @_;
 	my $atoma; my $atomb;my $fType; my $dist;
-	my $nbtypea; my $nbtypeb;
+	my $pairtypea; my $pairtypeb;
 	my $resTypea; my $resTypeb;
 	my $contactInterScale;
  	my $dihedralInterScale;
@@ -690,14 +694,14 @@ sub calculateContacts
 			my $normalize;
 			$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
 	  		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-			$nbtypea = $atomTypes->{$atoma}->[0];
-			$nbtypeb = $atomTypes->{$atomb}->[0];
+			$pairtypea = $atomTypes->{$atoma}->[10];
+			$pairtypeb = $atomTypes->{$atomb}->[10];
 			$resTypea = $atomTypes->{$atoma}->[1];
 			$resTypeb = $atomTypes->{$atomb}->[1];
-			($funct,$cG) = getContactFunctionals($nbtypea,$nbtypeb);
+			($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
 
 			if(!$funct || !$cG)
-			{smog_quit("No contact Function defined for nbType contacts $nbtypea-$nbtypeb");}
+			{smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");}
 			$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 			if(!$normalize){next;}		
 			$contactIntraTotal = $termRatios->{"cintraRelativeTotal"};
@@ -716,13 +720,13 @@ sub calculateContacts
 			my $directive;my $addExclusions;
 	  		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
 	  		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-			$nbtypea = $atomTypes->{$atoma}->[0];
-			$nbtypeb = $atomTypes->{$atomb}->[0];
+			$pairtypea = $atomTypes->{$atoma}->[10];
+			$pairtypeb = $atomTypes->{$atomb}->[10];
 			$resTypea = $atomTypes->{$atoma}->[1];
 			$resTypeb = $atomTypes->{$atomb}->[1];
-			($funct,$cG) = getContactFunctionals($nbtypea,$nbtypeb);
+			($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
 			if(!$funct || !$cG)
-			{smog_quit("No contact Function defined for nbType contacts $nbtypea-$nbtypeb");} 
+			{smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");} 
 			
 			$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 
