@@ -1410,7 +1410,7 @@ sub parseCONTACT
 					$resContactHash{"$res1,$res2"} = 1;
 					$skip = 0;
 					$contact1 = $res1; $contact2 = $res2;
-					print $COARSECONT "$res1 $res2\n";
+					print $COARSECONT "$chain1 $res1 $chain2 $res2\n";
 				}
 			}
 			if($skip == 0) { #maybe we skip sometimes if coarse graining				
