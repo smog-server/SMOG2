@@ -42,7 +42,7 @@ use IPC::Open3;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
-my $VERSION="2.0";
+my $VERSION="2.0.2";
 my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
