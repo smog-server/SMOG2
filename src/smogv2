@@ -74,6 +74,7 @@ our %fTypes = (	'bond_harmonic' => '1',
 		'dihedral_cosine'=>'1',
 		'dihedral_harmonic' => '2',
 		'dihedral_free' => '0',
+		'contact_free'=>'0',
 		'contact_1'=>'1',
 		'contact_2'=>'1',
 		'contact_gaussian'=>'6'
@@ -765,7 +766,7 @@ sub calculateContacts
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
 			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
-			addToTop($directive,$outputString."\n");
+			addToTop($directive,$outputString);
 			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
 			}	
 			
@@ -788,7 +789,7 @@ sub calculateContacts
 	  		$c0=$dist;
 	  		$totalEpsilon+=$epsilon;
 			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
-			addToTop($directive,$outputString."\n");
+			addToTop($directive,$outputString);
 			#print $directive," ",$addExclusions," ",$outputString,"\n";
 			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
 			}
@@ -812,41 +813,45 @@ sub contactOutput
  my $directive;
  my $addExclusions;
  my $fType=""; my $formattedString;
+ my $addNewline = "";
  ## Parse each part of the function ##
  foreach my $fun(@funcs)
  {
 	my $paramFormat="";
 	($fType,$fname,$directive,$addExclusions,@paramArr) = contactFuncParser($fun);
 	## LJ CONTACTS N-M polynomial, sigma and epsilon usage ##	
-    if($fname eq "contact_1"){
-		contactParseNM1(\@paramArr,$c0,$epsilon);
-		if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_1")}
-    }
-	## LJ CONTACTS N-M polynomial, CN, CM usage ##	
-    elsif($fname eq "contact_2"){
-		contactParseNM2(\@paramArr,$c0,$epsilon);
-		if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_2")}
-    }
-        ## Gaussian ##
-    elsif($fname eq "contact_gaussian"){
-	contactParseGaussian(\@paramArr,$c0,$epsilon);
-	if($fType != 6){smog_quit ("Only fType=6 is supported with contacts contact_gaussian")}
+	if($fType != 0) {
+		$addNewline = "\n";
+	    if($fname eq "contact_1"){
+			contactParseNM1(\@paramArr,$c0,$epsilon);
+			if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_1")}
+	    }
+		## LJ CONTACTS N-M polynomial, CN, CM usage ##	
+	    elsif($fname eq "contact_2"){
+			contactParseNM2(\@paramArr,$c0,$epsilon);
+			if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_2")}
+	    }
+	        ## Gaussian ##
+	    elsif($fname eq "contact_gaussian"){
+		contactParseGaussian(\@paramArr,$c0,$epsilon);
+		if($fType != 6){smog_quit ("Only fType=6 is supported with contacts contact_gaussian")}
 
-    }
-	## harmonic bond type 6 ##
-    elsif($fname eq "bond_type6"){
-	contactParseBond6(\@paramArr,$c0,$epsilon);
-	if($fType != 6){smog_quit ("Only fType=6 is supported with contacts of bond_type6")}
+	    }
+		## harmonic bond type 6 ##
+	    elsif($fname eq "bond_type6"){
+		contactParseBond6(\@paramArr,$c0,$epsilon);
+		if($fType != 6){smog_quit ("Only fType=6 is supported with contacts of bond_type6")}
 
-    }
-    else{smog_quit("Contact function name $fname is not supported");}
+	    }
+	    else{smog_quit("Contact function name $fname is not supported");}
 
- 	## Format output <i j function p1 p2 ... pn>
- 	foreach(@paramArr){$paramFormat="$paramFormat	%12.9e";}
-	$formattedString = sprintf("%d %d %d$paramFormat",$i,$j,$fType,@paramArr);
-	$outputString = "$outputString$formattedString";
+	 	## Format output <i j function p1 p2 ... pn>
+	 	foreach(@paramArr){$paramFormat="$paramFormat	%12.9e";}
+		$formattedString = sprintf("%d %d %d$paramFormat",$i,$j,$fType,@paramArr);
+		$outputString = "$outputString$formattedString";
+	}
  }
- return ($directive,$addExclusions,$outputString);
+ return ($directive,$addExclusions,$outputString.$addNewline);
  
 }
 
