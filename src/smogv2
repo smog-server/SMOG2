@@ -1373,7 +1373,6 @@ EOT
 
 sub usage
 {
-  header();
   print <<EOT;
 
 usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
@@ -1594,6 +1593,14 @@ my $DNAME="smog";
 my $warnonly=0;
 my $backup="yes";
 
+header();
+print "\nSMOG2 called with the command:\n";
+print "smog2 ";
+foreach my $filen(@ARGV){
+	print "$filen ";
+}	
+print "\n";
+
 ## parse command line options ##
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
@@ -1604,7 +1611,7 @@ usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $coarseFolder));
 
-header();
+
 if($warnonly){
 	$noexit=1;
 	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
@@ -1721,12 +1728,14 @@ if($backup eq "yes"){
 		}
 	}
 }
+
 # files we will read
 foreach my $filen($inputPDB,$ContactFile){
 	if($filen ne "" && ! -f $filen){
 		smog_quit("Can't find file $filen !! ");
 	}
 }
+
 # directories we will access
 foreach my $filen($inputFolder,$coarseFolder){
 	if($filen ne "" && ! -d $filen){
