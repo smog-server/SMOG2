@@ -47,7 +47,7 @@ if (( $ERR == 0 )); then
 	
 		for tool in adjustPDB  removeH  tablegen 
 		do
-			echo Creating wrapper for $SMOG_PATH/bin/smog_$tool
+			echo Creating wrapper $SMOG_PATH/bin/smog_$tool
 			echo '#!/bin/bash' > $SMOG_PATH/bin/smog_$tool
 			echo "# Wrapper for smog_$tool" >> $SMOG_PATH/bin/smog_$tool
 			echo $perl4smog $SMOG_PATH/tools/smog_$tool \"\$\@\" >> $SMOG_PATH/bin/smog_$tool
@@ -58,7 +58,7 @@ if (( $ERR == 0 )); then
 
 		LN=`grep "$smog_exec" $SMOG_PATH/bin/smog2 | wc -l`
 		if (( $LN == 0 )); then
-			echo Updating $SMOG_PATH/bin/smog2
+			echo Something changed in your configuration of SMOG2: Updating $SMOG_PATH/bin/smog2
 			echo '#!/bin/bash' > $SMOG_PATH/bin/smog2
 			echo "# Wrapper for SMOG V2" >> $SMOG_PATH/bin/smog2
 			echo $smog_exec \"\$\@\" >> $SMOG_PATH/bin/smog2
@@ -68,7 +68,7 @@ if (( $ERR == 0 )); then
 		do
 			LN=`grep "$perl4smog $SMOG_PATH/tools/smog_$tool" $SMOG_PATH/bin/smog_$tool | wc -l`
 			if (( $LN == 0 )); then
-				echo Updating wrapper for $SMOG_PATH/bin/smog_$tool
+				echo Something changed in your configuration of SMOG2: Updating wrapper $SMOG_PATH/bin/smog_$tool
 				echo '#!/bin/bash' > $SMOG_PATH/bin/smog_$tool
 				echo "# Wrapper for smog_$tool" >> $SMOG_PATH/bin/smog_$tool
 				echo $perl4smog $SMOG_PATH/tools/smog_$tool \"\$\@\" >> $SMOG_PATH/bin/smog_$tool
