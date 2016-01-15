@@ -47,7 +47,6 @@ if(!exists $ENV{"SMOG_PATH"}){
 	exitSmog("Environmental Variable SMOG_PATH not set\n");
 }
 
-print $ENV{"SMOG_PATH"};
 my $mapOption = $ARGV[1];
 if($mapOption =~ m/^default$/){
 	$mapOption = "$ENV{SMOG_PATH}/tools/sbmMap";
