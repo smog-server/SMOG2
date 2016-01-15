@@ -42,7 +42,7 @@ use IPC::Open3;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
-my $VERSION="2.0";
+my $VERSION="2.0.2";
 my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
@@ -68,11 +68,13 @@ my $ignoreHydrogen=0; #if you don't want contact map generation to consider hydr
 ## this is the array that defines how function names are converted to gromacs function types
 our %fTypes = (	'bond_harmonic' => '1',
 		'bond_type6' => '6',
+		'bond_free' => '0',
 		'angle_harmonic' => '1',
 		'angle_free' => '0',
 		'dihedral_cosine'=>'1',
 		'dihedral_harmonic' => '2',
 		'dihedral_free' => '0',
+		'contact_free'=>'0',
 		'contact_1'=>'1',
 		'contact_2'=>'1',
 		'contact_gaussian'=>'6'
@@ -288,6 +290,8 @@ sub bondOutput
 	my $paramFormat="";
 	($fType,@paramArr) = bondFuncParser($fun);
      	## $paramArr[0] is bond length
+	if($fType != 0){
+	
 	if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## native option used
 	 
 	 ## Check bonds threshold ##
@@ -314,6 +318,7 @@ sub bondOutput
  foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 	$formattedString = sprintf("%9d%9d%6d$paramFormat",$i,$j,$fType,@paramArr);
 	$outputString = "$outputString$formattedString\n";
+ }
  }
  return $outputString;
  }
@@ -669,7 +674,7 @@ sub calculateContacts
 {
 	my($contactPDL,$inputPDL,$atomTypes,$numCon,$numAtom) = @_;
 	my $atoma; my $atomb;my $fType; my $dist;
-	my $nbtypea; my $nbtypeb;
+	my $pairtypea; my $pairtypeb;
 	my $resTypea; my $resTypeb;
 	my $contactInterScale;
  	my $dihedralInterScale;
@@ -690,14 +695,14 @@ sub calculateContacts
 			my $normalize;
 			$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
 	  		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-			$nbtypea = $atomTypes->{$atoma}->[0];
-			$nbtypeb = $atomTypes->{$atomb}->[0];
+			$pairtypea = $atomTypes->{$atoma}->[10];
+			$pairtypeb = $atomTypes->{$atomb}->[10];
 			$resTypea = $atomTypes->{$atoma}->[1];
 			$resTypeb = $atomTypes->{$atomb}->[1];
-			($funct,$cG) = getContactFunctionals($nbtypea,$nbtypeb);
+			($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
 
 			if(!$funct || !$cG)
-			{smog_quit("No contact Function defined for nbType contacts $nbtypea-$nbtypeb");}
+			{smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");}
 			$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 			if(!$normalize){next;}		
 			$contactIntraTotal = $termRatios->{"cintraRelativeTotal"};
@@ -716,13 +721,13 @@ sub calculateContacts
 			my $directive;my $addExclusions;
 	  		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
 	  		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-			$nbtypea = $atomTypes->{$atoma}->[0];
-			$nbtypeb = $atomTypes->{$atomb}->[0];
+			$pairtypea = $atomTypes->{$atoma}->[10];
+			$pairtypeb = $atomTypes->{$atomb}->[10];
 			$resTypea = $atomTypes->{$atoma}->[1];
 			$resTypeb = $atomTypes->{$atomb}->[1];
-			($funct,$cG) = getContactFunctionals($nbtypea,$nbtypeb);
+			($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
 			if(!$funct || !$cG)
-			{smog_quit("No contact Function defined for nbType contacts $nbtypea-$nbtypeb");} 
+			{smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");} 
 			
 			$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 
@@ -761,7 +766,7 @@ sub calculateContacts
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
 			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
-			addToTop($directive,$outputString."\n");
+			addToTop($directive,$outputString);
 			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
 			}	
 			
@@ -784,7 +789,7 @@ sub calculateContacts
 	  		$c0=$dist;
 	  		$totalEpsilon+=$epsilon;
 			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
-			addToTop($directive,$outputString."\n");
+			addToTop($directive,$outputString);
 			#print $directive," ",$addExclusions," ",$outputString,"\n";
 			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
 			}
@@ -808,41 +813,45 @@ sub contactOutput
  my $directive;
  my $addExclusions;
  my $fType=""; my $formattedString;
+ my $addNewline = "";
  ## Parse each part of the function ##
  foreach my $fun(@funcs)
  {
 	my $paramFormat="";
 	($fType,$fname,$directive,$addExclusions,@paramArr) = contactFuncParser($fun);
 	## LJ CONTACTS N-M polynomial, sigma and epsilon usage ##	
-    if($fname eq "contact_1"){
-		contactParseNM1(\@paramArr,$c0,$epsilon);
-		if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_1")}
-    }
-	## LJ CONTACTS N-M polynomial, CN, CM usage ##	
-    elsif($fname eq "contact_2"){
-		contactParseNM2(\@paramArr,$c0,$epsilon);
-		if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_2")}
-    }
-        ## Gaussian ##
-    elsif($fname eq "contact_gaussian"){
-	contactParseGaussian(\@paramArr,$c0,$epsilon);
-	if($fType != 6){smog_quit ("Only fType=6 is supported with contacts contact_gaussian")}
+	if($fType != 0) {
+		$addNewline = "\n";
+	    if($fname eq "contact_1"){
+			contactParseNM1(\@paramArr,$c0,$epsilon);
+			if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_1")}
+	    }
+		## LJ CONTACTS N-M polynomial, CN, CM usage ##	
+	    elsif($fname eq "contact_2"){
+			contactParseNM2(\@paramArr,$c0,$epsilon);
+			if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_2")}
+	    }
+	        ## Gaussian ##
+	    elsif($fname eq "contact_gaussian"){
+		contactParseGaussian(\@paramArr,$c0,$epsilon);
+		if($fType != 6){smog_quit ("Only fType=6 is supported with contacts contact_gaussian")}
 
-    }
-	## harmonic bond type 6 ##
-    elsif($fname eq "bond_type6"){
-	contactParseBond6(\@paramArr,$c0,$epsilon);
-	if($fType != 6){smog_quit ("Only fType=6 is supported with contacts of bond_type6")}
+	    }
+		## harmonic bond type 6 ##
+	    elsif($fname eq "bond_type6"){
+		contactParseBond6(\@paramArr,$c0,$epsilon);
+		if($fType != 6){smog_quit ("Only fType=6 is supported with contacts of bond_type6")}
 
-    }
-    else{smog_quit("Contact function name $fname is not supported");}
+	    }
+	    else{smog_quit("Contact function name $fname is not supported");}
 
- 	## Format output <i j function p1 p2 ... pn>
- 	foreach(@paramArr){$paramFormat="$paramFormat	%12.9e";}
-	$formattedString = sprintf("%d %d %d$paramFormat",$i,$j,$fType,@paramArr);
-	$outputString = "$outputString$formattedString";
+	 	## Format output <i j function p1 p2 ... pn>
+	 	foreach(@paramArr){$paramFormat="$paramFormat	%12.9e";}
+		$formattedString = sprintf("%d %d %d$paramFormat",$i,$j,$fType,@paramArr);
+		$outputString = "$outputString$formattedString";
+	}
  }
- return ($directive,$addExclusions,$outputString);
+ return ($directive,$addExclusions,$outputString.$addNewline);
  
 }
 
@@ -1097,10 +1106,11 @@ sub readAtoms
 	my $atomName;my $atomNum; my $resName; my $resNum;
 	my $charge = 0; my $mass = 1; my $atomType="none";
 	my $counter=0; my $resCounter=1;my $resNumCurr="null";
+	my $endreached=0;
 	while($line = <PDB>)
 	{
-		if($line =~ m/END/) {last;}
-		if($line =~ m/ATOM/ || $line =~ m/HETATM/)
+		if($line =~ m/^END/) {$endreached=1;last;}
+		if($line =~ m/^ATOM/ || $line =~ m/^HETATM/)
 		{
 			$atomName = substr($line, 12, 4);
 			$atomName =~ s/^\s+|\s+$//g;
@@ -1127,6 +1137,7 @@ sub readAtoms
 		}
 	}
 
+	unless($endreached){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 
 }
 
@@ -1152,16 +1163,15 @@ sub convertPDBToGroNdx
 	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
  	open(PDB,$inputPDB); ## INPUT PDB
 	if(-e "meta.Gro"){
-		print "meta.Gro is a reserved file name.  It appears to already exist.  Please move and try again\n";
-		die;
+		smog_quit("meta.Gro is a reserved file name.  It appears to already exist.  Please move and try again\n");
 	}
 	open(GRO,">meta.Gro");
 	while($line=<PDB>)
 	{
 		
-	 if($line =~ m/END/) {last;}
-  	 if($line =~ m/TER/) {$chainCounter++;next;}
-         if($line =~ m/ATOM|HETATM/)
+	 if($line =~ m/^END/) {last;}
+  	 if($line =~ m/^TER/) {$chainCounter++;next;}
+         if($line =~ m/^ATOM|^HETATM/)
          {
 		$atomName = substr($line, 12, 4);
 		$atomName =~ s/^\s+|\s+$//g;
@@ -1231,11 +1241,13 @@ sub convertPDBToGroNdx
  ## CREATE NDX FILE ##
  open(NDX,">$outputNDX");
  my $c;my $v;
- while(($c,$v) =  each %chainHash)
+ 
+ #while(($c,$v) =  each (sort keys %chainHash))
+ foreach my $chain (sort {$a <=> $b} keys %chainHash) 
  {
-			print NDX "[ $c ]\n";
-   print NDX join("\n",@{$v});
-   print NDX "\n";
+	print NDX "[ $chain ]\n";
+	print NDX join("\n",@{$chainHash{$chain}});
+	print NDX "\n";
  }
  close(NDX);
  
@@ -1247,7 +1259,17 @@ sub validateTemplate
  my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/schemas/$type.xsd");
  my $parser = XML::SAX::ParserFactory->parser(Handler => $validator);
  eval { $parser->parse_uri($file) };
- die "\nFailed at validating $file: $@" if $@;
+ smog_quit("Failed at validating $file: $@ \nThis is due to an XML formatting issue.  The most common issue is that an element is missing a tagline. For example, something like this may appear in your file,
+  <child>
+    <subchild>.....
+  </child>
+
+whereas the following would be appropriate:
+  <child>
+    <subchild>.....
+
+    </subchild>
+  </child>") if $@;
 
 }
 
@@ -1352,7 +1374,6 @@ EOT
 
 sub usage
 {
-  header();
   print <<EOT;
 
 usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
@@ -1573,6 +1594,14 @@ my $DNAME="smog";
 my $warnonly=0;
 my $backup="yes";
 
+header();
+print "\nSMOG2 called with the command:\n";
+print "smog2 ";
+foreach my $filen(@ARGV){
+	print "$filen ";
+}	
+print "\n";
+
 ## parse command line options ##
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
@@ -1583,7 +1612,7 @@ usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $coarseFolder));
 
-header();
+
 if($warnonly){
 	$noexit=1;
 	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
@@ -1700,12 +1729,14 @@ if($backup eq "yes"){
 		}
 	}
 }
+
 # files we will read
 foreach my $filen($inputPDB,$ContactFile){
 	if($filen ne "" && ! -f $filen){
 		smog_quit("Can't find file $filen !! ");
 	}
 }
+
 # directories we will access
 foreach my $filen($inputFolder,$coarseFolder){
 	if($filen ne "" && ! -d $filen){

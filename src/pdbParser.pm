@@ -112,7 +112,7 @@ sub parsePDBATOMS
   my $angH; my $diheH;
   my $bondStrA;my $bondStrB;my $typeA;my $typeB;
   my $endFlag=0; my $headFlag=1;my $outLength;
-  $totalAtoms = 0;my $nbType;my $residueType;
+  $totalAtoms = 0;my $nbType;my $residueType; my $pairType;
   my $atomCounter=0;my $singleFlag = 1;
   my $chainNumber = 0;my $linkFlag = 0;
   my $residueIndex=1;
@@ -317,9 +317,10 @@ sub parsePDBATOMS
 			
 			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
+			$pairType = $residues{$residue}->{"atoms"}->{$atom}->{"pairType"};
 			$residueType = $residues{$residue}->{"residueType"};
 			## SAVE UNIQUE NBTYPES --> obtain info from nbtype
-			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial]; 
+			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType]; 
 			my $pdbIndex;
 			if($CGenabled==1){
 				$pdbIndex = $interiorPdbResidueIndex;
@@ -1409,7 +1410,7 @@ sub parseCONTACT
 					$resContactHash{"$res1,$res2"} = 1;
 					$skip = 0;
 					$contact1 = $res1; $contact2 = $res2;
-					print $COARSECONT "$res1 $res2\n";
+					print $COARSECONT "$chain1 $res1 $chain2 $res2\n";
 				}
 			}
 			if($skip == 0) { #maybe we skip sometimes if coarse graining				

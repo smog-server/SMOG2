@@ -33,7 +33,7 @@ use warnings;
 ####################
 ## MODULE HEADERS ##
 ####################
-use XML::Simple;
+use XML::Simple qw(:strict);
 use Exporter;
 use String::Util 'trim';
 use Storable qw(dclone);
@@ -105,7 +105,7 @@ sub smog_quit
 	if($main::noexit){
 		warn("$LINE");
 	}else{
-		print "\n\nFATAL ERROR:  $LINE\n\n";
+		print "\n\nFATAL ERROR:  $LINE\n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow SMOG to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
 		exit;
 	}
 }
@@ -147,9 +147,9 @@ sub setInputFileName {
 ## PARSE BIF FILE ##
 ####################
 sub parseBif {
-
 ## Read .bif ##
 my $data = $xml->XMLin($bif,KeyAttr=>{residue=>"name",connection=>"name"},ForceArray=>1);
+#my $data = $xml->XMLin($bif,KeyAttr=>{residue=>"name",connection=>"name"},ForceArray=>1);
 
 ## PARSE RESIDUES INTO A HASH ##
 ## Hash is formatted as below
@@ -166,6 +166,7 @@ my $residueHandle = $data->{"residues"}->[0]->{"residue"};
 ## Loop through residues
 foreach my $res ( keys %{$residueHandle} )
 {
+  #if (exists $residues{}) {smog_quit("Error in .bif. Duplicate declaration of residue $res.");}
   ## CREATE ATOM HASH ##
   my %atoms; my $index = 0;
   # Obtain handle to loop through atoms
@@ -307,7 +308,7 @@ foreach my $connname (keys %{$conHandle})
 sub parseSif {
 
 ## Read .sif file ##
-$data = $xml->XMLin($sif,ForceArray=>1);
+$data = $xml->XMLin($sif,KeyAttr => ['name'],ForceArray=>1);
 ## Parse function data
 $functions = $data->{"functions"}->[0]->{"function"};
 foreach my $funcName(keys %{$functions}){
@@ -716,7 +717,7 @@ foreach my $inter(@interHandle)
 
 ## PARSE NONBOND FILE ##
 sub parseNonBonds {
-$data = $xml->XMLin($nbondxml,ForceArray=>1);
+$data = $xml->XMLin($nbondxml,KeyAttr => ['name'],ForceArray=>1);
 
 my @interHandle = @{$data->{"nonbond"}};
 ## Loop over nonbonds, save in $interaction{nonbonds}{typeA} = func info.
