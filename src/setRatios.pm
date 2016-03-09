@@ -225,15 +225,15 @@ for(my $i=0;$i<$size;$i++)
 	## Convert from relative index to absolute indexing ##
 	$a = sclr(slice($inputPDL,"3:3,$a,:"));
 	$d = sclr(slice($inputPDL,"3:3,$d,:"));
-    $b = sclr(slice($inputPDL,"3:3,$b,:"));
+    	$b = sclr(slice($inputPDL,"3:3,$b,:"));
 	$c = sclr(slice($inputPDL,"3:3,$c,:"));
 
 
-    my $resTypea = $atomTypes->{$a}->[1];
+    	my $resTypea = $atomTypes->{$a}->[1];
 	my $resTypeb = $atomTypes->{$b}->[1];
 	my $resTypec = $atomTypes->{$c}->[1];
-    my $resTyped = $atomTypes->{$d}->[1];
-    my $resTypeUse;
+    	my $resTyped = $atomTypes->{$d}->[1];
+    	my $resTypeUse;
 
  	if($eG < 0) {next;} ## IMPROPER NO NORMALIZATION --> Handled Internally as $eG==-1
 	$eG = $eGTable{$eG}; ## Obtain user defined residue name ##
