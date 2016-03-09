@@ -1113,6 +1113,7 @@ sub calculateAtomTypes
 		$ptype = $interactions->{"nonbonds"}->{$tmptype}->{"ptype"};
 		$mass = $interactions->{"nonbonds"}->{$tmptype}->{"mass"};
 		$charge = $interactions->{"nonbonds"}->{$tmptype}->{"charge"};
+
 		if(!$c6 || !$c12 || !$ptype || !$mass || !$charge)
 		{smog_quit("Nonbond Params at atom types not set for nbType $tmptype");}
 		
