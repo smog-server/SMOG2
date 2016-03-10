@@ -42,7 +42,7 @@ use IPC::Open3;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
-my $VERSION="2.0.2";
+my $VERSION="2.0.3beta";
 my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
@@ -57,6 +57,7 @@ my $shadowFile = "";
 my $ndxFile = "";
 my $mapOpt = "shadow";my $contactOpt = "6 1";
 my $numContacts = 0;
+my $rescaleCD = 1.0; ## rescale all contacts and dihedrals ##
 my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $AAdefault = 0; ## Duplicate ##
 my $CAdefault = 0; ## Duplicate ##
@@ -711,8 +712,6 @@ sub calculateContacts
 	my $contactIntraTotal;	
 	my $count;
 
-	## REMOVE ##
-	my $totalEpsilon=0;
 
 	## Sum all initial contact strengths ##	
 	for(my $i=0;$i<$numCon;$i++)
@@ -809,10 +808,9 @@ sub calculateContacts
 			$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
 			$multFactor = $multFactor*($contactIntraScale/$contactIntraTotal);
 
-			$epsilon = $epsilon*$multFactor;
+			$epsilon = $epsilon*$multFactor*$rescaleCD;
 	  		$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 	  		$c0=$dist;
-	  		$totalEpsilon+=$epsilon;
 			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
 			addToTop($directive,$outputString);
 			#print $directive," ",$addExclusions," ",$outputString,"\n";
@@ -1421,6 +1419,7 @@ usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
 	-limitbondlength: If a bond length is outside of the allowable range, set it to limiting value
 	-limitcontactlength: If a contact length is too short, set it to the minimal value
 	-ignH: Ignore any atoms with name starting with 'H' in the internal contact algorithm
+	-rescaleCD [1.0]: override total energy normalization and rescale all contacts/dihedrals by a factor 
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
@@ -1543,7 +1542,7 @@ sub printBondedTopOutput {
 	getSetDiheCounts(\%connDiheFunctionals,\%connPDL);
 	## SET DIHEDRAL RATIOS ##
 	print "..";
-	setRatios(\%connDiheFunctionals,\%connPDL,$totalAtoms,\%allAtoms);
+	setRatios(\%connDiheFunctionals,\%connPDL,$totalAtoms,\%allAtoms,$rescaleCD);
 	print "..";
 	calculateAtomTypes(\%allAtoms);
 	print "..";
@@ -1632,11 +1631,16 @@ print "\n";
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
 	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 
-         'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, '<>' => \&usage)
+         'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
+         'rescaleCD=s' => \$rescaleCD, '<>' => \&usage)
           or defined $help 
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $coarseFolder));
 
+
+unless ($rescaleCD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
+	smog_quit("$rescaleCD is not a valid value for -rescaleCD.  Must be an integer, or decimal.");
+}
 
 if($warnonly){
 	$noexit=1;

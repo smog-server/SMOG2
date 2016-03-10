@@ -128,7 +128,7 @@ sub getSetDiheCounts
 # Set the dihedral strength through normalization.
 sub setRatios	
 {
- my($diheFunctHandle,$inputPDL,$atomNum,$atomTypes) = @_;
+ my($diheFunctHandle,$inputPDL,$atomNum,$atomTypes,$rescaleCD) = @_;
  my $energyGroupSum; my $scaleFactor;my %residueRatio;
  my $sum; my $diheStrengthTotal;
  undef %uniqueBonds;
@@ -140,7 +140,7 @@ sub setRatios
 
  foreach my $res(keys %{$diheFunctHandle})
  {
-		adjustFactorsHelper2($diheFunctHandle->{$res},$inputPDL->{$res},$atomNum,$atomTypes,$diheStrengthTotal,\$sum);
+		adjustFactorsHelper2($diheFunctHandle->{$res},$inputPDL->{$res},$atomNum,$atomTypes,$diheStrengthTotal,\$sum,$rescaleCD);
  }
 }
 
@@ -200,9 +200,9 @@ sub adjustFactorsHelper1
 			smog_quit("normalize=0, but intraRelativeStrength not defined for energyGroup $eG. Check .sif file");
 		}
 
-        ${$sum}+=($count*$relativeRatio);
 		$count*=$relativeRatio;
-        set($diheArr,5,$i,$count);	
+        	${$sum}+=$count;
+        	set($diheArr,5,$i,$count);	
 	}
 
 	
@@ -212,7 +212,7 @@ sub adjustFactorsHelper1
 
 sub adjustFactorsHelper2
 {
-	my($diheArr,$inputPDL,$totalAtoms,$atomTypes,$diheStrengthTotal,$sum) = @_;
+	my($diheArr,$inputPDL,$totalAtoms,$atomTypes,$diheStrengthTotal,$sum,$rescaleCD) = @_;
 	my $totalStrength;my $normalize;
 	my $contactTotal;my $diheRelative;
  	my $size = $diheArr->dim(1);
@@ -262,8 +262,8 @@ for(my $i=0;$i<$size;$i++)
 		## epsilonC ##			
 		$contactTotal = $termRatios->{"contactRelative"};
 		## leftOver = totalAtoms*(1-epsilonC/(epsilonC+epsilonD)) ##			
-		$diheLeftOver = $totalAtoms - $totalAtoms*($contactTotal/$totalStrength);
-		$count = ($count/${$sum})*($diheLeftOver); 
+		$diheLeftOver = $totalAtoms*(1 - ($contactTotal/$totalStrength));
+		$count = ($count/${$sum})*($diheLeftOver)*$rescaleCD; 
 		set($diheArr,5,$i,$count);
 	}
     }
