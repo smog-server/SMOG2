@@ -281,18 +281,17 @@ sub parsePDBATOMS
 				smog_quit("Alternate location indicator found at line $lineNumber.  Alt. Loc. Indic. not supported by SMOG.");
 			}
 
-			if($resname ne $residue){
-				smog_quit("Inconsistent residue naming detected at line $lineNumber. \n$record\nProblem may be with previous residue.");
-			}
+	        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
             		$interiorPdbResidueIndex = substr($record,22,5);  
-			if($resindex ne $interiorPdbResidueIndex){
-				smog_quit("Inconsistent residue numbering detected at line $lineNumber. Problem may be with previous residue.");
+			if($resname ne $residue or $resindex ne $interiorPdbResidueIndex){
+				$lineNumber--;
+				smog_quit("It appears that a residue in the PDB file does not contain all of the atoms defined in the .bif file.  Offending residue: $resname (ending at line $lineNumber)");	
 			}
+
 			$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
 			unless($interiorPdbResidueIndex =~ /^\d+$/){;
 				smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
 			}
-	        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 
 			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 			$atom = substr($record, 12, 4);
