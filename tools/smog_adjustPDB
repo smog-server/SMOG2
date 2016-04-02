@@ -114,6 +114,8 @@ sub adjustInputFile(){
 	$atomCount=0;	
 	my $k = 0;
 	
+	my $firstresidue=0;
+	my $lastresidue=0;
 	## Loops through all PDB rows ##
 	while($k<$rows){
 		
@@ -150,10 +152,14 @@ sub adjustInputFile(){
 		## If atom line: ##
 		elsif ($pArr[$k] =~ /^ATOM/ || $pArr[$k] =~ /^HETATM/){
 
+			$firstresidue++;
 			my $resNum = substr($pArr[$k],22,5);
 			$resNum =~ s/^\s+|\s+$//g;		
 			my $newResNum = $resNum;
-			
+
+			if($resNum-$lastresidue > 1 && $firstresidue !=1){
+				exitSmog("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum.");
+			}
 			
 			$resName = substr($pArr[$k],17,4);
 			$resName =~ s/^\s+|\s+$//g;
@@ -184,6 +190,7 @@ sub adjustInputFile(){
 				if ($k == $rows || $pArr[$k] =~ /^END/ || $pArr[$k] =~ /^TER/){
 					$newResNum = "";
 					$isTail = 1;
+					$firstresidue=0;
 				}	
 				else{
 					$newResNum = substr($pArr[$k],22,5);	#get next residue index
@@ -193,6 +200,7 @@ sub adjustInputFile(){
 					}
 				}  	
 			}
+			$lastresidue=$resNum;
 
 			## Adjust Tail\Head names ##
 			if ($isHead){
