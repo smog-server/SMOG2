@@ -285,7 +285,24 @@ sub parsePDBATOMS
             		$interiorPdbResidueIndex = substr($record,22,5);  
 			if($resname ne $residue or $resindex ne $interiorPdbResidueIndex){
 				$lineNumber--;
-				smog_quit("It appears that a residue in the PDB file does not contain all of the atoms defined in the .bif file.  Offending residue: $resname (ending at line $lineNumber)");	
+				my $missingatoms="";
+				$uniqueAtom{$atom}=1;
+			        if($CGenabled == 1){
+					foreach my $atomcheck(keys (%{$residueBackup{$resname}->{"atoms"}})){
+                        			if(!exists $uniqueAtom{$atomcheck}){
+							$missingatoms=$missingatoms . "$atomcheck ";
+						}
+					}		
+                		}else{
+					foreach my $atomcheck(keys (%{$residues{$resname}->{"atoms"}})){
+                        			if(!exists $uniqueAtom{$atomcheck}){
+							$missingatoms=$missingatoms . "$atomcheck ";
+						}
+					}		
+                		}
+
+
+				smog_quit("It appears that a residue in the PDB file does not contain all of the atoms defined in the .bif file.\nOffending residue: $resname (ending at line $lineNumber).  Missing atoms: $missingatoms");	
 			}
 
 			$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
