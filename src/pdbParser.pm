@@ -542,7 +542,6 @@ sub GenerateBondedGeometry {
 	}elsif($chainlength != 1){
 		print "Attempting to connect all atoms in chain $chid to the first atom: ";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);
-	
 		if($missed==0 && $connected == $chainlength){
 			print "All $connected atoms connected via covalent bonds \n"; 
 		}else{

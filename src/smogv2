@@ -1479,8 +1479,8 @@ print <<EOT;
              when using SMOG models. See http://www.smog-server.org/refs.html
 
 --Software-- 
-Noel JK, Levi M, Rangunathan M, Lammert H, Hayes R, Onuchic JN, and Whitford PC.
-SMOG V2, A Versatile Software Package for Generating Structure-Based Models (2016).
+Noel JK, Levi M, Rangunathan M, Lammert H, Hayes R, Onuchic JN, and Whitford PC. (2016)
+SMOG V2, A Versatile Software Package for Generating Structure-Based Models.
 PLOS Computational Biology, DOI:10.1371/journal.pcbi.1004794.
 
 $citationFile
