@@ -631,7 +631,9 @@ sub GenerateBondedGeometry {
 		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
 		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
 		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
-        	
+ 
+		print "$ia $ta $ib $tb\n";
+       	
 		## Adjust args for getEnergyGroup() ##
 		if($map->{$b}->[1]-$map->{$c}->[1]>0){
 			($nb,$nc)=("$nb?",$nc);	

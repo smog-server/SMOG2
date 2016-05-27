@@ -44,6 +44,7 @@ sub getDiheCountsHelper
  my $size = $diheArr->dim(1);
  my @tempArr;
  ## Count number of dihedrals passing through a bond ##
+	print "$size\n";
  for(my $i=0;$i<$size;$i++)
  {
  	my @A = $diheArr->slice(":,$i:$i")->list;
