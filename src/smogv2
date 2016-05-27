@@ -368,38 +368,6 @@ sub printOrderedAngles
 }
 
 ##
-# calculate 3 angle value of a specific residue PDL
-sub calculateAnglesHelper
-{
- my($angleArr,$inputPDL) = @_;
- 
- foreach my $angles(@{$angleArr})
- {
-	my ($atom1,$atom2,$atom3) = split("-",$angles);
-	my $A1=slice($inputPDL,"0:2,$atom1,:");
-	my $A2=slice($inputPDL,"0:2,$atom2,:");
-	my $A3=slice($inputPDL,"0:2,$atom3,:");
-#	my $left = norm(slice($inputPDL,"0:2,$atom1,:")-slice($inputPDL,"0:2,$atom2,:"));
-#	my $right = norm(slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:"));
-
-	my $left = norm($A1-$A2);
-	my $right = norm($A3-$A2);
-
-	my $acos = inner($left,$right);
- }
-}
-
-##
-# Setup the calculation of 3 angle value of all the residues,
-# then call calculateAnglesHelper() with a specific residue
-sub calculateAngles
-{
- my($angleFunctHandle,$whichPDL) = @_;
- foreach my $res(keys %{$angleFunctHandle})
- {
-	calculateAnglesHelper($angleFunctHandle->{$res}->{"angles"},$whichPDL->{$res});
- }
-}
 
 ##
 # Setup the calculate of bond angles of all combined residues,
