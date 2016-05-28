@@ -833,7 +833,7 @@ sub appendImpropers
  my %union=%{$union};
  my @connImproper; my $connHandle;
  my %bondMapHashRev=%{$bondMapHashRev};
-
+ #loop through the residues in the chain
  for(my $resIndA=0;$resIndA<=$#$connect;$resIndA++){
   my $resA=$connect->[$resIndA];
   my $resAIp = $residues{"$resA"}->{"impropers"};
