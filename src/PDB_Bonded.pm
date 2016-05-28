@@ -32,6 +32,7 @@ use Exporter;
 use PDL; ## LOAD PDL MODULE
 use Storable qw(dclone);
 
+use Time::HiRes qw( gettimeofday);
 
 ## DELETE LATER ##
 #use Devel::Size qw(size total_size);
@@ -647,9 +648,18 @@ sub GenerateBondedGeometry {
 	}
 
 	print "Generating improper angles for chain $chid.\n";
+
+	my ($seconds, $microseconds) = gettimeofday;
 	for(my $i=0;$i<=$#$connect;$i++){
 		appendImpropers($map,$connect,$bondMapHashRev,$i,\@tempArr,\%union);
 	}
+  	my ($seconds1, $microseconds1) = gettimeofday;
+	$seconds1-=$seconds;
+	$microseconds1-=$microseconds;
+	$seconds1+=$microseconds/1000000;
+	print "dT=$seconds1\n";
+	
+
 
 	print "Storing dihedral info for chain $chid.\n";
 	$DihedralData{$counter} = pdl(@tempArr);
