@@ -48,17 +48,11 @@ sub getDiheCountsHelper
  {
  	my @A = $diheArr->slice(":,$i:$i")->list;
  	if($#A == 0){next;} 
-	my $a=$A[0];
 	my $b=$A[1];
 	my $c=$A[2];
-	my $d=$A[3];
-	my $func=$A[4];
-	my $cD=$A[5];
 	my $eG=$A[6];
-	$a = sclr(slice($inputPDL,"3:3,$a,:"));
 	$b = sclr(slice($inputPDL,"3:3,$b,:"));
 	$c = sclr(slice($inputPDL,"3:3,$c,:"));
-	$d = sclr(slice($inputPDL,"3:3,$d,:"));
  ## only count the dihedral if it is not an improper
         if($eG >= 0 ){	
 		if(exists $uniqueBonds{"$b-$c--$eG"}){$uniqueBonds{"$b-$c--$eG"}++;}
@@ -79,18 +73,12 @@ sub setDiheCountsHelper
 		my @A = $diheArr->slice(":,$i:$i")->list; 
  		if($#A == 0){next;} 
 #		if($#A >0){ 
-			my $a=$A[0];
 			my $b=$A[1];
 			my $c=$A[2];
-			my $d=$A[3];
-			my $func=$A[4];
-			my $cD=$A[5];
 			my $eG=$A[6];
 
-			$a = sclr(slice($inputPDL,"3:3,$a,:"));
 			$b = sclr(slice($inputPDL,"3:3,$b,:"));
 			$c = sclr(slice($inputPDL,"3:3,$c,:"));
-			$d = sclr(slice($inputPDL,"3:3,$d,:"));
 			
 			$count = (exists $uniqueBonds{"$b-$c--$eG"}?
 					$uniqueBonds{"$b-$c--$eG"}
