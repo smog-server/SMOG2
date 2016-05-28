@@ -38,7 +38,7 @@ our @ISA = 'Exporter';
 our @EXPORT = qw(setRatios getSetDiheCounts %fTypes);
 my %uniqueBonds;
 
-sub getDiheCountsHelper
+sub DiheCountsHelper
 {
  my($diheArr,$inputPDL,$countsIndex,$counts) = @_;
  my @countsIndex;
@@ -89,37 +89,6 @@ sub getDiheCountsHelper
 
 }
 
-sub setDiheCountsHelper
-{
- my($diheArr,$inputPDL) = @_;
- my $size = $diheArr->dim(1);
- my $count=0;
- 
-	for(my $i=0;$i<$size;$i++)
-	{
-		my @A = $diheArr->slice(":,$i:$i")->list; 
- 		if($#A == 0){next;} 
-#		if($#A >0){ 
-			my $b=$A[1];
-			my $c=$A[2];
-			my $eG=$A[6];
-
-			$b = sclr(slice($inputPDL,"3:3,$b,:"));
-			$c = sclr(slice($inputPDL,"3:3,$c,:"));
-			
-			$count = (exists $uniqueBonds{"$b-$c--$eG"}?
-					$uniqueBonds{"$b-$c--$eG"}
-					:$uniqueBonds{"$c-$b--$eG"});
-
-			if($eG >=0){
-				set($diheArr,5,$i,1/$count);
-			}else{
-				set($diheArr,5,$i,1);
-			}
-#	 	}
-	}
-}
-
 ##
 # For each chain, count the total number of bonds through a dihedral,
 # utilizes getDiheCounts and setDiheCounts
@@ -128,8 +97,7 @@ sub getSetDiheCounts
  my($diheFunctHandle,$whichPDL) = @_;
  foreach my $chain(keys %{$diheFunctHandle})
  {
-	getDiheCountsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain});
-#	setDiheCountsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain});
+	DiheCountsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain});
  
  }	
 }
