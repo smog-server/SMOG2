@@ -89,7 +89,10 @@ sub DiheCountsHelper
 	if($countsIndex[$i]==-1){
 		next;
 	}
-	set($diheArr,5,$i,1/$counts[$countsIndex[$i]]);
+ 	my @A = $diheArr->slice(":,$i:$i")->list;
+	unless($#A < 6){
+	 set($diheArr,5,$i,1/$counts[$countsIndex[$i]]);
+	}
  }
 
 
