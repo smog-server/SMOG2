@@ -181,15 +181,17 @@ sub addToTop {
 #####################
 
 ##
+
 # Combined bond calculation,sorting, and printing
 sub printOrderedBonds
 {
 
-	my($bondHandle,$whichPDL) = @_;
+	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2) = @_;
 	my @bondCache; ## CACHE BONDS TO ORDER
 
 	## Cache Bonds ##
-	calculateBonds($bondHandle,$whichPDL,\@bondCache);
+	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache);
+	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache);
 
 	## Sort bonds by i then j ## 
 	@bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
@@ -203,19 +205,59 @@ sub printOrderedBonds
 
 
 ##
-#call CalculateBondsHelper() with a specific chain 
-sub calculateBonds
+# calculate bond angle of a specific residue  PDL
+sub calculateBondsHelper1
+{
+ my($bondHash,$inputPDL,$bondCache) = @_;
+ my $bondArr = $bondHash->{"bonds"};
+ my $bondFunc =$bondHash->{"functions"};
+ my $bondIndex = 0;
+ foreach my $bonds(@{$bondArr})
+ {
+	my ($atomOne,$atomTwo) = split("-",$bonds);
+	my $outer = slice($inputPDL,"0:2,$atomOne,:")-slice($inputPDL,"0:2,$atomTwo,:");
+	my @bondList = (sqrt(inner($outer,$outer))*$angToNano)->flat()->list();
+	my @indexList1 = slice($inputPDL,"3:3,$atomOne,:")->flat()->list();
+	my @indexList2 = slice($inputPDL,"3:3,$atomTwo,:")->flat()->list();
+	for(my $i=0;$i<scalar(@bondList);$i++)
+	{
+		#print $OUTPUT bondOutput($bondFunc->[$bondIndex],$indexList1[$i],$indexList2[$i],$bondList[$i]);} 
+  push @{$bondCache}, {'i' => $indexList1[$i],'j' => $indexList2[$i], 'v' => bondOutput($bondFunc->[$bondIndex],$indexList1[$i],$indexList2[$i],$bondList[$i])};
+ }
+		$bondIndex++;
+
+ }
+}
+
+##
+# Setup the calculation of bond angles of all the residues,
+#	then call calculateBondsHelper() with a specific residue
+sub calculateBonds1
+{
+ my($bondFunctHandle,$whichPDL,$bondCache) = @_;
+  foreach my $res(keys %{$bondFunctHandle})
+ {
+	if(!exists $whichPDL->{$res}){next;}
+	calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache);
+ }
+}
+
+
+##
+#Setup the calculate of bond angles of all combined residues,
+#then call connCalculateBondsHelper() with a specific residue
+sub calculateBonds2
 {
  my($bondHandle,$whichPDL,$bondCache) = @_;
- foreach my $chain(keys %{$bondHandle})
+ foreach my $counter(keys %{$bondHandle})
  {
-	calculateBondsHelper($bondHandle->{$chain},$whichPDL->{$chain},$bondCache);
+	calculateBondsHelper2($bondHandle->{$counter},$whichPDL->{$counter},$bondCache);
 
  }
 }
 ##
 #calculate bond angle of a specific combined residue PDL
-sub calculateBondsHelper
+sub calculateBondsHelper2
 {
  my($bondInfo,$inputPDL,$bondCache) = @_;
  my $size = $bondInfo->dim(1);
@@ -232,6 +274,7 @@ sub calculateBondsHelper
  push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output)};
  }
 }
+
 
 ##
 # Convert internal bond function format to gromacs function format,
@@ -1500,7 +1543,7 @@ sub printBondedTopOutput {
 
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "Saving bonds\n";
-	printOrderedBonds(\%BondData,\%bondPDL);
+	printOrderedBonds(\%BondData,\%resPDL,\%connBondFunctionals,\%bondPDL);
   	($seconds1, $microseconds1) = gettimeofday;
 	$seconds1-=$seconds;
 	$microseconds1-=$microseconds;
@@ -1531,7 +1574,6 @@ sub printBondedTopOutput {
 	$seconds1+=$microseconds/1000000;
 	print "dT=$seconds1\n";
 	($seconds, $microseconds) = gettimeofday;
-	die;
 
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
