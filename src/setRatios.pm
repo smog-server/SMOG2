@@ -150,7 +150,7 @@ sub adjustFactorsHelper1
  	## $eG == -1 is IMPROPER SKIP ##
 	if($eG < 0) 
 	{			
-	push(@tempArr,pdl(0));
+	push(@tempArr,pdl($count,0));
 	 next;
 	}
 	$eG = $eGTable{$eG}; ## Obtain user defined residue name ##
@@ -184,10 +184,10 @@ sub adjustFactorsHelper1
         	${$sum}+=$count;
         	set($diheArr,5,$i,$count);
 
-		push(@tempArr,pdl(1));
+		push(@tempArr,pdl($count,1));
 
 
-	}else{push(@tempArr,pdl(0));}
+	}else{push(@tempArr,pdl($count,0));}
 	
  	}
 
@@ -217,12 +217,12 @@ sub adjustFactorsHelper2
 
 for(my $i=0;$i<$size;$i++)
  {
-	my $normalize=sclr(slice($rescalePDL->{$chain},"$i:$i"));
+	my $normalize=sclr(slice($rescalePDL->{$chain},"1:1,$i:$i"));
 
-	my($count) = $diheArr->slice("5:5,$i:$i")->list;
     ## Normalize option is set ##	
 	if($normalize eq 1) 
 	{
+	my $count=sclr(slice($rescalePDL->{$chain},"0:0,$i:$i"));
 		$count = ($count/${$sum})*($diheLeftOver)*$rescaleCD; 
 		set($diheArr,5,$i,$count);
 	}
