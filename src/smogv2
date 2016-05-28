@@ -246,9 +246,9 @@ sub calculateBonds1
 sub calculateBonds2
 {
  my($bondHandle,$whichPDL,$bondCache) = @_;
- foreach my $counter(keys %{$bondHandle})
+ foreach my $chain(keys %{$bondHandle})
  {
-	calculateBondsHelper2($bondHandle->{$counter},$whichPDL->{$counter},$bondCache);
+	calculateBondsHelper2($bondHandle->{$chain},$whichPDL->{$chain},$bondCache);
 
  }
 }
@@ -355,7 +355,7 @@ sub printOrderedAngles
 
 
 	## Cache Bonds ##
-	connCalculateAngles($AnglesData,$connPDL,\@angleCache);
+	CalculateAngles($AnglesData,$connPDL,\@angleCache);
 
 	## Sort angles by i,j then k ## 
 	@angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
@@ -371,20 +371,20 @@ sub printOrderedAngles
 
 ##
 # Setup the calculate of bond angles of all combined residues,
-# then call connCalculateAnglesHelper() with a specific residue
-sub connCalculateAngles
+# then call CalculateAnglesHelper() with a specific residue
+sub CalculateAngles
 {
  my($angleFunctHandle,$whichPDL,$angleCache) = @_;
  
- foreach my $res(keys %{$angleFunctHandle})
+ foreach my $chain(keys %{$angleFunctHandle})
  {
-	connCalculateAnglesHelper($angleFunctHandle->{$res},$whichPDL->{$res},$angleCache);
+	CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache);
  }
 }
 
 ##
 # calculate bond angle of a specific combined residue PDL
-sub connCalculateAnglesHelper
+sub CalculateAnglesHelper
 {
  my($angleArr,$inputPDL,$angleCache) = @_;
  my $size = $angleArr->dim(1);
@@ -503,9 +503,9 @@ sub printOrderedDihedrals
 sub CalculateDihedrals
 {
  my($diheFunctHandle,$whichPDL,$diheCache) = @_;
- foreach my $res(keys %{$diheFunctHandle})
+ foreach my $chain(keys %{$diheFunctHandle})
  {
-		CalculateDihedralsHelper($diheFunctHandle->{$res},$whichPDL->{$res},$diheCache);
+		CalculateDihedralsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain},$diheCache);
  }
 }
 
