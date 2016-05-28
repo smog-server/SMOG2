@@ -1543,7 +1543,7 @@ sub printBondedTopOutput {
 
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "Saving bonds\n";
-	printOrderedBonds(\%BondData,\%resPDL,\%connBondFunctionals,\%bondPDL);
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL);
   	($seconds1, $microseconds1) = gettimeofday;
 	$seconds1-=$seconds;
 	$microseconds1-=$microseconds;
