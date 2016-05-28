@@ -110,28 +110,29 @@ sub setRatios
  my $energyGroupSum; my $scaleFactor;my %residueRatio;
  my $sum; my $diheStrengthTotal;
  undef %uniqueBonds;
-
- foreach my $res(keys %{$diheFunctHandle})
+ my %rescalePDL;
+ my $rescalePDL1=\%rescalePDL;
+ foreach my $chain(keys %{$diheFunctHandle})
  {
-		adjustFactorsHelper1($diheFunctHandle->{$res},$inputPDL->{$res},$atomNum,$atomTypes,\%residueRatio,\$sum);
+		adjustFactorsHelper1($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomNum,$atomTypes,\%residueRatio,\$sum,\%rescalePDL,$chain);
  }
 
- foreach my $res(keys %{$diheFunctHandle})
+ foreach my $chain(keys %{$diheFunctHandle})
  {
-		adjustFactorsHelper2($diheFunctHandle->{$res},$inputPDL->{$res},$atomNum,$atomTypes,$diheStrengthTotal,\$sum,$rescaleCD);
+		adjustFactorsHelper2($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomNum,$atomTypes,$diheStrengthTotal,\$sum,\%rescalePDL,$chain,$rescaleCD);
  }
 }
 
 
 sub adjustFactorsHelper1
 {
-	my($diheArr,$inputPDL,$totalAtoms,$atomTypes,$residueRatio,$sum) = @_;
+	my($diheArr,$inputPDL,$totalAtoms,$atomTypes,$residueRatio,$sum,$rescalePDL,$chain) = @_;
 	my $totalStrength;my $normalize;
 	my $contactTotal;my $relativeRatio;
  	my $size = $diheArr->dim(1);
+	my @tempArr;
  	for(my $i=0;$i<$size;$i++)
  	{
-	if($size <6){last;}
 	my($a,$b,$c,$d,$func,$count,$eG) = $diheArr->slice("0:6,$i:$i")->list;
 	## Convert from relative index to absolute indexing ##
     	$a = sclr(slice($inputPDL,"3:3,$a,:"));
@@ -149,6 +150,7 @@ sub adjustFactorsHelper1
  	## $eG == -1 is IMPROPER SKIP ##
 	if($eG < 0) 
 	{			
+	push(@tempArr,pdl(0));
 	 next;
 	}
 	$eG = $eGTable{$eG}; ## Obtain user defined residue name ##
@@ -180,67 +182,48 @@ sub adjustFactorsHelper1
 
 		$count*=$relativeRatio;
         	${$sum}+=$count;
-        	set($diheArr,5,$i,$count);	
-	}
+        	set($diheArr,5,$i,$count);
 
+		push(@tempArr,pdl(1));
+
+
+	}else{push(@tempArr,pdl(0));}
 	
  	}
+
+	my $II=$#tempArr;
+	print "$chain $II\n";
+	$rescalePDL->{$chain}=cat(@tempArr);
 	
+ 	
 }
 
 sub adjustFactorsHelper2
 {
-	my($diheArr,$inputPDL,$totalAtoms,$atomTypes,$diheStrengthTotal,$sum,$rescaleCD) = @_;
+	my($diheArr,$inputPDL,$totalAtoms,$atomTypes,$diheStrengthTotal,$sum,$rescalePDL,$chain,$rescaleCD) = @_;
 	my $totalStrength;my $normalize;
 	my $contactTotal;my $diheRelative;
  	my $size = $diheArr->dim(1);
 	my $totalDihedral;
 
+
+	my $diheLeftOver = 0;
+        ## epsilonC+epsilonD ##
+	$totalStrength = $termRatios->{"interRelativeTotal"};
+	## epsilonC ##			
+	$contactTotal = $termRatios->{"contactRelative"};
+	## leftOver = totalAtoms*(1-epsilonC/(epsilonC+epsilonD)) ##			
+	$diheLeftOver = $totalAtoms*(1 - ($contactTotal/$totalStrength));
+
+
 for(my $i=0;$i<$size;$i++)
  {
-	if($size <6){last;}
-	my($a,$b,$c,$d,$func,$count,$eG) = $diheArr->slice("0:6,$i:$i")->list;
-	## Convert from relative index to absolute indexing ##
-	$a = sclr(slice($inputPDL,"3:3,$a,:"));
-	$d = sclr(slice($inputPDL,"3:3,$d,:"));
-    	$b = sclr(slice($inputPDL,"3:3,$b,:"));
-	$c = sclr(slice($inputPDL,"3:3,$c,:"));
+	my $normalize=sclr(slice($rescalePDL->{$chain},"$i:$i"));
 
-
-    	my $resTypea = $atomTypes->{$a}->[1];
-	my $resTypeb = $atomTypes->{$b}->[1];
-	my $resTypec = $atomTypes->{$c}->[1];
-    	my $resTyped = $atomTypes->{$d}->[1];
-    	my $resTypeUse;
-
- 	if($eG < 0) {next;} ## IMPROPER NO NORMALIZATION --> Handled Internally as $eG==-1
-	$eG = $eGTable{$eG}; ## Obtain user defined residue name ##
-    if(!defined $termRatios->{$resTypeb}->{"energyGroup"}->{$eG})
-    {
-       ## CASE WHERE THERE IS A DIHEDRAL BETWEEN TWO DIFFERENT RESTYPES ##
-       if(! defined $termRatios->{$resTypec}->{"energyGroup"}->{$eG})
-       { 
-           smog_quit("energyGroup $eG is not defined for $resTypeb-$resTypec\n");
-       }
-       $normalize = $termRatios->{$resTypec}->{"energyGroup"}->{$eG}->{"normalize"};
-       $resTypeUse = $resTypec;
-    }
-    else{
-        $normalize = $termRatios->{$resTypeb}->{"energyGroup"}->{$eG}->{"normalize"};
-        $resTypeUse = $resTypeb;
-    }
-	
-    
+	my($count) = $diheArr->slice("5:5,$i:$i")->list;
     ## Normalize option is set ##	
 	if($normalize eq 1) 
 	{
-		my $diheLeftOver = 0;
-                ## epsilonC+epsilonD ##
-		$totalStrength = $termRatios->{"interRelativeTotal"};
-		## epsilonC ##			
-		$contactTotal = $termRatios->{"contactRelative"};
-		## leftOver = totalAtoms*(1-epsilonC/(epsilonC+epsilonD)) ##			
-		$diheLeftOver = $totalAtoms*(1 - ($contactTotal/$totalStrength));
 		$count = ($count/${$sum})*($diheLeftOver)*$rescaleCD; 
 		set($diheArr,5,$i,$count);
 	}
