@@ -646,6 +646,7 @@ sub GenerateBondedGeometry {
 
 	}
 
+	print "Generating improper angles for chain $chid.\n";
 	for(my $i=0;$i<=$#$connect;$i++){
 		appendImpropers($map,$connect,$bondMapHashRev,$i,\@tempArr,\%union);
 	}
