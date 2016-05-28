@@ -1154,6 +1154,7 @@ sub connWildcardMatchDihes
 		my ($aM,$bM,$cM,$dM) = split("-",$matches);
 		if($matches eq "*-*-*-*"){
 			$matchScore=4;
+			print "matching\n";
 		}else{
 
 		if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
