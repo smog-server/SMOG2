@@ -524,10 +524,6 @@ sub connCalculateDihedralsHelper
 		  	my $A3=slice($inputPDL,"0:2,$atom3,:"); 
 		  	my $A4=slice($inputPDL,"0:2,$atom4,:"); 
 
-#	        	my $b1 = slice($inputPDL,"0:2,$atom2,:")-slice($inputPDL,"0:2,$atom1,:");
-#			my $b2 = slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:");
-#			my $b3 = slice($inputPDL,"0:2,$atom4,:")-slice($inputPDL,"0:2,$atom3,:");
-
 			my $b1=$A2-$A1;
 			my $b2=$A3-$A2;
 			my $b3=$A4-$A3;
@@ -634,7 +630,6 @@ sub dihedralOutput
 	 	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 	
 	 	if($fType eq 1) {$paramFormat=" %12.9e	%12.9e %u";}
-	
 		$formattedString = sprintf("%9d%9d%9d%9d%3d$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
 		$outputString = "$outputString$formattedString\n";
 	}
@@ -1470,7 +1465,7 @@ undef %connBondFunctionals;undef $contactPDL;
 }
 
 
-sub parseTemplates
+sub parseTemplatesAndPDB
 {
 	my ($inputFolder,$inputPDB,$allowCG) = @_;
     
@@ -1482,8 +1477,8 @@ sub parseTemplates
 	parseInputFolder($inputFolder); ## PARSE FOLDER --> FILE
 
 	#####################
-    ## PARSE TEMPLATES ##
-    #####################
+    	## PARSE TEMPLATES ##
+    	#####################
 	initializeDirectives($inputFolder,$inputPDB);
 	## parse .bif File ##
 	parseBif();
@@ -1497,8 +1492,8 @@ sub parseTemplates
 	## Find Angles ##
 	createDihedralAngleFunctionals();
 	###############
-    ## PARSE PDB ##
-    ###############
+    	## PARSE PDB ##
+    	###############
 	print "Parsing .pdb...\n";
 	parsePDBATOMS($inputPDB,$allowCG);
 	catPDL();
@@ -1756,8 +1751,8 @@ if($CGenabled == 0) {
 	print "\n*****************************************************\n";
 }
 my $allowCG = 0;
-print "Parsing templates corresponding to input PDB... ";
-parseTemplates($inputFolder,$inputPDB,$allowCG);
+print "Parsing templates files... ";
+parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
 if($CGenabled == 0) {
 	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
 } elsif ($CGenabled == 1 && $userProvidedMap == 0) { #CG but we still need full .top to make a map
@@ -1772,7 +1767,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
     	clearBifMemory();clearPDBMemory();
 	$allowCG = 1;
 	print "\nParsing templates for coarse graining... ";
-	parseTemplates($coarseFolder,$inputPDB,$allowCG);
+	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
 	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
 }
 appendContactsAndFinish($shadowFile,$ContactFile,$userProvidedMap);

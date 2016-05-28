@@ -601,6 +601,7 @@ sub GenerateBondedGeometry {
 		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
 		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
 		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));	
+		print "$ia $ib $ic\n";
         	my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
         	push(@tempArr,pdl($ia,$ib,$ic,$if));		
 	}
@@ -737,7 +738,7 @@ sub connCreateInteractionsBOND
 	
 	my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");
 	
-    $connBondFunctionals{$counter}=pdl($ia,$ib,$if);
+    	$connBondFunctionals{$counter}=pdl($ia,$ib,$if);
 			
 	## ANGLES ##
 	my @tempArr;
@@ -768,8 +769,6 @@ sub connCreateInteractionsBOND
         else{warn("PDB PARSE WARN:: There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);
         }
 		@tempArr = ();
-			
-			
 			
 			
 	## DIHEDRALS ##
