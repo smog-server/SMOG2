@@ -40,10 +40,14 @@ my %uniqueBonds;
 
 sub getDiheCountsHelper
 {
- my($diheArr,$inputPDL) = @_;
+ my($diheArr,$inputPDL,$countsIndex,$counts) = @_;
+ my @countsIndex;
+ my @counts;
  my $size = $diheArr->dim(1);
  my @tempArr;
  ## Count number of dihedrals passing through a bond ##
+ my $tindex=0;
+ $counts[0]=1;
  for(my $i=0;$i<$size;$i++)
  {
  	my @A = $diheArr->slice(":,$i:$i")->list;
@@ -55,11 +59,34 @@ sub getDiheCountsHelper
 	$c = sclr(slice($inputPDL,"3:3,$c,:"));
  ## only count the dihedral if it is not an improper
         if($eG >= 0 ){	
-		if(exists $uniqueBonds{"$b-$c--$eG"}){$uniqueBonds{"$b-$c--$eG"}++;}
-		elsif (exists $uniqueBonds{"$c-$b--$eG"}) {$uniqueBonds{"$c-$b--$eG"}++;}
-		else {$uniqueBonds{"$b-$c--$eG"}=1;}
-	}	
+
+		if($b>$c){my $tt=$c;$c=$b;$b=$tt};
+
+		if(exists $uniqueBonds{"$b-$c--$eG"}){  
+			$tindex=$uniqueBonds{"$b-$c--$eG"};
+			$countsIndex[$i]=$tindex;
+			$counts[$tindex]++;
+		}
+		else{
+			$tindex++;
+			$uniqueBonds{"$b-$c--$eG"}=$tindex;
+			$countsIndex[$i]=$tindex;
+			$counts[$tindex]++;
+		}
+
+
+	}else{
+		$countsIndex[$i]=0;		
+        }	
  }
+
+
+ for(my $i=0;$i<$size;$i++)
+ {
+	set($diheArr,5,$i,1/$counts[$countsIndex[$i]]);
+ }
+
+
 }
 
 sub setDiheCountsHelper
@@ -102,10 +129,7 @@ sub getSetDiheCounts
  foreach my $chain(keys %{$diheFunctHandle})
  {
 	getDiheCountsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain});
- }
- foreach my $chain(keys %{$diheFunctHandle})
- {
-	setDiheCountsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain});
+#	setDiheCountsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain});
  
  }	
 }
