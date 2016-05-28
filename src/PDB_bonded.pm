@@ -39,7 +39,7 @@ use Storable qw(dclone);
 ## DECLEARATION TO SHAR DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %connAngleFunctionals %connDiheFunctionals %connBondFunctionals %resPDL %connPDL %bondFunctionals %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
+qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %AnglesData %DihedralData %connBondFunctionals %resPDL %connPDL %BondsData %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
 
 my @vector;
 my $coorPDL;
@@ -53,8 +53,8 @@ our %indexMap;
 my $angToNano = 0.1;
 
 
-our %connAngleFunctionals;
-our %connDiheFunctionals;
+our %AnglesData;
+our %DihedralData;
 our %connBondFunctionals;
 
 my @consecResidues;
@@ -72,7 +72,7 @@ our %extContacts;
 ###########################
 sub clearPDBMemory {
 undef %tempPDL;undef %resPDL;undef %connPDL;
-undef %connAngleFunctionals;undef %connDiheFunctionals;
+undef %AnglesData;undef %DihedralData;
 undef %connBondFunctionals;undef $totalAtoms;
 #undef $contactPDL; 
 undef %indexMap;
@@ -390,8 +390,8 @@ sub returnFunction
 }
 
 ##
-# getAtomAbsoluteIndex: Return the index of an atom from storef indexing
-sub getAtomAbsoluteIndex
+# getAtomIndexInResidue: Return the index of an atom from storef indexing
+sub getAtomIndexInResidue
 {
  my($residue,$atom) = @_;
  if(!exists $residues{$residue}){smog_quit ("$residue wasn't defined in bif");}
@@ -425,13 +425,13 @@ sub singleCreateInteractions
 		my($a,$b,$c) = split("-",$angs);
 		my $ia;my $ib;my $ic;
 		my $ta;my $tb;my $tc;
-	 	($ia,$ta) = (getAtomAbsoluteIndex($residue,$a),getAtomBType($residue,$a));
-		($ib,$tb) = (getAtomAbsoluteIndex($residue,$b),getAtomBType($residue,$b));
-		($ic,$tc) = (getAtomAbsoluteIndex($residue,$c),getAtomBType($residue,$c));
+	 	($ia,$ta) = (getAtomIndexInResidue($residue,$a),getAtomBType($residue,$a));
+		($ib,$tb) = (getAtomIndexInResidue($residue,$b),getAtomBType($residue,$b));
+		($ic,$tc) = (getAtomIndexInResidue($residue,$c),getAtomBType($residue,$c));
    		my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
    		push(@tempArr,pdl($ia,$ib,$ic,$if));		
 	}
-		$connAngleFunctionals{$counter} = cat(@tempArr);
+		$AnglesData{$counter} = cat(@tempArr);
 		@tempArr = ();
 				
 	## DIHEDRALS ##
@@ -440,10 +440,10 @@ sub singleCreateInteractions
 		my($a,$b,$c,$d) = split("-",$dihes);
 		my $ia;my $ib;my $ic;my $id;
 		my $ta;my $tb;my $tc;my $td;
- 		($ia,$ta) = (getAtomAbsoluteIndex($residue,$a),getAtomBType($residue,$a));
-		($ib,$tb) = (getAtomAbsoluteIndex($residue,$b),getAtomBType($residue,$b));
-		($ic,$tc) = (getAtomAbsoluteIndex($residue,$c),getAtomBType($residue,$c));
-		($id,$td) = (getAtomAbsoluteIndex($residue,$d),getAtomBType($residue,$d));
+ 		($ia,$ta) = (getAtomIndexInResidue($residue,$a),getAtomBType($residue,$a));
+		($ib,$tb) = (getAtomIndexInResidue($residue,$b),getAtomBType($residue,$b));
+		($ic,$tc) = (getAtomIndexInResidue($residue,$c),getAtomBType($residue,$c));
+		($id,$td) = (getAtomIndexInResidue($residue,$d),getAtomBType($residue,$d));
 				
 		my $eG = getEnergyGroup($consecResidues[0],$consecResidues[1],$b,$c);
 		my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
@@ -460,16 +460,16 @@ sub singleCreateInteractions
 		my $ta;my $tb;my $tc;my $td;
    		if(! (defined $ips) ) {next;}
 		my($ia,$ib,$ic,$id) = @{$ips};
-		($ia,$ta) = (getAtomAbsoluteIndex($residue,$ia),getAtomBType($residue,$ia));
-		($ib,$tb) = (getAtomAbsoluteIndex($residue,$ib),getAtomBType($residue,$ib));
-		($ic,$tc) = (getAtomAbsoluteIndex($residue,$ic),getAtomBType($residue,$ic));
-		($id,$td) = (getAtomAbsoluteIndex($residue,$id),getAtomBType($residue,$id));
+		($ia,$ta) = (getAtomIndexInResidue($residue,$ia),getAtomBType($residue,$ia));
+		($ib,$tb) = (getAtomIndexInResidue($residue,$ib),getAtomBType($residue,$ib));
+		($ic,$tc) = (getAtomIndexInResidue($residue,$ic),getAtomBType($residue,$ic));
+		($id,$td) = (getAtomIndexInResidue($residue,$id),getAtomBType($residue,$id));
 		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
 	## [a,b,c,d,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
 	push(@tempArr,[$ia,$ib,$ic,$id,$if,1,-1]);	
   }
 		
-		$connDiheFunctionals{$counter} = pdl(@tempArr);
+		$DihedralData{$counter} = pdl(@tempArr);
 		@tempArr = ();
 		
 }
@@ -556,7 +556,7 @@ sub GenerateBondedGeometry {
 		my $bondStrA = $map->{$I}->[0];
 		my $sizeA=$map->{$I}->[2];
 		my $ra=$connect->[$map->{$I}->[1]];
-		my $ia=$sizeA+getAtomAbsoluteIndex($ra,$bondStrA);
+		my $ia=$sizeA+getAtomIndexInResidue($ra,$bondStrA);
 		push(@ConnectedAtoms2,$ia);
 	}
 
@@ -570,9 +570,9 @@ sub GenerateBondedGeometry {
       	  $bondStrB = $map->{$bondStrB}->[0];
       	  my $sizeA = $map->{$bH->[$i]}->[2];my $sizeB = $map->{$bH->[$i+1]}->[2];
   	  my $ra=$connect->[$map->{$bH->[$i]}->[1]];my $rb=$connect->[$map->{$bH->[$i+1]}->[1]];
-  	  my ($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$bondStrA)
+  	  my ($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$bondStrA)
   	  	       ,getAtomBType($ra,$bondStrA));
-  	  my ($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$bondStrB)
+  	  my ($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$bondStrB)
   	  	       ,getAtomBType($rb,$bondStrB));
       	  my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");	
   	  push(@tempArr,pdl($ia,$ib,$if));
@@ -596,15 +596,14 @@ sub GenerateBondedGeometry {
 		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
 		$sizeC=$map->{$c}->[2];
 
-		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
-		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
-		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));	
-		print "$ia $ib $ic\n";
+		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
+		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
+		($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));	
         	my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
         	push(@tempArr,pdl($ia,$ib,$ic,$if));		
 	}
 	if(@tempArr){
-		$connAngleFunctionals{$counter} = cat(@tempArr);
+		$AnglesData{$counter} = cat(@tempArr);
 	}
 		@tempArr = ();
 
@@ -626,13 +625,10 @@ sub GenerateBondedGeometry {
 		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
 		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
 
-		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
-		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
-		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
-		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
- 
-		print "$ia $ta $ib $tb\n";
-       	
+		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
+		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
+		($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
+		($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
 		## Adjust args for getEnergyGroup() ##
 		if($map->{$b}->[1]-$map->{$c}->[1]>0){
 			($nb,$nc)=("$nb?",$nc);	
@@ -651,7 +647,7 @@ sub GenerateBondedGeometry {
 		appendImpropers($map,$connect,$bondMapHashRev,$i,\@tempArr,\%union);
 	}
 
-	$connDiheFunctionals{$counter} = pdl(@tempArr);
+	$DihedralData{$counter} = pdl(@tempArr);
 	@tempArr = ();
 	return(\@ConnectedAtoms2);
 }
@@ -701,14 +697,14 @@ sub appendImpropersBOND
  	if(returnResidueIndexFromIndex($d)!=$resIDA && returnResidueIndexFromIndex($d)!=$resIDB)
  	{smog_quit("Ad-hoc Improper Create Error: Atom $d is part of neither residue $resIDA or $resIDB");}
  	
-	my($ia)= (returnResidueIndexFromIndex($a)==$resIDA ? (getAtomAbsoluteIndex($resA,$iia)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$iia)));
- 	my($ib)= (returnResidueIndexFromIndex($b)==$resIDA ? (getAtomAbsoluteIndex($resA,$iib)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$iib)));
-	my($ic)= (returnResidueIndexFromIndex($c)==$resIDA ? (getAtomAbsoluteIndex($resA,$iic)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$iic)));
-	my($id)= (returnResidueIndexFromIndex($d)==$resIDA ? (getAtomAbsoluteIndex($resA,$iid)) 
-	: ($sizeA+getAtomAbsoluteIndex($resB,$iid)));
+	my($ia)= (returnResidueIndexFromIndex($a)==$resIDA ? (getAtomIndexInResidue($resA,$iia)) 
+	: ($sizeA+getAtomIndexInResidue($resB,$iia)));
+ 	my($ib)= (returnResidueIndexFromIndex($b)==$resIDA ? (getAtomIndexInResidue($resA,$iib)) 
+	: ($sizeA+getAtomIndexInResidue($resB,$iib)));
+	my($ic)= (returnResidueIndexFromIndex($c)==$resIDA ? (getAtomIndexInResidue($resA,$iic)) 
+	: ($sizeA+getAtomIndexInResidue($resB,$iic)));
+	my($id)= (returnResidueIndexFromIndex($d)==$resIDA ? (getAtomIndexInResidue($resA,$iid)) 
+	: ($sizeA+getAtomIndexInResidue($resB,$iid)));
  	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
  	## [x,y,z,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
  	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);
@@ -728,9 +724,9 @@ sub connCreateInteractionsSingleBOND
     ## AD-HOC BONDS ##
 	my($angH,$diheH,$adjList,$bondStrA,$bondStrB)=createConnection($consecResiduesH,0,$atomA,$atomB);
 	## BOND ##
-	my ($ia,$ta) = (getAtomAbsoluteIndex($consecResidues[0],$bondStrA)
+	my ($ia,$ta) = (getAtomIndexInResidue($consecResidues[0],$bondStrA)
 							,getAtomBType($consecResidues[0],$bondStrA));
-	my ($ib,$tb) = ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$bondStrB)
+	my ($ib,$tb) = ($sizeA+getAtomIndexInResidue($consecResidues[1],$bondStrB)
 							,getAtomBType($consecResidues[1],$bondStrB));
 	
 	
@@ -746,16 +742,16 @@ sub connCreateInteractionsSingleBOND
 		my $ia;my $ib;my $ic;
 		my $ta;my $tb;my $tc;
 		($ia,$ta) = ($a =~ /(.*)\?/ )
-			? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-			: (getAtomAbsoluteIndex($consecResidues[0],$a),getAtomBType($consecResidues[0],$a));
+			? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+			: (getAtomIndexInResidue($consecResidues[0],$a),getAtomBType($consecResidues[0],$a));
 				
 		($ib,$tb) = ($b =~ /(.*)\?/)
-			? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-			: (getAtomAbsoluteIndex($consecResidues[0],$b),getAtomBType($consecResidues[0],$b));
+			? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+			: (getAtomIndexInResidue($consecResidues[0],$b),getAtomBType($consecResidues[0],$b));
 				
 		($ic,$tc) = ($c =~ /(.*)\?/) 
-			? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-			: (getAtomAbsoluteIndex($consecResidues[0],$c),getAtomBType($consecResidues[0],$c));
+			? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+			: (getAtomIndexInResidue($consecResidues[0],$c),getAtomBType($consecResidues[0],$c));
 				
 			
         my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
@@ -763,7 +759,7 @@ sub connCreateInteractionsSingleBOND
 
 	}
         if(@tempArr)
-        {$connAngleFunctionals{$counter} = cat(@tempArr);}
+        {$AnglesData{$counter} = cat(@tempArr);}
         else{warn("PDB PARSE WARN:: There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);
         }
 		@tempArr = ();
@@ -781,27 +777,26 @@ sub connCreateInteractionsSingleBOND
 		if(($b =~ m/^$atomA$/ && $c =~ m/^$atomB\?$/) || ($b =~ m/^$atomA\?$/ && $c =~ m/^$atomB$/) 
                     || ($c =~ m/^$atomA$/ && $b =~ m/^$atomB\?$/) || ($c =~ m/^$atomA\?$/ && $b =~ m/^$atomB$/)){
 			($ia,$ta) = ($a =~ /(.*)\?/)
-				? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-				: (getAtomAbsoluteIndex($consecResidues[0],$a),getAtomBType($consecResidues[0],$a));
+				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+				: (getAtomIndexInResidue($consecResidues[0],$a),getAtomBType($consecResidues[0],$a));
 					
 			($ib,$tb) = ($b =~ /(.*)\?/ )
-				? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-				: (getAtomAbsoluteIndex($consecResidues[0],$b),getAtomBType($consecResidues[0],$b));
+				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+				: (getAtomIndexInResidue($consecResidues[0],$b),getAtomBType($consecResidues[0],$b));
 					
 			($ic,$tc) = ($c =~ /(.*)\?/ )
-				? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-				: (getAtomAbsoluteIndex($consecResidues[0],$c),getAtomBType($consecResidues[0],$c));
+				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+				: (getAtomIndexInResidue($consecResidues[0],$c),getAtomBType($consecResidues[0],$c));
 				
 			($id,$td) = ($d =~ /(.*)\?/) 
-				? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-				: (getAtomAbsoluteIndex($consecResidues[0],$d),getAtomBType($consecResidues[0],$d));
+				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
+				: (getAtomIndexInResidue($consecResidues[0],$d),getAtomBType($consecResidues[0],$d));
 		
 			if(!$bEG || ($b =~/.*\?/ && $c =~/.*\?/)|| ($b !~/.*\?/ && $c !~/.*\?/))
 			{$eG=getEnergyGroup($consecResidues[0],$consecResidues[1],$b,$c);}
 			else{$eG=$bEG;}
 			my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
 			$eG = $eGRevTable{$eG};
-			## [x,y,z,func,countDihedrals,energyGroup]
 			push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);	
 		}		
 	}
@@ -813,7 +808,7 @@ sub connCreateInteractionsSingleBOND
 		}
 		
         if(@tempArr)
-        {$connDiheFunctionals{$counter} = pdl(@tempArr);}
+        {$DihedralData{$counter} = pdl(@tempArr);}
         else{warn("PDB PARSE WARN:: There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
             }
 				@tempArr = ();
@@ -874,10 +869,10 @@ sub appendImpropers
   		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
   		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
   
-  		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
-  		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
-  		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
-  		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
+  		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
+  		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
+  		($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
+  		($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
           		if($IMPFLAG2==0){
   			smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
   		}
@@ -954,10 +949,10 @@ sub appendImpropers
   		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
   		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
   
-  		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
-  		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
-  		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
-  		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
+  		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
+  		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
+  		($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
+  		($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
   
           	if($IMPFLAG2==0){
   			smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
@@ -1012,10 +1007,10 @@ sub appendImpropers
 		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
 		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
 
-		($ia,$ta) = ($sizeA+getAtomAbsoluteIndex($ra,$na),getAtomBType($ra,$na));
-		($ib,$tb) = ($sizeB+getAtomAbsoluteIndex($rb,$nb),getAtomBType($rb,$nb));
-		($ic,$tc) = ($sizeC+getAtomAbsoluteIndex($rc,$nc),getAtomBType($rc,$nc));
-		($id,$td) = ($sizeD+getAtomAbsoluteIndex($rd,$nd),getAtomBType($rd,$nd));	
+		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
+		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
+		($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
+		($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
          	if($IMPFLAG2==0){
 			smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
 		}

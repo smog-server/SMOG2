@@ -350,12 +350,12 @@ sub bondFuncParser
 # Combined bond calculation,sorting, and printing
 sub printOrderedAngles
 {
-	my($connAngleFunctionals,$connPDL) = @_;
+	my($AnglesData,$connPDL) = @_;
 	my @angleCache; ## CACHE BONDS TO ORDER
 
 
 	## Cache Bonds ##
-	connCalculateAngles($connAngleFunctionals,$connPDL,\@angleCache);
+	connCalculateAngles($AnglesData,$connPDL,\@angleCache);
 
 	## Sort angles by i,j then k ## 
 	@angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
@@ -481,10 +481,10 @@ sub angleFuncParser
 # Combined dihedral calculation,sorting, and printing
 sub printOrderedDihedrals
 {
-		my($connDiheFunctionals,$connPDL) = @_;
+  my($DihedralData,$connPDL) = @_;
   my @diheCache; ## CACHE BONDS TO ORDER
   ## Cache Bonds ##
-  connCalculateDihedrals($connDiheFunctionals,$connPDL,\@diheCache);
+  CalculateDihedrals($DihedralData,$connPDL,\@diheCache);
 
   ## Sort dihedrals by i, then j then k then l ## 
   @diheCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"l"} <=> $b->{"l"}) } @diheCache;
@@ -500,16 +500,16 @@ sub printOrderedDihedrals
 ##
 # Setup the calculate of bond angles of all combined residues,
 # then call connCalculateBondsHelper() with a specific residue
-sub connCalculateDihedrals
+sub CalculateDihedrals
 {
  my($diheFunctHandle,$whichPDL,$diheCache) = @_;
  foreach my $res(keys %{$diheFunctHandle})
  {
-		connCalculateDihedralsHelper($diheFunctHandle->{$res},$whichPDL->{$res},$diheCache);
+		CalculateDihedralsHelper($diheFunctHandle->{$res},$whichPDL->{$res},$diheCache);
  }
 }
 
-sub connCalculateDihedralsHelper
+sub CalculateDihedralsHelper
 {
 	 my($diheArr,$inputPDL,$diheCache) = @_;
 	 my $size = $diheArr->dim(1);
@@ -1460,7 +1460,7 @@ EOT
 sub freeMemoryForShadow
 {
 undef %resPDL;undef %connPDL;
-undef %connAngleFunctionals;undef %connDiheFunctionals;
+undef %AnglesData;undef %DihedralData;
 undef %connBondFunctionals;undef $contactPDL;
 }
 
@@ -1503,23 +1503,23 @@ sub parseTemplatesAndPDB
 sub printBondedTopOutput {
 	my ($inputPDB,$groFile,$ndxFile) = @_;
 	print "Generating angles and dihedrals...";
-	getSetDiheCounts(\%connDiheFunctionals,\%connPDL);
+	getSetDiheCounts(\%DihedralData,\%connPDL);
 	## SET DIHEDRAL RATIOS ##
 	print "..";
-	setRatios(\%connDiheFunctionals,\%connPDL,$totalAtoms,\%allAtoms,$rescaleCD);
+	setRatios(\%DihedralData,\%connPDL,$totalAtoms,\%allAtoms,$rescaleCD);
 	print "..";
 	calculateAtomTypes(\%allAtoms);
 	print "..";
 	readAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%connBondFunctionals,\%connPDL);
+	printOrderedBonds(\%BondsData,\%resPDL,\%connBondFunctionals,\%connPDL);
 	## CALCULATE ANGLES ##
 	print "\nSaving angles\n";
-	printOrderedAngles(\%connAngleFunctionals,\%connPDL);
+	printOrderedAngles(\%AnglesData,\%connPDL);
 	## CALCULATE DIHEDRALS ##
 	print "Saving dihedrals\n";
-	printOrderedDihedrals(\%connDiheFunctionals,\%connPDL);
+	printOrderedDihedrals(\%DihedralData,\%connPDL);
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	## print intermediate top for SCM.jar to read ##
