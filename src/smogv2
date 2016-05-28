@@ -1531,7 +1531,7 @@ sub printBondedTopOutput {
 	$seconds1+=$microseconds/1000000;
 	print "dT=$seconds1\n";
 	($seconds, $microseconds) = gettimeofday;
-
+	die;
 
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
