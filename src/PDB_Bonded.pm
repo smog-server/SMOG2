@@ -560,6 +560,7 @@ sub GenerateBondedGeometry {
 		push(@ConnectedAtoms2,$ia);
 	}
 
+	print "Generating bonds for chain $chid.";
 
     	my @tempArr=();
 	## BOND ##
@@ -582,6 +583,7 @@ sub GenerateBondedGeometry {
 	}
 	@tempArr=();
 	## ANGLES ##
+	print "Generating bond angles for chain $chid.";
 	foreach my $angs(@{$angH})
 	{
 		my $ia;my $ib;my $ic;
@@ -609,6 +611,7 @@ sub GenerateBondedGeometry {
 
 
 	## DIHEDRALS ##
+	print "Generating dihedral angles for chain $chid.";
 	foreach my $dihes(@{$diheH})
 	{
 		my $ia;my $ib;my $ic;my $id;
