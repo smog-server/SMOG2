@@ -560,7 +560,7 @@ sub GenerateBondedGeometry {
 		push(@ConnectedAtoms2,$ia);
 	}
 
-	print "Generating bonds for chain $chid.";
+	print "Generating bonds for chain $chid.\n";
 
     	my @tempArr=();
 	## BOND ##
@@ -583,7 +583,7 @@ sub GenerateBondedGeometry {
 	}
 	@tempArr=();
 	## ANGLES ##
-	print "Generating bond angles for chain $chid.";
+	print "Generating bond angles for chain $chid.\n";
 	foreach my $angs(@{$angH})
 	{
 		my $ia;my $ib;my $ic;
@@ -611,7 +611,7 @@ sub GenerateBondedGeometry {
 
 
 	## DIHEDRALS ##
-	print "Generating dihedral angles for chain $chid.";
+	print "Generating dihedral angles for chain $chid.\n";
 	foreach my $dihes(@{$diheH})
 	{
 		my $ia;my $ib;my $ic;my $id;
@@ -1150,15 +1150,24 @@ sub connWildcardMatchDihes
 	{
 		$Nd++;
 		$matchScore = 0;my $saveScore = 0;
+		# this step can be done once, rather than for each call.
 		my ($aM,$bM,$cM,$dM) = split("-",$matches);
+		if($matches eq "*-*-*-*"){
+			$matchScore=4;
+		}else{
+
 		if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
 			|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
 			|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
 			|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){next;}
+
 		if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 		if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 		if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 		if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+
+		}	
+
 		if($matchScore >= $saveScore){
 			if(($aM eq $dM and $bM eq $cM) || ($aM eq $bM and $bM eq $cM and $cM eq $dM)){
 				$symmatch=1;
