@@ -192,7 +192,6 @@ sub adjustFactorsHelper1
  	}
 
 	my $II=$#tempArr;
-	print "$chain $II\n";
 	$rescalePDL->{$chain}=cat(@tempArr);
 	
  	
