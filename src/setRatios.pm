@@ -63,9 +63,9 @@ sub getDiheCountsHelper
 		if($b>$c){my $tt=$c;$c=$b;$b=$tt};
 
 		if(exists $uniqueBonds{"$b-$c--$eG"}){  
-			my $tt1=$uniqueBonds{"$b-$c--$eG"};
-			$countsIndex[$i]=$tt1;
-			$counts[$tt1]++;
+			my $tt=$uniqueBonds{"$b-$c--$eG"};
+			$countsIndex[$i]=$tt;
+			$counts[$tt]++;
 		}
 		else{
 			$tindex++;
