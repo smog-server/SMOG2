@@ -51,7 +51,10 @@ sub DiheCountsHelper
  for(my $i=0;$i<$size;$i++)
  {
  	my @A = $diheArr->slice(":,$i:$i")->list;
- 	if($#A == 0){next;} 
+ 	if($#A == 0){
+		$countsIndex[$i]=-1;
+		next;
+	} 
 	my $b=$A[1];
 	my $c=$A[2];
 	my $eG=$A[6];
@@ -83,6 +86,9 @@ sub DiheCountsHelper
 
  for(my $i=0;$i<$size;$i++)
  {
+	if($countsIndex[$i]==-1){
+		next;
+	}
 	set($diheArr,5,$i,1/$counts[$countsIndex[$i]]);
  }
 
