@@ -30,7 +30,7 @@ use warnings;
 &checkForModules;
 use XML::Simple;
 use templateParser;
-use pdbParser;
+use PDB_Bonded;
 use PDL;
 use mathFunctions;
 use setRatios;
@@ -1485,7 +1485,8 @@ sub parseTemplatesAndPDB
 	## parse .sif File ##
 	parseSif();
 	## parse Bonds/Nonbonds File
-	parseBonds();parseNonBonds();
+	parseBonds();
+	parseNonBonds();
     	print "\nDone parsing templates.\n";
 	## Find Bonds ##
 	createBondFunctionals();
@@ -1751,8 +1752,11 @@ if($CGenabled == 0) {
 	print "\n*****************************************************\n";
 }
 my $allowCG = 0;
+
 print "Parsing templates files... ";
+
 parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
+
 if($CGenabled == 0) {
 	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
 } elsif ($CGenabled == 1 && $userProvidedMap == 0) { #CG but we still need full .top to make a map

@@ -19,10 +19,10 @@
 #########################################################################################
 
 ##############################################################################
-# pdbParser: parses PDB file and obtains ATOM, residue and coordinate info.
-# PDB file has to comply to the standard column format for each attributes.
+# PDB_Bonded: A set of routines for parsing the PDB file and generating 
+# bonded interaction information, residue and coordinate info.
 ##############################################################################
-package pdbParser;
+package PDB_Bonded;
 
 use templateParser;
 use setRatios;
@@ -204,7 +204,7 @@ sub parsePDBATOMS
      @impAtoms = split(/\s+/,$right);
      print "IMPROPER DETECTED @impAtoms\n";
     }
-    connCreateInteractionsBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
+    connCreateInteractionsSingleBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
     $counter++;
     next;
  }
@@ -335,7 +335,7 @@ sub parsePDBATOMS
 			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 			$pairType = $residues{$residue}->{"atoms"}->{$atom}->{"pairType"};
 			$residueType = $residues{$residue}->{"residueType"};
-			## SAVE UNIQUE NBTYPES --> obtain info from nbtype
+
 			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType]; 
 			my $pdbIndex;
 			if($CGenabled==1){
@@ -353,8 +353,6 @@ sub parsePDBATOMS
             		$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			$totalAtoms++;
 		}
-
-		# check to make sure the last chain is a single connected molecule.
 
 
 
@@ -720,7 +718,7 @@ sub appendImpropersBOND
 
 
 
-sub connCreateInteractionsBOND
+sub connCreateInteractionsSingleBOND
 {
 
     my($consecResiduesH,$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$bEG,$imp) = @_;
@@ -797,7 +795,7 @@ sub connCreateInteractionsBOND
 			($id,$td) = ($d =~ /(.*)\?/) 
 				? ($sizeA+getAtomAbsoluteIndex($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
 				: (getAtomAbsoluteIndex($consecResidues[0],$d),getAtomBType($consecResidues[0],$d));
-			
+		
 			if(!$bEG || ($b =~/.*\?/ && $c =~/.*\?/)|| ($b !~/.*\?/ && $c !~/.*\?/))
 			{$eG=getEnergyGroup($consecResidues[0],$consecResidues[1],$b,$c);}
 			else{$eG=$bEG;}
