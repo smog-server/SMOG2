@@ -831,12 +831,12 @@ sub appendImpropers
 {
  my($map,$connect,$bondMapHashRev,$tempArr,$union) = @_;
  my %union=%{$union};
- my $resA=$connect->[$resIndA];
- my $resAIp = $residues{"$resA"}->{"impropers"};
  my @connImproper; my $connHandle;
  my %bondMapHashRev=%{$bondMapHashRev};
 
  for(my $resIndA=0;$resIndA<=$#$connect;$resIndA++){
+  my $resA=$connect->[$resIndA];
+  my $resAIp = $residues{"$resA"}->{"impropers"};
   # if not terminal, then also check the next residue
   if($resIndA != $#$connect){
   my $resIndB=$resIndA+1;
