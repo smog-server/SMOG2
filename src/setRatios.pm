@@ -142,7 +142,11 @@ sub adjustFactorsHelper1
 	my @tempArr;
  	for(my $i=0;$i<$size;$i++)
  	{
-	my($a,$b,$c,$d,$func,$count,$eG) = $diheArr->slice("0:6,$i:$i")->list;
+
+	my @buffer=$diheArr->slice(":,$i:$i")->list;
+        if($#buffer <6){next;}
+        my($a,$b,$c,$d,$func,$count,$eG) = @buffer;
+
 	## Convert from relative index to absolute indexing ##
     	$a = sclr(slice($inputPDL,"3:3,$a,:"));
 	$b = sclr(slice($inputPDL,"3:3,$b,:"));
@@ -200,9 +204,7 @@ sub adjustFactorsHelper1
 	
  	}
 
-	my $II=$#tempArr;
 	$rescalePDL->{$chain}=cat(@tempArr);
-	
  	
 }
 
