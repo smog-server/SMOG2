@@ -1146,6 +1146,8 @@ sub connWildcardMatchDihes
 	my $funct="";
 	## WILD CARD MATCHING CONDITIONALS ##
 	my $matchScore = 0; my $saveScore = 0;;my $matchScoreCount=0; my $symmatch=0; my $Nd=0;
+	my $OK=keys %{$diheHandle};
+	print "$OK number of keys\n";
 	foreach my $matches(keys %{$diheHandle})
 	{
 		$Nd++;
@@ -1154,7 +1156,6 @@ sub connWildcardMatchDihes
 		my ($aM,$bM,$cM,$dM) = split("-",$matches);
 		if($matches eq "*-*-*-*"){
 			$matchScore=4;
-			print "matching\n";
 		}else{
 
 		if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
