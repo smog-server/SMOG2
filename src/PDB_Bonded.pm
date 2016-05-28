@@ -651,6 +651,7 @@ sub GenerateBondedGeometry {
 		appendImpropers($map,$connect,$bondMapHashRev,$i,\@tempArr,\%union);
 	}
 
+	print "Storing dihedral info for chain $chid.\n";
 	$DihedralData{$counter} = pdl(@tempArr);
 	@tempArr = ();
 	return(\@ConnectedAtoms2);
