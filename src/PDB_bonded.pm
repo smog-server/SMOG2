@@ -39,7 +39,7 @@ use Storable qw(dclone);
 ## DECLEARATION TO SHAR DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %AnglesData %DihedralData %connBondFunctionals %resPDL %connPDL %BondsData %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
+qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %AnglesData %DihedralData %connBondFunctionals %resPDL %bondPDL %BondsData %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
 
 my @vector;
 my $coorPDL;
@@ -48,7 +48,7 @@ my %residuePDL=();
 
 our %tempPDL = ();
 our %resPDL;
-our %connPDL;
+our %bondPDL;
 our %indexMap;
 my $angToNano = 0.1;
 
@@ -71,7 +71,7 @@ our %extContacts;
 ## CLEAR VARIABLE MEMORY ##
 ###########################
 sub clearPDBMemory {
-undef %tempPDL;undef %resPDL;undef %connPDL;
+undef %tempPDL;undef %resPDL;undef %bondPDL;
 undef %AnglesData;undef %DihedralData;
 undef %connBondFunctionals;undef $totalAtoms;
 #undef $contactPDL; 
@@ -195,7 +195,7 @@ sub parsePDBATOMS
     if(exists $connectedatom{$idxB}){ 
      smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
     }
-    $connPDL{$counter}=$union;
+    $bondPDL{$counter}=$union;
     ## Check if improper directive is present ##
     if($record =~ m/IMPROPER/)
     {
@@ -223,7 +223,7 @@ sub parsePDBATOMS
 			my $T=$I+$lastchainstart+1;
 			$connectedatom{$T}=1;
 		}
-	   	$connPDL{$counter}=pdl(@union);
+	   	$bondPDL{$counter}=pdl(@union);
 		@union = ();$counter++;
         	@consecResidues = ();
 		$lastchainstart=$atomSerial;
