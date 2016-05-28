@@ -650,6 +650,8 @@ sub GenerateBondedGeometry {
 	print "Generating improper angles for chain $chid.\n";
 
 	my ($seconds, $microseconds) = gettimeofday;
+	my $OK=$#$connect;
+	print "$OK connections\n";
 	for(my $i=0;$i<=$#$connect;$i++){
 		appendImpropers($map,$connect,$bondMapHashRev,$i,\@tempArr,\%union);
 	}
