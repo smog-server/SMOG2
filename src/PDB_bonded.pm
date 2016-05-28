@@ -39,7 +39,7 @@ use Storable qw(dclone);
 ## DECLEARATION TO SHAR DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %AnglesData %DihedralData %connBondFunctionals %resPDL %bondPDL %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
+qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %AngleData %DihedralData %BondData %resPDL %bondPDL %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
 
 my @vector;
 my $coorPDL;
@@ -53,9 +53,9 @@ our %indexMap;
 my $angToNano = 0.1;
 
 
-our %AnglesData;
+our %AngleData;
 our %DihedralData;
-our %connBondFunctionals;
+our %BondData;
 
 my @consecResidues;
 
@@ -72,8 +72,8 @@ our %extContacts;
 ###########################
 sub clearPDBMemory {
 undef %tempPDL;undef %resPDL;undef %bondPDL;
-undef %AnglesData;undef %DihedralData;
-undef %connBondFunctionals;undef $totalAtoms;
+undef %AngleData;undef %DihedralData;
+undef %BondData;undef $totalAtoms;
 #undef $contactPDL; 
 undef %indexMap;
 #for coarse graining contact maps we need to know the atomNum<->resNum mapping
@@ -431,7 +431,7 @@ sub singleCreateInteractions
    		my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
    		push(@tempArr,pdl($ia,$ib,$ic,$if));		
 	}
-		$AnglesData{$counter} = cat(@tempArr);
+		$AngleData{$counter} = cat(@tempArr);
 		@tempArr = ();
 				
 	## DIHEDRALS ##
@@ -578,7 +578,7 @@ sub GenerateBondedGeometry {
   	  push(@tempArr,pdl($ia,$ib,$if));
 	}
 	if(@tempArr){
-		$connBondFunctionals{$counter}=cat(@tempArr);
+		$BondData{$counter}=cat(@tempArr);
 	}
 	@tempArr=();
 	## ANGLES ##
@@ -603,7 +603,7 @@ sub GenerateBondedGeometry {
         	push(@tempArr,pdl($ia,$ib,$ic,$if));		
 	}
 	if(@tempArr){
-		$AnglesData{$counter} = cat(@tempArr);
+		$AngleData{$counter} = cat(@tempArr);
 	}
 		@tempArr = ();
 
@@ -732,7 +732,7 @@ sub connCreateInteractionsSingleBOND
 	
 	my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");
 	
-    	$connBondFunctionals{$counter}=pdl($ia,$ib,$if);
+    	$BondData{$counter}=pdl($ia,$ib,$if);
 			
 	## ANGLES ##
 	my @tempArr;
@@ -759,7 +759,7 @@ sub connCreateInteractionsSingleBOND
 
 	}
         if(@tempArr)
-        {$AnglesData{$counter} = cat(@tempArr);}
+        {$AngleData{$counter} = cat(@tempArr);}
         else{warn("PDB PARSE WARN:: There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);
         }
 		@tempArr = ();

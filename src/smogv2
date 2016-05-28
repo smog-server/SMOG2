@@ -309,12 +309,12 @@ sub bondFuncParser
 # Combined bond calculation,sorting, and printing
 sub printOrderedAngles
 {
-	my($AnglesData,$bondPDL) = @_;
+	my($AngleData,$bondPDL) = @_;
 	my @angleCache; ## CACHE BONDS TO ORDER
 
 
 	## Cache Bonds ##
-	CalculateAngles($AnglesData,$bondPDL,\@angleCache);
+	CalculateAngles($AngleData,$bondPDL,\@angleCache);
 
 	## Sort angles by i,j then k ## 
 	@angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
@@ -1418,8 +1418,8 @@ EOT
 sub freeMemoryForShadow
 {
 undef %resPDL;undef %bondPDL;
-undef %AnglesData;undef %DihedralData;
-undef %connBondFunctionals;undef $contactPDL;
+undef %AngleData;undef %DihedralData;
+undef %BondData;undef $contactPDL;
 }
 
 
@@ -1471,10 +1471,10 @@ sub printBondedTopOutput {
 	readAtoms($inputPDB);
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "..";
-	printOrderedBonds(\%connBondFunctionals,\%bondPDL);
+	printOrderedBonds(\%BondData,\%bondPDL);
 	## CALCULATE ANGLES ##
 	print "\nSaving angles\n";
-	printOrderedAngles(\%AnglesData,\%bondPDL);
+	printOrderedAngles(\%AngleData,\%bondPDL);
 	## CALCULATE DIHEDRALS ##
 	print "Saving dihedrals\n";
 	printOrderedDihedrals(\%DihedralData,\%bondPDL);
