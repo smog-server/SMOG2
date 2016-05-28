@@ -39,6 +39,8 @@ use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
 
+use Time::HiRes qw( gettimeofday);
+
 ######################
 ## GLOBAL VARIABLES ##
 ######################
@@ -1453,31 +1455,84 @@ sub parseTemplatesAndPDB
 	###############
     	## PARSE PDB ##
     	###############
-	print "Parsing .pdb...\n";
+	print "Parsing .pdb\n";
 	parsePDBATOMS($inputPDB,$allowCG);
 	catPDL();
 }
 
 sub printBondedTopOutput {
+
+	my ($seconds, $microseconds) = gettimeofday;
+
 	my ($inputPDB,$groFile,$ndxFile) = @_;
-	print "Generating angles and dihedrals...";
+	print "Counting dihedrals\n";
 	getSetDiheCounts(\%DihedralData,\%bondPDL);
+
+  	my ($seconds1, $microseconds1) = gettimeofday;
+	$seconds1-=$seconds;
+	$microseconds1-=$microseconds;
+	$seconds1+=$microseconds/1000000;
+	print "dT=$seconds1\n";
+	
+	($seconds, $microseconds) = gettimeofday;
 	## SET DIHEDRAL RATIOS ##
-	print "..";
+	print "Setting energetic ratios\n";
 	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms,$rescaleCD);
-	print "..";
+
+  	($seconds1, $microseconds1) = gettimeofday;
+	$seconds1-=$seconds;
+	$microseconds1-=$microseconds;
+	$seconds1+=$microseconds/1000000;
+	print "dT=$seconds1\n";
+	($seconds, $microseconds) = gettimeofday;
+
+
+	print "Processing atoms\n";
 	calculateAtomTypes(\%allAtoms);
-	print "..";
 	readAtoms($inputPDB);
+  	($seconds1, $microseconds1) = gettimeofday;
+	$seconds1-=$seconds;
+	$microseconds1-=$microseconds;
+	$seconds1+=$microseconds/1000000;
+	print "dT=$seconds1\n";
+	($seconds, $microseconds) = gettimeofday;
+
+
 	## CALCULATE BONDS/CONNECTED BONDS ##
-	print "..";
+	print "Saving bonds\n";
 	printOrderedBonds(\%BondData,\%bondPDL);
+  	($seconds1, $microseconds1) = gettimeofday;
+	$seconds1-=$seconds;
+	$microseconds1-=$microseconds;
+	$seconds1+=$microseconds/1000000;
+	print "dT=$seconds1\n";
+	($seconds, $microseconds) = gettimeofday;
+
+
 	## CALCULATE ANGLES ##
-	print "\nSaving angles\n";
+	print "Saving angles\n";
 	printOrderedAngles(\%AngleData,\%bondPDL);
+
+  	($seconds1, $microseconds1) = gettimeofday;
+	$seconds1-=$seconds;
+	$microseconds1-=$microseconds;
+	$seconds1+=$microseconds/1000000;
+	print "dT=$seconds1\n";
+	($seconds, $microseconds) = gettimeofday;
+
+
 	## CALCULATE DIHEDRALS ##
 	print "Saving dihedrals\n";
 	printOrderedDihedrals(\%DihedralData,\%bondPDL);
+
+  	($seconds1, $microseconds1) = gettimeofday;
+	$seconds1-=$seconds;
+	$microseconds1-=$microseconds;
+	$seconds1+=$microseconds/1000000;
+	print "dT=$seconds1\n";
+	($seconds, $microseconds) = gettimeofday;
+
+
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	## print intermediate top for SCM.jar to read ##
