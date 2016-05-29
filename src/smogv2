@@ -1575,7 +1575,6 @@ sub printBondedTopOutput {
 	print "dT=$seconds1\n";
 	($seconds, $microseconds) = gettimeofday;
 
-
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
 	## print intermediate top for SCM.jar to read ##
