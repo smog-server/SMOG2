@@ -203,9 +203,9 @@ sub adjustFactorsHelper1
 	}else{push(@tempArr,pdl($count,0));}
 	
  	}
-
-	$rescalePDL->{$chain}=cat(@tempArr);
- 	
+	if(@tempArr){
+		$rescalePDL->{$chain}=cat(@tempArr);
+ 	}
 }
 
 sub adjustFactorsHelper2
@@ -228,6 +228,7 @@ sub adjustFactorsHelper2
 
 for(my $i=0;$i<$size;$i++)
  {
+	if(!defined $rescalePDL->{$chain}){next;}
 	my $normalize=sclr(slice($rescalePDL->{$chain},"1:1,$i:$i"));
 
     ## Normalize option is set ##	
