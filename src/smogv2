@@ -488,7 +488,13 @@ sub printOrderedDihedrals
   my($DihedralData,$bondPDL) = @_;
   my @diheCache; ## CACHE BONDS TO ORDER
   ## Cache Bonds ##
+	my ($seconds, $microseconds) = gettimeofday;
   CalculateDihedrals($DihedralData,$bondPDL,\@diheCache);
+  	my ($seconds1, $microseconds1) = gettimeofday;
+	$seconds1-=$seconds;
+	$microseconds1-=$microseconds;
+	$seconds1+=$microseconds/1000000;
+	print "Calc Dih dT=$seconds1\n";
 
   ## Sort dihedrals by i, then j then k then l ## 
   @diheCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"l"} <=> $b->{"l"}) } @diheCache;
