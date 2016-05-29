@@ -565,7 +565,6 @@ sub CalculateDihedralsHelper
 			## Improper dihedral
 			else
 			{
-				#print $OUTPUT dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD);
 				push @{$diheCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'l' => $atomi4, 'v' => dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1)};
 	 	   }
 	 }
