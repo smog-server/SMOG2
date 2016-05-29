@@ -51,7 +51,10 @@ sub DiheCountsHelper
  for(my $i=0;$i<$size;$i++)
  {
  	my @A = $diheArr->slice(":,$i:$i")->list;
- 	if($#A == 0){next;} 
+ 	if($#A == 0){
+		$countsIndex[$i]=-1;
+		next;
+	} 
 	my $b=$A[1];
 	my $c=$A[2];
 	my $eG=$A[6];
@@ -83,7 +86,13 @@ sub DiheCountsHelper
 
  for(my $i=0;$i<$size;$i++)
  {
-	set($diheArr,5,$i,1/$counts[$countsIndex[$i]]);
+	if($countsIndex[$i]==-1){
+		next;
+	}
+ 	my @A = $diheArr->slice(":,$i:$i")->list;
+	unless($#A < 6){
+	 set($diheArr,5,$i,1/$counts[$countsIndex[$i]]);
+	}
  }
 
 
@@ -133,7 +142,11 @@ sub adjustFactorsHelper1
 	my @tempArr;
  	for(my $i=0;$i<$size;$i++)
  	{
-	my($a,$b,$c,$d,$func,$count,$eG) = $diheArr->slice("0:6,$i:$i")->list;
+
+	my @buffer=$diheArr->slice(":,$i:$i")->list;
+        if($#buffer <6){next;}
+        my($a,$b,$c,$d,$func,$count,$eG) = @buffer;
+
 	## Convert from relative index to absolute indexing ##
     	$a = sclr(slice($inputPDL,"3:3,$a,:"));
 	$b = sclr(slice($inputPDL,"3:3,$b,:"));
@@ -190,11 +203,9 @@ sub adjustFactorsHelper1
 	}else{push(@tempArr,pdl($count,0));}
 	
  	}
-
-	my $II=$#tempArr;
-	$rescalePDL->{$chain}=cat(@tempArr);
-	
- 	
+	if(@tempArr){
+		$rescalePDL->{$chain}=cat(@tempArr);
+ 	}
 }
 
 sub adjustFactorsHelper2
@@ -217,6 +228,7 @@ sub adjustFactorsHelper2
 
 for(my $i=0;$i<$size;$i++)
  {
+	if(!defined $rescalePDL->{$chain}){next;}
 	my $normalize=sclr(slice($rescalePDL->{$chain},"1:1,$i:$i"));
 
     ## Normalize option is set ##	
