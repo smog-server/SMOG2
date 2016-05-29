@@ -1498,7 +1498,7 @@ sub parseTemplatesAndPDB
 	###############
     	## PARSE PDB ##
     	###############
-	print "Parsing .pdb\n";
+	print "Reading .pdb\n";
 	parsePDBATOMS($inputPDB,$allowCG);
 	catPDL();
 }
