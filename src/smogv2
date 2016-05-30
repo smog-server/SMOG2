@@ -68,7 +68,7 @@ our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
 our $setContacttoLimit=0;
 our %funtypechecked;
-my $ignoreHydrogen=0; #if you don't want contact map generation to consider hydrogens
+my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
 ## this is the array that defines how function names are converted to gromacs function types
 our %fTypes = (	'bond_harmonic' => '1',
 		'bond_type6' => '6',
@@ -83,6 +83,7 @@ our %fTypes = (	'bond_harmonic' => '1',
 		'contact_2'=>'1',
 		'contact_gaussian'=>'6'
 		);
+
 ## this is the topfile buffer stuff
 our %directives = ("defaults",1,"atomtypes",2,"moleculetype",3,"atoms",4,"bonds",5,"angles",6,"dihedrals",7,"pairs",8,"exclusions",9,"system",10,"molecules",11);
 our @directivesList=("defaults","atomtypes","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","system","molecules");
@@ -129,6 +130,7 @@ sub printTop {
 	}
 	close($OUTPUT);
 }
+
 # utility method to set all the initial directive comments
 sub initializeDirectives {
 	my($inputFolder,$inputPDB) = @_;
@@ -252,6 +254,7 @@ sub calculateBonds2
 
  }
 }
+
 ##
 sub calculateBondsHelper2
 {
@@ -326,7 +329,7 @@ sub bondOutput
  }
 
 ##
-# Given a user defined function parse values
+# Given a user defined function, parse values
 sub bondFuncParser
 {
 	my($bondFunc) = @_;
@@ -370,7 +373,7 @@ sub printOrderedAngles
 ##
 
 ##
-# CalculateAnglesHelper() calculates the dihedrals for each chain
+# CalculateAnglesHelper() calculates the angles for each chain
 sub CalculateAngles
 {
  my($angleFunctHandle,$whichPDL,$angleCache) = @_;
@@ -398,8 +401,6 @@ sub CalculateAnglesHelper
   	my $left = norm($A1-$A2);
 	my $right = norm($A3-$A2);
 
-#  	my $left = norm(slice($inputPDL,"0:2,$atom1,:")-slice($inputPDL,"0:2,$atom2,:"));
-#	my $right = norm(slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:"));
 	my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
 	
 	my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
@@ -564,7 +565,6 @@ sub CalculateDihedralsHelper
 	 }
 }
 
-## Convert .b dihedral function format to gromacs function format
 sub dihedralOutput
 {
  my($inputFunc,$ai,$aj,$ak,$al,$values,$ratio,$eG) = @_;
@@ -640,7 +640,7 @@ sub dihedralOutput
  }
  
 ##
-# Given a user defined dihedral function parse values
+# Given a user defined dihedral function, parse values
 sub diheFuncParser
 {
 	my($diheFunc) = @_;
@@ -778,7 +778,6 @@ sub calculateContacts
 	  		$c0=$dist;
 			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
 			addToTop($directive,$outputString);
-			#print $directive," ",$addExclusions," ",$outputString,"\n";
 			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
 			}
 	}
@@ -791,7 +790,6 @@ sub contactOutput
 {
  my($inputFunc,$i,$j,$c0,$epsilon) = @_;
  if(!$inputFunc){smog_quit ("CONTACTOUTPUT::NO FUNCTION DEFINED");}
- ## Remove white spaces from string ##
  $inputFunc =~ s/^\s+|\s+$//g;
  ## If $input contains a + ##
  my @funcs = split(/\+/,$inputFunc); ## split combination of functions
@@ -840,105 +838,102 @@ sub contactOutput
 	}
  }
  return ($directive,$addExclusions,$outputString.$addNewline);
- 
 }
 
 ##
 # Parse LJ NM sigma eps usage
 sub contactParseNM1
 {
-  my($paramArr,$r0,$epsilon) = @_;
-  ##pararArr holds N, M, and whether native distances and weights should be used.
-  ##epsilon
-  ##r0 is native distance##
-  #
-  my $cN;my $cM; 
-  my $A; my $B;
-  my $N; my $M;
-  $M=$paramArr->[0];
-  $N=$paramArr->[1];
-  my $length=scalar @{$paramArr};
-  if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_1. Expecting 4, found $length."); }
-  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
+	my($paramArr,$r0,$epsilon) = @_;
+	##pararArr holds N, M, and whether native distances and weights should be used.
+	##epsilon
+	##r0 is native distance##
+	#
+	my $cN;my $cM; 
+	my $A; my $B;
+	my $N; my $M;
+	$M=$paramArr->[0];
+	$N=$paramArr->[1];
+	my $length=scalar @{$paramArr};
 
-  if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller.")}
-
-  $B=-1.0/($M/$N-1.0);
-  $A=$M/$N*$B;
-  # replace ? with native distance expression
-  $paramArr->[2] =~ s/\?/$r0/g;
-  #Eval expression
-  $r0 = eval($paramArr->[2]);
-     
-  $A *= $epsilon*$r0**$N;
-  $B *= $epsilon*$r0**$M;
-
-  ## normalized option used
-  if($paramArr->[3] =~ /^\?$/)
-  {
-    $paramArr->[3]=$A;
-    $paramArr->[2]=$B;
-  }
-  ## additional rescaling used
-  else{
-   $A *= $paramArr->[3];
-   $B *= $paramArr->[3];
-   $paramArr->[3]=$A;
-   $paramArr->[2]=$B;
-  } 
-  ## Shift first value off ##
-  shift @{$paramArr};
-  shift @{$paramArr};
-
+	if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_1. Expecting 4, found $length."); }
+	if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
+	if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller.")}
+	
+	$B=-1.0/($M/$N-1.0);
+	$A=$M/$N*$B;
+	# replace ? with native distance expression
+	$paramArr->[2] =~ s/\?/$r0/g;
+	#Eval expression
+	$r0 = eval($paramArr->[2]);
+	   
+	$A *= $epsilon*$r0**$N;
+	$B *= $epsilon*$r0**$M;
+	
+	## normalized option used
+	if($paramArr->[3] =~ /^\?$/)
+	{
+		$paramArr->[3]=$A;
+		$paramArr->[2]=$B;
+	}
+	## additional rescaling used
+	else{
+		$A *= $paramArr->[3];
+		$B *= $paramArr->[3];
+		$paramArr->[3]=$A;
+		$paramArr->[2]=$B;
+	} 
+	## Shift first value off ##
+	shift @{$paramArr};
+	shift @{$paramArr};
 }
 
 # Parse LJ NM sigma eps usage
 sub contactParseNM2
 {
-  my($paramArr,$r0,$epsilon) = @_;
-  ##pararArr holds f(r), g(r), and whether native distances and weights should be used.
-  ##epsilon
-  ##r0 is native distance##
-  #
-  my $A; my $B;
-  my $F; my $G;
-  $F=$paramArr->[1];
-  $G=$paramArr->[0];
-  my $length=scalar @{$paramArr};
-  if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_2. Expecting 4, found $length."); }
+	my($paramArr,$r0,$epsilon) = @_;
+	##pararArr holds f(r), g(r), and whether native distances and weights should be used.
+	##epsilon
+	##r0 is native distance##
+	#
+	my $A; my $B;
+	my $F; my $G;
+	$F=$paramArr->[1];
+	$G=$paramArr->[0];
+	my $length=scalar @{$paramArr};
 
-  # replace ? with native distance expression
-  $paramArr->[2] =~ s/\?/$r0/g;
-
-  $paramArr->[2] = eval($paramArr->[2]);
-
-  # substitute value of r into f(r) and g(r)
-  $F =~ s/\?/$paramArr->[2]/g;
-  $G =~ s/\?/$paramArr->[2]/g;
-
-  #Eval expression
-  $A = eval($F);
-  $B = eval($G);
-  $A *= $epsilon; 
-  $B *= $epsilon; 
-
-
-  ## standard normalization used
-  if($paramArr->[3] =~ /^\?$/)
-  {
-    $paramArr->[3]=$A;
-    $paramArr->[2]=$B;
-  }
-  ## additional rescaling used
-  else{
-   $A *= $paramArr->[3];
-   $B *= $paramArr->[3];
-   $paramArr->[3]=$A;
-   $paramArr->[2]=$B;
-  } 
-  ## Shift first value off ##
-  shift @{$paramArr};
-  shift @{$paramArr};
+	if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_2. Expecting 4, found $length."); }
+	
+	# replace ? with native distance expression
+	$paramArr->[2] =~ s/\?/$r0/g;
+	$paramArr->[2] = eval($paramArr->[2]);
+	
+	# substitute value of r into f(r) and g(r)
+	$F =~ s/\?/$paramArr->[2]/g;
+	$G =~ s/\?/$paramArr->[2]/g;
+	
+	#Eval expression
+	$A = eval($F);
+	$B = eval($G);
+	$A *= $epsilon; 
+	$B *= $epsilon; 
+	
+	## standard normalization used
+	if($paramArr->[3] =~ /^\?$/)
+	{
+		$paramArr->[3]=$A;
+		$paramArr->[2]=$B;
+	}
+	## additional rescaling used
+	else{
+		$A *= $paramArr->[3];
+		$B *= $paramArr->[3];
+		$paramArr->[3]=$A;
+		$paramArr->[2]=$B;
+	} 
+	## Shift first value off ##
+	shift @{$paramArr};
+	shift @{$paramArr};
 
 }
 
@@ -948,62 +943,59 @@ sub contactParseNM2
 sub contactParseGaussian
 {
 
- my($paramArr,$r0,$epsilon) = @_;
- my $A=0;my $sigma_G=0;my $a=0;
-  ##i=0 is epsilon_c##
-  ##i=1 is epsilon_nc#
-  ##i=2 is sigma_gaussian##
-  ##i=3 is r ##
-
-
-  if($paramArr->[1] =~ /\?/ && !($paramArr->[2] =~ /^\?$/))
-  {smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
-
-  ## Epsilon_c ##
-  if($paramArr->[0] =~ /^\?$/){$paramArr->[0]=$epsilon;}
-  else{$paramArr->[0]=$epsilon*($paramArr->[0]);}
-  ## Epsilon_nc ##
-  if($paramArr->[1] =~ /\?/){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
-
-  ## Check if sigma_G has r0 dependency ##
-  if($paramArr->[2] =~ /\?/)
-  {
-     #Replace ? with $r0 
-     $paramArr->[2] =~ s/\?/$r0/g;
-     #Eval expression
-     $paramArr->[2] = eval($paramArr->[2]);
-  }
-  if($paramArr->[3] =~ /^?$/){$paramArr->[3]=$r0;}
-  
-  ($A,$r0,$sigma_G,$a) = ($paramArr->[0],$paramArr->[3],$paramArr->[2],$paramArr->[1]);
-  @{$paramArr}=($A,$r0,$sigma_G,$a);
+	my($paramArr,$r0,$epsilon) = @_;
+	my $A=0;my $sigma_G=0;my $a=0;
+	##i=0 is epsilon_c##
+	##i=1 is epsilon_nc#
+	##i=2 is sigma_gaussian##
+	##i=3 is r ##
+	
+	if($paramArr->[1] =~ /\?/ && !($paramArr->[2] =~ /^\?$/)){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
+	
+	## Epsilon_c ##
+	if($paramArr->[0] =~ /^\?$/){$paramArr->[0]=$epsilon;}
+	else{$paramArr->[0]=$epsilon*($paramArr->[0]);}
+	## Epsilon_nc ##
+	if($paramArr->[1] =~ /\?/){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
+	
+	## Check if sigma_G has r0 dependency ##
+	if($paramArr->[2] =~ /\?/)
+	{
+		#Replace ? with $r0 
+		$paramArr->[2] =~ s/\?/$r0/g;
+		#Eval expression
+		$paramArr->[2] = eval($paramArr->[2]);
+	}
+	if($paramArr->[3] =~ /^?$/){$paramArr->[3]=$r0;}
+	
+	($A,$r0,$sigma_G,$a) = ($paramArr->[0],$paramArr->[3],$paramArr->[2],$paramArr->[1]);
+	@{$paramArr}=($A,$r0,$sigma_G,$a);
 
 }
 ##
 # Parse Bond type 6
 sub contactParseBond6
 {
- my($paramArr,$r0,$epsilon) = @_;
- my $k;
-  ##i=0 is r##
-  ##i=1 is k#
-
-  ## k ##
-  if($paramArr->[1] =~ /\?/)
-  {smog_quit("CONTACT FUNCTION PARSING:: contact bond_type6 can't have ? in the stiffness.");}
-  $paramArr->[1] = eval($paramArr->[1]);
-  
-  ## r ##
-  if($paramArr->[0] =~ /\?/)
-  {
-     #Replace ? with $r0 
-     $paramArr->[0] =~ s/\?/$r0/g;
-  }
-  #Eval expression
-  $paramArr->[0] = eval($paramArr->[0]);
-  
-  ($r0,$k) = ($paramArr->[0],$paramArr->[1]);
-  @{$paramArr}=($r0,$k);
+my($paramArr,$r0,$epsilon) = @_;
+my $k;
+	##i=0 is r##
+	##i=1 is k#
+	
+	## k ##
+	if($paramArr->[1] =~ /\?/){smog_quit("CONTACT FUNCTION PARSING:: contact bond_type6 can't have ? in the stiffness.");}
+	$paramArr->[1] = eval($paramArr->[1]);
+	
+	## r ##
+	if($paramArr->[0] =~ /\?/)
+	{
+		#Replace ? with $r0 
+		$paramArr->[0] =~ s/\?/$r0/g;
+	}
+	#Eval expression
+	$paramArr->[0] = eval($paramArr->[0]);
+	
+	($r0,$k) = ($paramArr->[0],$paramArr->[1]);
+	@{$paramArr}=($r0,$k);
 
 }
 
@@ -1032,22 +1024,6 @@ sub contactFuncParser
 ## CALCULATE EXCLUSIONS ##
 ##########################
 
-
-#deprecated!
-sub calculateExclusions
-{
-	my($contactPDL,$numCon) = @_;
-	my $atoma; my $atomb;
-
-
-	#print an exclusion for every contact
-	for(my $i=0;$i<$numCon;$i++)
-	{
-		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
-		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-		addToTop("exclusions",$atoma."	".$atomb."\n");
-	}
-}
 
 sub calculateAtomTypes
 {
@@ -1227,26 +1203,26 @@ sub convertPDBToGroNdx
 	unlink("meta.Gro");
 	
  ## CREATE NDX FILE ##
- open(NDX,">$outputNDX");
- my $c;my $v;
- 
- #while(($c,$v) =  each (sort keys %chainHash))
- foreach my $chain (sort {$a <=> $b} keys %chainHash) 
- {
-	print NDX "[ $chain ]\n";
-	print NDX join("\n",@{$chainHash{$chain}});
-	print NDX "\n";
- }
- close(NDX);
- 
+	open(NDX,">$outputNDX");
+	my $c;my $v;
+	
+	#while(($c,$v) =  each (sort keys %chainHash))
+	foreach my $chain (sort {$a <=> $b} keys %chainHash) 
+	{
+	       print NDX "[ $chain ]\n";
+	       print NDX join("\n",@{$chainHash{$chain}});
+	       print NDX "\n";
+	}
+	close(NDX);
+
 }
 
 sub validateTemplate
 {
- my ($file,$type) = @_;
- my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/schemas/$type.xsd");
- my $parser = XML::SAX::ParserFactory->parser(Handler => $validator);
- eval { $parser->parse_uri($file) };
+	my ($file,$type) = @_;
+	my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/schemas/$type.xsd");
+	my $parser = XML::SAX::ParserFactory->parser(Handler => $validator);
+	eval { $parser->parse_uri($file) };
  smog_quit("Failed at validating $file: $@ \nThis is due to an XML formatting issue.  The most common issue is that an element is missing a tagline. For example, something like this may appear in your file,
   <child>
     <subchild>.....
