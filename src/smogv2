@@ -44,7 +44,7 @@ use Time::HiRes qw( gettimeofday);
 ######################
 ## GLOBAL VARIABLES ##
 ######################
-my $VERSION="2.0.4beta";
+my $VERSION="2.1beta";
 my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
@@ -192,7 +192,6 @@ sub printOrderedBonds
 	## Cache Bonds ##
 	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache);
 	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache);
-
 	## Sort bonds by i then j ## 
 	@bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
 
@@ -230,8 +229,7 @@ sub calculateBondsHelper1
 }
 
 ##
-# Setup the calculation of bond angles of all the residues,
-#	then call calculateBondsHelper() with a specific residue
+# call  calculateBondsHelper1() for each residue defined in templates
 sub calculateBonds1
 {
  my($bondFunctHandle,$whichPDL,$bondCache) = @_;
@@ -244,19 +242,17 @@ sub calculateBonds1
 
 
 ##
-#Setup the calculate of bond angles of all combined residues,
-#then call connCalculateBondsHelper() with a specific residue
+#call connCalculateBondsHelper() for each chain in PDB
 sub calculateBonds2
 {
  my($bondHandle,$whichPDL,$bondCache) = @_;
- foreach my $counter(keys %{$bondHandle})
+ foreach my $chain(keys %{$bondHandle})
  {
-	calculateBondsHelper2($bondHandle->{$counter},$whichPDL->{$counter},$bondCache);
+	calculateBondsHelper2($bondHandle->{$chain},$whichPDL->{$chain},$bondCache);
 
  }
 }
 ##
-#calculate bond angle of a specific combined residue PDL
 sub calculateBondsHelper2
 {
  my($bondInfo,$inputPDL,$bondCache) = @_;
@@ -374,8 +370,7 @@ sub printOrderedAngles
 ##
 
 ##
-# Setup the calculate of bond angles of all combined residues,
-# then call CalculateAnglesHelper() with a specific residue
+# CalculateAnglesHelper() calculates the dihedrals for each chain
 sub CalculateAngles
 {
  my($angleFunctHandle,$whichPDL,$angleCache) = @_;
@@ -387,7 +382,6 @@ sub CalculateAngles
 }
 
 ##
-# calculate bond angle of a specific combined residue PDL
 sub CalculateAnglesHelper
 {
  my($angleArr,$inputPDL,$angleCache) = @_;
