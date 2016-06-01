@@ -695,7 +695,7 @@ sub appendImpropersBOND
 {
 
  	my($resA,$resB,$resIDA,$resIDB,$sizeA,$ips,$tempArr) = @_;
- 	  my ($a,$b,$c,$d) = @{$ips};
+ 	my ($a,$b,$c,$d) = @{$ips};
  	my $ta=returnBondTypeFromIndex($a);
  	my $tb=returnBondTypeFromIndex($b);
  	my $tc=returnBondTypeFromIndex($c);
@@ -835,218 +835,217 @@ sub connCreateInteractionsSingleBOND
 
 sub appendImpropers
 {
- my($map,$connect,$bondMapHashRev,$tempArr,$union) = @_;
- my %union=%{$union};
- my @connImproper; my $connHandle;
- my %bondMapHashRev=%{$bondMapHashRev};
- #loop through the residues in the chain
- for(my $resIndA=0;$resIndA<=$#$connect;$resIndA++){
-  my $resA=$connect->[$resIndA];
-  my $resAIp = $residues{"$resA"}->{"impropers"};
-  # if not terminal, then also check the next residue
-  if($resIndA != $#$connect){
-  my $resIndB=$resIndA+1;
-  my $resB=$connect->[$resIndB];
-  my $resBIp = $residues{"$resB"}->{"impropers"};
-    ## WORK RESIDUE B ##
-    foreach my $ips(@{$resBIp})
-    {
-       if(! (defined $ips) ) {next;}
-   
-   		my $ia;my $ib;my $ic;my $id;
-   		my $ta;my $tb;my $tc;my $td;
-                 my $na;my $nb;my $nc;my $nd;
-   		my $ra;my $rb;my $rc;my $rd;
-   		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
-   		my($a,$b,$c,$d) = @{$ips};
-   
-   
-    		$a=$bondMapHashRev{"$a-$resIndB"};
-    		$b=$bondMapHashRev{"$b-$resIndB"};
-    		$c=$bondMapHashRev{"$c-$resIndB"};
-    		$d=$bondMapHashRev{"$d-$resIndB"};
-   
-   		my $IMPFLAG1=0;
-   		my $IMPFLAG2=0;
-   		my @TMPARR2 = ($a,$b,$c,$d);
-   		# checking that one of the atoms is bonded to the other three
-   		for(my $I=0;$I<4;$I++){
-   			foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
-   				if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
-   					$IMPFLAG1++;
-   				}
-   			}
-   			if($IMPFLAG1==3){$IMPFLAG2=1;}
-   			$IMPFLAG1=0;
-   		}
-   
-   		##[AtomName,ResidueIndex,prevSize]##
-   		$na = $map->{$a}->[0];
-   		$ra = $connect->[$map->{$a}->[1]];
-    		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
-   		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
-   		$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
-   		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
-   		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
-   
-   		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
-   		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
-   		($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
-   		($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
-           		if($IMPFLAG2==0){
-   			smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
-   		}
-   
-   	
-   		## Adjust args for getEnergyGroup() ##
-           	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
-   		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
-   		push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
-    }
-   
-   
-    ## WORK ON INTER-RESIDUAL IMPROPERS ##
-    ### CHANGE THIS, ONLY HANDLES SINGLE IMPROPERS ###
-    $connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}};
-    #@connImproper = @{$connHandle->{"improper"}};
-    foreach my $ips(@{$connHandle->{"improper"}})
-    {
-   		if(exists $ips->{"atom"}){ 
-     		my ($a,$b,$c,$d) = @{$ips->{"atom"}}; 
-   		my $ia;my $ib;my $ic;my $id;
-   		my $ta;my $tb;my $tc;my $td;
-                 my $na;my $nb;my $nc;my $nd;
-   		my $ra;my $rb;my $rc;my $rd;
-   		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
-   		my($an,$bn,$cn,$dn) = @{$ips->{"atom"}};
-   
-   
-                   if($a =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $a found.")};
-                   if($b =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $b found.")};
-                   if($c =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $c found.")};
-                   if($d =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $d found.")};
-   
-   
-   		if( $a =~ s/\+$//g ){
-    			$a=$bondMapHashRev{"$a-$resIndB"};
-   		}else{
-    			$a=$bondMapHashRev{"$a-$resIndA"};
-   		}
-   		if( $b =~ s/\+$//g ){
-    			$b=$bondMapHashRev{"$b-$resIndB"};
-   		}else{
-    			$b=$bondMapHashRev{"$b-$resIndA"};
-   		}
-   		if( $c =~ s/\+$//g ){
-    			$c=$bondMapHashRev{"$c-$resIndB"};
-   		}else{
-    			$c=$bondMapHashRev{"$c-$resIndA"};
-   		}
-   		if( $d =~ s/\+$//g ){
-    			$d=$bondMapHashRev{"$d-$resIndB"};
-   		}else{
-    			$d=$bondMapHashRev{"$d-$resIndA"};
-   		}
-   		my $IMPFLAG1=0;
-   		my $IMPFLAG2=0;
-   		my @TMPARR2 = ($a,$b,$c,$d);
-   		for(my $I=0;$I<4;$I++){
-   			foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
-   				if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
-   					$IMPFLAG1++;
-   				}
-   			}
-   			if($IMPFLAG1==3){$IMPFLAG2=1;}
-   			$IMPFLAG1=0;
-   		}
-   
-   		##[AtomName,ResidueIndex,prevSize]##
-   		$na = $map->{$a}->[0];
-   		$ra = $connect->[$map->{$a}->[1]];
-    		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
-   		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
-   		$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
-   		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
-   		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
-   
-   		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
-   		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
-   		($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
-   		($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
-   
-           	if($IMPFLAG2==0){
-   			smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
-   		}
-   
-           	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
-   		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
-   		push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
-   	}else{
-   		smog_quit("Internal error 1.  Please inform smog team");
-   	}
-    }	
-  }
- 
-  if($resIndA != 0) {next;}
-  
-  ## WORK RESIDUE A ##
-  foreach my $ips(@{$resAIp})
-  {
-     if(! (defined $ips) ) {next;}
- 
- 		my $ia;my $ib;my $ic;my $id;
- 		my $ta;my $tb;my $tc;my $td;
-                 my $na;my $nb;my $nc;my $nd;
- 		my $ra;my $rb;my $rc;my $rd;
- 		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
- 		my($a,$b,$c,$d) = @{$ips};
- 
-  		$a=$bondMapHashRev{"$a-$resIndA"};
-  		$b=$bondMapHashRev{"$b-$resIndA"};
-  		$c=$bondMapHashRev{"$c-$resIndA"};
-  		$d=$bondMapHashRev{"$d-$resIndA"};
- 		my $IMPFLAG1=0;
- 		my $IMPFLAG2=0;
- 		my @TMPARR2 = ($a,$b,$c,$d);
- 		for(my $I=0;$I<4;$I++){
- 			foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
- 				if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
- 					$IMPFLAG1++;
- 				}
- 			}
- 			if($IMPFLAG1==3){$IMPFLAG2=1;}
- 			$IMPFLAG1=0;
- 		}
- 
- 		##[AtomName,ResidueIndex,prevSize]##
- 		$na = $map->{$a}->[0];
- 		$ra = $connect->[$map->{$a}->[1]];
-  		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
- 		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
- 		$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
- 		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
- 		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
- 
- 		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
- 		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
- 		($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
- 		($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
-          	if($IMPFLAG2==0){
- 			smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
- 		}
-        	
- 		## Adjust args for getEnergyGroup() ##
-         	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
- 		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
- 	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
-  }
- }
+my($map,$connect,$bondMapHashRev,$tempArr,$union) = @_;
+my %union=%{$union};
+my @connImproper; my $connHandle;
+my %bondMapHashRev=%{$bondMapHashRev};
+#loop through the residues in the chain
+	for(my $resIndA=0;$resIndA<=$#$connect;$resIndA++){
+		my $resA=$connect->[$resIndA];
+		my $resAIp = $residues{"$resA"}->{"impropers"};
+		# if not terminal, then also check the next residue
+		if($resIndA != $#$connect){
+			my $resIndB=$resIndA+1;
+			my $resB=$connect->[$resIndB];
+			my $resBIp = $residues{"$resB"}->{"impropers"};
+	   		## WORK RESIDUE B ##
+	   		foreach my $ips(@{$resBIp})
+	   		{
+	      			if(! (defined $ips) ) {next;}
+	  
+	  			my $ia;my $ib;my $ic;my $id;
+	  			my $ta;my $tb;my $tc;my $td;
+	        	        my $na;my $nb;my $nc;my $nd;
+	  			my $ra;my $rb;my $rc;my $rd;
+	  			my $sizeA; my $sizeB;my $sizeC;my $sizeD;
+	  			my($a,$b,$c,$d) = @{$ips};
+	  
+	  
+	   			$a=$bondMapHashRev{"$a-$resIndB"};
+	   			$b=$bondMapHashRev{"$b-$resIndB"};
+	   			$c=$bondMapHashRev{"$c-$resIndB"};
+	   			$d=$bondMapHashRev{"$d-$resIndB"};
+	  
+	  			my $IMPFLAG1=0;
+	  			my $IMPFLAG2=0;
+	  			my @TMPARR2 = ($a,$b,$c,$d);
+	  			# checking that one of the atoms is bonded to the other three
+	  			for(my $I=0;$I<4;$I++){
+	  				foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
+	  					if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
+	  						$IMPFLAG1++;
+	  					}
+	  				}
+	  				if($IMPFLAG1==3){$IMPFLAG2=1;}
+	  				$IMPFLAG1=0;
+	  			}
+	  
+	  			##[AtomName,ResidueIndex,prevSize]##
+	  			$na = $map->{$a}->[0];
+	  			$ra = $connect->[$map->{$a}->[1]];
+	   			$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
+	  			$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
+	  			$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
+	  			$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
+	  			$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
+	  
+	  			($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
+	  			($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
+	  			($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
+	  			($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
+	        	  	if($IMPFLAG2==0){
+	  				smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
+	  			}
+	  
+	  		
+	  			## Adjust args for getEnergyGroup() ##
+	        	  	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+	  			my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
+	  			push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
+	   		}
+	  
+	  
+	   		## WORK ON INTER-RESIDUAL IMPROPERS ##
+	   		### CHANGE THIS, ONLY HANDLES SINGLE IMPROPERS ###
+	   		$connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}};
+	   		#@connImproper = @{$connHandle->{"improper"}};
+	   		foreach my $ips(@{$connHandle->{"improper"}})
+	   		{
+	  			if(exists $ips->{"atom"}){ 
+	    			my ($a,$b,$c,$d) = @{$ips->{"atom"}}; 
+	  			my $ia;my $ib;my $ic;my $id;
+	  			my $ta;my $tb;my $tc;my $td;
+	        	        my $na;my $nb;my $nc;my $nd;
+	  			my $ra;my $rb;my $rc;my $rd;
+	  			my $sizeA; my $sizeB;my $sizeC;my $sizeD;
+	  			my($an,$bn,$cn,$dn) = @{$ips->{"atom"}};
+	  
+	  
+	        		if($a =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $a found.")};
+	        		if($b =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $b found.")};
+	        		if($c =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $c found.")};
+	        		if($d =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $d found.")};
+	  
+	  
+	  			if( $a =~ s/\+$//g ){
+	   				$a=$bondMapHashRev{"$a-$resIndB"};
+	  			}else{
+	   				$a=$bondMapHashRev{"$a-$resIndA"};
+	  			}
+	  			if( $b =~ s/\+$//g ){
+	   				$b=$bondMapHashRev{"$b-$resIndB"};
+	  			}else{
+	   				$b=$bondMapHashRev{"$b-$resIndA"};
+	  			}
+	  			if( $c =~ s/\+$//g ){
+	   				$c=$bondMapHashRev{"$c-$resIndB"};
+	  			}else{
+	   				$c=$bondMapHashRev{"$c-$resIndA"};
+	  			}
+	  			if( $d =~ s/\+$//g ){
+	   				$d=$bondMapHashRev{"$d-$resIndB"};
+	  			}else{
+	   				$d=$bondMapHashRev{"$d-$resIndA"};
+	  			}
+	  			my $IMPFLAG1=0;
+	  			my $IMPFLAG2=0;
+	  			my @TMPARR2 = ($a,$b,$c,$d);
+	  			for(my $I=0;$I<4;$I++){
+	  				foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
+	  					if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
+	  						$IMPFLAG1++;
+	  					}
+	  				}
+	  				if($IMPFLAG1==3){$IMPFLAG2=1;}
+	  				$IMPFLAG1=0;
+	  			}
+	  
+	  			##[AtomName,ResidueIndex,prevSize]##
+	  			$na = $map->{$a}->[0];
+	  			$ra = $connect->[$map->{$a}->[1]];
+	   			$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
+	  			$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
+	  			$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
+	  			$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
+	  			$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
+	  
+	  			($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
+	  			($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
+	  			($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
+	  			($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
+	  
+	        	  	if($IMPFLAG2==0){
+	  				smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
+	  			}
+	  
+	          			($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+	  				my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
+	  				push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
+	  			}else{
+	  				smog_quit("Internal error 1.  Please inform smog team");
+	  			}
+			}	
+	 	}
+	
+	 	if($resIndA != 0) {next;}
+	 
+	 	## WORK RESIDUE A ##
+	 	foreach my $ips(@{$resAIp})
+	 	{
+	    		if(! (defined $ips) ) {next;}
+	
+			my $ia;my $ib;my $ic;my $id;
+			my $ta;my $tb;my $tc;my $td;
+	                my $na;my $nb;my $nc;my $nd;
+			my $ra;my $rb;my $rc;my $rd;
+			my $sizeA; my $sizeB;my $sizeC;my $sizeD;
+			my($a,$b,$c,$d) = @{$ips};
+	
+	 		$a=$bondMapHashRev{"$a-$resIndA"};
+	 		$b=$bondMapHashRev{"$b-$resIndA"};
+	 		$c=$bondMapHashRev{"$c-$resIndA"};
+	 		$d=$bondMapHashRev{"$d-$resIndA"};
+			my $IMPFLAG1=0;
+			my $IMPFLAG2=0;
+			my @TMPARR2 = ($a,$b,$c,$d);
+			for(my $I=0;$I<4;$I++){
+				foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
+					if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
+						$IMPFLAG1++;
+					}
+				}
+				if($IMPFLAG1==3){$IMPFLAG2=1;}
+				$IMPFLAG1=0;
+			}
+	
+			##[AtomName,ResidueIndex,prevSize]##
+			$na = $map->{$a}->[0];
+			$ra = $connect->[$map->{$a}->[1]];
+	 		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
+			$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
+			$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
+			$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
+			$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
+	
+			($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
+			($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
+			($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
+			($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
+	         	if($IMPFLAG2==0){
+				smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
+			}
+	       	
+			## Adjust args for getEnergyGroup() ##
+	        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+			my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
+			push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
+		}
+	}
 }
 
 sub connWildcardMatchAngles
 {
-    my($a,$b,$c) = @_;
-
+	my($a,$b,$c) = @_;
 	my $angHandle = $interactions->{"angles"};
 	my $funct="";
 		
@@ -1059,27 +1058,27 @@ sub connWildcardMatchAngles
 		unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
 			|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
 			|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){
-		if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-		if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-		if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-		if($matchScore >= $saveScore)
-			{
-			if($aM eq $cM || ($aM eq $bM and $bM eq $cM)){
-				$symmatch=1;
-			}else{
-				$symmatch=0;
-			}
-			## this to make sure that the highest scoring angle is unique
-			if($matchScore == $saveScore){
-				if($saveScore != 0){
-				$matchScoreCount++;
+				if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($matchScore >= $saveScore)
+				{
+					if($aM eq $cM || ($aM eq $bM and $bM eq $cM)){
+						$symmatch=1;
+					}else{
+						$symmatch=0;
+					}
+				## this to make sure that the highest scoring angle is unique
+				if($matchScore == $saveScore){
+					if($saveScore != 0){
+						$matchScoreCount++;
+					}
+				}else{
+					$matchScoreCount=0;
 				}
-			}else{
-				$matchScoreCount=0;
+				$saveScore = $matchScore;$funct = $angHandle->{$matches};
 			}
-			$saveScore = $matchScore;$funct = $angHandle->{$matches};
 		}
-	    }
 	}
 	my $sym=0;
 	if($a eq $c || ($a eq $b and $b eq $c)){
@@ -1103,36 +1102,37 @@ sub connWildcardMatchBond
 
 		## WILD CARD MATCHING CONDITIONALS ##
 
-		## If both bond types exists ##
-		if( exists $interactions->{"bonds"}->{$typeA}->{$typeB})
-		{$funct = $interactions->{"bonds"}->{$typeA}->{$typeB};}
-			
-		elsif ($typeA ne $typeB && (exists $interactions->{"bonds"}->{$typeA}->{"*"} 
-                                 && exists $interactions->{"bonds"}->{$typeB}->{"*"})){
-			smog_quit ("Wildcard conflict in bonds $typeA-$typeB. Both $typeA-\* and $typeB-\* are defined in .b file. Can not unambiguously assign a function...");
- 		}
-		## If typeA exists while TypeB is a wildcard ##
-		elsif (exists $interactions->{"bonds"}->{$typeA}->{"*"})
-		{$funct = $interactions->{"bonds"}->{$typeA}->{"*"};}
+	## If both bond types exists ##
+	if( exists $interactions->{"bonds"}->{$typeA}->{$typeB})
+	{
+		$funct = $interactions->{"bonds"}->{$typeA}->{$typeB};
+	}elsif (
+		$typeA ne $typeB && (exists $interactions->{"bonds"}->{$typeA}->{"*"} 
+                         && exists $interactions->{"bonds"}->{$typeB}->{"*"})){
+		smog_quit ("Wildcard conflict in bonds $typeA-$typeB. Both $typeA-\* and $typeB-\* are defined in .b file. Can not unambiguously assign a function...");
+	}
+	## If typeA exists while TypeB is a wildcard ##
+	elsif (exists $interactions->{"bonds"}->{$typeA}->{"*"})
+	{$funct = $interactions->{"bonds"}->{$typeA}->{"*"};}
 
-		## If typeB exists while TypeA is a wildcard ##
-		elsif (exists $interactions->{"bonds"}->{$typeB}->{"*"})
-		{$funct = $interactions->{"bonds"}->{$typeB}->{"*"};}
-	
-		if(!defined $funct || $funct eq ""){
-			if(exists $interactions->{"bonds"}->{"*"}->{"*"})
-            		{$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
-		     	else{
-			smog_quit ("Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB. Check .b file");
-			}
+	## If typeB exists while TypeA is a wildcard ##
+	elsif (exists $interactions->{"bonds"}->{$typeB}->{"*"})
+	{$funct = $interactions->{"bonds"}->{$typeB}->{"*"};}
+
+	if(!defined $funct || $funct eq ""){
+		if(exists $interactions->{"bonds"}->{"*"}->{"*"})
+    		{$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
+	     	else{
+		smog_quit ("Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB. Check .b file");
 		}
+	}
 
     return $funct;
 }
 
 sub connWildcardMatchImpropers
 {
-    my($a,$b,$c,$d) = @_;
+    	my($a,$b,$c,$d) = @_;
 	my $diheHandle = $interactions->{"impropers"};
 	my $funct="";
 	## WILD CARD MATCHING CONDITIONALS ##
@@ -1210,22 +1210,22 @@ sub connWildcardMatchDihes
 			}
 		}
 	
-			if($Nd ==0){
-				smog_quit ("energy group\"$eG\" is used in .bif file, or a BOND line, but it is not defined in .sif file.");
-			}
-			
-			my $sym=0;
-			if(($a eq $d and $b eq $c) || ($a eq $b and $b eq $c and $c eq $d)){
-				$sym=1;
-			}
-			if(($symmatch ==0 && $sym == 1 && $matchScoreCount > 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount > 0)){
+		if($Nd ==0){
+			smog_quit ("energy group\"$eG\" is used in .bif file, or a BOND line, but it is not defined in .sif file.");
+		}
+		
+		my $sym=0;
+		if(($a eq $d and $b eq $c) || ($a eq $b and $b eq $c and $c eq $d)){
+			$sym=1;
+		}
+		if(($symmatch ==0 && $sym == 1 && $matchScoreCount > 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount > 0)){
 	
-				smog_quit ("$symmatch  $sym $matchScoreCount Multiple possible angles match $a-$b-$c-$d, and energyGroup $eG equally well. Can not determine function based on .b file.");
-			}
+			smog_quit ("$symmatch  $sym $matchScoreCount Multiple possible angles match $a-$b-$c-$d, and energyGroup $eG equally well. Can not determine function based on .b file.");
+		}
 	
-			if($matchScore == 0){
-				smog_quit ("Dihedral Angle between bTypes $a-$b-$c-$d and energyGroup $eG: Unable to match to a function in .b file.");
-			}
+		if($matchScore == 0){
+			smog_quit ("Dihedral Angle between bTypes $a-$b-$c-$d and energyGroup $eG: Unable to match to a function in .b file.");
+		}
 	
 		if(!defined $funct || $funct eq ""){smog_quit("There is no function for bType combination $a-$b-$c-$d with energyGroup=$eG. Check .b file");}
 	}
@@ -1237,144 +1237,141 @@ sub connWildcardMatchDihes
 
 sub GenAnglesDihedrals
 {
-  my($connect,$chainlength) = @_;
-  ## $connect is a list of connected residues ##
-  my @tempA;my @tempD;
-  my $bonds;my $dihes; my $angles; 
-  my $oneFour;
-  my %union; my $connHandle;
-  my $atomA = ""; my $atomB = "";
-  my $i=0;my $j=0;my $mapCounter=0;
-  my %bondMapHash; ##[AtomName,ResidueIndex,prevSize]##
-  my %bondMapHashRev;
-  my @connectList;
-  my @AtomsInConnections;
-  my $leftAtom;my $rightAtom;
-  my $leftResidue;my $rightResidue;
-  my $prevSize = 0;
+	my($connect,$chainlength) = @_;
+	## $connect is a list of connected residues ##
+	my @tempA;my @tempD;
+	my $bonds;my $dihes; my $angles; 
+	my $oneFour;
+	my %union; my $connHandle;
+	my $atomA = ""; my $atomB = "";
+	my $i=0;my $j=0;my $mapCounter=0;
+	my %bondMapHash; ##[AtomName,ResidueIndex,prevSize]##
+	my %bondMapHashRev;
+	my @connectList;
+	my @AtomsInConnections;
+	my $leftAtom;my $rightAtom;
+	my $leftResidue;my $rightResidue;
+	my $prevSize = 0;
+	
+	## Go through list of connected residues ##
+	for($i = 0;$i<=$#$connect;$i++)
+	{ 
+		$j = $i+1;  
+  		my $resABonds = $dihedralAdjList{$connect->[$i]};
+		my $resAAtoms = $residues{$connect->[$i]}->{"atoms"};
+		## Atoms to mapCounter renaming ##
+ 		foreach my $atom(keys %{$resAAtoms})
+		{
+			$bondMapHashRev{"$atom-$i"}=$mapCounter;
+			$bondMapHash{$mapCounter}=[$atom,$i,$prevSize];
+			$mapCounter++;  
+		}
+		foreach my $atom(keys %{$resABonds})
+    		{
+     			my @tempArr = map {$bondMapHashRev{"$_-$i"}} @{$resABonds->{$atom}};
+			my $atomKey = $bondMapHashRev{"$atom-$i"}; 
+     			$union{$atomKey} = \@tempArr;
+		}
 
-  ## Go through list of connected residues ##
-  for($i = 0;$i<=$#$connect;$i++)
-  { 
-    $j = $i+1;  
-  	my $resABonds = $dihedralAdjList{$connect->[$i]};
-	my $resAAtoms = $residues{$connect->[$i]}->{"atoms"};
-	## Atoms to mapCounter renaming ##
- 	foreach my $atom(keys %{$resAAtoms})
-	{
-          $bondMapHashRev{"$atom-$i"}=$mapCounter;
-          $bondMapHash{$mapCounter}=[$atom,$i,$prevSize];
-          $mapCounter++;  
-	}
-	foreach my $atom(keys %{$resABonds})
-    {
-     	my @tempArr = map {$bondMapHashRev{"$_-$i"}} @{$resABonds->{$atom}};
-	my $atomKey = $bondMapHashRev{"$atom-$i"}; 
-     	$union{$atomKey} = \@tempArr;
-    }
-
-    # if this is a single residue chain, then don't try to connect it to the next residue
-        if($#$connect == 0) {last;}
-	## Start of chain no inter residue connection ##
-    #  but setup leftAtom and leftResidue sizes #
-    if($i == 0) 
-	{
-	if(!exists $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}}){
-		my $typeA=$residues{$connect->[0]}->{"residueType"};
-		my $typeB=$residues{$connect->[1]}->{"residueType"};
-		smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file.  Issue encountered when connecting residue 0 and 1 (residue index within chain, starting at 0).")
-	}
-	  $connHandle 
-      = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
-	  $leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
-	  $leftAtom = $bondMapHashRev{"$leftAtom-$i"};
-	  $prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
-       next;
-	}
-        ## $i > 0, create inter residue connection ##
-	## $i-1 <--> $i
+		# if this is a single residue chain, then don't try to connect it to the next residue
+        	if($#$connect == 0) {last;}
+		## Start of chain no inter residue connection ##
+    		#  but setup leftAtom and leftResidue sizes #
+    		if($i == 0) 
+		{
+			if(!exists $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}}){
+			my $typeA=$residues{$connect->[0]}->{"residueType"};
+			my $typeB=$residues{$connect->[1]}->{"residueType"};
+			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file.  Issue encountered when connecting residue 0 and 1 (residue index within chain, starting at 0).")
+		}
+		$connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
+	  	$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
+	  	$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
+	 	$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
+      		 next;
+		}
+        	## $i > 0, create inter residue connection ##
+		## $i-1 <--> $i
 		if(!exists $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}}){
-		my $typeA=$residues{$connect->[$i-1]}->{"residueType"};
-		my $typeB=$residues{$connect->[$i]}->{"residueType"};
-		my $ii=$i-1;
-		smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $ii and $i (residue index within chain, starting at 0)")
+			my $typeA=$residues{$connect->[$i-1]}->{"residueType"};
+			my $typeB=$residues{$connect->[$i]}->{"residueType"};
+			my $ii=$i-1;
+			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $ii and $i (residue index within chain, starting at 0)")
 		}
-	$connHandle = $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}};
-	$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
-    	$rightAtom = $bondMapHashRev{"$rightAtom-$i"};
-	push(@AtomsInConnections,$leftAtom);
-	push(@AtomsInConnections,$rightAtom);
-	push(@connectList,$leftAtom);
-	push(@connectList,$rightAtom);
+		$connHandle = $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}};
+		$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
+	    	$rightAtom = $bondMapHashRev{"$rightAtom-$i"};
+		push(@AtomsInConnections,$leftAtom);
+		push(@AtomsInConnections,$rightAtom);
+		push(@connectList,$leftAtom);
+		push(@connectList,$rightAtom);
     
-    ## $i <--> $i+1
-        if($i == $#$connect) {last;}
+    		## $i <--> $i+1
+        	if($i == $#$connect) {last;}
 		if(!exists $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}}){
-		my $typeA=$residues{$connect->[$i]}->{"residueType"};
-		my $typeB=$residues{$connect->[$i+1]}->{"residueType"};
-		my $ii=$i+1;
-		smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $i and $ii (residue index within chain, starting at 0)")
+			my $typeA=$residues{$connect->[$i]}->{"residueType"};
+			my $typeB=$residues{$connect->[$i+1]}->{"residueType"};
+			my $ii=$i+1;
+			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $i and $ii (residue index within chain, starting at 0)")
 		}
-        $connHandle = $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}};
-    	$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
-    	$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
-    	$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
-   }
-  ## Create Inter residue connection ##
-  for($i=0;$i<scalar(@connectList)-1;$i+=2) {
-   push(@{$union{$connectList[$i]}},$connectList[$i+1]);
-   push(@{$union{$connectList[$i+1]}},$connectList[$i]);
-  }
-  my @includedatoms;
-  for(my $I=0;$I<$chainlength;$I++){
-   $includedatoms[$I]=0;
-  }
-  foreach my $atom(keys %union){
-   $includedatoms[$atom]=1;
-  }
-  for(my $I=0;$I<$chainlength;$I++){
-   if($includedatoms[$I]==0 && $chainlength !=1){
-	my $atomname=$bondMapHash{$I}->[0];
-	my $residue=$bondMapHash{$I}->[1];
-	$residue++;
-        smog_quit("No bonds found with atom $atomname in residue $residue. Check .bif definitions.");
-   }
-  }
+        	$connHandle = $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}};
+    		$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
+    		$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
+    		$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
+   	}
+  	## Create Inter residue connection ##
+  	for($i=0;$i<scalar(@connectList)-1;$i+=2) {
+   		push(@{$union{$connectList[$i]}},$connectList[$i+1]);
+   		push(@{$union{$connectList[$i+1]}},$connectList[$i]);
+  	}
+  	my @includedatoms;
+  	for(my $I=0;$I<$chainlength;$I++){
+   		$includedatoms[$I]=0;
+  	}
+  	foreach my $atom(keys %union){
+   		$includedatoms[$atom]=1;
+	}
+	for(my $I=0;$I<$chainlength;$I++){
+		if($includedatoms[$I]==0 && $chainlength !=1){
+			my $atomname=$bondMapHash{$I}->[0];
+			my $residue=$bondMapHash{$I}->[1];
+			$residue++;
+        		smog_quit("No bonds found with atom $atomname in residue $residue. Check .bif definitions.");
+   		}
+	}
 
-  ($dihes,$angles,$oneFour)=adjListTraversal(\%union);
-  return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev,\%union,\@AtomsInConnections);
-
+  	($dihes,$angles,$oneFour)=adjListTraversal(\%union);
+  	return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev,\%union,\@AtomsInConnections);
 }
 
 
 
 sub createConnection
 {
-  my($connect,$firstFlag,$atomA,$atomB,$counter) = @_;
-  my @tempA; my @tempD;
-  my $dihes; my $angles; my $oneFour;
-  my %union; my $connHandle;
-  my $resABonds;my $resBBonds;
-  my %tempAdjList; 
+	my($connect,$firstFlag,$atomA,$atomB,$counter) = @_;
+	my @tempA; my @tempD;
+	my $dihes; my $angles; my $oneFour;
+	my %union; my $connHandle;
+	my $resABonds;my $resBBonds;
+	my %tempAdjList; 
 
 
-  ## USES GLOBAL FLAG MISSING TO CREATE NEW MAP ##
-   ## Connection via connections attribute ##
-   if(!$atomA || !$atomB){
-    $connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
-    $atomA = $connHandle->{"bond"}->[0]->{"atom"}->[0];
-    $atomB = $connHandle->{"bond"}->[0]->{"atom"}->[1];
-    }
-    $resABonds = $dihedralAdjList{$connect->[0]};
+  	## USES GLOBAL FLAG MISSING TO CREATE NEW MAP ##
+   	## Connection via connections attribute ##
+   	if(!$atomA || !$atomB){
+    		$connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
+    		$atomA = $connHandle->{"bond"}->[0]->{"atom"}->[0];
+    		$atomB = $connHandle->{"bond"}->[0]->{"atom"}->[1];
+    	}
+	$resABonds = $dihedralAdjList{$connect->[0]};
 	$resBBonds = $dihedralAdjList{$connect->[1]};
 	
 
 	## Rename atoms in $resBBonds to avoid clashing ##
  	foreach my $atom(keys %{$resBBonds})
 	{
-	  my @tempArr = map {"$_?"} @{$resBBonds->{$atom}};
-	  $tempAdjList{"$atom?"} = \@tempArr;
-	  
+		my @tempArr = map {"$_?"} @{$resBBonds->{$atom}};
+		$tempAdjList{"$atom?"} = \@tempArr;
 	}
 	%union = ();
 	while(my($k,$v) = each %{$resABonds}){@{$union{$k}}=@{$v};}
@@ -1385,24 +1382,24 @@ sub createConnection
 	push(@{$union{"$atomB?"}},"$atomA");
 		
 	 
-	 ($dihes,$angles,$oneFour)=adjListTraversal(\%union); 
+	($dihes,$angles,$oneFour)=adjListTraversal(\%union); 
   	 
 
-	 ## REMOVE ANY ANGLES/DIHES NOT CONTAIN C-N? or N?-C and any *.-*. without '?' if firstFlag==0
-	 if($firstFlag==0){
-	 @tempA = map {$_ =~/\?/ ? ($_) : ()} @{$angles};
-	 @tempD = map {$_ =~ /\?/ ? ($_) : () } @{$dihes};
-	 @{$angles} = @tempA; @{$dihes} = @tempD;
-	 }
-	 ## ADHOC BONDS ##
-	 ## REMOVE ALL ANGLES/DIHES EXCEPT INTERDOMAIN ##
-	 elsif($firstFlag==-1)
-	 {
-	 	 @tempA = map {countQM($_) > 0 && countQM($_) < 3? ($_) : ()} @{$angles};
-	     @tempD = map {countQM($_) > 0 && countQM($_) < 4? ($_) : ()} @{$dihes};
-	     @{$angles} = @tempA; @{$dihes} = @tempD;
-	 }
-		return ($angles,$dihes,\%union,"$atomA","$atomB");
+	## REMOVE ANY ANGLES/DIHES NOT CONTAIN C-N? or N?-C and any *.-*. without '?' if firstFlag==0
+	if($firstFlag==0){
+		@tempA = map {$_ =~/\?/ ? ($_) : ()} @{$angles};
+		@tempD = map {$_ =~ /\?/ ? ($_) : () } @{$dihes};
+		@{$angles} = @tempA; @{$dihes} = @tempD;
+	}
+	## ADHOC BONDS ##
+	## REMOVE ALL ANGLES/DIHES EXCEPT INTERDOMAIN ##
+	elsif($firstFlag==-1)
+	{
+		@tempA = map {countQM($_) > 0 && countQM($_) < 3? ($_) : ()} @{$angles};
+		@tempD = map {countQM($_) > 0 && countQM($_) < 4? ($_) : ()} @{$dihes};
+		@{$angles} = @tempA; @{$dihes} = @tempD;
+	}
+	return ($angles,$dihes,\%union,"$atomA","$atomB");
 }
 
 sub countQM{my $in=shift;my $c = () = $in =~ /\?/g;return $c;}
@@ -1410,16 +1407,14 @@ sub countQM{my $in=shift;my $c = () = $in =~ /\?/g;return $c;}
 
 sub catPDL
 {
-   foreach my $pdls(keys %tempPDL)
-   {
-     my @arrConvert = values %{$tempPDL{$pdls}};
-	 $resPDL{$pdls} = cat(@arrConvert);
-	 delete $tempPDL{$pdls};
-   }
+	foreach my $pdls(keys %tempPDL)
+   	{
+     		my @arrConvert = values %{$tempPDL{$pdls}};
+	 	$resPDL{$pdls} = cat(@arrConvert);
+	 	delete $tempPDL{$pdls};
+   	}
 }
 
-sub coarseGrainContactMap {
-}
 
 sub parseCONTACT
 {
