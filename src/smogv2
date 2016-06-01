@@ -1369,21 +1369,24 @@ sub setContactParams
 
 sub printCitation
 {
-    my $citationFile = "";
-    ## CHECK FOR .citation meta file ##
-    if($coarseFolder && -e "$coarseFolder/.citation")
-    {
-      open(CITE,"$coarseFolder/.citation");
-      $citationFile = join("",<CITE>);
-      close(CITE);
-    }
-    elsif(-e "$inputFolder/.citation")
-    {
-      open(CITE,"$inputFolder/.citation");
-      $citationFile = join("",<CITE>);
-      close(CITE);
-    }
-    else{$citationFile = "";}
+	my $citationFile = "";
+	## CHECK FOR .citation meta file ##
+	if($coarseFolder && -e "$coarseFolder/.citation")
+	{
+		open(CITE,"$coarseFolder/.citation");
+		$citationFile = join("",<CITE>);
+		close(CITE);
+	}
+	elsif(-e "$inputFolder/.citation")
+	{
+		open(CITE,"$inputFolder/.citation");
+		$citationFile = join("",<CITE>);
+		close(CITE);
+	}
+	else
+	{
+		$citationFile = "";
+	}
        
 
 print <<EOT;
@@ -1411,9 +1414,9 @@ EOT
 
 sub freeMemoryForShadow
 {
-undef %resPDL;undef %bondPDL;
-undef %AngleData;undef %DihedralData;
-undef %BondData;undef $contactPDL;
+	undef %resPDL;undef %bondPDL;
+	undef %AngleData;undef %DihedralData;
+	undef %BondData;undef $contactPDL;
 }
 
 
@@ -1421,8 +1424,8 @@ sub parseTemplatesAndPDB
 {
 	my ($inputFolder,$inputPDB,$allowCG) = @_;
     
-    ## TEST IF SMOG PATH EXISTS ##
-    if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
+    	## TEST IF SMOG PATH EXISTS ##
+    	if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
 	$| = 1;
 	## OPEN .top handle ## don't do this here since we buffered the output now
 	#open($OUTPUT, ">$topFile"); 
@@ -1535,14 +1538,14 @@ sub generateContactMap {
 	## CALL SHADOW/PARSE CONTACTS ##
 	print "Starting contact calculations ...\n  ";
 	my $SCMparams = setContactParams();
-    my $memoryMax = "";
+    	my $memoryMax = "";
 	my $absAtomCount = keys(%allAtoms);
-    if($absAtomCount >= 1000000)
-    {
-     $memoryMax = 4000;
-     print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
-     $memoryMax = "-Xmx$memoryMax"."m";
-    } 
+    	if($absAtomCount >= 1000000)
+    	{
+		$memoryMax = 4000;
+		print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
+		$memoryMax = "-Xmx$memoryMax"."m";
+    	} 
 	
 	## Delete Preexisting contact file ##
 	if(-e $shadowFile){unlink($shadowFile);}
@@ -1550,10 +1553,9 @@ sub generateContactMap {
 	## Free Memory for Shadow ##
 	freeMemoryForShadow();
 	
-	if((!exists $ENV{SMOG_PATH}) || 
-		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){smog_quit ("Can't find Shadow executable. Make sure SMOG_PATH is set correctly.")}
-		print "Calling $ENV{SMOG_PATH}/tools/SCM.jar \n";
-	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
+	if((!exists $ENV{SMOG_PATH}) || !(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){smog_quit ("Can't find Shadow executable. Make sure SMOG_PATH is set correctly.")}
+	print "Calling $ENV{SMOG_PATH}/tools/SCM.jar \n";
+	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
 }
 
 sub appendContactsAndFinish {
