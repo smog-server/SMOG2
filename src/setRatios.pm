@@ -40,62 +40,60 @@ my %uniqueBonds;
 
 sub DiheCountsHelper
 {
- my($diheArr,$inputPDL,$countsIndex,$counts) = @_;
- my @countsIndex;
- my @counts;
- my $size = $diheArr->dim(1);
- my @tempArr;
- ## Count number of dihedrals passing through a bond ##
- my $tindex=0;
- $counts[0]=1;
- for(my $i=0;$i<$size;$i++)
- {
- 	my @A = $diheArr->slice(":,$i:$i")->list;
- 	if($#A == 0){
+	my($diheArr,$inputPDL,$countsIndex,$counts) = @_;
+	my @countsIndex;
+	my @counts;
+	my $size = $diheArr->dim(1);
+	my @tempArr;
+	## Count number of dihedrals passing through a bond ##
+	my $tindex=0;
+	$counts[0]=1;
+	for(my $i=0;$i<$size;$i++)
+	{
+		my @A = $diheArr->slice(":,$i:$i")->list;
+		if($#A == 0){
 		$countsIndex[$i]=-1;
 		next;
-	} 
-	my $b=$A[1];
-	my $c=$A[2];
-	my $eG=$A[6];
-	$b = sclr(slice($inputPDL,"3:3,$b,:"));
-	$c = sclr(slice($inputPDL,"3:3,$c,:"));
- ## only count the dihedral if it is not an improper
-        if($eG >= 0 ){	
-
-		if($b>$c){my $tt=$c;$c=$b;$b=$tt};
-
-		if(exists $uniqueBonds{"$b-$c--$eG"}){  
-			my $tt=$uniqueBonds{"$b-$c--$eG"};
-			$countsIndex[$i]=$tt;
-			$counts[$tt]++;
-		}
-		else{
-			$tindex++;
-			$uniqueBonds{"$b-$c--$eG"}=$tindex;
-			$countsIndex[$i]=$tindex;
-			$counts[$tindex]++;
-		}
-
-
-	}else{
-		$countsIndex[$i]=0;		
-        }	
- }
-
-
- for(my $i=0;$i<$size;$i++)
- {
-	if($countsIndex[$i]==-1){
-		next;
+		} 
+		my $b=$A[1];
+		my $c=$A[2];
+		my $eG=$A[6];
+		$b = sclr(slice($inputPDL,"3:3,$b,:"));
+		$c = sclr(slice($inputPDL,"3:3,$c,:"));
+		## only count the dihedral if it is not an improper
+		if($eG >= 0 ){	
+	
+	       		if($b>$c){my $tt=$c;$c=$b;$b=$tt};
+	
+	       		if(exists $uniqueBonds{"$b-$c--$eG"}){  
+	       			my $tt=$uniqueBonds{"$b-$c--$eG"};
+	       			$countsIndex[$i]=$tt;
+	       			$counts[$tt]++;
+	       		}
+	       		else{
+	       			$tindex++;
+	       			$uniqueBonds{"$b-$c--$eG"}=$tindex;
+	       			$countsIndex[$i]=$tindex;
+	       			$counts[$tindex]++;
+	       		}
+	
+	
+		}else{
+			$countsIndex[$i]=0;		
+		}	
 	}
- 	my @A = $diheArr->slice(":,$i:$i")->list;
-	unless($#A < 6){
-	 set($diheArr,5,$i,1/$counts[$countsIndex[$i]]);
+	
+	
+	for(my $i=0;$i<$size;$i++)
+	{
+		if($countsIndex[$i]==-1){
+			next;
+		}
+		 my @A = $diheArr->slice(":,$i:$i")->list;
+		unless($#A < 6){
+		 set($diheArr,5,$i,1/$counts[$countsIndex[$i]]);
+		}
 	}
- }
-
-
 }
 
 ##
@@ -103,33 +101,32 @@ sub DiheCountsHelper
 # utilizes getDiheCounts and setDiheCounts
 sub getSetDiheCounts
 {
- my($diheFunctHandle,$whichPDL) = @_;
- foreach my $chain(keys %{$diheFunctHandle})
- {
-	DiheCountsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain});
- 
- }	
+	my($diheFunctHandle,$whichPDL) = @_;
+	foreach my $chain(keys %{$diheFunctHandle})
+	{
+		DiheCountsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain});
+	}	
 }
 
 ##
 # Set the dihedral strength through normalization.
 sub setRatios	
 {
- my($diheFunctHandle,$inputPDL,$atomNum,$atomTypes,$rescaleCD) = @_;
- my $energyGroupSum; my $scaleFactor;my %residueRatio;
- my $sum; my $diheStrengthTotal;
- undef %uniqueBonds;
- my %rescalePDL;
- my $rescalePDL1=\%rescalePDL;
- foreach my $chain(keys %{$diheFunctHandle})
- {
+	my($diheFunctHandle,$inputPDL,$atomNum,$atomTypes,$rescaleCD) = @_;
+	my $energyGroupSum; my $scaleFactor;my %residueRatio;
+	my $sum; my $diheStrengthTotal;
+	undef %uniqueBonds;
+	my %rescalePDL;
+	my $rescalePDL1=\%rescalePDL;
+	foreach my $chain(keys %{$diheFunctHandle})
+	{
 		adjustFactorsHelper1($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomNum,$atomTypes,\%residueRatio,\$sum,\%rescalePDL,$chain);
- }
-
- foreach my $chain(keys %{$diheFunctHandle})
- {
+	}
+	
+	foreach my $chain(keys %{$diheFunctHandle})
+	{
 		adjustFactorsHelper2($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomNum,$atomTypes,$diheStrengthTotal,\$sum,\%rescalePDL,$chain,$rescaleCD);
- }
+	}
 }
 
 
@@ -167,25 +164,25 @@ sub adjustFactorsHelper1
 	 next;
 	}
 	$eG = $eGTable{$eG}; ## Obtain user defined residue name ##
-   if(!defined $termRatios->{$resTypeb}->{"energyGroup"}->{$eG})
-   {
-       ## CASE WHERE THERE IS A DIHEDRAL BETWEEN TWO DIFFERENT RESTYPES ##
-       if(! defined $termRatios->{$resTypec}->{"energyGroup"}->{$eG})
-       {
-            smog_quit("energyGroup $eG is not defined for $resTypeb-$resTypec ($a-$b-$c-$d)\n");
-       }
-       $normalize = $termRatios->{$resTypec}->{"energyGroup"}->{$eG}->{"normalize"};
-       $resTypeUse = $resTypec;
-   }
-   else{
-       $normalize = $termRatios->{$resTypeb}->{"energyGroup"}->{$eG}->{"normalize"};
-       $resTypeUse = $resTypeb;
-   }
+   	if(!defined $termRatios->{$resTypeb}->{"energyGroup"}->{$eG})
+   	{
+       		## CASE WHERE THERE IS A DIHEDRAL BETWEEN TWO DIFFERENT RESTYPES ##
+       		if(! defined $termRatios->{$resTypec}->{"energyGroup"}->{$eG})
+       		{
+            		smog_quit("energyGroup $eG is not defined for $resTypeb-$resTypec ($a-$b-$c-$d)\n");
+       		}
+       		$normalize = $termRatios->{$resTypec}->{"energyGroup"}->{$eG}->{"normalize"};
+       		$resTypeUse = $resTypec;
+   	}
+   	else{
+       		$normalize = $termRatios->{$resTypeb}->{"energyGroup"}->{$eG}->{"normalize"};
+       		$resTypeUse = $resTypeb;
+	}
  	if(!defined $normalize)
-    {
-     smog_quit("Normalize option not set for $resTypea-$resTypeb-$resTypec-$resTyped of energyGroup $eG with atom indices $a-$b-$c-$d");
-    }
-    ## Normalize option is set ##	
+	{
+		smog_quit("Normalize option not set for $resTypea-$resTypeb-$resTypec-$resTyped of energyGroup $eG with atom indices $a-$b-$c-$d");
+	}
+    	## Normalize option is set ##	
 	if($normalize eq 1) 
 	{
 		$relativeRatio=$termRatios->{$resTypeUse}->{"energyGroup"}->{$eG}->{"intraRelativeStrength"};
@@ -226,19 +223,19 @@ sub adjustFactorsHelper2
 	$diheLeftOver = $totalAtoms*(1 - ($contactTotal/$totalStrength));
 
 
-for(my $i=0;$i<$size;$i++)
- {
-	if(!defined $rescalePDL->{$chain}){next;}
-	my $normalize=sclr(slice($rescalePDL->{$chain},"1:1,$i:$i"));
-
-    ## Normalize option is set ##	
-	if($normalize eq 1) 
+	for(my $i=0;$i<$size;$i++)
 	{
-	my $count=sclr(slice($rescalePDL->{$chain},"0:0,$i:$i"));
-		$count = ($count/${$sum})*($diheLeftOver)*$rescaleCD; 
-		set($diheArr,5,$i,$count);
+		if(!defined $rescalePDL->{$chain}){next;}
+		my $normalize=sclr(slice($rescalePDL->{$chain},"1:1,$i:$i"));
+
+    		## Normalize option is set ##	
+		if($normalize eq 1) 
+		{
+			my $count=sclr(slice($rescalePDL->{$chain},"0:0,$i:$i"));
+			$count = ($count/${$sum})*($diheLeftOver)*$rescaleCD; 
+			set($diheArr,5,$i,$count);
+		}
 	}
-    }
 }
 
 1;

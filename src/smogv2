@@ -44,7 +44,7 @@ use Time::HiRes qw( gettimeofday);
 ######################
 ## GLOBAL VARIABLES ##
 ######################
-my $VERSION="2.0.4beta";
+my $VERSION="2.1beta";
 my $angToNano = 0.1;
 my @diheArr;
 my $OUTPUT;
@@ -68,7 +68,7 @@ our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
 our $setContacttoLimit=0;
 our %funtypechecked;
-my $ignoreHydrogen=0; #if you don't want contact map generation to consider hydrogens
+my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
 ## this is the array that defines how function names are converted to gromacs function types
 our %fTypes = (	'bond_harmonic' => '1',
 		'bond_type6' => '6',
@@ -83,6 +83,7 @@ our %fTypes = (	'bond_harmonic' => '1',
 		'contact_2'=>'1',
 		'contact_gaussian'=>'6'
 		);
+
 ## this is the topfile buffer stuff
 our %directives = ("defaults",1,"atomtypes",2,"moleculetype",3,"atoms",4,"bonds",5,"angles",6,"dihedrals",7,"pairs",8,"exclusions",9,"system",10,"molecules",11);
 our @directivesList=("defaults","atomtypes","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","system","molecules");
@@ -129,6 +130,7 @@ sub printTop {
 	}
 	close($OUTPUT);
 }
+
 # utility method to set all the initial directive comments
 sub initializeDirectives {
 	my($inputFolder,$inputPDB) = @_;
@@ -192,7 +194,6 @@ sub printOrderedBonds
 	## Cache Bonds ##
 	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache);
 	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache);
-
 	## Sort bonds by i then j ## 
 	@bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
 
@@ -208,71 +209,66 @@ sub printOrderedBonds
 # calculate bond angle of a specific residue  PDL
 sub calculateBondsHelper1
 {
- my($bondHash,$inputPDL,$bondCache) = @_;
- my $bondArr = $bondHash->{"bonds"};
- my $bondFunc =$bondHash->{"functions"};
- my $bondIndex = 0;
- foreach my $bonds(@{$bondArr})
- {
-	my ($atomOne,$atomTwo) = split("-",$bonds);
-	my $outer = slice($inputPDL,"0:2,$atomOne,:")-slice($inputPDL,"0:2,$atomTwo,:");
-	my @bondList = (sqrt(inner($outer,$outer))*$angToNano)->flat()->list();
-	my @indexList1 = slice($inputPDL,"3:3,$atomOne,:")->flat()->list();
-	my @indexList2 = slice($inputPDL,"3:3,$atomTwo,:")->flat()->list();
-	for(my $i=0;$i<scalar(@bondList);$i++)
+	my($bondHash,$inputPDL,$bondCache) = @_;
+	my $bondArr = $bondHash->{"bonds"};
+	my $bondFunc =$bondHash->{"functions"};
+	my $bondIndex = 0;
+	foreach my $bonds(@{$bondArr})
 	{
-		#print $OUTPUT bondOutput($bondFunc->[$bondIndex],$indexList1[$i],$indexList2[$i],$bondList[$i]);} 
-  push @{$bondCache}, {'i' => $indexList1[$i],'j' => $indexList2[$i], 'v' => bondOutput($bondFunc->[$bondIndex],$indexList1[$i],$indexList2[$i],$bondList[$i])};
- }
-		$bondIndex++;
-
- }
+	       my ($atomOne,$atomTwo) = split("-",$bonds);
+	       my $outer = slice($inputPDL,"0:2,$atomOne,:")-slice($inputPDL,"0:2,$atomTwo,:");
+	       my @bondList = (sqrt(inner($outer,$outer))*$angToNano)->flat()->list();
+	       my @indexList1 = slice($inputPDL,"3:3,$atomOne,:")->flat()->list();
+	       my @indexList2 = slice($inputPDL,"3:3,$atomTwo,:")->flat()->list();
+	       for(my $i=0;$i<scalar(@bondList);$i++)
+	       {
+	 		push @{$bondCache}, {'i' => $indexList1[$i],'j' => $indexList2[$i], 'v' => bondOutput($bondFunc->[$bondIndex],$indexList1[$i],$indexList2[$i],$bondList[$i])};
+		}
+	       	$bondIndex++;
+	
+	}
 }
 
 ##
-# Setup the calculation of bond angles of all the residues,
-#	then call calculateBondsHelper() with a specific residue
+# call  calculateBondsHelper1() for each residue defined in templates
 sub calculateBonds1
 {
- my($bondFunctHandle,$whichPDL,$bondCache) = @_;
-  foreach my $res(keys %{$bondFunctHandle})
- {
-	if(!exists $whichPDL->{$res}){next;}
-	calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache);
- }
+	my($bondFunctHandle,$whichPDL,$bondCache) = @_;
+	foreach my $res(keys %{$bondFunctHandle}){
+	       if(!exists $whichPDL->{$res}){next;}
+	       calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache);
+	}
 }
 
 
 ##
-#Setup the calculate of bond angles of all combined residues,
-#then call connCalculateBondsHelper() with a specific residue
+#call connCalculateBondsHelper() for each chain in PDB
 sub calculateBonds2
 {
- my($bondHandle,$whichPDL,$bondCache) = @_;
- foreach my $counter(keys %{$bondHandle})
- {
-	calculateBondsHelper2($bondHandle->{$counter},$whichPDL->{$counter},$bondCache);
-
- }
+	my($bondHandle,$whichPDL,$bondCache) = @_;
+	foreach my $chain(keys %{$bondHandle})
+	{
+		calculateBondsHelper2($bondHandle->{$chain},$whichPDL->{$chain},$bondCache);
+	
+	}
 }
+
 ##
-#calculate bond angle of a specific combined residue PDL
 sub calculateBondsHelper2
 {
- my($bondInfo,$inputPDL,$bondCache) = @_;
- my $size = $bondInfo->dim(1);
- for(my $i=0;$i<$size;$i++)
- {
- my $atomOne = sclr(slice($bondInfo,"0:0,$i:$i"));
- my $atomTwo = sclr(slice($bondInfo,"1:1,$i:$i")); 
- my $func = sclr(slice($bondInfo,"2:2,$i:$i"));
- my $outer = slice($inputPDL,"0:2,$atomOne,:")-slice($inputPDL,"0:2,$atomTwo,:");
- my $output = sclr(sqrt(inner($outer,$outer))*$angToNano);
- $atomOne = sclr(slice($inputPDL,"3:3,$atomOne,:"));
- $atomTwo = sclr(slice($inputPDL,"3:3,$atomTwo,:"));
-  #print $OUTPUT bondOutput(intToFunc("bonds",$func,""),$atomOne,$atomOne,$output);
- push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output)};
- }
+	my($bondInfo,$inputPDL,$bondCache) = @_;
+	my $size = $bondInfo->dim(1);
+	for(my $i=0;$i<$size;$i++)
+	{
+		my $atomOne = sclr(slice($bondInfo,"0:0,$i:$i"));
+		my $atomTwo = sclr(slice($bondInfo,"1:1,$i:$i")); 
+		my $func = sclr(slice($bondInfo,"2:2,$i:$i"));
+		my $outer = slice($inputPDL,"0:2,$atomOne,:")-slice($inputPDL,"0:2,$atomTwo,:");
+		my $output = sclr(sqrt(inner($outer,$outer))*$angToNano);
+		$atomOne = sclr(slice($inputPDL,"3:3,$atomOne,:"));
+		$atomTwo = sclr(slice($inputPDL,"3:3,$atomTwo,:"));
+		push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output)};
+	}
 }
 
 
@@ -281,56 +277,54 @@ sub calculateBondsHelper2
 # internal format is f()+g()
 sub bondOutput
 {
- my($inputFunc,$i,$j,$values) = @_;
- if(!$inputFunc){smog_quit ("BONDOUTPUT::NO FUNCTION DEFINED");}
- ## Remove white spaces from string ##
- $inputFunc =~ s/^\s+|\s+$//g;
- ## If $input contains a + ##
- my @funcs = split(/\+/,$inputFunc); ## split combination of functions
- my $outputString="";
- my @paramArr;
- my $fType=""; my $formattedString;
-	## Parse each part of the function ##
- foreach my $fun(@funcs)
- {
-	my $paramFormat="";
-	($fType,@paramArr) = bondFuncParser($fun);
-     	## $paramArr[0] is bond length
-	if($fType != 0){
-	
-	if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## native option used
-	 
-	 ## Check bonds threshold ##
-	 if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
-	 || $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"})
-	 {
-	  my $DIST=int($paramArr[0]*100)/100.0;
-	  if($setBondtoLimit){
-	  print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.\n\n");
-	   print "-limitbondlength is being used, will set length to ";
-	   if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
-	    $paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
-	    print "$paramArr[0] nm\n\n";
-	   }elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
-	    $paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
-	    print "$paramArr[0] nm\n\n";
-           }
-          }else{
-	    smog_quit("Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.");
-	  }
-	 }
-	
- ## Format output <i j function p1 p2 ... pn>
- foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+	my($inputFunc,$i,$j,$values) = @_;
+	if(!$inputFunc){smog_quit ("BONDOUTPUT::NO FUNCTION DEFINED");}
+	## Remove white spaces from string ##
+	$inputFunc =~ s/^\s+|\s+$//g;
+	## If $input contains a + ##
+	my @funcs = split(/\+/,$inputFunc); ## split combination of functions
+	my $outputString="";
+	my @paramArr;
+	my $fType=""; my $formattedString;
+	       ## Parse each part of the function ##
+	foreach my $fun(@funcs){
+		my $paramFormat="";
+		($fType,@paramArr) = bondFuncParser($fun);
+		## $paramArr[0] is bond length
+		if($fType != 0){
+	       
+			if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## native option used
+	        
+	        ## Check bonds threshold ##
+	        if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
+	        || $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
+			my $DIST=int($paramArr[0]*100)/100.0;
+			if($setBondtoLimit){
+				print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.\n\n");
+				print "-limitbondlength is being used, will set length to ";
+			 	if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
+			  		$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
+			  		print "$paramArr[0] nm\n\n";
+			 	}elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
+			  		$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
+			  		print "$paramArr[0] nm\n\n";
+			 	}
+			}else{
+				smog_quit("Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.");
+			}
+	        }
+	       
+	## Format output <i j function p1 p2 ... pn>
+	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 	$formattedString = sprintf("%9d%9d%6d$paramFormat",$i,$j,$fType,@paramArr);
 	$outputString = "$outputString$formattedString\n";
- }
- }
- return $outputString;
- }
+	}
+}
+return $outputString;
+}
 
 ##
-# Given a user defined function parse values
+# Given a user defined function, parse values
 sub bondFuncParser
 {
 	my($bondFunc) = @_;
@@ -357,7 +351,6 @@ sub printOrderedAngles
 	my($AngleData,$bondPDL) = @_;
 	my @angleCache; ## CACHE BONDS TO ORDER
 
-
 	## Cache Bonds ##
 	CalculateAngles($AngleData,$bondPDL,\@angleCache);
 
@@ -365,8 +358,7 @@ sub printOrderedAngles
 	@angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
 
 	## Print our sorted bonds ##
-  	foreach my $p(@angleCache)
-  	{
+  	foreach my $p(@angleCache){
   		addToTop("angles",$p->{"v"});
 	}
 }
@@ -374,58 +366,53 @@ sub printOrderedAngles
 ##
 
 ##
-# Setup the calculate of bond angles of all combined residues,
-# then call CalculateAnglesHelper() with a specific residue
+# CalculateAnglesHelper() calculates the angles for each chain
 sub CalculateAngles
 {
- my($angleFunctHandle,$whichPDL,$angleCache) = @_;
+	my($angleFunctHandle,$whichPDL,$angleCache) = @_;
  
- foreach my $chain(keys %{$angleFunctHandle})
- {
-	CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache);
- }
+	foreach my $chain(keys %{$angleFunctHandle}){
+		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache);
+	}
 }
 
 ##
-# calculate bond angle of a specific combined residue PDL
 sub CalculateAnglesHelper
 {
- my($angleArr,$inputPDL,$angleCache) = @_;
- my $size = $angleArr->dim(1);
- 
- for(my $i=0;$i<$size;$i++)
- {
-	my ($atom1,$atom2,$atom3,$func) = $angleArr->slice(":,$i:$i")->list;
-	my $A1=slice($inputPDL,"0:2,$atom1,:");
-	my $A2=slice($inputPDL,"0:2,$atom2,:");
-	my $A3=slice($inputPDL,"0:2,$atom3,:");
-
-
-  	my $left = norm($A1-$A2);
-	my $right = norm($A3-$A2);
-
-#  	my $left = norm(slice($inputPDL,"0:2,$atom1,:")-slice($inputPDL,"0:2,$atom2,:"));
-#	my $right = norm(slice($inputPDL,"0:2,$atom3,:")-slice($inputPDL,"0:2,$atom2,:"));
-	my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
+	my($angleArr,$inputPDL,$angleCache) = @_;
+	my $size = $angleArr->dim(1);
 	
-	my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
-	my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
-	my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
-	if($atomi1 > $atomi3) { my $temp = $atomi1; $atomi1 = $atomi3; $atomi3 = $temp; }
-  	my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos);
-	if(!$val) {next;}
-  	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => 	angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos)};
- }
+	for(my $i=0;$i<$size;$i++)
+	{
+		my ($atom1,$atom2,$atom3,$func) = $angleArr->slice(":,$i:$i")->list;
+		my $A1=slice($inputPDL,"0:2,$atom1,:");
+		my $A2=slice($inputPDL,"0:2,$atom2,:");
+		my $A3=slice($inputPDL,"0:2,$atom3,:");
+		
+		
+		my $left = norm($A1-$A2);
+		my $right = norm($A3-$A2);
+		
+		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
+		
+		my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
+		my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
+		my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
+		if($atomi1 > $atomi3) { my $temp = $atomi1; $atomi1 = $atomi3; $atomi3 = $temp; }
+		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos);
+		if(!$val) {next;}
+	 	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => 	angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos)};
+	}
 }
 
 ## 
 # Convert internal angle function format to gromacs function format
 sub angleOutput
 {
- my($inputFunc,$i,$j,$k,$values) = @_;
+ 	my($inputFunc,$i,$j,$k,$values) = @_;
 	if(!$inputFunc){smog_quit ("ANGLEOUTPUT::NO FUNCTION DEFINED");}
  ## Remove white spaces from string ##
- $inputFunc =~ s/^\s+|\s+$//g;
+ 	$inputFunc =~ s/^\s+|\s+$//g;
  ## If $input contains a + ##
 	my @funcs = split(/\+/,$inputFunc);
 	my $outputString="";
@@ -440,15 +427,14 @@ sub angleOutput
 		if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## non-native option used
 	
 		## Check angles threshold ##
-	 	if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"})
-	 	 { 
-	          my $THETA=int($paramArr[0]*100)/100.0;
-	          print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\n");}
-	 	if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"})
-	 	 {
-	          my $THETA=int($paramArr[0]*100)/100.0;
-	          print("\n\nWARNING: ANGLE between atoms $i $j $k greater than largeAngles (see .sif): theta=$THETA degrees\n\n");}
-	
+	 	if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
+			my $THETA=int($paramArr[0]*100)/100.0;
+			print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\n");
+		}
+	 	if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
+			my $THETA=int($paramArr[0]*100)/100.0;
+			print("\n\nWARNING: ANGLE between atoms $i $j $k greater than largeAngles (see .sif): theta=$THETA degrees\n\n");
+		}
  		## Format output <i j k function p1 p2 ... pn>
  		foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 			$formattedString = sprintf("%9d%9d%9d%6d$paramFormat",$i,$j,$k,$fType,@paramArr);
@@ -485,37 +471,35 @@ sub angleFuncParser
 # Combined dihedral calculation,sorting, and printing
 sub printOrderedDihedrals
 {
-  my($DihedralData,$bondPDL) = @_;
-  my @diheCache; ## CACHE BONDS TO ORDER
-  ## Cache Bonds ##
+	my($DihedralData,$bondPDL) = @_;
+	my @diheCache; ## CACHE BONDS TO ORDER
+	## Cache Bonds ##
 	my ($seconds, $microseconds) = gettimeofday;
-  CalculateDihedrals($DihedralData,$bondPDL,\@diheCache);
-  	my ($seconds1, $microseconds1) = gettimeofday;
+	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache);
+	my ($seconds1, $microseconds1) = gettimeofday;
 	$seconds1-=$seconds;
 	$microseconds1-=$microseconds;
 	$seconds1+=$microseconds/1000000;
 	print "Calc Dih dT=$seconds1\n";
-
-  ## Sort dihedrals by i, then j then k then l ## 
-  @diheCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"l"} <=> $b->{"l"}) } @diheCache;
-  
-  ## Print our sorted bonds ##
-  foreach my $p(@diheCache)
-  {
-  	addToTop("dihedrals",$p->{"v"});
-  }
-  addToTop("dihedrals","\n");
+	
+	## Sort dihedrals by i, then j then k then l ## 
+	@diheCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"l"} <=> $b->{"l"}) } @diheCache;
+	
+	## Print our sorted bonds ##
+	foreach my $p(@diheCache){
+		addToTop("dihedrals",$p->{"v"});
+	}
+	addToTop("dihedrals","\n");
 }
 
 ##
 # Setup the calculate of bond angles of all combined residues,
 sub CalculateDihedrals
 {
- my($diheFunctHandle,$whichPDL,$diheCache) = @_;
- foreach my $chain(keys %{$diheFunctHandle})
- {
+	my($diheFunctHandle,$whichPDL,$diheCache) = @_;
+	foreach my $chain(keys %{$diheFunctHandle}){
 		CalculateDihedralsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain},$diheCache);
- }
+	}
 }
 
 sub CalculateDihedralsHelper
@@ -570,13 +554,12 @@ sub CalculateDihedralsHelper
 	 }
 }
 
-## Convert .b dihedral function format to gromacs function format
 sub dihedralOutput
 {
- my($inputFunc,$ai,$aj,$ak,$al,$values,$ratio,$eG) = @_;
- ## Remove white spaces from string ##
- $inputFunc =~ s/^\s+|\s+$//g;
- ## If $input contains a + ##
+ 	my($inputFunc,$ai,$aj,$ak,$al,$values,$ratio,$eG) = @_;
+ 	## Remove white spaces from string ##
+ 	$inputFunc =~ s/^\s+|\s+$//g;
+ 	## If $input contains a + ##
  	my @funcs = split(/\+/,$inputFunc);
 	my $outputString="";
 	my $fType="";my $exportRatio;       
@@ -646,7 +629,7 @@ sub dihedralOutput
  }
  
 ##
-# Given a user defined dihedral function parse values
+# Given a user defined dihedral function, parse values
 sub diheFuncParser
 {
 	my($diheFunc) = @_;
@@ -687,106 +670,99 @@ sub calculateContacts
 	## Sum all initial contact strengths ##	
 	for(my $i=0;$i<$numCon;$i++)
 	{
-			my $normalize;
-			$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
-	  		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-			$pairtypea = $atomTypes->{$atoma}->[10];
-			$pairtypeb = $atomTypes->{$atomb}->[10];
-			$resTypea = $atomTypes->{$atoma}->[1];
-			$resTypeb = $atomTypes->{$atomb}->[1];
-			($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
-
-			if(!$funct || !$cG)
-			{smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");}
-			$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
-			if(!$normalize){next;}		
-			$contactIntraTotal = $termRatios->{"cintraRelativeTotal"};
-			$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
-			$count+=($contactIntraScale/$contactIntraTotal);
+		my $normalize;
+		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
+		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
+		$pairtypea = $atomTypes->{$atoma}->[10];
+		$pairtypeb = $atomTypes->{$atomb}->[10];
+		$resTypea = $atomTypes->{$atoma}->[1];
+		$resTypeb = $atomTypes->{$atomb}->[1];
+		($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
+		
+		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");}
+		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
+		if(!$normalize){next;}		
+		$contactIntraTotal = $termRatios->{"cintraRelativeTotal"};
+		$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
+		$count+=($contactIntraScale/$contactIntraTotal);
 	}
 
 	## Adjust ratio ##
-	for(my $i=0;$i<$numCon;$i++)
-	{
-			my $contactLeftOver;my $diheTotal; my $normalize;
-			my $deltaMin=-1;my $scale=-1;my $deltaMax=-1;
-			my $resIdxA=0;my $resIdxB=0;
-			my $atomA="";my $atomB="";
-			my $outputString;
-			my $directive;my $addExclusions;
-	  		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
-	  		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-			$pairtypea = $atomTypes->{$atoma}->[10];
-			$pairtypeb = $atomTypes->{$atomb}->[10];
-			$resTypea = $atomTypes->{$atoma}->[1];
-			$resTypeb = $atomTypes->{$atomb}->[1];
-			($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
-			if(!$funct || !$cG)
-			{smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");} 
+	for(my $i=0;$i<$numCon;$i++){
+		my $contactLeftOver;my $diheTotal; my $normalize;
+		my $deltaMin=-1;my $scale=-1;my $deltaMax=-1;
+		my $resIdxA=0;my $resIdxB=0;
+		my $atomA="";my $atomB="";
+		my $outputString;
+		my $directive;my $addExclusions;
+		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
+		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
+		$pairtypea = $atomTypes->{$atoma}->[10];
+		$pairtypeb = $atomTypes->{$atomb}->[10];
+		$resTypea = $atomTypes->{$atoma}->[1];
+		$resTypeb = $atomTypes->{$atomb}->[1];
+		($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
+		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");} 
+		
+		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
+		
+		## Stacking scaling ##
+		$epsilon = 1;
+		if(exists $contactSettings->{"contactScaling"}->{$resTypea}
+		&& exists $contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb})
+		{
+			$deltaMin=$contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"deltaMin"};
+			$deltaMax=$contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"deltaMax"};
 			
-			$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
+			$scale = $contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"scale"};
+			$scale = eval($scale);
+			$resIdxA = $allAtoms{$atoma}->[2];
+			$resIdxB = $allAtoms{$atomb}->[2];
+			
+			$atomA = $allAtoms{$atoma}->[3];
+			$atomB = $allAtoms{$atomb}->[3];
+			##Atom to boolean##
+			$atomA = exists($contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"atomList"}->{$atomA});
+			$atomB = exists($contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"atomList"}->{$atomB});
+			
+			
+			if(abs($resIdxB-$resIdxA)>=$deltaMin 
+			&& abs($resIdxB-$resIdxA)<=$deltaMax
+			&& $atomA && $atomB){
+				$epsilon*=$scale;
+			}else{
+				$epsilon=1;
+			}
+		}
 
-            ## Stacking scaling ##
-            $epsilon = 1;
-            if(exists $contactSettings->{"contactScaling"}->{$resTypea}
-            && exists $contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb})
-            {
-              $deltaMin=$contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"deltaMin"};
-              $deltaMax=$contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"deltaMax"};
-
-              $scale = $contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"scale"};
-              $scale = eval($scale);
-              $resIdxA = $allAtoms{$atoma}->[2];
-              $resIdxB = $allAtoms{$atomb}->[2];
-              
-              $atomA = $allAtoms{$atoma}->[3];
-              $atomB = $allAtoms{$atomb}->[3];
-              ##Atom to boolean##
-              $atomA = exists($contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"atomList"}->{$atomA});
-              $atomB = exists($contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"atomList"}->{$atomB});
-
-              
-              if(abs($resIdxB-$resIdxA)>=$deltaMin 
-              && abs($resIdxB-$resIdxA)<=$deltaMax
-              && $atomA && $atomB)
-              {
-               $epsilon*=$scale;
-              }
-              else{$epsilon=1;}
-            
-            }
-
-			## Non-Native option for contacts ##
-			if(!$normalize) {
+		## Non-Native option for contacts ##
+		if(!$normalize) {
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
 			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
 			addToTop($directive,$outputString);
 			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
-			}	
-			
-			else {	
+		}else{	
 			## DIHE TO CONTACT SCALING ##
 			## DIHEDRAL TO CONTACT RATIO IS GLOBAL IRREGARDLESS OF RESIDE TYPE ##
 			$totalStrength = $termRatios->{"interRelativeTotal"};
 			$diheTotal = $termRatios->{"energyRelative"};
 			$contactLeftOver = $numAtom - $numAtom*($diheTotal/$totalStrength);
 			$contactLeftOver = $contactLeftOver/$count;
-   			$multFactor = $contactLeftOver;
-
+	   		$multFactor = $contactLeftOver;
+	
 			## CONTACT TO CONTACT SCALING ##			
 			$contactIntraTotal = $termRatios->{"cintraRelativeTotal"};
 			$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
 			$multFactor = $multFactor*($contactIntraScale/$contactIntraTotal);
-
+	
 			$epsilon = $epsilon*$multFactor*$rescaleCD;
-	  		$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
-	  		$c0=$dist;
+			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
+			$c0=$dist;
 			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
 			addToTop($directive,$outputString);
-			#print $directive," ",$addExclusions," ",$outputString,"\n";
 			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
-			}
+		}
 	}
 }
 
@@ -795,157 +771,149 @@ sub calculateContacts
 # internal format is f()+g()
 sub contactOutput
 {
- my($inputFunc,$i,$j,$c0,$epsilon) = @_;
- if(!$inputFunc){smog_quit ("CONTACTOUTPUT::NO FUNCTION DEFINED");}
- ## Remove white spaces from string ##
- $inputFunc =~ s/^\s+|\s+$//g;
- ## If $input contains a + ##
- my @funcs = split(/\+/,$inputFunc); ## split combination of functions
- my $outputString="";
- my @paramArr;
- my $fname;
- my $directive;
- my $addExclusions;
- my $fType=""; my $formattedString;
- my $addNewline = "";
- ## Parse each part of the function ##
- foreach my $fun(@funcs)
- {
-	my $paramFormat="";
-	($fType,$fname,$directive,$addExclusions,@paramArr) = contactFuncParser($fun);
-	## LJ CONTACTS N-M polynomial, sigma and epsilon usage ##	
-	if($fType != 0) {
-		$addNewline = "\n";
-	    if($fname eq "contact_1"){
-			contactParseNM1(\@paramArr,$c0,$epsilon);
-			if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_1")}
-	    }
-		## LJ CONTACTS N-M polynomial, CN, CM usage ##	
-	    elsif($fname eq "contact_2"){
-			contactParseNM2(\@paramArr,$c0,$epsilon);
-			if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_2")}
-	    }
-	        ## Gaussian ##
-	    elsif($fname eq "contact_gaussian"){
-		contactParseGaussian(\@paramArr,$c0,$epsilon);
-		if($fType != 6){smog_quit ("Only fType=6 is supported with contacts contact_gaussian")}
+	my($inputFunc,$i,$j,$c0,$epsilon) = @_;
+	if(!$inputFunc){smog_quit ("CONTACTOUTPUT::NO FUNCTION DEFINED");}
+	$inputFunc =~ s/^\s+|\s+$//g;
+	## If $input contains a + ##
+	my @funcs = split(/\+/,$inputFunc); ## split combination of functions
+	my $outputString="";
+	my @paramArr;
+	my $fname;
+	my $directive;
+	my $addExclusions;
+	my $fType=""; my $formattedString;
+	my $addNewline = "";
+	## Parse each part of the function ##
+	foreach my $fun(@funcs){
+		my $paramFormat="";
+		($fType,$fname,$directive,$addExclusions,@paramArr) = contactFuncParser($fun);
+		## LJ CONTACTS N-M polynomial, sigma and epsilon usage ##	
+		if($fType != 0) {
+			$addNewline = "\n";
+			if($fname eq "contact_1"){
+				contactParseNM1(\@paramArr,$c0,$epsilon);
+				if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_1")}
+			}
+			## LJ CONTACTS N-M polynomial, CN, CM usage ##	
+			elsif($fname eq "contact_2"){
+				contactParseNM2(\@paramArr,$c0,$epsilon);
+				if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_2")}
+			}
+			    ## Gaussian ##
+			elsif($fname eq "contact_gaussian"){
+				contactParseGaussian(\@paramArr,$c0,$epsilon);
+				if($fType != 6){smog_quit ("Only fType=6 is supported with contacts contact_gaussian")}
+			}
+			## harmonic bond type 6 ##
+			elsif($fname eq "bond_type6"){
+				contactParseBond6(\@paramArr,$c0,$epsilon);
+    				if($fType != 6){smog_quit ("Only fType=6 is supported with contacts of bond_type6")}
 
-	    }
-		## harmonic bond type 6 ##
-	    elsif($fname eq "bond_type6"){
-		contactParseBond6(\@paramArr,$c0,$epsilon);
-		if($fType != 6){smog_quit ("Only fType=6 is supported with contacts of bond_type6")}
+			}else{smog_quit("Contact function name $fname is not supported");}
 
-	    }
-	    else{smog_quit("Contact function name $fname is not supported");}
-
-	 	## Format output <i j function p1 p2 ... pn>
-	 	foreach(@paramArr){$paramFormat="$paramFormat	%12.9e";}
-		$formattedString = sprintf("%d %d %d$paramFormat",$i,$j,$fType,@paramArr);
-		$outputString = "$outputString$formattedString";
+ 	## Format output <i j function p1 p2 ... pn>
+		 	foreach(@paramArr){$paramFormat="$paramFormat	%12.9e";}
+			$formattedString = sprintf("%d %d %d$paramFormat",$i,$j,$fType,@paramArr);
+			$outputString = "$outputString$formattedString";
+		}
 	}
- }
- return ($directive,$addExclusions,$outputString.$addNewline);
- 
+	return ($directive,$addExclusions,$outputString.$addNewline);
 }
 
 ##
 # Parse LJ NM sigma eps usage
 sub contactParseNM1
 {
-  my($paramArr,$r0,$epsilon) = @_;
-  ##pararArr holds N, M, and whether native distances and weights should be used.
-  ##epsilon
-  ##r0 is native distance##
-  #
-  my $cN;my $cM; 
-  my $A; my $B;
-  my $N; my $M;
-  $M=$paramArr->[0];
-  $N=$paramArr->[1];
-  my $length=scalar @{$paramArr};
-  if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_1. Expecting 4, found $length."); }
-  if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
+	my($paramArr,$r0,$epsilon) = @_;
+	##pararArr holds N, M, and whether native distances and weights should be used.
+	##epsilon
+	##r0 is native distance##
+	#
+	my $cN;my $cM; 
+	my $A; my $B;
+	my $N; my $M;
+	$M=$paramArr->[0];
+	$N=$paramArr->[1];
+	my $length=scalar @{$paramArr};
 
-  if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller.")}
-
-  $B=-1.0/($M/$N-1.0);
-  $A=$M/$N*$B;
-  # replace ? with native distance expression
-  $paramArr->[2] =~ s/\?/$r0/g;
-  #Eval expression
-  $r0 = eval($paramArr->[2]);
-     
-  $A *= $epsilon*$r0**$N;
-  $B *= $epsilon*$r0**$M;
-
-  ## normalized option used
-  if($paramArr->[3] =~ /^\?$/)
-  {
-    $paramArr->[3]=$A;
-    $paramArr->[2]=$B;
-  }
-  ## additional rescaling used
-  else{
-   $A *= $paramArr->[3];
-   $B *= $paramArr->[3];
-   $paramArr->[3]=$A;
-   $paramArr->[2]=$B;
-  } 
-  ## Shift first value off ##
-  shift @{$paramArr};
-  shift @{$paramArr};
-
+	if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_1. Expecting 4, found $length."); }
+	if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
+	if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller.")}
+	
+	$B=-1.0/($M/$N-1.0);
+	$A=$M/$N*$B;
+	# replace ? with native distance expression
+	$paramArr->[2] =~ s/\?/$r0/g;
+	#Eval expression
+	$r0 = eval($paramArr->[2]);
+	   
+	$A *= $epsilon*$r0**$N;
+	$B *= $epsilon*$r0**$M;
+	
+	## normalized option used
+	if($paramArr->[3] =~ /^\?$/)
+	{
+		$paramArr->[3]=$A;
+		$paramArr->[2]=$B;
+	}
+	## additional rescaling used
+	else{
+		$A *= $paramArr->[3];
+		$B *= $paramArr->[3];
+		$paramArr->[3]=$A;
+		$paramArr->[2]=$B;
+	} 
+	## Shift first value off ##
+	shift @{$paramArr};
+	shift @{$paramArr};
 }
 
 # Parse LJ NM sigma eps usage
 sub contactParseNM2
 {
-  my($paramArr,$r0,$epsilon) = @_;
-  ##pararArr holds f(r), g(r), and whether native distances and weights should be used.
-  ##epsilon
-  ##r0 is native distance##
-  #
-  my $A; my $B;
-  my $F; my $G;
-  $F=$paramArr->[1];
-  $G=$paramArr->[0];
-  my $length=scalar @{$paramArr};
-  if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_2. Expecting 4, found $length."); }
+	my($paramArr,$r0,$epsilon) = @_;
+	##pararArr holds f(r), g(r), and whether native distances and weights should be used.
+	##epsilon
+	##r0 is native distance##
+	#
+	my $A; my $B;
+	my $F; my $G;
+	$F=$paramArr->[1];
+	$G=$paramArr->[0];
+	my $length=scalar @{$paramArr};
 
-  # replace ? with native distance expression
-  $paramArr->[2] =~ s/\?/$r0/g;
-
-  $paramArr->[2] = eval($paramArr->[2]);
-
-  # substitute value of r into f(r) and g(r)
-  $F =~ s/\?/$paramArr->[2]/g;
-  $G =~ s/\?/$paramArr->[2]/g;
-
-  #Eval expression
-  $A = eval($F);
-  $B = eval($G);
-  $A *= $epsilon; 
-  $B *= $epsilon; 
-
-
-  ## standard normalization used
-  if($paramArr->[3] =~ /^\?$/)
-  {
-    $paramArr->[3]=$A;
-    $paramArr->[2]=$B;
-  }
-  ## additional rescaling used
-  else{
-   $A *= $paramArr->[3];
-   $B *= $paramArr->[3];
-   $paramArr->[3]=$A;
-   $paramArr->[2]=$B;
-  } 
-  ## Shift first value off ##
-  shift @{$paramArr};
-  shift @{$paramArr};
-
+	if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_2. Expecting 4, found $length."); }
+	
+	# replace ? with native distance expression
+	$paramArr->[2] =~ s/\?/$r0/g;
+	$paramArr->[2] = eval($paramArr->[2]);
+	
+	# substitute value of r into f(r) and g(r)
+	$F =~ s/\?/$paramArr->[2]/g;
+	$G =~ s/\?/$paramArr->[2]/g;
+	
+	#Eval expression
+	$A = eval($F);
+	$B = eval($G);
+	$A *= $epsilon; 
+	$B *= $epsilon; 
+	
+	## standard normalization used
+	if($paramArr->[3] =~ /^\?$/)
+	{
+		$paramArr->[3]=$A;
+		$paramArr->[2]=$B;
+	}
+	## additional rescaling used
+	else{
+		$A *= $paramArr->[3];
+		$B *= $paramArr->[3];
+		$paramArr->[3]=$A;
+		$paramArr->[2]=$B;
+	} 
+	## Shift first value off ##
+	shift @{$paramArr};
+	shift @{$paramArr};
 }
 
 
@@ -954,62 +922,59 @@ sub contactParseNM2
 sub contactParseGaussian
 {
 
- my($paramArr,$r0,$epsilon) = @_;
- my $A=0;my $sigma_G=0;my $a=0;
-  ##i=0 is epsilon_c##
-  ##i=1 is epsilon_nc#
-  ##i=2 is sigma_gaussian##
-  ##i=3 is r ##
-
-
-  if($paramArr->[1] =~ /\?/ && !($paramArr->[2] =~ /^\?$/))
-  {smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
-
-  ## Epsilon_c ##
-  if($paramArr->[0] =~ /^\?$/){$paramArr->[0]=$epsilon;}
-  else{$paramArr->[0]=$epsilon*($paramArr->[0]);}
-  ## Epsilon_nc ##
-  if($paramArr->[1] =~ /\?/){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
-
-  ## Check if sigma_G has r0 dependency ##
-  if($paramArr->[2] =~ /\?/)
-  {
-     #Replace ? with $r0 
-     $paramArr->[2] =~ s/\?/$r0/g;
-     #Eval expression
-     $paramArr->[2] = eval($paramArr->[2]);
-  }
-  if($paramArr->[3] =~ /^?$/){$paramArr->[3]=$r0;}
-  
-  ($A,$r0,$sigma_G,$a) = ($paramArr->[0],$paramArr->[3],$paramArr->[2],$paramArr->[1]);
-  @{$paramArr}=($A,$r0,$sigma_G,$a);
+	my($paramArr,$r0,$epsilon) = @_;
+	my $A=0;my $sigma_G=0;my $a=0;
+	##i=0 is epsilon_c##
+	##i=1 is epsilon_nc#
+	##i=2 is sigma_gaussian##
+	##i=3 is r ##
+	
+	if($paramArr->[1] =~ /\?/ && !($paramArr->[2] =~ /^\?$/)){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
+	
+	## Epsilon_c ##
+	if($paramArr->[0] =~ /^\?$/){$paramArr->[0]=$epsilon;}
+	else{$paramArr->[0]=$epsilon*($paramArr->[0]);}
+	## Epsilon_nc ##
+	if($paramArr->[1] =~ /\?/){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
+	
+	## Check if sigma_G has r0 dependency ##
+	if($paramArr->[2] =~ /\?/)
+	{
+		#Replace ? with $r0 
+		$paramArr->[2] =~ s/\?/$r0/g;
+		#Eval expression
+		$paramArr->[2] = eval($paramArr->[2]);
+	}
+	if($paramArr->[3] =~ /^?$/){$paramArr->[3]=$r0;}
+	
+	($A,$r0,$sigma_G,$a) = ($paramArr->[0],$paramArr->[3],$paramArr->[2],$paramArr->[1]);
+	@{$paramArr}=($A,$r0,$sigma_G,$a);
 
 }
 ##
 # Parse Bond type 6
 sub contactParseBond6
 {
- my($paramArr,$r0,$epsilon) = @_;
- my $k;
-  ##i=0 is r##
-  ##i=1 is k#
-
-  ## k ##
-  if($paramArr->[1] =~ /\?/)
-  {smog_quit("CONTACT FUNCTION PARSING:: contact bond_type6 can't have ? in the stiffness.");}
-  $paramArr->[1] = eval($paramArr->[1]);
-  
-  ## r ##
-  if($paramArr->[0] =~ /\?/)
-  {
-     #Replace ? with $r0 
-     $paramArr->[0] =~ s/\?/$r0/g;
-  }
-  #Eval expression
-  $paramArr->[0] = eval($paramArr->[0]);
-  
-  ($r0,$k) = ($paramArr->[0],$paramArr->[1]);
-  @{$paramArr}=($r0,$k);
+my($paramArr,$r0,$epsilon) = @_;
+my $k;
+	##i=0 is r##
+	##i=1 is k#
+	
+	## k ##
+	if($paramArr->[1] =~ /\?/){smog_quit("CONTACT FUNCTION PARSING:: contact bond_type6 can't have ? in the stiffness.");}
+	$paramArr->[1] = eval($paramArr->[1]);
+	
+	## r ##
+	if($paramArr->[0] =~ /\?/)
+	{
+		#Replace ? with $r0 
+		$paramArr->[0] =~ s/\?/$r0/g;
+	}
+	#Eval expression
+	$paramArr->[0] = eval($paramArr->[0]);
+	
+	($r0,$k) = ($paramArr->[0],$paramArr->[1]);
+	@{$paramArr}=($r0,$k);
 
 }
 
@@ -1038,22 +1003,6 @@ sub contactFuncParser
 ## CALCULATE EXCLUSIONS ##
 ##########################
 
-
-#deprecated!
-sub calculateExclusions
-{
-	my($contactPDL,$numCon) = @_;
-	my $atoma; my $atomb;
-
-
-	#print an exclusion for every contact
-	for(my $i=0;$i<$numCon;$i++)
-	{
-		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
-		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-		addToTop("exclusions",$atoma."	".$atomb."\n");
-	}
-}
 
 sub calculateAtomTypes
 {
@@ -1233,26 +1182,26 @@ sub convertPDBToGroNdx
 	unlink("meta.Gro");
 	
  ## CREATE NDX FILE ##
- open(NDX,">$outputNDX");
- my $c;my $v;
- 
- #while(($c,$v) =  each (sort keys %chainHash))
- foreach my $chain (sort {$a <=> $b} keys %chainHash) 
- {
-	print NDX "[ $chain ]\n";
-	print NDX join("\n",@{$chainHash{$chain}});
-	print NDX "\n";
- }
- close(NDX);
- 
+	open(NDX,">$outputNDX");
+	my $c;my $v;
+	
+	#while(($c,$v) =  each (sort keys %chainHash))
+	foreach my $chain (sort {$a <=> $b} keys %chainHash) 
+	{
+	       print NDX "[ $chain ]\n";
+	       print NDX join("\n",@{$chainHash{$chain}});
+	       print NDX "\n";
+	}
+	close(NDX);
+
 }
 
 sub validateTemplate
 {
- my ($file,$type) = @_;
- my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/schemas/$type.xsd");
- my $parser = XML::SAX::ParserFactory->parser(Handler => $validator);
- eval { $parser->parse_uri($file) };
+	my ($file,$type) = @_;
+	my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/schemas/$type.xsd");
+	my $parser = XML::SAX::ParserFactory->parser(Handler => $validator);
+	eval { $parser->parse_uri($file) };
  smog_quit("Failed at validating $file: $@ \nThis is due to an XML formatting issue.  The most common issue is that an element is missing a tagline. For example, something like this may appear in your file,
   <child>
     <subchild>.....
@@ -1269,66 +1218,61 @@ whereas the following would be appropriate:
 
 sub parseInputFolder
 {
- my ($folderName) = @_;
- $folderName = $1 if($folderName=~/(.*)\/$/);
- opendir(my $folder,$folderName);
- my $bif;my $sif;my $b;my $nb;
- my $bifexists=0;
- my $sifexists=0;
- my $nbexists=0;
- my $bexists=0;
- while(my $file = readdir($folder))
- {
-   if($file =~ m/\.bif$/)
-   {
-    $bifexists++;
-    $bif = $file;$bif = "$folderName/$bif";
-    print "\nFound .bif file $bif";
-    validateTemplate($bif,"bif");next;}
-   if($file =~ m/\.sif$/)
-   {
-    $sifexists++;
-    $sif = $file;$sif = "$folderName/$sif";
-    print "\nFound .sif file $sif";
-    validateTemplate($sif,"sif");next;}
-   if($file =~ m/\.b$/)
-   {
-    $bexists++;
-    $b = $file;$b = "$folderName/$b";
-    print "\nFound .b file $b";
-    validateTemplate($b,"b");next;}
-   if($file =~ m/\.nb$/)
-   {
-    $nbexists++;
-    $nb = $file;$nb = "$folderName/$nb";
-    print "\nFound .nb file $nb";
-    validateTemplate($nb,"nb");next;}
-  }
-  $bifForSCM = $bif;
+	my ($folderName) = @_;
+	$folderName = $1 if($folderName=~/(.*)\/$/);
+	opendir(my $folder,$folderName);
+	my $bif;my $sif;my $b;my $nb;
+	my $bifexists=0;
+	my $sifexists=0;
+	my $nbexists=0;
+	my $bexists=0;
+	while(my $file = readdir($folder)){
+		if($file =~ m/\.bif$/){
+			$bifexists++;
+			$bif = $file;$bif = "$folderName/$bif";
+			print "\nFound .bif file $bif";
+			validateTemplate($bif,"bif");next;}
+		if($file =~ m/\.sif$/){
+			$sifexists++;
+			$sif = $file;$sif = "$folderName/$sif";
+			print "\nFound .sif file $sif";
+			validateTemplate($sif,"sif");next;}
+		if($file =~ m/\.b$/){
+			$bexists++;
+			$b = $file;$b = "$folderName/$b";
+			print "\nFound .b file $b";
+			validateTemplate($b,"b");next;}
+		if($file =~ m/\.nb$/){
+			$nbexists++;
+			$nb = $file;$nb = "$folderName/$nb";
+			print "\nFound .nb file $nb";
+			validateTemplate($nb,"nb");next;}
+	}
+	$bifForSCM = $bif;
 
-  if($bifexists >1){
-   smog_quit ("Found multiple .bif files in directory $folderName");
-  }elsif($bifexists ==0){
-   smog_quit (" .bif file not found in directory $folderName");
-  }
-  if($sifexists >1){
-   smog_quit ("Found multiple .sif files in directory $folderName");
-  }elsif($sifexists ==0){
-   smog_quit (" .sif file not found in directory $folderName");
-  }
-  if($bexists >1){
-   smog_quit ("Found multiple .b files in directory $folderName");
-  }elsif($bexists ==0){
-   smog_quit (" .b file not found in directory $folderName");
-  }
-  if($nbexists >1){
-   smog_quit ("Found multiple .nb files in directory $folderName");
-  }elsif($nbexists ==0){
-   smog_quit (" .nb file not found in directory $folderName");
-  }
-
- setInputFileName($bif,$sif,$b,$nb);
-
+	if($bifexists >1){
+		smog_quit ("Found multiple .bif files in directory $folderName");
+	}elsif($bifexists ==0){
+		smog_quit (" .bif file not found in directory $folderName");
+	}
+	if($sifexists >1){
+		smog_quit ("Found multiple .sif files in directory $folderName");
+	}elsif($sifexists ==0){
+		smog_quit (" .sif file not found in directory $folderName");
+	}
+	if($bexists >1){
+		smog_quit ("Found multiple .b files in directory $folderName");
+	}elsif($bexists ==0){
+		smog_quit (" .b file not found in directory $folderName");
+	}
+	if($nbexists >1){
+		smog_quit ("Found multiple .nb files in directory $folderName");
+	}elsif($nbexists ==0){
+		smog_quit (" .nb file not found in directory $folderName");
+	}
+	
+	setInputFileName($bif,$sif,$b,$nb);
+	
 }
 
 sub header
@@ -1425,21 +1369,24 @@ sub setContactParams
 
 sub printCitation
 {
-    my $citationFile = "";
-    ## CHECK FOR .citation meta file ##
-    if($coarseFolder && -e "$coarseFolder/.citation")
-    {
-      open(CITE,"$coarseFolder/.citation");
-      $citationFile = join("",<CITE>);
-      close(CITE);
-    }
-    elsif(-e "$inputFolder/.citation")
-    {
-      open(CITE,"$inputFolder/.citation");
-      $citationFile = join("",<CITE>);
-      close(CITE);
-    }
-    else{$citationFile = "";}
+	my $citationFile = "";
+	## CHECK FOR .citation meta file ##
+	if($coarseFolder && -e "$coarseFolder/.citation")
+	{
+		open(CITE,"$coarseFolder/.citation");
+		$citationFile = join("",<CITE>);
+		close(CITE);
+	}
+	elsif(-e "$inputFolder/.citation")
+	{
+		open(CITE,"$inputFolder/.citation");
+		$citationFile = join("",<CITE>);
+		close(CITE);
+	}
+	else
+	{
+		$citationFile = "";
+	}
        
 
 print <<EOT;
@@ -1467,9 +1414,9 @@ EOT
 
 sub freeMemoryForShadow
 {
-undef %resPDL;undef %bondPDL;
-undef %AngleData;undef %DihedralData;
-undef %BondData;undef $contactPDL;
+	undef %resPDL;undef %bondPDL;
+	undef %AngleData;undef %DihedralData;
+	undef %BondData;undef $contactPDL;
 }
 
 
@@ -1477,8 +1424,8 @@ sub parseTemplatesAndPDB
 {
 	my ($inputFolder,$inputPDB,$allowCG) = @_;
     
-    ## TEST IF SMOG PATH EXISTS ##
-    if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
+    	## TEST IF SMOG PATH EXISTS ##
+    	if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
 	$| = 1;
 	## OPEN .top handle ## don't do this here since we buffered the output now
 	#open($OUTPUT, ">$topFile"); 
@@ -1590,14 +1537,14 @@ sub generateContactMap {
 	## CALL SHADOW/PARSE CONTACTS ##
 	print "Starting contact calculations ...\n  ";
 	my $SCMparams = setContactParams();
-    my $memoryMax = "";
+    	my $memoryMax = "";
 	my $absAtomCount = keys(%allAtoms);
-    if($absAtomCount >= 1000000)
-    {
-     $memoryMax = 4000;
-     print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
-     $memoryMax = "-Xmx$memoryMax"."m";
-    } 
+    	if($absAtomCount >= 1000000)
+    	{
+		$memoryMax = 4000;
+		print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
+		$memoryMax = "-Xmx$memoryMax"."m";
+    	} 
 	
 	## Delete Preexisting contact file ##
 	if(-e $shadowFile){unlink($shadowFile);}
@@ -1605,10 +1552,9 @@ sub generateContactMap {
 	## Free Memory for Shadow ##
 	freeMemoryForShadow();
 	
-	if((!exists $ENV{SMOG_PATH}) || 
-		!(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){smog_quit ("Can't find Shadow executable. Make sure SMOG_PATH is set correctly.")}
-		print "Calling $ENV{SMOG_PATH}/tools/SCM.jar \n";
-	    system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
+	if((!exists $ENV{SMOG_PATH}) || !(-e "$ENV{SMOG_PATH}/tools/SCM.jar")){smog_quit ("Can't find Shadow executable. Make sure SMOG_PATH is set correctly.")}
+	print "Calling $ENV{SMOG_PATH}/tools/SCM.jar \n";
+	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
 }
 
 sub appendContactsAndFinish {

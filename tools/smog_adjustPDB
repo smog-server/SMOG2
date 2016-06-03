@@ -5,10 +5,10 @@ print <<EOT;
 *****************************************************************************************
                                       smog_adjustPDB                                   
 
-    smog_adjustPDB is part of the SMOG v2 distribution, available at smog-server.org     
+    smog_adjustPDB is part of the SMOG 2 distribution, available at smog-server.org     
 
     This tool will renumber the atoms in each chain, and modify the names of terminal
-        residues, so that they are compatible with the definitions used by SMOG v2
+        residues, so that they are compatible with the definitions used by SMOG 2
 
                        See the SMOG manual for usage guidelines.
 
