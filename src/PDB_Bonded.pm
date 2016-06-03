@@ -315,7 +315,7 @@ sub parsePDBATOMS
 
 			if(exists $uniqueAtom{$atom})
 			{
-				smog_quit("$atom appears twice in $residue at line $lineNumber\n");i
+				smog_quit("$atom appears twice in $residue at line $lineNumber\n");
 			}
 			else {
 				$uniqueAtom{$atom}=1;
