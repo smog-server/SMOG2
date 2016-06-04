@@ -66,7 +66,7 @@ if (( $ERR == 0 )); then
 			echo $smog_exec \"\$\@\" >> $SMOG_PATH/bin/smog2
 			chmod u+x $SMOG_PATH/bin/smog2
 		fi
-		for tool in adjustPDB  removeH  tablegen smog2optim 
+		for tool in adjustPDB  removeH  tablegen optim 
 		do
 			LN=`grep "$perl4smog $SMOG_PATH/tools/smog_$tool" $SMOG_PATH/bin/smog_$tool | wc -l`
 			if (( $LN == 0 )); then
