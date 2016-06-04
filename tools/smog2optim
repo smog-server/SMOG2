@@ -1,0 +1,68 @@
+use strict;
+use warnings;
+
+print <<EOT;
+*****************************************************************************************
+                                      smog2optim
+
+     smog2optim is part of the SMOG 2 distribution, available at smog-server.org
+
+Long term plan for the code:
+    This tool will generate an OPTIM input file from a SMOG model
+
+Currently:
+    This code generates files necessary for rigidification routine usage in OPTIM
+
+                       See the SMOG manual for usage guidelines.
+
+            For questions regarding this script, contact info\@smog-server.org
+*****************************************************************************************
+EOT
+
+
+
+my %GROUPS;
+my %RESCOUNT;
+print "Would you like to generate files necessary for rigidification code in OPTIM? [Y/N]\n";
+my $TMP;
+$TMP=<STDIN>;
+
+until($TMP=~ m/^[YyNn]$/){
+	print "Please answer Y, or N.\n";
+	$TMP=<STDIN>;
+	chomp($TMP);
+}
+
+if($TMP=~ m/^N$/){
+print "quitting\n";
+exit;
+}
+
+print "What is the input .gro file\n";
+
+my $FILE=<STDIN>;
+chomp($FILE);
+
+open(GROFILE,"$FILE") or die "Can\'t open $FILE\n";
+
+## for now, always use a default generic definitions for rigid groups
+## format: <RESIDUE NAME> <LIST OF ATOM NAMES IN GROUP>
+open(MAPFILE,"rigidmap") or die "Can\'t open rigidmap file\n";
+while(<MAPFILE>){
+	my $LINE=$_;
+	chomp($LINE);
+	my @A=split(/\s+/,$LINE);
+	my $A1=$A[0];
+	if(exists $RESCOUNT{$A1}){
+		print "$RESCOUNT{$A1}\n";
+	}else{
+		$RESCOUNT{$A1}=1;
+	}
+
+	for(my $I=1;$I<=$#A;$I++){
+		$GROUPS{$A1}->[$I-1]=$A[$I];
+	}
+
+}
+
+
