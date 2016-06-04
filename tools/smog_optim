@@ -24,6 +24,7 @@ EOT
 my %GROUPS;
 my %RESCOUNT;
 my %ATOMSINRES;
+my %rigidified;
 print "Would you like to generate files necessary for rigidification code in OPTIM? [Y/N]\n";
 my $TMP;
 $TMP=<STDIN>;
@@ -50,6 +51,7 @@ chomp($FILE);
 
 
 open(MAPFILE,"$ENV{SMOG_PATH}/tools/rigidmap") or die "Can\'t open rigidmap file\n";
+open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";
 while(<MAPFILE>){
 	my $LINE=$_;
 	chomp($LINE);
@@ -69,6 +71,11 @@ while(<MAPFILE>){
 	}
 
 	$ATOMSINRES{$A1}=$#A;
+
+	if($ATOMSINRES{$A1}<3){
+		print "Rigid group $A1 only has $ATOMSINRES{$A1} atoms. Must have at least 3.  Quitting\n";
+		exit;
+	}
 
 }
 
@@ -110,25 +117,39 @@ for(my $I=1;$I<$NATOMS;$I++){
 	my $ATOMNAME=substr($LINE,10,5);
 	$ATOMNAME =~ s/^\s+|\s+$//g;
 	my $ATOMNUMT=substr($LINE,15,5);
-	$ATOMNAME =~ s/^\s+|\s+$//g;
+	$ATOMNUMT =~ s/^\s+|\s+$//g;
 	my $RESNAME=substr($LINE,5,5);
 	$RESNAME =~ s/^\s+|\s+$//g;
 # Once done reading a residue, create the rigid groups
-	print "A $RESNUM $LASTRESNUM  $LASTRESNAME\n";	
 	if($RESNUM != $LASTRESNUM && exists $RESCOUNT{$LASTRESNAME}){
-	print "B";	
-#%{$interactions->{"nonbonds"}
 		# go through the rigid groups for that residue
 		for (my $J=1;$J<=eval($RESCOUNT{$LASTRESNAME});$J++){
+			my $GROUPSIZE=0;
+			my $PRINTBUFF = "";;
 	                my $A1=$LASTRESNAME . "-" . $J ;
-			print "$A1 ";
-			print "\naccessing $A1\n";
 			for (my $K=0;$K<$ATOMSINRES{$A1};$K++){
 				if( !exists $ATOMNUM{$GROUPS{$A1}->[$K]}){
 					print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
+				}else{
+					if(exists $rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}){
+						print "atom index $ATOMNUM{$GROUPS{$A1}->[$K]} ($LASTRESNAME$LASTRESNUM) appeared in two groups. Quitting\n";
+						exit;
+					}else{
+						$rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}=1;
+					}
+					$PRINTBUFF = $PRINTBUFF."$ATOMNUM{$GROUPS{$A1}->[$K]}\n";
+					$GROUPSIZE++;
 				}
-				print "$ATOMNUM{$GROUPS{$A1}->[$K]} \n"
 			}
+
+			if($GROUPSIZE>2){
+				print "size $GROUPSIZE\n";
+				print RIGIDOUT "GROUP $GROUPSIZE\n";
+				print RIGIDOUT "$PRINTBUFF";
+			}elsif($GROUPSIZE==1 || $GROUPSIZE==2){
+				print "Only found $GROUPSIZE atoms in group $J of $LASTRESNAME$LASTRESNUM. Not adding as rigid group\n";
+			}
+
 		}
 		undef %ATOMNUM;
 	}
@@ -138,12 +159,33 @@ for(my $I=1;$I<$NATOMS;$I++){
 	$LASTRESNUM=$RESNUM;
 	$ATOMNUM{$ATOMNAME}= $ATOMNUMT;
 
-
-# give warnings if atoms are missing
-
-
-
 }
+# check last residue
 
+# go through the rigid groups for that residue
+
+if( exists $RESCOUNT{$LASTRESNAME}){
+	for (my $J=1;$J<=eval($RESCOUNT{$LASTRESNAME});$J++){
+		my $GROUPSIZE=0;
+		my $PRINTBUFF = "";;
+	        my $A1=$LASTRESNAME . "-" . $J ;
+		print "\naccessing $A1\n";
+		for (my $K=0;$K<$ATOMSINRES{$A1};$K++){
+			if( !exists $ATOMNUM{$GROUPS{$A1}->[$K]}){
+				print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
+			}else{
+				$PRINTBUFF = $PRINTBUFF . "$ATOMNUM{$GROUPS{$A1}->[$K]}\n";
+				$GROUPSIZE++;
+			}
+		}
+	
+		if($GROUPSIZE>0){
+			print "size $GROUPSIZE\n";
+			print RIGIDOUT "GROUP $GROUPSIZE\n";
+			print RIGIDOUT "$PRINTBUFF";
+		}
+	}
+	undef %ATOMNUM;
+}
 
 
