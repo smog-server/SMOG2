@@ -3,9 +3,9 @@ use warnings;
 
 print <<EOT;
 *****************************************************************************************
-                                      smog2optim
+                                      smog_optim
 
-     smog2optim is part of the SMOG 2 distribution, available at smog-server.org
+     smog_optim is part of the SMOG 2 distribution, available at smog-server.org
 
 Long term plan for the code:
     This tool will generate an OPTIM input file from a SMOG model
@@ -18,8 +18,6 @@ Currently:
             For questions regarding this script, contact info\@smog-server.org
 *****************************************************************************************
 EOT
-
-
 
 my %GROUPS;
 my %RESCOUNT;
@@ -51,7 +49,10 @@ chomp($FILE);
 
 
 open(MAPFILE,"$ENV{SMOG_PATH}/tools/rigidmap") or die "Can\'t open rigidmap file\n";
+if(-e "rbodyconfig"){print "rbodyconfig already exists.  Will not overwrite. Quitting.\n"; exit;}
+if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will not overwrite. Quitting.\n"; exit;}
 open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";
+open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
 while(<MAPFILE>){
 	my $LINE=$_;
 	chomp($LINE);
@@ -120,6 +121,8 @@ for(my $I=1;$I<$NATOMS;$I++){
 	$ATOMNUMT =~ s/^\s+|\s+$//g;
 	my $RESNAME=substr($LINE,5,5);
 	$RESNAME =~ s/^\s+|\s+$//g;
+	my $COORDS=substr($LINE,20,24);
+	print RIGIDCOORDS "$COORDS\n";
 # Once done reading a residue, create the rigid groups
 	if($RESNUM != $LASTRESNUM && exists $RESCOUNT{$LASTRESNAME}){
 		# go through the rigid groups for that residue
