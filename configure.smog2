@@ -45,7 +45,7 @@ if (( $ERR == 0 )); then
 		echo $smog_exec \"\$\@\" >> $SMOG_PATH/bin/smog2
 		chmod u+x $SMOG_PATH/bin/smog2
 	
-		for tool in adjustPDB  removeH  tablegen 
+		for tool in adjustPDB  removeH  tablegen optim 
 		do
 			echo Creating wrapper $SMOG_PATH/bin/smog_$tool
 			echo '#!/bin/bash' > $SMOG_PATH/bin/smog_$tool

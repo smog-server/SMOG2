@@ -23,6 +23,7 @@ EOT
 
 my %GROUPS;
 my %RESCOUNT;
+my %ATOMSINRES;
 print "Would you like to generate files necessary for rigidification code in OPTIM? [Y/N]\n";
 my $TMP;
 $TMP=<STDIN>;
@@ -43,11 +44,12 @@ print "What is the input .gro file\n";
 my $FILE=<STDIN>;
 chomp($FILE);
 
-open(GROFILE,"$FILE") or die "Can\'t open $FILE\n";
 
 ## for now, always use a default generic definitions for rigid groups
 ## format: <RESIDUE NAME> <LIST OF ATOM NAMES IN GROUP>
-open(MAPFILE,"rigidmap") or die "Can\'t open rigidmap file\n";
+
+
+open(MAPFILE,"$ENV{SMOG_PATH}/tools/rigidmap") or die "Can\'t open rigidmap file\n";
 while(<MAPFILE>){
 	my $LINE=$_;
 	chomp($LINE);
@@ -55,14 +57,93 @@ while(<MAPFILE>){
 	my $A1=$A[0];
 	if(exists $RESCOUNT{$A1}){
 		print "$RESCOUNT{$A1}\n";
+		$RESCOUNT{$A1}=eval($RESCOUNT{$A1})+1;
 	}else{
 		$RESCOUNT{$A1}=1;
 	}
-
+		$A1=$A1 . "-" . $RESCOUNT{$A1};
+		print "$A1 ";
 	for(my $I=1;$I<=$#A;$I++){
 		$GROUPS{$A1}->[$I-1]=$A[$I];
+                print "$GROUPS{$A1}->[$I-1] "
 	}
 
+	$ATOMSINRES{$A1}=$#A;
+
 }
+
+my $GROUPS=%GROUPS;
+
+# add a check to make sure that atoms don't appear in two different group
+
+
+open(GROFILE,"$FILE") or die "Can\'t open file \"$FILE\"\n";
+
+$TMP=<GROFILE>;
+$TMP=<GROFILE>;
+chomp($TMP);
+my @A=split(/\s+/,$TMP);
+my $NATOMS=$A[0];
+my %ATOMNUM;
+my $LINE=<GROFILE>;
+
+my $LASTRESNUM=substr($LINE,0,5);
+$LASTRESNUM =~ s/^\s+|\s+$//g;
+
+my $ATOMNAME=substr($LINE,10,5);
+$ATOMNAME =~ s/^\s+|\s+$//g;
+
+my $NUMT=substr($LINE,15,5);
+$NUMT =~ s/^\s+|\s+$//g;
+$ATOMNUM{$ATOMNAME}= $NUMT;
+
+my $LASTRESNAME=substr($LINE,5,5);
+$LASTRESNAME =~ s/^\s+|\s+$//g;
+my $ATOMSINRES=1;
+
+for(my $I=1;$I<$NATOMS;$I++){
+# read a line
+# parse using fixed formatting
+	my $LINE=<GROFILE>;
+	my $RESNUM=substr($LINE,0,5);
+	$RESNUM =~ s/^\s+|\s+$//g;
+	my $ATOMNAME=substr($LINE,10,5);
+	$ATOMNAME =~ s/^\s+|\s+$//g;
+	my $ATOMNUMT=substr($LINE,15,5);
+	$ATOMNAME =~ s/^\s+|\s+$//g;
+	my $RESNAME=substr($LINE,5,5);
+	$RESNAME =~ s/^\s+|\s+$//g;
+# Once done reading a residue, create the rigid groups
+	print "A $RESNUM $LASTRESNUM  $LASTRESNAME\n";	
+	if($RESNUM != $LASTRESNUM && exists $RESCOUNT{$LASTRESNAME}){
+	print "B";	
+#%{$interactions->{"nonbonds"}
+		# go through the rigid groups for that residue
+		for (my $J=1;$J<=eval($RESCOUNT{$LASTRESNAME});$J++){
+	                my $A1=$LASTRESNAME . "-" . $J ;
+			print "$A1 ";
+			print "\naccessing $A1\n";
+			for (my $K=0;$K<$ATOMSINRES{$A1};$K++){
+				if( !exists $ATOMNUM{$GROUPS{$A1}->[$K]}){
+					print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
+				}
+				print "$ATOMNUM{$GROUPS{$A1}->[$K]} \n"
+			}
+		}
+		undef %ATOMNUM;
+	}
+
+
+	$LASTRESNAME=$RESNAME;
+	$LASTRESNUM=$RESNUM;
+	$ATOMNUM{$ATOMNAME}= $ATOMNUMT;
+
+
+# give warnings if atoms are missing
+
+
+
+}
+
 
 
