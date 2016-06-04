@@ -61,6 +61,12 @@ open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
 
 
 
+if($SBMINPON =~ m/^Y$/){
+	print "Going to convert $TOPFILE and $GROFILE to SBM.INP and odata for OPTIM\n";
+
+}
+
+
 
 
 my %GROUPS;
@@ -70,6 +76,7 @@ my %rigidified;
 
 if($RIGIDON =~ m/^Y$/){
 
+	print "Going to use $GROFILE to generate rbodyconfig and coordsinrigid for OPTIM\n";
 	
 	
 	## for now, always use a default generic definitions for rigid groups
@@ -94,10 +101,8 @@ if($RIGIDON =~ m/^Y$/){
 			$RESCOUNT{$A1}=1;
 		}
 			$A1=$A1 . "-" . $RESCOUNT{$A1};
-			print "$A1 ";
 		for(my $I=1;$I<=$#A;$I++){
 			$GROUPS{$A1}->[$I-1]=$A[$I];
-	                print "$GROUPS{$A1}->[$I-1] "
 		}
 	
 		$ATOMSINRES{$A1}=$#A;
@@ -174,7 +179,6 @@ if($RIGIDON =~ m/^Y$/){
 				}
 	
 				if($GROUPSIZE>2){
-					print "size $GROUPSIZE\n";
 					print RIGIDOUT "GROUP $GROUPSIZE\n";
 					print RIGIDOUT "$PRINTBUFF";
 				}elsif($GROUPSIZE==1 || $GROUPSIZE==2){
@@ -219,7 +223,5 @@ if($RIGIDON =~ m/^Y$/){
 		undef %ATOMNUM;
 	}
 
-print "quitting\n";
-exit;
 }
 
