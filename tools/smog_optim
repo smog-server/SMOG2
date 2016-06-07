@@ -258,6 +258,7 @@ if($SBMINPON =~ m/^Y$/){
 		my $LINE = $_;
 		chomp($LINE);
 		$LINE =~ s/;.*$//g; 
+		$LINE =~ s/\t/ /g; 
 		$LINE =~ s/^\s+|\s+$//g;
 		$LINE =~ s/ +/ /g;
 		# remove comments
@@ -408,6 +409,62 @@ if($SBMINPON =~ m/^Y$/){
 					printf (OPTIMTOP "%5i %5i %5i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[4],$D[5]);
 				}
 			}
+		}
+	}
+
+
+	print OPTIMTOP "\n";
+
+	# provide information about the atoms 
+	if(!exists $DIRLIST{"dihedrals"}){
+		print "WARNING: \"dihedrals\" does not appear in .top file.\n";
+	}else{
+		my @LAST;
+		my @C= split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
+		if($#C<1){
+			print "ERROR: There must be at least 1 dihedral listed under the dihedrals directive\n";
+			exit;
+		}
+		printf (OPTIMTOP "%i dihedrals\n",$#C);
+		for (my $K=1;$K<$#C;$K++){
+			my @D=split(/ /,$C[$K]);
+			$D[5]*=$DEG2RAD;
+
+			if($D[4] !=1 && $D[4] !=2 ){
+				print "ERROR: Only dihedrals of type 1 and 2 are supported. Quitting.\n";
+				exit;
+			}
+			if(exists $D[7] && $D[7] == 3){
+			# if N=3, it must immediately follow an N=1 dihedral
+				my $DD=($D[5]/$LAST[5]-3.0);
+				if($DD > 0.01 || $DD < -0.01){
+					print "ERROR: N=3 dihedral has wrong angle, relative to N=1 dihedral.\n";
+					print "See: $C[$K]\n";
+					exit;
+				}
+				$DD=($D[6]/$LAST[6]-0.5);
+				if($DD > 0.01 || $DD < -0.01){
+					print "ERROR: N=3 dihedral has wrong weight, relative to N=1 dihedral.\n";
+					print "See: $C[$K]\n";
+					exit;
+				}
+				if($D[0] != $LAST[0] || $D[1] != $LAST[1] || $D[2] != $LAST[2] || $D[3] != $LAST[3]){
+					print "ERROR: N=3 dihedral has wrong atoms, relative to N=1 dihedral.\n";
+					print "See: $C[$K]\n";
+					exit;
+				}
+				# if type 3, don't write it again, since it is handles inside OPTIM
+				next; 
+			}
+
+			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} || !exists $rigidified{$D[2]} || !exists $rigidified{$D[3]} ){
+				printf (OPTIMTOP "%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
+			}else{
+				unless (($rigidified{$D[0]} == $rigidified{$D[1]}) && ($rigidified{$D[1]} == $rigidified{$D[2]})   ){
+					printf (OPTIMTOP  "%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
+				}
+			}
+		@LAST=@D;
 		}
 	}
 
