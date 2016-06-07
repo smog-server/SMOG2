@@ -25,7 +25,6 @@ EOT
 my $GROFILE;
 my $TOPFILE;
 my $DEG2RAD=3.1415926/180.0;
-if(-e "SBM.INP"){print "SBM.INP exists.  Will not overwrite.  Quitting.\n"; exit;}
 
 print "Would you like to convert a .top and .gro file to make input for OPTIM? [Y/N]\n";
 my $TMP;
@@ -61,7 +60,6 @@ if($SBMINPON =~ m/^Y$/){
 print "What is the input .gro file\n";
 $GROFILE=<STDIN>;
 chomp($GROFILE);
-open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
 
 ## Generate rigidification files
 
@@ -73,6 +71,7 @@ my %rigidified;
 if($RIGIDON =~ m/^Y$/){
 
 	print "Going to use $GROFILE to generate rbodyconfig and coordsinrigid for OPTIM\n";
+	open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
 	
 	
 	## for now, always use a default generic definitions for rigid groups
@@ -228,7 +227,7 @@ if($RIGIDON =~ m/^Y$/){
 		}
 		undef %ATOMNUM;
 	}
-
+	close(GROFILE);
 }
 
 ## Generate SBM.INP
@@ -292,6 +291,30 @@ if($SBMINPON =~ m/^Y$/){
 	my $CUTD=6.0;
 	my $CHARGE;
 	my $MASS;	
+	# write out odata
+
+	if(-e "odata"){print "odata already exists.  Quitting.\n"; exit;}
+	open(ODATA,">odata") or die "Can not open odata\n";
+	print ODATA "STEPS 100000000\nBFGSMIN 0.000001\n";
+
+	if($RIGIDON =~ m/^Y$/){
+		print ODATA "RIGIDINIT\nPOINTS\n";
+	}
+
+	open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
+	$TMP=<GROFILE>;
+	$TMP=<GROFILE>;
+	chomp($TMP);
+	my @A=split(/\s+/,$TMP);
+	my $NATOMS=$A[0];
+	for(my $I=0;$I<$NATOMS;$I++){
+		# read a line
+		my $LINE=<GROFILE>;
+		my $COORDS=substr($LINE,20,24);
+		print ODATA "SB $COORDS\n";
+	}
+	close(GROFILE);
+
 	# Write out SBM.INP
 	if(-e "SBM.INP"){print "SBM.INP already exists.  Quitting.\n"; exit;}
 	open(OPTIMTOP,">SBM.INP") or die "Can not open SBM.INP\n";
