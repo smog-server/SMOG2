@@ -24,7 +24,8 @@ EOT
 
 my $GROFILE;
 my $TOPFILE;
-my $DEG2RAD=3.1415926/180.0;
+my $PI=3.1415926;
+my $DEG2RAD=$PI/180.0;
 
 print "Would you like to convert a .top and .gro file to make input for OPTIM? [Y/N]\n";
 my $TMP;
@@ -532,11 +533,11 @@ if($SBMINPON =~ m/^Y$/){
 				exit;
 			}
 			if($CONTTYPE == 10){
-				$sigma=sqrt(6.0/5.0*$D[4]/$D[3]);
+				$sigma=(6.0/5.0*$D[4]/$D[3])**(0.5);
 				$epsilon=$D[3]/(6.0*$sigma**10);
 				$sigma*=10.0;
 			}elsif($CONTTYPE == 6){
-				$sigma=sqrt(2.0*$D[4]/$D[3])**(1.0/6.0);
+				$sigma=(2.0*$D[4]/$D[3])**(1.0/6.0);
 				$epsilon=$D[3]**2/(4.0*$D[4]);
 				$sigma*=10.0;
 
@@ -654,7 +655,12 @@ if($SBMINPON =~ m/^Y$/){
 		for (my $K=1;$K<=$#C;$K++){
 			my @D=split(/ /,$C[$K]);
 			$D[5]*=$DEG2RAD;
-
+			my $D5;
+			if($D[4] ==1){
+				$D5=$D[5]-$PI;
+			}else{
+				$D5=$D[5];
+			}
 			if($D[4] !=1 && $D[4] !=2 ){
 				print "ERROR: Only dihedrals of type 1 and 2 are supported. Quitting.\n";
 				exit;
@@ -681,13 +687,14 @@ if($SBMINPON =~ m/^Y$/){
 				# if type 3, don't write it again, since it is handles inside OPTIM
 				next; 
 			}
+			$D[4]= $D[4] % $PI;
 
 			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} || !exists $rigidified{$D[2]} || !exists $rigidified{$D[3]} ){
-				$TEMPSTRING .= sprintf ("%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
+				$TEMPSTRING .= sprintf ("%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D5,$D[6]);
 				$CT++;
 			}else{
 				unless (($rigidified{$D[0]} == $rigidified{$D[1]}) && ($rigidified{$D[1]} == $rigidified{$D[2]})   ){
-					$TEMPSTRING .= sprintf ("%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
+					$TEMPSTRING .= sprintf ("%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D5,$D[6]);
 					$CT++;
 				}
 			}
@@ -705,6 +712,6 @@ if($SBMINPON =~ m/^Y$/){
 	print OPTIMTOP "\n";
 }
 
-print "\n\n\t\tSUCCESS: OPTIM files generated without errors.\n\n\n";
+print "\n\n\t\tSUCCESS: OPTIM files generated without errors.\n\n";
 
 
