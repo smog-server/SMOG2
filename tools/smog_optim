@@ -471,7 +471,7 @@ if($SBMINPON =~ m/^Y$/){
 			exit;
 		}
 		printf (OPTIMTOP "%i atoms\n",$#C);
-		for (my $K=1;$K<$#C;$K++){
+		for (my $K=1;$K<=$#C;$K++){
 			my @D=split(/ /,$C[$K]);
 			printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$CHARGE,$MASS);
 		}
@@ -503,16 +503,14 @@ if($SBMINPON =~ m/^Y$/){
 			exit;
 		}
 		
-		printf (OPTIMTOP "%i contacts\n",$#C);
 		if($TMP=~ m/^6$/){
-			print OPTIMTOP "1 C6-C12\n";
 			$CONTTYPE = 6;
 		}elsif($TMP=~ m/^10$/){
-			print OPTIMTOP "1 C10-C12\n";
 			$CONTTYPE = 10;
 		}
-
-		for (my $K=1;$K<$#C;$K++){
+		my $CT=0;
+		my $TEMPSTRING = "";
+		for (my $K=1;$K<=$#C;$K++){
 			my @D=split(/ /,$C[$K]);
 			my $sigma;
 			my $epsilon;
@@ -533,18 +531,21 @@ if($SBMINPON =~ m/^Y$/){
 				print "Internal error 1: Please contact info\@smog-server.org for help.\n"; 
 				exit;
 			}
-
 			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
-				printf (OPTIMTOP "%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$sigma,$epsilon);
+				$TEMPSTRING .= sprintf ("%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$sigma,$epsilon);
+				$CT++;
 			}else{
 				unless ($rigidified{$D[0]} == $rigidified{$D[1]}){
-					printf (OPTIMTOP "%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$sigma,$epsilon);
+					$TEMPSTRING .= sprintf ("%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$sigma,$epsilon);
+					$CT++;
 				}
 			}
 		}
-	}
 
-	print OPTIMTOP "\n";
+		printf (OPTIMTOP "%i contacts\n",$CT);	
+		print OPTIMTOP "1 C$CONTTYPE-C12\n";
+		print OPTIMTOP "$TEMPSTRING\n";
+	}
 
 
 
@@ -558,8 +559,11 @@ if($SBMINPON =~ m/^Y$/){
 			print "ERROR: There must be at least 1 bond listed under the bonds directive\n";
 			exit;
 		}
-		printf (OPTIMTOP "%i bonds\n",$#C);
-		for (my $K=1;$K<$#C;$K++){
+
+
+		my $CT=0;
+		my $TEMPSTRING = "";
+		for (my $K=1;$K<=$#C;$K++){
 			my @D=split(/ /,$C[$K]);
 			$D[3]*=10;
 			$D[4]*=0.01;
@@ -569,16 +573,21 @@ if($SBMINPON =~ m/^Y$/){
 			}
 
 			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
-				printf (OPTIMTOP "%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$D[3],$D[4]);
+				$TEMPSTRING .= sprintf ("%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$D[3],$D[4]);
+				$CT++;
 			}else{
 				unless ($rigidified{$D[0]} == $rigidified{$D[1]}){
-					printf (OPTIMTOP "%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$D[3],$D[4]);
+					$TEMPSTRING .= sprintf ("%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$D[3],$D[4]);
+					$CT++;
 				}
 			}
 		}
+
+		printf (OPTIMTOP "%i bonds\n",$CT);	
+		print OPTIMTOP "$TEMPSTRING\n";
+
 	}
 
-	print OPTIMTOP "\n";
 
 	# provide information about the angles 
 	if(!exists $DIRLIST{"angles"}){
@@ -590,8 +599,10 @@ if($SBMINPON =~ m/^Y$/){
 			print "ERROR: There must be at least 1 angle listed under the angles directive\n";
 			exit;
 		}
-		printf (OPTIMTOP "%i angles\n",$#C);
-		for (my $K=1;$K<$#C;$K++){
+
+		my $CT=0;
+		my $TEMPSTRING = "";
+		for (my $K=1;$K<=$#C;$K++){
 			my @D=split(/ /,$C[$K]);
 			$D[4]*=$DEG2RAD;
 			if($D[3] != 1 ){
@@ -599,17 +610,20 @@ if($SBMINPON =~ m/^Y$/){
 				exit;
 			}
 			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} || !exists $rigidified{$D[2]} ){
-				printf (OPTIMTOP "%5i %5i %5i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[4],$D[5]);
+				$TEMPSTRING .= sprintf ("%5i %5i %5i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[4],$D[5]);
+				$CT++;
 			}else{
 				unless (($rigidified{$D[0]} == $rigidified{$D[1]}) && ($rigidified{$D[1]} == $rigidified{$D[2]})   ){
-					printf (OPTIMTOP "%5i %5i %5i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[4],$D[5]);
+					$TEMPSTRING .= sprintf ("%5i %5i %5i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[4],$D[5]);
+					$CT++;
 				}
 			}
 		}
+		printf (OPTIMTOP "%i angles\n",$CT);
+		print OPTIMTOP "$TEMPSTRING\n";
 	}
 
 
-	print OPTIMTOP "\n";
 
 	# provide information about the dihedrals 
 	if(!exists $DIRLIST{"dihedrals"}){
@@ -622,8 +636,9 @@ if($SBMINPON =~ m/^Y$/){
 			print "ERROR: There must be at least 1 dihedral listed under the dihedrals directive\n";
 			exit;
 		}
-		printf (OPTIMTOP "%i dihedrals\n",$#C);
-		for (my $K=1;$K<$#C;$K++){
+		my $CT=0;
+		my $TEMPSTRING = "";
+		for (my $K=1;$K<=$#C;$K++){
 			my @D=split(/ /,$C[$K]);
 			$D[5]*=$DEG2RAD;
 
@@ -655,18 +670,21 @@ if($SBMINPON =~ m/^Y$/){
 			}
 
 			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} || !exists $rigidified{$D[2]} || !exists $rigidified{$D[3]} ){
-				printf (OPTIMTOP "%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
+				$TEMPSTRING .= sprintf ("%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
+				$CT++;
 			}else{
 				unless (($rigidified{$D[0]} == $rigidified{$D[1]}) && ($rigidified{$D[1]} == $rigidified{$D[2]})   ){
-					printf (OPTIMTOP  "%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
+					$TEMPSTRING .= sprintf ("%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
+					$CT++;
 				}
 			}
 		@LAST=@D;
 		}
+		printf (OPTIMTOP "%i dihedrals\n",$CT);
+		print OPTIMTOP "$TEMPSTRING\n";
 	}
-	print OPTIMTOP "\n";
 }
 
-print "SUCCESS: OPTIM files generated without errors.\n";
+print "\n\n\t\tSUCCESS: OPTIM files generated without errors.\n\n\n";
 
 
