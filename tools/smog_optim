@@ -30,7 +30,7 @@ print "Would you like to convert a .top and .gro file to make input for OPTIM? [
 my $TMP;
 $TMP=<STDIN>;
 
-until($TMP=~ m/^[YyNn]$/){
+until($TMP=~ m/^[YN]$/){
 	print "Please answer Y, or N.\n";
 	$TMP=<STDIN>;
 	chomp($TMP);
@@ -43,7 +43,7 @@ my $SBMINPON=$TMP;
 print "Would you also like to generate files necessary for rigidification code in OPTIM? [Y/N]\n";
 $TMP=<STDIN>;
 
-until($TMP=~ m/^[YyNn]$/){
+until($TMP=~ m/^[YN]$/){
 	print "Please answer Y, or N.\n";
 	$TMP=<STDIN>;
 	chomp($TMP);
@@ -71,94 +71,204 @@ my %rigidified;
 if($RIGIDON =~ m/^Y$/){
 
 	print "Going to use $GROFILE to generate rbodyconfig and coordsinrigid for OPTIM\n";
-	open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
-	
-	
-	## for now, always use a default generic definitions for rigid groups
-	## format: <RESIDUE NAME> <LIST OF ATOM NAMES IN GROUP>
-	
-	
-	open(MAPFILE,"$ENV{SMOG_PATH}/tools/rigidmap") or die "Can\'t open rigidmap file\n";
-	if(-e "rbodyconfig"){print "rbodyconfig already exists.  Will not overwrite. Quitting.\n"; exit;}
-	if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will not overwrite. Quitting.\n"; exit;}
-	open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";
-	open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
-	
-	while(<MAPFILE>){
-		my $LINE=$_;
-		chomp($LINE);
-		my @A=split(/\s+/,$LINE);
-		my $A1=$A[0];
-		if(exists $RESCOUNT{$A1}){
-			print "$RESCOUNT{$A1}\n";
-			$RESCOUNT{$A1}=eval($RESCOUNT{$A1})+1;
-		}else{
-			$RESCOUNT{$A1}=1;
-		}
-			$A1=$A1 . "-" . $RESCOUNT{$A1};
-		for(my $I=1;$I<=$#A;$I++){
-			$GROUPS{$A1}->[$I-1]=$A[$I];
-		}
-	
-		$ATOMSINRES{$A1}=$#A;
-	
-		if($ATOMSINRES{$A1}<3){
-			print "Rigid group $A1 only has $ATOMSINRES{$A1} atoms. Must have at least 3.  Quitting\n";
-			exit;
-		}
-	
+
+	print "Would you like to provide an index file that defines the rigid atoms [F], or use the default [D]?\n";
+
+	$TMP=<STDIN>;
+
+	until($TMP=~ m/^[FD]$/){
+		print "Please answer F (file), or D (default).\n";
+		$TMP=<STDIN>;
+		chomp($TMP);
 	}
-	
-	my $GROUPS=%GROUPS;
-	
-	# add a check to make sure that atoms don't appear in two different group
-	
-	
-	
-	$TMP=<GROFILE>;
-	$TMP=<GROFILE>;
-	chomp($TMP);
-	my @A=split(/\s+/,$TMP);
-	my $NATOMS=$A[0];
-	my %ATOMNUM;
-	my $LINE=<GROFILE>;
-	
-	my $LASTRESNUM=substr($LINE,0,5);
-	$LASTRESNUM =~ s/^\s+|\s+$//g;
-	
-	my $ATOMNAME=substr($LINE,10,5);
-	$ATOMNAME =~ s/^\s+|\s+$//g;
-	
-	my $NUMT=substr($LINE,15,5);
-	$NUMT =~ s/^\s+|\s+$//g;
-	$ATOMNUM{$ATOMNAME}= $NUMT;
-	
-	my $LASTRESNAME=substr($LINE,5,5);
-	$LASTRESNAME =~ s/^\s+|\s+$//g;
-#	my $ATOMSINRES=1;
-	my $RIGIDINDEX=0;
-	for(my $I=1;$I<$NATOMS;$I++){
-	# read a line
-	# parse using fixed formatting
+	my $RDEF=$TMP;
+
+	if($RDEF =~ m/^F$/){
+		# using file
+		print "What file should be read for defining the rigid groups?\n";
+		my $RGFILE=<STDIN>;
+		open(RGFILE,"$RGFILE") or die "Can\'t open $RGFILE.\n";
+		open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";
+		my $RIGIDINDEX=0;
+		while(<RGFILE>){
+
+			my $LINE=$_;
+			chomp($LINE);
+			$LINE =~ s/\t/ /g; 
+			$LINE =~ s/^\s+|\s+$//g;
+			$LINE =~ s/ +/ /g;
+			my @A=split(/ /,$LINE);
+			unless($A[0] eq "GROUP"){
+				print "ERROR: Each line of the rigid group file must start with GROUP. Quitting.\n";
+				exit;
+			}
+			my $PRINTBUFF ="";
+			for (my $J=1;$J<=$#A;$J++){
+				if(exists $rigidified{$A[$J]}){
+					print "atom index $A[$J] appeared in two groups. Quitting\n";
+                                        exit;
+                                }else{
+					$rigidified{$A[$J]}=$RIGIDINDEX;
+					$PRINTBUFF .= "$A[$J]\n";
+					# remember that this atom is of a specific rigid group
+				}
+			}
+
+			if($#A>3){
+				print RIGIDOUT "GROUP $#A\n";
+				print RIGIDOUT "$PRINTBUFF";
+			}else{
+				print "Only found $#A atoms in group $RIGIDINDEX. Not adding as rigid group\n";
+			}
+			$RIGIDINDEX++;
+		}
+
+		# make coordsinrigid file 
+		open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
+		open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
+		$TMP=<GROFILE>;
+		$TMP=<GROFILE>;
+		chomp($TMP);
+		my @A=split(/\s+/,$TMP);
+		my $NATOMS=$A[0];
+		for(my $I=0;$I<$NATOMS;$I++){
+			my $LINE=<GROFILE>;
+			my $COORDS=substr($LINE,20,24);
+			print RIGIDCOORDS "$COORDS\n";
+		}
+		close(RIGIDCOORDS);
+
+	}elsif($RDEF =~ m/^D$/){
+		# using defaults
+
+		open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
+		
+		## for now, always use a default generic definitions for rigid groups
+		## format: <RESIDUE NAME> <LIST OF ATOM NAMES IN GROUP>
+		
+		open(MAPFILE,"$ENV{SMOG_PATH}/tools/rigidmap") or die "Can\'t open rigidmap file\n";
+		if(-e "rbodyconfig"){print "rbodyconfig already exists.  Will not overwrite. Quitting.\n"; exit;}
+		if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will not overwrite. Quitting.\n"; exit;}
+		open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";
+		open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
+		
+		while(<MAPFILE>){
+			my $LINE=$_;
+			chomp($LINE);
+			my @A=split(/\s+/,$LINE);
+			my $A1=$A[0];
+			if(exists $RESCOUNT{$A1}){
+				print "$RESCOUNT{$A1}\n";
+				$RESCOUNT{$A1}=eval($RESCOUNT{$A1})+1;
+			}else{
+				$RESCOUNT{$A1}=1;
+			}
+				$A1=$A1 . "-" . $RESCOUNT{$A1};
+			for(my $I=1;$I<=$#A;$I++){
+				$GROUPS{$A1}->[$I-1]=$A[$I];
+			}
+		
+			$ATOMSINRES{$A1}=$#A;
+		
+			if($ATOMSINRES{$A1}<3){
+				print "Rigid group $A1 only has $ATOMSINRES{$A1} atoms. Must have at least 3.  Quitting\n";
+				exit;
+			}
+		
+		}
+		
+		my $GROUPS=%GROUPS;
+		
+		# add a check to make sure that atoms don't appear in two different group
+		
+		
+		
+		$TMP=<GROFILE>;
+		$TMP=<GROFILE>;
+		chomp($TMP);
+		my @A=split(/\s+/,$TMP);
+		my $NATOMS=$A[0];
+		my %ATOMNUM;
 		my $LINE=<GROFILE>;
-		my $RESNUM=substr($LINE,0,5);
-		$RESNUM =~ s/^\s+|\s+$//g;
+		
+		my $LASTRESNUM=substr($LINE,0,5);
+		$LASTRESNUM =~ s/^\s+|\s+$//g;
+		
 		my $ATOMNAME=substr($LINE,10,5);
 		$ATOMNAME =~ s/^\s+|\s+$//g;
-		my $ATOMNUMT=substr($LINE,15,5);
-		$ATOMNUMT =~ s/^\s+|\s+$//g;
-		my $RESNAME=substr($LINE,5,5);
-		$RESNAME =~ s/^\s+|\s+$//g;
-		my $COORDS=substr($LINE,20,24);
-		print RIGIDCOORDS "$COORDS\n";
-	# Once done reading a residue, create the rigid groups
-		if($RESNUM != $LASTRESNUM && exists $RESCOUNT{$LASTRESNAME}){
-			# go through the rigid groups for that residue
+		
+		my $NUMT=substr($LINE,15,5);
+		$NUMT =~ s/^\s+|\s+$//g;
+		$ATOMNUM{$ATOMNAME}= $NUMT;
+		
+		my $LASTRESNAME=substr($LINE,5,5);
+		$LASTRESNAME =~ s/^\s+|\s+$//g;
+		my $RIGIDINDEX=0;
+		for(my $I=1;$I<$NATOMS;$I++){
+		# read a line
+		# parse using fixed formatting
+			my $LINE=<GROFILE>;
+			my $RESNUM=substr($LINE,0,5);
+			$RESNUM =~ s/^\s+|\s+$//g;
+			my $ATOMNAME=substr($LINE,10,5);
+			$ATOMNAME =~ s/^\s+|\s+$//g;
+			my $ATOMNUMT=substr($LINE,15,5);
+			$ATOMNUMT =~ s/^\s+|\s+$//g;
+			my $RESNAME=substr($LINE,5,5);
+			$RESNAME =~ s/^\s+|\s+$//g;
+			my $COORDS=substr($LINE,20,24);
+			print RIGIDCOORDS "$COORDS\n";
+		# Once done reading a residue, create the rigid groups
+			if($RESNUM != $LASTRESNUM && exists $RESCOUNT{$LASTRESNAME}){
+				# go through the rigid groups for that residue
+				for (my $J=1;$J<=eval($RESCOUNT{$LASTRESNAME});$J++){
+					my $GROUPSIZE=0;
+					my $PRINTBUFF = "";;
+			                my $A1=$LASTRESNAME . "-" . $J ;
+					my %rgroup;
+					for (my $K=0;$K<$ATOMSINRES{$A1};$K++){
+						if( !exists $ATOMNUM{$GROUPS{$A1}->[$K]}){
+							print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
+						}else{
+							if(exists $rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}){
+								print "atom index $ATOMNUM{$GROUPS{$A1}->[$K]} ($LASTRESNAME$LASTRESNUM) appeared in two groups. Quitting\n";
+								exit;
+							}else{
+								$rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}=$RIGIDINDEX;
+								# remember that this atom is of a specific rigid group
+							}
+							$PRINTBUFF = $PRINTBUFF."$ATOMNUM{$GROUPS{$A1}->[$K]}\n";
+							$GROUPSIZE++;
+						}
+					}
+		
+					if($GROUPSIZE>2){
+						print RIGIDOUT "GROUP $GROUPSIZE\n";
+						print RIGIDOUT "$PRINTBUFF";
+					}elsif($GROUPSIZE==1 || $GROUPSIZE==2){
+						print "Only found $GROUPSIZE atoms in group $J of $LASTRESNAME$LASTRESNUM. Not adding as rigid group\n";
+					}
+					$RIGIDINDEX++;
+				}
+				undef %ATOMNUM;
+			}
+		
+		
+			$LASTRESNAME=$RESNAME;
+			$LASTRESNUM=$RESNUM;
+			$ATOMNUM{$ATOMNAME}= $ATOMNUMT;
+		
+		}
+		# check last residue
+		
+		# go through the rigid groups for that residue
+		
+		if( exists $RESCOUNT{$LASTRESNAME}){
 			for (my $J=1;$J<=eval($RESCOUNT{$LASTRESNAME});$J++){
 				my $GROUPSIZE=0;
 				my $PRINTBUFF = "";;
-		                my $A1=$LASTRESNAME . "-" . $J ;
-				my %rgroup;
+			        my $A1=$LASTRESNAME . "-" . $J ;
+				print "\naccessing $A1\n";
 				for (my $K=0;$K<$ATOMSINRES{$A1};$K++){
 					if( !exists $ATOMNUM{$GROUPS{$A1}->[$K]}){
 						print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
@@ -170,64 +280,22 @@ if($RIGIDON =~ m/^Y$/){
 							$rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}=$RIGIDINDEX;
 							# remember that this atom is of a specific rigid group
 						}
-						$PRINTBUFF = $PRINTBUFF."$ATOMNUM{$GROUPS{$A1}->[$K]}\n";
+	
+						$PRINTBUFF = $PRINTBUFF . "$ATOMNUM{$GROUPS{$A1}->[$K]}\n";
 						$GROUPSIZE++;
 					}
 				}
-	
-				if($GROUPSIZE>2){
+			
+				if($GROUPSIZE>0){
+					print "size $GROUPSIZE\n";
 					print RIGIDOUT "GROUP $GROUPSIZE\n";
 					print RIGIDOUT "$PRINTBUFF";
-				}elsif($GROUPSIZE==1 || $GROUPSIZE==2){
-					print "Only found $GROUPSIZE atoms in group $J of $LASTRESNAME$LASTRESNUM. Not adding as rigid group\n";
 				}
-				$RIGIDINDEX++;
 			}
 			undef %ATOMNUM;
 		}
-	
-	
-		$LASTRESNAME=$RESNAME;
-		$LASTRESNUM=$RESNUM;
-		$ATOMNUM{$ATOMNAME}= $ATOMNUMT;
-	
+		close(GROFILE);
 	}
-	# check last residue
-	
-	# go through the rigid groups for that residue
-	
-	if( exists $RESCOUNT{$LASTRESNAME}){
-		for (my $J=1;$J<=eval($RESCOUNT{$LASTRESNAME});$J++){
-			my $GROUPSIZE=0;
-			my $PRINTBUFF = "";;
-		        my $A1=$LASTRESNAME . "-" . $J ;
-			print "\naccessing $A1\n";
-			for (my $K=0;$K<$ATOMSINRES{$A1};$K++){
-				if( !exists $ATOMNUM{$GROUPS{$A1}->[$K]}){
-					print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
-				}else{
-					if(exists $rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}){
-						print "atom index $ATOMNUM{$GROUPS{$A1}->[$K]} ($LASTRESNAME$LASTRESNUM) appeared in two groups. Quitting\n";
-						exit;
-					}else{
-						$rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}=$RIGIDINDEX;
-						# remember that this atom is of a specific rigid group
-					}
-
-					$PRINTBUFF = $PRINTBUFF . "$ATOMNUM{$GROUPS{$A1}->[$K]}\n";
-					$GROUPSIZE++;
-				}
-			}
-		
-			if($GROUPSIZE>0){
-				print "size $GROUPSIZE\n";
-				print RIGIDOUT "GROUP $GROUPSIZE\n";
-				print RIGIDOUT "$PRINTBUFF";
-			}
-		}
-		undef %ATOMNUM;
-	}
-	close(GROFILE);
 }
 
 ## Generate SBM.INP
