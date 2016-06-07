@@ -24,6 +24,7 @@ EOT
 
 my $GROFILE;
 my $TOPFILE;
+my $DEG2RAD=3.1415926/180.0;
 if(-e "SBM.INP"){print "SBM.INP exists.  Will not overwrite.  Quitting.\n"; exit;}
 
 print "Would you like to convert a .top and .gro file to make input for OPTIM? [Y/N]\n";
@@ -365,15 +366,54 @@ if($SBMINPON =~ m/^Y$/){
 		for (my $K=1;$K<$#C;$K++){
 			my @D=split(/ /,$C[$K]);
 			$D[3]*=10;
-			$D[4]*=0.5;
+			$D[4]*=0.01;
+			if($D[2] != 1 && $D[2] != 6){
+				print "ERROR: Only bonds of type 1 and 6 are supported. Quitting.\n";
+				exit;
+			}
+
 			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
-				printf (OPTIMTOP "%5i %5i %8.5f %8.5f\n", $D[0],$D[1],$D[3],$D[4]);
+				printf (OPTIMTOP "%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$D[3],$D[4]);
 			}else{
 				unless ($rigidified{$D[0]} == $rigidified{$D[1]}){
-					printf (OPTIMTOP "%5i %5i %8.5f %8.5f\n", $D[0],$D[1],$D[3],$D[4]);
+					printf (OPTIMTOP "%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$D[3],$D[4]);
 				}
 			}
 		}
 	}
+
+	print OPTIMTOP "\n";
+
+	# provide information about the atoms 
+	if(!exists $DIRLIST{"angles"}){
+		print "WARNING: \"angles\" does not appear in .top file.\n";
+	}else{
+		my @C= split(/\n/,$DATA[$DIRLIST{"angles"}]);
+		if($#C<1){
+			print "ERROR: There must be at least 1 angle listed under the angles directive\n";
+			exit;
+		}
+		printf (OPTIMTOP "%i angles\n",$#C);
+		for (my $K=1;$K<$#C;$K++){
+			my @D=split(/ /,$C[$K]);
+			$D[4]*=$DEG2RAD;
+			if($D[3] != 1 ){
+				print "ERROR: Only angles of type 1 are supported. Quitting.\n";
+				exit;
+			}
+			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} || !exists $rigidified{$D[2]} ){
+				printf (OPTIMTOP "%5i %5i %5i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[4],$D[5]);
+			}else{
+				unless (($rigidified{$D[0]} == $rigidified{$D[1]}) && ($rigidified{$D[1]} == $rigidified{$D[2]})   ){
+					printf (OPTIMTOP "%5i %5i %5i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[4],$D[5]);
+				}
+			}
+		}
+	}
+
+
+	print OPTIMTOP "\n";
+
+
 }
 
