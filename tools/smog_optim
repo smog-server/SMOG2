@@ -158,7 +158,6 @@ if($RIGIDON =~ m/^Y$/){
 			my @A=split(/\s+/,$LINE);
 			my $A1=$A[0];
 			if(exists $RESCOUNT{$A1}){
-				print "$RESCOUNT{$A1}\n";
 				$RESCOUNT{$A1}=eval($RESCOUNT{$A1})+1;
 			}else{
 				$RESCOUNT{$A1}=1;
@@ -231,7 +230,7 @@ if($RIGIDON =~ m/^Y$/){
 							print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
 						}else{
 							if(exists $rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}){
-								print "atom index $ATOMNUM{$GROUPS{$A1}->[$K]} ($LASTRESNAME$LASTRESNUM) appeared in two groups. Quitting\n";
+								print "atom index $ATOMNUM{$GROUPS{$A1}->[$K]} ($LASTRESNAME$LASTRESNUM:$GROUPS{$A1}->[$K]) appeared in two groups. Quitting\n";
 								exit;
 							}else{
 								$rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}=$RIGIDINDEX;
