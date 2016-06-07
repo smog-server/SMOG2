@@ -67,9 +67,9 @@ my %GROUPS;
 my %RESCOUNT;
 my %ATOMSINRES;
 my %rigidified;
+my %excludedlist;
 
 if($RIGIDON =~ m/^Y$/){
-
 	print "Going to use $GROFILE to generate rbodyconfig and coordsinrigid for OPTIM\n";
 
 	print "Would you like to provide an index file that defines the rigid atoms [F], or use the default [D]?\n";
@@ -274,6 +274,20 @@ if($RIGIDON =~ m/^Y$/){
 					}elsif($GROUPSIZE==1 || $GROUPSIZE==2){
 						print "Only found $GROUPSIZE atoms in group $J of $LASTRESNAME$LASTRESNUM. Not adding as rigid group\n";
 					}
+
+
+					for (my $K1=0;$K1<$ATOMSINRES{$A1};$K1++){
+						for (my $K2=0;$K2<$ATOMSINRES{$A1};$K2++){
+
+							if( exists $ATOMNUM{$GROUPS{$A1}->[$K1]} && exists $ATOMNUM{$GROUPS{$A1}->[$K2]} ){
+								if($ATOMNUM{$GROUPS{$A1}->[$K1]} < exists $ATOMNUM{$GROUPS{$A1}->[$K2]}){
+									$excludedlist{"$ATOMNUM{$GROUPS{$A1}->[$K1]}-$ATOMNUM{$GROUPS{$A1}->[$K2]}"}=1;
+								}else{
+									$excludedlist{"$ATOMNUM{$GROUPS{$A1}->[$K2]}-$ATOMNUM{$GROUPS{$A1}->[$K1]}"}=1;
+								}
+							}
+						}
+					}
 					$RIGIDINDEX++;
 				}
 				undef %ATOMNUM;
@@ -311,7 +325,6 @@ if($RIGIDON =~ m/^Y$/){
 						$GROUPSIZE++;
 					}
 				}
-			
 				if($GROUPSIZE>0){
 					print "size $GROUPSIZE\n";
 					print RIGIDOUT "GROUP $GROUPSIZE\n";
@@ -683,6 +696,13 @@ if($SBMINPON =~ m/^Y$/){
 		printf (OPTIMTOP "%i dihedrals\n",$CT);
 		print OPTIMTOP "$TEMPSTRING\n";
 	}
+	my $NEXC=scalar keys %excludedlist;
+	print OPTIMTOP "$NEXC exclusions\n";
+	for my $exc (keys %excludedlist){
+		my @A=split(/-/,$exc);
+		print OPTIMTOP "$A[0] $A[1]\n";
+	}
+	print OPTIMTOP "\n";
 }
 
 print "\n\n\t\tSUCCESS: OPTIM files generated without errors.\n\n\n";
