@@ -281,9 +281,9 @@ if($RIGIDON =~ m/^Y$/){
 						for (my $K2=0;$K2<$ATOMSINRES{$A1};$K2++){
 
 							if( exists $ATOMNUM{$GROUPS{$A1}->[$K1]} && exists $ATOMNUM{$GROUPS{$A1}->[$K2]} ){
-								if($ATOMNUM{$GROUPS{$A1}->[$K1]} < exists $ATOMNUM{$GROUPS{$A1}->[$K2]}){
+								if( $ATOMNUM{$GROUPS{$A1}->[$K1]} < $ATOMNUM{$GROUPS{$A1}->[$K2]}){
 									$excludedlist{"$ATOMNUM{$GROUPS{$A1}->[$K1]}-$ATOMNUM{$GROUPS{$A1}->[$K2]}"}=1;
-								}else{
+								}elsif($ATOMNUM{$GROUPS{$A1}->[$K1]} !=  $ATOMNUM{$GROUPS{$A1}->[$K2]}){
 									$excludedlist{"$ATOMNUM{$GROUPS{$A1}->[$K2]}-$ATOMNUM{$GROUPS{$A1}->[$K1]}"}=1;
 								}
 							}
@@ -449,28 +449,41 @@ if($SBMINPON =~ m/^Y$/){
 	# Go through the directives, in order
 	
 	# start with atomtypes
+	my %massbytype;
+	my %chargebytype;
+	my $c12val;
+	$c12val=-1;
+	my $CFL=0;
 	if(!exists $DIRLIST{"atomtypes"}){
 		print "ERROR: \"atomtypes\" does not appear in .top file.\n";
 		exit;
 	}else{
 		my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
-		if($#C>1){
-			print "ERROR: Multiple atomtypes not currently supported by smog_optim\n";
-			exit;
-		}
-
-		my @D=split(/ /,$C[1]);
-		$MASS=$D[1];
-		$CHARGE=$D[2];
-		if($CHARGE != 0){
-			print "NOTE: Charges detected.  Debye-Huckel parameters will be assigned.  You may want to double check the output.\n";
-		}
-		if($D[4] != 0){
-			print "ERROR: Non-specific attractive c6 term must be 0.\n";
-			exit;
+		for(my $II=1;$II<=$#C;$II++){
+			my @D=split(/ /,$C[$II]);
+			$massbytype{$D[0]}=$D[1];
+			$chargebytype{$D[0]}=$D[2];
+			if($D[2] != 0 && $CFL==0){
+				print "NOTE: Charges detected.  Debye-Huckel parameters will be assigned.  You may want to double check the output.\n";
+				$CFL=1;
+			}
+			if($c12val != -1){
+				if($c12val != $D[5]){
+					print "ERROR: Multiple C12 values not supported.\n";
+				}
+			}else{
+				$c12val = $D[5]
+			}
+			if($CHARGE != 0){
+				print "NOTE: Charges detected.  Debye-Huckel parameters will be assigned.  You may want to double check the output.\n";
+			}
+			if($D[4] != 0){
+				print "ERROR: Non-specific attractive c6 term must be 0.\n";
+				exit;
+			}
 		}
 		my $EPSILON=1.0;
-		my $SIGMA=10.0*($D[5]/$EPSILON)**(1.0/12);
+		my $SIGMA=10.0*($c12val/$EPSILON)**(1.0/12);
 		if($SIGMA > $SWITCHD){
 			print "ERROR: Switching distance must be larger than sigma\n";
 			exit;
@@ -493,7 +506,7 @@ if($SBMINPON =~ m/^Y$/){
 		printf (OPTIMTOP "%i atoms\n",$#C);
 		for (my $K=1;$K<=$#C;$K++){
 			my @D=split(/ /,$C[$K]);
-			printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$CHARGE,$MASS);
+			printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$chargebytype{"$D[1]"},$massbytype{$D[1]});
 		}
 	}
 
