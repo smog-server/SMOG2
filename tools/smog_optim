@@ -757,6 +757,9 @@ if($SBMINPON =~ m/^Y$/){
 		printf (OPTIMTOP "%i position restraints\n",$#C);
 		for (my $K=1;$K<=$#C;$K++){
 			my @D=split(/ /,$C[$K]);
+			if($#D !=4){
+				print "ERROR: Wrong number of fields in position restaint.  Offending line:\n$C[$K]\n";
+			}
 			if($D[1] != 1){print "ERROR: Only restraints of type 1 are supported\n Quitting.\n"; exit;} 
 			# printing atom number, 6 position restraint contacts and 3 coordinates.  Restraints are xx, yy, zz, xy, xz, yz, though cross terms not yet supported.
 			printf (OPTIMTOP "%5i %f8.3  %f8.3 %f8.3 %f8.3 %f8.3 %f8.3 %f8.3 %f8.3 %f8.3\n", $D[0],$D[2],$D[3],$D[4],0,0,0,$X[$D[0]][0],$X[$D[0]][1],$X[$D[0]][2]);
