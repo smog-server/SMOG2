@@ -399,9 +399,12 @@ if($SBMINPON =~ m/^Y$/){
 		close $fh;
 		my @B=split(/ /,$first_line);
 		my $DIR=$B[0];
-		
+		chomp($DIR);
+		$DIR =~ s/\]$//g;
+			
 		if(!exists $supported_directives{$DIR}){
-			print "Directive \"$DIR \" not supported\n";
+			print "ERROR: Directive \"$DIR \" not supported\n";
+			exit;
 		}else{
 			$DIRLIST{$DIR}=$I;
 		}
@@ -415,7 +418,6 @@ if($SBMINPON =~ m/^Y$/){
 	
 	my $SWITCHD=5.0;	
 	my $CUTD=6.0;
-	my $CHARGE;
 	my $MASS;	
 	# write out odata
 
@@ -487,9 +489,6 @@ if($SBMINPON =~ m/^Y$/){
 			}else{
 				$c12val = $D[5]
 			}
-			if($CHARGE != 0){
-				print "NOTE: Charges detected.  Debye-Huckel parameters will be assigned.  You may want to double check the output.\n";
-			}
 			if($D[4] != 0){
 				print "ERROR: Non-specific attractive c6 term must be 0.\n";
 				exit;
@@ -532,7 +531,7 @@ if($SBMINPON =~ m/^Y$/){
 		exit;
 	}else{
 		my $CONTTYPE;
-		print "pairs directive found.\nAre 10-12, or 6-12 contacts being used? [10/6]?";
+		print "\tpairs directive found.\nAre 10-12, or 6-12 contacts being used? [10/6]?";
 		my $TMP;
 		$TMP=<STDIN>;
 		chomp($TMP);
@@ -762,7 +761,7 @@ if($SBMINPON =~ m/^Y$/){
 			}
 			if($D[1] != 1){print "ERROR: Only restraints of type 1 are supported\n Quitting.\n"; exit;} 
 			# printing atom number, 6 position restraint contacts and 3 coordinates.  Restraints are xx, yy, zz, xy, xz, yz, though cross terms not yet supported.
-			printf (OPTIMTOP "%5i %f8.3  %f8.3 %f8.3 %f8.3 %f8.3 %f8.3 %f8.3 %f8.3 %f8.3\n", $D[0],$D[2],$D[3],$D[4],0,0,0,$X[$D[0]][0],$X[$D[0]][1],$X[$D[0]][2]);
+			printf (OPTIMTOP "%5i %8.5e %8.5e %8.5e %8.5e %8.5e %8.5e %8.3f %8.3f %8.3f\n", $D[0],$D[2],$D[3],$D[4],0,0,0,$X[$D[0]][0],$X[$D[0]][1],$X[$D[0]][2]);
 		}
 	}
 }
