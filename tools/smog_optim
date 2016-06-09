@@ -19,13 +19,12 @@ Currently:
 *****************************************************************************************
 EOT
 
-
-### read the options
-
 my $GROFILE;
 my $TOPFILE;
 my $PI=3.1415926;
 my $DEG2RAD=$PI/180.0;
+my @X;
+### read the options
 
 print "Would you like to convert a .top and .gro file to make input for OPTIM? [Y/N]\n";
 my $TMP;
@@ -73,7 +72,7 @@ my %excludedlist;
 if($RIGIDON =~ m/^Y$/){
 	print "Going to use $GROFILE to generate rbodyconfig and coordsinrigid for OPTIM\n";
 
-	print "Would you like to provide an index file that defines the rigid atoms [F], or use the default [D]?\n";
+	print "Would you like to provide an index file that defines the rigid atoms [F], use the defaults [D], or both [B]?\n";
 
 	$TMP=<STDIN>;
 
@@ -83,14 +82,14 @@ if($RIGIDON =~ m/^Y$/){
 		chomp($TMP);
 	}
 	my $RDEF=$TMP;
+	my $RIGIDINDEX=0;
 
-	if($RDEF =~ m/^F$/){
+	if($RDEF =~ m/^[FB]$/){
 		# using file
 		print "What file should be read for defining the rigid groups?\n";
 		my $RGFILE=<STDIN>;
 		open(RGFILE,"$RGFILE") or die "Can\'t open $RGFILE.\n";
 		open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";
-		my $RIGIDINDEX=0;
 		while(<RGFILE>){
 
 			my $LINE=$_;
@@ -123,30 +122,36 @@ if($RIGIDON =~ m/^Y$/){
 			}
 			$RIGIDINDEX++;
 		}
-
-		# make coordsinrigid file 
-		open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
-		open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
-		$TMP=<GROFILE>;
-		$TMP=<GROFILE>;
-		chomp($TMP);
-		my @A=split(/\s+/,$TMP);
-		my $NATOMS=$A[0];
-		for(my $I=0;$I<$NATOMS;$I++){
-			my $LINE=<GROFILE>;
-			my $COORDS=substr($LINE,20,24);
-			$COORDS =~ s/\t/ /g; 
-			$COORDS =~ s/^\s+|\s+$//g;
-			$COORDS =~ s/ +/ /g;
-			my @E=split(/ /,$COORDS);
-			$E[0]*=10.0;
-			$E[1]*=10.0;
-			$E[2]*=10.0;
-			print RIGIDCOORDS "$E[0] $E[1] $E[2]\n";
+		if($RDEF =~ m/^[F]$/){
+			# make coordsinrigid file, if we are not going to repeat later 
+			if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will not overwrite. Quitting.\n"; exit;}
+			open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
+			open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
+			$TMP=<GROFILE>;
+			$TMP=<GROFILE>;
+			chomp($TMP);
+			my @A=split(/\s+/,$TMP);
+			my $NATOMS=$A[0];
+			for(my $I=0;$I<$NATOMS;$I++){
+				my $LINE=<GROFILE>;
+				my $COORDS=substr($LINE,20,24);
+				$COORDS =~ s/\t/ /g; 
+				$COORDS =~ s/^\s+|\s+$//g;
+				$COORDS =~ s/ +/ /g;
+				my @E=split(/ /,$COORDS);
+				$E[0]*=10.0;
+				$E[1]*=10.0;
+				$E[2]*=10.0;
+				my $ATOMINDEX=substr($LINE,15,5);
+				$X[$ATOMINDEX][0]=$E[0];
+				$X[$ATOMINDEX][1]=$E[1];
+				$X[$ATOMINDEX][2]=$E[2];
+				print RIGIDCOORDS "$E[0] $E[1] $E[2]\n";
+			}
+			close(RIGIDCOORDS);
 		}
-		close(RIGIDCOORDS);
 
-	}elsif($RDEF =~ m/^D$/){
+	}elsif($RDEF =~ m/^[DB]$/){
 		# using defaults
 
 		open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
@@ -210,7 +215,6 @@ if($RIGIDON =~ m/^Y$/){
 		
 		my $LASTRESNAME=substr($LINE,5,5);
 		$LASTRESNAME =~ s/^\s+|\s+$//g;
-		my $RIGIDINDEX=0;
 		my $COORDS=substr($LINE,20,24);
 
 		$COORDS =~ s/\t/ /g; 
@@ -220,6 +224,10 @@ if($RIGIDON =~ m/^Y$/){
 		$E[0]*=10.0;
 		$E[1]*=10.0;
 		$E[2]*=10.0;
+		my $ATOMINDEX=substr($LINE,15,5);
+		$X[$ATOMINDEX][0]=$E[0];
+		$X[$ATOMINDEX][1]=$E[1];
+		$X[$ATOMINDEX][2]=$E[2];
 
 		print RIGIDCOORDS "$E[0] $E[1] $E[2]\n";
 		for(my $I=1;$I<$NATOMS;$I++){
@@ -242,7 +250,11 @@ if($RIGIDON =~ m/^Y$/){
 			$E[0]*=10.0;
 			$E[1]*=10.0;
 			$E[2]*=10.0;
-	
+			my $ATOMINDEX=substr($LINE,15,5);
+			$X[$ATOMINDEX][0]=$E[0];
+			$X[$ATOMINDEX][1]=$E[1];
+			$X[$ATOMINDEX][2]=$E[2];
+
 			print RIGIDCOORDS "$E[0] $E[1] $E[2]\n";
 
 			# Once done reading a residue, create the rigid groups
@@ -353,7 +365,8 @@ if($SBMINPON =~ m/^Y$/){
                 'pairs' => '1',
                 'exclusions' => '1',
                 'system' => '1',
-                'molecules' => '1'
+                'molecules' => '1',
+                'position_restraints' => '1'
                 );
 
 
@@ -729,6 +742,26 @@ if($SBMINPON =~ m/^Y$/){
 		print OPTIMTOP "$A[0] $A[1]\n";
 	}
 	print OPTIMTOP "\n";
+
+
+	# provide information about the atoms 
+	if(!exists $DIRLIST{"position_restraints"}){
+		print "NOTE: \"position_restraints\" does not appear in .top file.\n";
+		print OPTIMTOP "0 position restraints\n";
+	}else{
+		my @C= split(/\n/,$DATA[$DIRLIST{"position_restraints"}]);
+		if($#C<1){
+			print "ERROR: \"position_restraints\" found in .top file, but there are not restraints listed.\n";
+			exit;
+		}
+		printf (OPTIMTOP "%i position restraints\n",$#C);
+		for (my $K=1;$K<=$#C;$K++){
+			my @D=split(/ /,$C[$K]);
+			if($D[1] != 1){print "ERROR: Only restraints of type 1 are supported\n Quitting.\n"; exit;} 
+			# printing atom number, 6 position restraint contacts and 3 coordinates.  Restraints are xx, yy, zz, xy, xz, yz, though cross terms not yet supported.
+			printf (OPTIMTOP "%5i %f8.3  %f8.3 %f8.3 %f8.3 %f8.3 %f8.3 %f8.3 %f8.3 %f8.3\n", $D[0],$D[2],$D[3],$D[4],0,0,0,$X[$D[0]][0],$X[$D[0]][1],$X[$D[0]][2]);
+		}
+	}
 }
 
 print "\n\n\t\tSUCCESS: OPTIM files generated without errors.\n\n";
