@@ -10,6 +10,9 @@ print <<EOT;
 Long term plan for the code:
     This tool will generate an OPTIM input file from a SMOG model
 
+
+TODO: Change the switching distance depending on the model.
+
 Currently:
     This code generates files necessary for rigidification routine usage in OPTIM
 
@@ -51,10 +54,28 @@ until($TMP=~ m/^[YN]$/){
 
 my $RIGIDON=$TMP;
 
+my $CONTTYPE;
 if($SBMINPON =~ m/^Y$/){
 	print "What is the input .top file\n";
 	$TOPFILE=<STDIN>;
 	chomp($TOPFILE);
+
+	print "\tAre 10-12, or 6-12 contacts being used? [10/6]?";
+	my $TMP;
+	$TMP=<STDIN>;
+	chomp($TMP);
+	until($TMP=~ m/^[6|10]$/){
+		print "Please answer 6, or 10.\n";
+		$TMP=<STDIN>;
+		chomp($TMP);
+	}
+
+	if($TMP=~ m/^6$/){
+		$CONTTYPE = 6;
+	}elsif($TMP=~ m/^10$/){
+		$CONTTYPE = 10;
+	}
+
 }
 
 print "What is the input .gro file\n";
@@ -530,7 +551,6 @@ if($SBMINPON =~ m/^Y$/){
 		print "ERROR: \"pairs\" does not appear in .top file.\n";
 		exit;
 	}else{
-		my $CONTTYPE;
 		print "\tpairs directive found.\nAre 10-12, or 6-12 contacts being used? [10/6]?";
 		my $TMP;
 		$TMP=<STDIN>;
@@ -548,11 +568,6 @@ if($SBMINPON =~ m/^Y$/){
 			exit;
 		}
 		
-		if($TMP=~ m/^6$/){
-			$CONTTYPE = 6;
-		}elsif($TMP=~ m/^10$/){
-			$CONTTYPE = 10;
-		}
 		my $CT=0;
 		my $TEMPSTRING = "";
 		for (my $K=1;$K<=$#C;$K++){
