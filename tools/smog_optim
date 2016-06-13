@@ -59,7 +59,7 @@ if($SBMINPON =~ m/^Y$/){
 	my $TMP;
 	$TMP=<STDIN>;
         $TMP =~ s/^\s+|\s+$//g;
-	until($TMP=~ m/^[10|6]$/ ){
+	until($TMP=~ m/^10$/  || $TMP=~ m/^6$/ ){
 		print "Please answer 6, or 10.\n";
 		$TMP=<STDIN>;
         	$TMP =~ s/^\s+|\s+$//g;
@@ -438,15 +438,20 @@ if($SBMINPON =~ m/^Y$/){
 	print ODATA "STEPS 100000000\nBFGSMIN 0.000001\n";
 
 	if($RIGIDON =~ m/^Y$/){
-		print ODATA "RIGIDINIT\nPOINTS\n";
+		print ODATA "RIGIDINIT\n";
 	}
+		print ODATA "POINTS\n";
 
 	open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
 	$TMP=<GROFILE>;
 	$TMP=<GROFILE>;
 	chomp($TMP);
+	$TMP =~ s/\t/ /g; 
+	$TMP =~ s/^\s+|\s+$//g;
+	$TMP =~ s/ +/ /g;
 	my @A=split(/\s+/,$TMP);
 	my $NATOMS=$A[0];
+
 	for(my $I=0;$I<$NATOMS;$I++){
 		# read a line
 		my $LINE=<GROFILE>;
@@ -541,15 +546,6 @@ if($SBMINPON =~ m/^Y$/){
 		print "ERROR: \"pairs\" does not appear in .top file.\n";
 		exit;
 	}else{
-		print "\tpairs directive found.\nAre 10-12, or 6-12 contacts being used? [10/6]?";
-		my $TMP;
-		$TMP=<STDIN>;
-		chomp($TMP);
-		until($TMP=~ m/^[6|10]$/){
-			print "Please answer 6, or 10.\n";
-			$TMP=<STDIN>;
-			chomp($TMP);
-		}
 
 
 		my @C= split(/\n/,$DATA[$DIRLIST{"pairs"}]);
