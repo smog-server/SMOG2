@@ -534,11 +534,11 @@ if($SBMINPON =~ m/^Y$/){
 		printf (OPTIMTOP "%i atoms\n",$#C);
 		for (my $K=1;$K<=$#C;$K++){
 			my @D=split(/ /,$C[$K]);
-			if($#D == 6){
+			if($#D == 7){
 				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
-			}elsif($#D == 5){
+			}elsif($#D == 6){
 				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$massbytype{$D[1]});
-			}elsif($#D == 4){
+			}elsif($#D == 5){
 				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$chargebytype{"$D[1]"},$massbytype{$D[1]});
 			}else{
 				print "ERROR: Insufficient number of fields in atom definition\n";
