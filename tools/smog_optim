@@ -105,8 +105,9 @@ if($RIGIDON =~ m/^Y$/){
         	$TMP =~ s/^\s+|\s+$//g;
 	}
 	my $RDEF=$TMP;
+	my $NATOMS;
 	my $RIGIDINDEX=0;
-
+	my $RBDOF=0; # count the number of degrees of freedom that are moved by rigid bodies
 	if($RDEF =~ m/^[FB]$/){
 		# using file
 		print "What file should be read for defining the rigid groups?\n";
@@ -138,6 +139,7 @@ if($RIGIDON =~ m/^Y$/){
 			}
 
 			if($#A>3){
+				$RBDOF+=($#A)*3-6;
 				print RIGIDOUT "GROUP $#A\n";
 				print RIGIDOUT "$PRINTBUFF";
 			}else{
@@ -146,7 +148,7 @@ if($RIGIDON =~ m/^Y$/){
 			$RIGIDINDEX++;
 		}
 		if($RDEF =~ m/^F$/){
-			# make coordsinrigid file, if we are not going to repeat later 
+			# make coordsinrigid file, since we are not going to repeat later 
 			if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will not overwrite. Quitting.\n"; exit;}
 			open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
 			open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
@@ -157,7 +159,7 @@ if($RIGIDON =~ m/^Y$/){
 			$TMP =~ s/^\s+|\s+$//g;
 			$TMP =~ s/ +/ /g;
 			my @A=split(/\s+/,$TMP);
-			my $NATOMS=$A[0];
+			$NATOMS=$A[0];
 			for(my $I=0;$I<$NATOMS;$I++){
 				my $LINE=<GROFILE>;
 				my $COORDS=substr($LINE,20,24);
@@ -209,7 +211,7 @@ if($RIGIDON =~ m/^Y$/){
 			$ATOMSINRES{$A1}=$#A;
 		
 			if($ATOMSINRES{$A1}<3){
-				print "Rigid group $A1 only has $ATOMSINRES{$A1} atoms. Must have at least 3.  Quitting\n";
+				print "Rigid group definition $A1 only has $ATOMSINRES{$A1} atoms. Must have at least 3.  Quitting\n";
 				exit;
 			}
 		
@@ -227,7 +229,7 @@ if($RIGIDON =~ m/^Y$/){
 		$TMP =~ s/ +/ /g;
 		my @A=split(/\s+/,$TMP);
 
-		my $NATOMS=$A[0];
+		$NATOMS=$A[0];
 		print "OKOK $NATOMS\n";
 		my %ATOMNUM;
 		my $LINE=<GROFILE>;
@@ -311,6 +313,7 @@ if($RIGIDON =~ m/^Y$/){
 					}
 		
 					if($GROUPSIZE>2){
+						$RBDOF+=($GROUPSIZE)*3-6;
 						print RIGIDOUT "GROUP $GROUPSIZE\n";
 						print RIGIDOUT "$PRINTBUFF";
 					}elsif($GROUPSIZE==1 || $GROUPSIZE==2){
@@ -367,6 +370,7 @@ if($RIGIDON =~ m/^Y$/){
 					}
 				}
 				if($GROUPSIZE>0){
+					$RBDOF+=($GROUPSIZE)*3-6;
 					print RIGIDOUT "GROUP $GROUPSIZE\n";
 					print RIGIDOUT "$PRINTBUFF";
 				}
@@ -376,6 +380,9 @@ if($RIGIDON =~ m/^Y$/){
 		}
 		close(GROFILE);
 	}
+	$RBDOF=$NATOMS*3-$RBDOF;
+	print "When using rigidification routines in PATHSAMPLE, make sure to indicate the number of degrees of freedom, after rigidification.\nFor this system, there are $RBDOF degrees of freedom.\n";
+	
 }
 
 ## Generate SBM.INP
