@@ -93,7 +93,7 @@ my %rigidified;
 my %excludedlist;
 
 if($RIGIDON =~ m/^Y$/){
-	print "Going to use $GROFILE to generate rbodyconfig and coordsinrigid for OPTIM\n";
+	print "\n\nUsing $GROFILE to generate rbodyconfig and coordsinrigid for OPTIM....\n\n";
 
 	print "Would you like to provide an index file that defines the rigid atoms [F], use the defaults [D], or both [B]?\n";
 
@@ -370,6 +370,7 @@ if($RIGIDON =~ m/^Y$/){
 					print RIGIDOUT "GROUP $GROUPSIZE\n";
 					print RIGIDOUT "$PRINTBUFF";
 				}
+				$RIGIDINDEX++;
 			}
 			undef %ATOMNUM;
 		}
@@ -380,7 +381,7 @@ if($RIGIDON =~ m/^Y$/){
 ## Generate SBM.INP
 
 if($SBMINPON =~ m/^Y$/){
-	print "Going to convert $TOPFILE and $GROFILE to SBM.INP and odata for OPTIM\n";
+	print "\n\nUsing $TOPFILE and $GROFILE to generate SBM.INP and odata for OPTIM...\n\n";
 
 	my %supported_directives = ( 'defaults' => '0',
                 'atomtypes' => '1',
@@ -639,7 +640,6 @@ if($SBMINPON =~ m/^Y$/){
 				print "ERROR: Only bonds of type 1 and 6 are supported. Quitting.\n";
 				exit;
 			}
-
 			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
 				$TEMPSTRING .= sprintf ("%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$D[3],$D[4]);
 				$CT++;
