@@ -438,7 +438,7 @@ if($SBMINPON =~ m/^Y$/){
 	print ODATA "STEPS 100000000\nBFGSMIN 0.000001\n";
 
 	if($RIGIDON =~ m/^Y$/){
-		print ODATA "RIGIDINIT\n";
+		print ODATA "RIGIDINIT\nSLERP\n";
 	}
 		print ODATA "POINTS\n";
 
