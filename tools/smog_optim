@@ -230,7 +230,6 @@ if($RIGIDON =~ m/^Y$/){
 		my @A=split(/\s+/,$TMP);
 
 		$NATOMS=$A[0];
-		print "OKOK $NATOMS\n";
 		my %ATOMNUM;
 		my $LINE=<GROFILE>;
 		
@@ -521,7 +520,7 @@ if($SBMINPON =~ m/^Y$/){
 			$massbytype{$D[0]}=$D[1];
 			$chargebytype{$D[0]}=$D[2];
 			if($D[2] != 0 && $CFL==0){
-				print "NOTE: Charges detected.  Debye-Huckel parameters will be assigned.  You may want to double check the output.\n";
+				print "NOTE: Found charges in atomtypes section.  Debye-Huckel parameters will be assigned.  You may want to double check the output.\n";
 				$CFL=1;
 			}
 			if($c12val != -1){
