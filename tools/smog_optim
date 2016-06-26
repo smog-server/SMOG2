@@ -456,7 +456,7 @@ if($SBMINPON =~ m/^Y$/){
 
 	if(-e "odata"){print "odata already exists.  Quitting.\n"; exit;}
 	open(ODATA,">odata") or die "Can not open odata\n";
-	print ODATA "STEPS 100000000\nBFGSMIN 0.000001\nNOPOINT\n";
+	print ODATA "STEPS 100000000\nBFGSMIN 0.000001\n";
 
 	if($RIGIDON =~ m/^Y$/){
 		print ODATA "RIGIDINIT\nSLERP\n";
