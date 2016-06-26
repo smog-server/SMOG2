@@ -20,8 +20,15 @@ EOT
 my $GROFILE;
 my $TOPFILE;
 my $PI=3.1415926;
+my $twoPI=2.0*$PI;
 my $DEG2RAD=$PI/180.0;
 my @X;
+
+sub remainder {
+    my ($a, $b) = @_;
+    return 0 unless $b && $a;
+    return $a / $b - int($a / $b);
+}
 
 ### read the options
 
@@ -86,7 +93,7 @@ my %rigidified;
 my %excludedlist;
 
 if($RIGIDON =~ m/^Y$/){
-	print "Going to use $GROFILE to generate rbodyconfig and coordsinrigid for OPTIM\n";
+	print "\n\nUsing $GROFILE to generate rbodyconfig and coordsinrigid for OPTIM....\n\n";
 
 	print "Would you like to provide an index file that defines the rigid atoms [F], use the defaults [D], or both [B]?\n";
 
@@ -98,8 +105,9 @@ if($RIGIDON =~ m/^Y$/){
         	$TMP =~ s/^\s+|\s+$//g;
 	}
 	my $RDEF=$TMP;
+	my $NATOMS;
 	my $RIGIDINDEX=0;
-
+	my $RBDOF=0; # count the number of degrees of freedom that are moved by rigid bodies
 	if($RDEF =~ m/^[FB]$/){
 		# using file
 		print "What file should be read for defining the rigid groups?\n";
@@ -131,6 +139,7 @@ if($RIGIDON =~ m/^Y$/){
 			}
 
 			if($#A>3){
+				$RBDOF+=($#A)*3-6;
 				print RIGIDOUT "GROUP $#A\n";
 				print RIGIDOUT "$PRINTBUFF";
 			}else{
@@ -139,15 +148,18 @@ if($RIGIDON =~ m/^Y$/){
 			$RIGIDINDEX++;
 		}
 		if($RDEF =~ m/^F$/){
-			# make coordsinrigid file, if we are not going to repeat later 
+			# make coordsinrigid file, since we are not going to repeat later 
 			if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will not overwrite. Quitting.\n"; exit;}
 			open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
 			open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
 			$TMP=<GROFILE>;
 			$TMP=<GROFILE>;
 			chomp($TMP);
+			$TMP =~ s/\t/ /g; 
+			$TMP =~ s/^\s+|\s+$//g;
+			$TMP =~ s/ +/ /g;
 			my @A=split(/\s+/,$TMP);
-			my $NATOMS=$A[0];
+			$NATOMS=$A[0];
 			for(my $I=0;$I<$NATOMS;$I++){
 				my $LINE=<GROFILE>;
 				my $COORDS=substr($LINE,20,24);
@@ -199,7 +211,7 @@ if($RIGIDON =~ m/^Y$/){
 			$ATOMSINRES{$A1}=$#A;
 		
 			if($ATOMSINRES{$A1}<3){
-				print "Rigid group $A1 only has $ATOMSINRES{$A1} atoms. Must have at least 3.  Quitting\n";
+				print "Rigid group definition $A1 only has $ATOMSINRES{$A1} atoms. Must have at least 3.  Quitting\n";
 				exit;
 			}
 		
@@ -212,8 +224,13 @@ if($RIGIDON =~ m/^Y$/){
 		$TMP=<GROFILE>;
 		$TMP=<GROFILE>;
 		chomp($TMP);
+		$TMP =~ s/\t/ /g; 
+		$TMP =~ s/^\s+|\s+$//g;
+		$TMP =~ s/ +/ /g;
 		my @A=split(/\s+/,$TMP);
-		my $NATOMS=$A[0];
+
+		$NATOMS=$A[0];
+		print "OKOK $NATOMS\n";
 		my %ATOMNUM;
 		my $LINE=<GROFILE>;
 		
@@ -296,6 +313,7 @@ if($RIGIDON =~ m/^Y$/){
 					}
 		
 					if($GROUPSIZE>2){
+						$RBDOF+=($GROUPSIZE)*3-6;
 						print RIGIDOUT "GROUP $GROUPSIZE\n";
 						print RIGIDOUT "$PRINTBUFF";
 					}elsif($GROUPSIZE==1 || $GROUPSIZE==2){
@@ -335,7 +353,6 @@ if($RIGIDON =~ m/^Y$/){
 				my $GROUPSIZE=0;
 				my $PRINTBUFF = "";;
 			        my $A1=$LASTRESNAME . "-" . $J ;
-				print "\naccessing $A1\n";
 				for (my $K=0;$K<$ATOMSINRES{$A1};$K++){
 					if( !exists $ATOMNUM{$GROUPS{$A1}->[$K]}){
 						print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
@@ -353,21 +370,25 @@ if($RIGIDON =~ m/^Y$/){
 					}
 				}
 				if($GROUPSIZE>0){
-					print "size $GROUPSIZE\n";
+					$RBDOF+=($GROUPSIZE)*3-6;
 					print RIGIDOUT "GROUP $GROUPSIZE\n";
 					print RIGIDOUT "$PRINTBUFF";
 				}
+				$RIGIDINDEX++;
 			}
 			undef %ATOMNUM;
 		}
 		close(GROFILE);
 	}
+	$RBDOF=$NATOMS*3-$RBDOF;
+	print "When using rigidification routines in PATHSAMPLE, make sure to indicate the number of degrees of freedom, after rigidification.\nFor this system, there are $RBDOF degrees of freedom.\n";
+	
 }
 
 ## Generate SBM.INP
 
 if($SBMINPON =~ m/^Y$/){
-	print "Going to convert $TOPFILE and $GROFILE to SBM.INP and odata for OPTIM\n";
+	print "\n\nUsing $TOPFILE and $GROFILE to generate SBM.INP and odata for OPTIM...\n\n";
 
 	my %supported_directives = ( 'defaults' => '0',
                 'atomtypes' => '1',
@@ -438,7 +459,7 @@ if($SBMINPON =~ m/^Y$/){
 	print ODATA "STEPS 100000000\nBFGSMIN 0.000001\n";
 
 	if($RIGIDON =~ m/^Y$/){
-		print ODATA "RIGIDINIT\n";
+		print ODATA "RIGIDINIT\nSLERP\n";
 	}
 		print ODATA "POINTS\n";
 
@@ -534,11 +555,11 @@ if($SBMINPON =~ m/^Y$/){
 		printf (OPTIMTOP "%i atoms\n",$#C);
 		for (my $K=1;$K<=$#C;$K++){
 			my @D=split(/ /,$C[$K]);
-			if($#D == 6){
-				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
+			if($#D == 7){
+				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[6],$D[7]);
+			}elsif($#D == 6){
+				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[6],$massbytype{$D[1]});
 			}elsif($#D == 5){
-				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$massbytype{$D[1]});
-			}elsif($#D == 4){
 				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$chargebytype{"$D[1]"},$massbytype{$D[1]});
 			}else{
 				print "ERROR: Insufficient number of fields in atom definition\n";
@@ -626,7 +647,6 @@ if($SBMINPON =~ m/^Y$/){
 				print "ERROR: Only bonds of type 1 and 6 are supported. Quitting.\n";
 				exit;
 			}
-
 			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
 				$TEMPSTRING .= sprintf ("%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$D[3],$D[4]);
 				$CT++;
@@ -708,8 +728,8 @@ if($SBMINPON =~ m/^Y$/){
 			}
 			if(exists $D[7] && $D[7] == 3){
 			# if N=3, it must immediately follow an N=1 dihedral
-				my $DD=($D[5]/$LAST[5]-3.0);
-				if($DD > 0.01 || $DD < -0.01){
+				my $DD = remainder($LAST[5]*3.0,$twoPI)- remainder($D[5],  $twoPI);
+				if($DD > 0.001 || $DD < -0.001){
 					print "ERROR: N=3 dihedral has wrong angle, relative to N=1 dihedral.\n";
 					print "See: $C[$K]\n";
 					exit;
