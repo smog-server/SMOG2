@@ -485,6 +485,10 @@ if($SBMINPON =~ m/^Y$/){
 		$E[0]*=10.0;
 		$E[1]*=10.0;
 		$E[2]*=10.0;
+                my $ATOMINDEX=substr($LINE,15,5);
+                $X[$ATOMINDEX][0]=$E[0];
+                $X[$ATOMINDEX][1]=$E[1];
+                $X[$ATOMINDEX][2]=$E[2];
 
 		print ODATA "SB $E[0] $E[1] $E[2]\n";
 	}
