@@ -626,7 +626,6 @@ if($SBMINPON =~ m/^Y$/){
 		}
 
 		printf (OPTIMTOP "%i contacts\n",$CT);	
-		print OPTIMTOP "1 C$CONTTYPE-C12\n";
 		print OPTIMTOP "$TEMPSTRING\n";
 	}
 
