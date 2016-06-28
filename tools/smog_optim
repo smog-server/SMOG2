@@ -62,7 +62,7 @@ if($SBMINPON =~ m/^Y$/){
 	$TOPFILE=<STDIN>;
         $TOPFILE =~ s/^\s+|\s+$//g;
 
-	print "\nAre the contacts modeled with 10-12, or 6-12 interactions? [10/6]\n";
+	print "\nAre the contacts of type 1 modeled with 10-12, or 6-12 interactions? [10/6]\n";
 	my $TMP;
 	$TMP=<STDIN>;
         $TMP =~ s/^\s+|\s+$//g;
@@ -593,29 +593,33 @@ if($SBMINPON =~ m/^Y$/){
 			my @D=split(/ /,$C[$K]);
 			my $sigma;
 			my $epsilon;
+			my $typetemp;
 			if($D[2] != 1){
 				print "ERROR: Only contacts of type 1 are supported. Quitting.\n";
 				exit;
-			}
-			if($CONTTYPE == 10){
-				$sigma=(6.0/5.0*$D[4]/$D[3])**(0.5);
-				$epsilon=$D[3]/(6.0*$sigma**10);
-				$sigma*=10.0;
-			}elsif($CONTTYPE == 6){
-				$sigma=(2.0*$D[4]/$D[3])**(1.0/6.0);
-				$epsilon=$D[3]**2/(4.0*$D[4]);
-				$sigma*=10.0;
+			}else{
+				if($CONTTYPE == 10){
+					$sigma=(6.0/5.0*$D[4]/$D[3])**(0.5);
+					$epsilon=$D[3]/(6.0*$sigma**10);
+					$sigma*=10.0;
+					$typetemp=2;
+				}elsif($CONTTYPE == 6){
+					$sigma=(2.0*$D[4]/$D[3])**(1.0/6.0);
+					$epsilon=$D[3]**2/(4.0*$D[4]);
+					$sigma*=10.0;
+					$typetemp=1;
 
-			}else{ 
-				print "Internal error 1: Please contact info\@smog-server.org for help.\n"; 
-				exit;
+				}else{ 
+					print "Internal error 1: Please contact info\@smog-server.org for help.\n"; 
+					exit;
+				}
 			}
 			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
-				$TEMPSTRING .= sprintf ("%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$sigma,$epsilon);
+				$TEMPSTRING .= sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],$typetemp,$sigma,$epsilon);
 				$CT++;
 			}else{
 				unless ($rigidified{$D[0]} == $rigidified{$D[1]}){
-					$TEMPSTRING .= sprintf ("%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$sigma,$epsilon);
+					$TEMPSTRING .= sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],$typetemp,$sigma,$epsilon);
 					$CT++;
 				}
 			}
