@@ -593,33 +593,68 @@ if($SBMINPON =~ m/^Y$/){
 			my @D=split(/ /,$C[$K]);
 			my $sigma;
 			my $epsilon;
-			my $typetemp;
-			if($D[2] != 1){
-				print "ERROR: Only contacts of type 1 are supported. Quitting.\n";
+			my $CSTRING;
+			if($D[2] != 1 && $D[2] != 5 && $D[2] != 6 && $D[2] != 7){
+				print "ERROR: Only contacts of type 1,5,6,7 are supported. Quitting.\n";
 				exit;
 			}else{
-				if($CONTTYPE == 10){
+				if($D[2] == 1 && $CONTTYPE == 10){
+					if($#D != 4){
+						print "ERROR: Wrong number of arguments for a pair of type 1\n$C[$K]";
+						exit;
+					}
 					$sigma=(6.0/5.0*$D[4]/$D[3])**(0.5);
 					$epsilon=$D[3]/(6.0*$sigma**10);
 					$sigma*=10.0;
-					$typetemp=2;
-				}elsif($CONTTYPE == 6){
+					$CSTRING=sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],2,$sigma,$epsilon);
+				}elsif($D[2] == 1 && $CONTTYPE == 6){
+					if($#D != 4){
+						print "ERROR: Wrong number of arguments for a pair of type 1\n$C[$K]";
+						exit;
+					}
 					$sigma=(2.0*$D[4]/$D[3])**(1.0/6.0);
 					$epsilon=$D[3]**2/(4.0*$D[4]);
 					$sigma*=10.0;
-					$typetemp=1;
+					$CSTRING=sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],1,$sigma,$epsilon);
+				}elsif($D[2] == 5){
+					if($#D != 5){
+						print "ERROR: Wrong number of arguments for a pair of type 5 (single-well gaussian)\n$C[$K]";
+						exit;
+					}
+					$D[4]*=10.0;
+					$D[5]*=10.0;
+					$CSTRING=sprint ("$D[0] $D[1] $D[2] $D[3] $D[4] $D[5]\n");
+				}elsif($D[2] == 6){
+					if($#D != 6){
+						print "ERROR: Wrong number of arguments for a pair of type 6 (single-well gaussian w excluded volume)\n$C[$K]";
+						exit;
+					}
+					$D[4]*=10.0;
+					$D[5]*=10.0;
+					$CSTRING=sprint ("$D[0] $D[1] $D[2] $D[3] $D[4] $D[5] $D[6]\n");
 
+				}elsif($D[2] == 7){
+					if($#D != 8){
+						print "ERROR: Wrong number of arguments for a pair of type 7 (dual-basin gaussian)\n$C[$K]";
+						exit;
+					}
+					$D[4]*=10.0;
+					$D[5]*=10.0;
+					$D[6]*=10.0;
+					$D[7]*=10.0;
+					$CSTRING=sprint ("$D[0] $D[1] $D[2] $D[3] $D[4] $D[5] $D[6] $D[7] $D[8]\n");
 				}else{ 
 					print "Internal error 1: Please contact info\@smog-server.org for help.\n"; 
 					exit;
 				}
 			}
+
 			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
-				$TEMPSTRING .= sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],$typetemp,$sigma,$epsilon);
+				$TEMPSTRING .= $CSTRING;
 				$CT++;
 			}else{
 				unless ($rigidified{$D[0]} == $rigidified{$D[1]}){
-					$TEMPSTRING .= sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],$typetemp,$sigma,$epsilon);
+					$TEMPSTRING .= $CSTRING;
 					$CT++;
 				}
 			}
@@ -654,11 +689,11 @@ if($SBMINPON =~ m/^Y$/){
 				exit;
 			}
 			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
-				$TEMPSTRING .= sprintf ("%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$D[3],$D[4]);
+				$TEMPSTRING .= sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4]);
 				$CT++;
 			}else{
 				unless ($rigidified{$D[0]} == $rigidified{$D[1]}){
-					$TEMPSTRING .= sprintf ("%5i %5i %8.5f %8.5e\n", $D[0],$D[1],$D[3],$D[4]);
+					$TEMPSTRING .= sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4]);
 					$CT++;
 				}
 			}
