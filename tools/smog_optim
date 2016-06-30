@@ -624,7 +624,7 @@ if($SBMINPON =~ m/^Y$/){
 					}
 					$D[4]*=10.0;
 					$D[5]*=10.0;
-					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f %9.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5]);
+					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f\n     %9.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5]);
 				}elsif($D[2] == 6){
 					if($#D != 6){
 						print "ERROR: Wrong number of arguments for a pair of type 6 (single-well gaussian w excluded volume)\n$C[$K]";
@@ -632,7 +632,7 @@ if($SBMINPON =~ m/^Y$/){
 					}
 					$D[4]*=10.0;
 					$D[5]*=10.0;
-					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f %9.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
+					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f\n     %9.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
 
 				}elsif($D[2] == 7){
 					if($#D != 8){
@@ -643,7 +643,7 @@ if($SBMINPON =~ m/^Y$/){
 					$D[5]*=10.0;
 					$D[6]*=10.0;
 					$D[7]*=10.0;
-					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f %9.5f %9.5f %9.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6],$D[7],$D[8]);
+					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f\n     %9.5f %9.5f %9.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6],$D[7],$D[8]);
 				}else{ 
 					print "Internal error 1: Please contact info\@smog-server.org for help.\n"; 
 					exit;
