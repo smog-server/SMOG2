@@ -526,6 +526,7 @@ if($SBMINPON =~ m/^Y$/){
 			if($c12val != -1){
 				if($c12val != $D[5]){
 					print "ERROR: Multiple C12 values not supported.\n";
+					exit;
 				}
 			}else{
 				$c12val = $D[5]
