@@ -606,7 +606,7 @@ if($SBMINPON =~ m/^Y$/){
 					$sigma=(6.0/5.0*$D[4]/$D[3])**(0.5);
 					$epsilon=$D[3]/(6.0*$sigma**10);
 					$sigma*=10.0;
-					$CSTRING=sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],2,$sigma,$epsilon);
+					$CSTRING=sprintf ("%5i %5i %1i %9.5f %8.5e\n", $D[0],$D[1],2,$sigma,$epsilon);
 				}elsif($D[2] == 1 && $CONTTYPE == 6){
 					if($#D != 4){
 						print "ERROR: Wrong number of arguments for a pair of type 1\n$C[$K]";
@@ -615,7 +615,7 @@ if($SBMINPON =~ m/^Y$/){
 					$sigma=(2.0*$D[4]/$D[3])**(1.0/6.0);
 					$epsilon=$D[3]**2/(4.0*$D[4]);
 					$sigma*=10.0;
-					$CSTRING=sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],1,$sigma,$epsilon);
+					$CSTRING=sprintf ("%5i %5i %1i %9.5f %8.5e\n", $D[0],$D[1],1,$sigma,$epsilon);
 				}elsif($D[2] == 5){
 					if($#D != 5){
 						print "ERROR: Wrong number of arguments for a pair of type 5 (single-well gaussian)\n$C[$K]";
@@ -623,7 +623,7 @@ if($SBMINPON =~ m/^Y$/){
 					}
 					$D[4]*=10.0;
 					$D[5]*=10.0;
-					$CSTRING=sprint ("$D[0] $D[1] $D[2] $D[3] $D[4] $D[5]\n");
+					$CSTRING=sprintf (%5i %5i %1i %8.5e %9.5f %9.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5]);
 				}elsif($D[2] == 6){
 					if($#D != 6){
 						print "ERROR: Wrong number of arguments for a pair of type 6 (single-well gaussian w excluded volume)\n$C[$K]";
@@ -631,7 +631,7 @@ if($SBMINPON =~ m/^Y$/){
 					}
 					$D[4]*=10.0;
 					$D[5]*=10.0;
-					$CSTRING=sprint ("$D[0] $D[1] $D[2] $D[3] $D[4] $D[5] $D[6]\n");
+					$CSTRING=sprintf (%5i %5i %1i %8.5e %9.5f %9.5f %8.5e\n", "$D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
 
 				}elsif($D[2] == 7){
 					if($#D != 8){
@@ -642,7 +642,7 @@ if($SBMINPON =~ m/^Y$/){
 					$D[5]*=10.0;
 					$D[6]*=10.0;
 					$D[7]*=10.0;
-					$CSTRING=sprint ("$D[0] $D[1] $D[2] $D[3] $D[4] $D[5] $D[6] $D[7] $D[8]\n");
+					$CSTRING=sprintf (%5i %5i %1i %8.5e %9.5f %9.5f %9.5f %9.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6],$D[7],$D[8]);
 				}else{ 
 					print "Internal error 1: Please contact info\@smog-server.org for help.\n"; 
 					exit;
