@@ -549,7 +549,7 @@ if($SBMINPON =~ m/^Y$/){
 			print "ERROR: Improperly formatted moleculetype line. Must provide name and nrexcl value.\n";
 			exit;
 		}
-		print "\nNOTE: nrexcl value will not be used.  Exclusions will determined solely by bonds, angles, dihedrals and contacts.\n";
+		print "\nNOTE: nrexcl value will not be used.  Exclusions will be determined solely by bonds, angles, dihedrals and contacts.\n";
 	}
 
 
