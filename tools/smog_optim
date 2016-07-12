@@ -651,9 +651,9 @@ if($SBMINPON =~ m/^Y$/){
 				$AT=$indexbytype{$D[1]}+1;
 			}
 			if($#D == 7){
-				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[6],$D[7]);
+				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$AT,$D[2],$D[3],$D[4],$D[6],$D[7]);
 			}elsif($#D == 6){
-				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[6],$massbytype{$D[1]});
+				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$AT,$D[2],$D[3],$D[4],$D[6],$massbytype{$D[1]});
 			}elsif($#D == 5){
 				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$AT,$D[2],$D[3],$D[4],$chargebytype{"$D[1]"},$massbytype{$D[1]});
 			}else{
