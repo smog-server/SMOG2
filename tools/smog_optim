@@ -121,7 +121,7 @@ if($RIGIDON =~ m/^Y$/){
 			chomp($LINE);
 			$LINE =~ s/\t/ /g; 
 			$LINE =~ s/^\s+|\s+$//g;
-			$LINE =~ s/ +/ /g;
+			$LINE =~ s/\s+/ /g;
 			my @A=split(/ /,$LINE);
 			unless($A[0] eq "GROUP"){
 				print "ERROR: Each line of the rigid group file must start with GROUP. Quitting.\n";
@@ -158,7 +158,7 @@ if($RIGIDON =~ m/^Y$/){
 			chomp($TMP);
 			$TMP =~ s/\t/ /g; 
 			$TMP =~ s/^\s+|\s+$//g;
-			$TMP =~ s/ +/ /g;
+			$TMP =~ s/\s+/ /g;
 			my @A=split(/\s+/,$TMP);
 			$NATOMS=$A[0];
 			for(my $I=0;$I<$NATOMS;$I++){
@@ -575,6 +575,7 @@ if($SBMINPON =~ m/^Y$/){
 			if($#D != 5){
 				print "ERROR: Wrong number of arguments in atomtypes declaration.\n";
 				print "Offending line:\n$C[$II]\n";
+				exit;
 			}
 			if($D[2] != 0 && $CFL==0){
 				print "\nNOTE: Found charges in atomtypes section.  Debye-Huckel parameters will be assigned.  You may want to double check the output.\n";
