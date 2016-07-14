@@ -472,6 +472,7 @@ if($SBMINPON =~ m/^Y$/){
 	$TMP =~ s/ +/ /g;
 	my @A=split(/\s+/,$TMP);
 	my $NATOMS=$A[0];
+	unless($NATOMS =~ m/^\d+$/){print "ERROR: Number of atoms on line 2 of gro file ($NATOMS), is not an integer.\n"; exit;}
 
 	for(my $I=0;$I<$NATOMS;$I++){
 		# read a line
