@@ -155,7 +155,7 @@ sub initializeDirectives {
   	addToTop("dihedrals","\n[ dihedrals ]\n");
   	addToTop("dihedrals",";ai  aj  ak  al  func  phi0(deg) kd mult\n");
 	addToTop("pairs","\n[ pairs ]\n");
-	addToTop("pairs","; ai aj type, A, B\n");
+	addToTop("pairs","; ai aj type A B\n");
 	addToTop("exclusions","\n[ exclusions ]\n");
 	addToTop("exclusions","; ai	aj\n");
 	addToTop("atomtypes","\n [ atomtypes ] \n");
