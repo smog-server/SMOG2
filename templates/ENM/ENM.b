@@ -68,7 +68,7 @@
 
 <!-- IMPROPERS -->
 <impropers>
-	<improper func="dihedral_harmonic(?,10)">
+	<improper func="dihedral_harmonic(?,20)">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>

@@ -4,14 +4,14 @@ print <<EOT;
 *****************************************************************************************
                                      smog_tablegen                                   
 
-     smog_tablegen is part of the SMOG v2 distribution, available at smog-server.org     
+     smog_tablegen is part of the SMOG 2 distribution, available at smog-server.org     
 
  This tool will generate a table for native contacts and Debye-Huckel electrostatic 
  interactions, for use with Structure-based Models in Gromacs. 
 
  Native contact Potentials: Gromacs supports a 6-12 potential for native contacts. If you
  are using a 6-12 potential, then there is no need to use a table.  However, if would 
- like to use alternate contact potentials of the form (function contact_1 in SMOG v2):
+ like to use alternate contact potentials of the form (function contact_1 in SMOG 2):
 	U=A/r^N-B/r^M,
  then you will need to generate force table.
 
@@ -137,7 +137,7 @@ my $Ntable=int($Rtable/$DR);
 my $VE;my $VpE;
 
 print OUTFILE<<EOF;
-# Force table for use with structure-based SMOG models"
+# Force table for use with structure-based SMOG models
 # Potential of the form U=q_i*q_j*exp(-kappa*r)/r+A/r^N-B/r^M
 # kappa=$kappa
 # N=$exponent1

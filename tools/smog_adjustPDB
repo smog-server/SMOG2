@@ -5,10 +5,10 @@ print <<EOT;
 *****************************************************************************************
                                       smog_adjustPDB                                   
 
-    smog_adjustPDB is part of the SMOG v2 distribution, available at smog-server.org     
+    smog_adjustPDB is part of the SMOG 2 distribution, available at smog-server.org     
 
     This tool will renumber the atoms in each chain, and modify the names of terminal
-        residues, so that they are compatible with the definitions used by SMOG v2
+        residues, so that they are compatible with the definitions used by SMOG 2
 
                        See the SMOG manual for usage guidelines.
 
@@ -39,7 +39,7 @@ sub exitSmog{
 }
 
 ## CHECK INPUT ##
-if(scalar(@ARGV) != 3){
+if(scalar(@ARGV) != 3 && scalar(@ARGV) != 4){
 	exitSmog("Usage: smog_adjustPDB <PDB> <-f filename | default> <output file>\n 
 For default templates use the option default, else provide a filename with the option -f \n");
 }
@@ -47,7 +47,6 @@ if(!exists $ENV{"SMOG_PATH"}){
 	exitSmog("Environmental Variable SMOG_PATH not set\n");
 }
 
-print $ENV{"SMOG_PATH"};
 my $mapOption = $ARGV[1];
 if($mapOption =~ m/^default$/){
 	$mapOption = "$ENV{SMOG_PATH}/tools/sbmMap";
@@ -115,6 +114,8 @@ sub adjustInputFile(){
 	$atomCount=0;	
 	my $k = 0;
 	
+	my $firstresidue=0;
+	my $lastresidue=0;
 	## Loops through all PDB rows ##
 	while($k<$rows){
 		
@@ -151,10 +152,14 @@ sub adjustInputFile(){
 		## If atom line: ##
 		elsif ($pArr[$k] =~ /^ATOM/ || $pArr[$k] =~ /^HETATM/){
 
+			$firstresidue++;
 			my $resNum = substr($pArr[$k],22,5);
 			$resNum =~ s/^\s+|\s+$//g;		
 			my $newResNum = $resNum;
-			
+
+			if($resNum-$lastresidue > 1 && $firstresidue !=1){
+				exitSmog("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum.");
+			}
 			
 			$resName = substr($pArr[$k],17,4);
 			$resName =~ s/^\s+|\s+$//g;
@@ -185,6 +190,7 @@ sub adjustInputFile(){
 				if ($k == $rows || $pArr[$k] =~ /^END/ || $pArr[$k] =~ /^TER/){
 					$newResNum = "";
 					$isTail = 1;
+					$firstresidue=0;
 				}	
 				else{
 					$newResNum = substr($pArr[$k],22,5);	#get next residue index
@@ -194,6 +200,7 @@ sub adjustInputFile(){
 					}
 				}  	
 			}
+			$lastresidue=$resNum;
 
 			## Adjust Tail\Head names ##
 			if ($isHead){

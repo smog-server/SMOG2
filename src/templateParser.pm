@@ -105,7 +105,7 @@ sub smog_quit
 	if($main::noexit){
 		warn("$LINE");
 	}else{
-		print "\n\nFATAL ERROR:  $LINE\n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow SMOG to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
+		print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow SMOG to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
 		exit;
 	}
 }
@@ -115,19 +115,19 @@ sub smog_quit
 ## CLEAR VARIABLE MEMORY ##
 ###########################
 sub clearBifMemory {
-## Store bif info for PDB looping
-%residueBackup = %{ dclone (\%residues) };
-undef %residues;undef $functions;
-undef $contactSettings;undef $termRatios;
-undef $interactions;undef %bondTypes;
-undef %funcTable;undef %funcTableRev;
-##undef %eGTable; 
-undef %eGRevTable;
-undef %bondFunctionals;undef %dihedralFunctionals;
-undef %angleFunctionals;undef %connections;
-undef %dihedralAdjList;
-undef @topFileBuffer;
-undef @linesInDirectives;
+	## Store bif info for PDB looping
+	%residueBackup = %{ dclone (\%residues) };
+	undef %residues;undef $functions;
+	undef $contactSettings;undef $termRatios;
+	undef $interactions;undef %bondTypes;
+	undef %funcTable;undef %funcTableRev;
+	##undef %eGTable; 
+	undef %eGRevTable;
+	undef %bondFunctionals;undef %dihedralFunctionals;
+	undef %angleFunctionals;undef %connections;
+	undef %dihedralAdjList;
+	undef @topFileBuffer;
+	undef @linesInDirectives;
 }
 
 
@@ -135,170 +135,167 @@ undef @linesInDirectives;
 ## SET INPUTFILE NAME ##
 ########################
 sub setInputFileName {
-  my ($a,$b,$c,$d) = @_;
-  $bif = $a;
-  $sif = $b;
-  $bondxml = $c;
-  $nbondxml = $d;
-
+	my ($a,$b,$c,$d) = @_;
+	$bif = $a;
+	$sif = $b;
+	$bondxml = $c;
+	$nbondxml = $d;
 }
 
 ####################
 ## PARSE BIF FILE ##
 ####################
 sub parseBif {
-## Read .bif ##
-my $data = $xml->XMLin($bif,KeyAttr=>{residue=>"name",connection=>"name"},ForceArray=>1);
-#my $data = $xml->XMLin($bif,KeyAttr=>{residue=>"name",connection=>"name"},ForceArray=>1);
-
-## PARSE RESIDUES INTO A HASH ##
-## Hash is formatted as below
-## residue => 
-##			"residueType" => residue type (ie. amino,rna),
-##			"atoms" => hash of atoms with nbtype, btype,pairType
-##			"impropers" => list of 4 atom impropers
-##			"bonds" => hash of bonds info with key as "atomA-atomB"
-##
-
-## Obtain handle to loop through residue
-my $residueHandle = $data->{"residues"}->[0]->{"residue"};
-
-## Loop through residues
-foreach my $res ( keys %{$residueHandle} )
-{
-  #if (exists $residues{}) {smog_quit("Error in .bif. Duplicate declaration of residue $res.");}
-  ## CREATE ATOM HASH ##
-  my %atoms; my $index = 0;
-  # Obtain handle to loop through atoms
-  my @atomHandle = @{$residueHandle->{$res}->{"atoms"}->[0]->{"atom"}};
-  my %seen;
-  foreach my $atom(@atomHandle)
-  {
-	my $AT= $atom->{"content"};
-  if(exists $seen{"$AT"}){smog_quit("Error in .bif. Duplicate declaration of atom $AT in residue $res.")};
-  $seen{"$AT"}=1;
-  
-  unless($atom->{"nbType"} =~ /^[a-zA-Z0-9_]+$/){
-   my $T=$atom->{"nbType"};
-   smog_quit("Only letters, numbers and _ can appear in nbType definitions. nbType \"$T\" found in residue $res");
-  }
-    ## atom{atomName} => {nbType,bType,index,pairType}
-	$atoms{$atom->{"content"}} = {"index"=>$index,"nbType" => $atom->{"nbType"},"bType" => $atom->{"bType"},
-	"pairType" => $atom->{"pairType"}};
+	## Read .bif ##
+	my $data = $xml->XMLin($bif,KeyAttr=>{residue=>"name",connection=>"name"},ForceArray=>1);
+	#my $data = $xml->XMLin($bif,KeyAttr=>{residue=>"name",connection=>"name"},ForceArray=>1);
 	
-	## Save the different (non)bond type declaration to accomade wild-card character
-	$index++;
-  }
-  undef %seen;
-
-  ## CREATE IMPROPER ARRAY ##
-  my @impropers;my @improperHandle;
-  # Obtain handle to loop through impropers
-  if(exists $residueHandle->{$res}->{"impropers"})
-  	{@improperHandle = @{$residueHandle->{$res}->{"impropers"}->[0]->{"improper"}};}
-  my %seenIMP;
-  foreach my $improper(@improperHandle)
-  {
-    ## [[A,B,C,D],[E,F,G,H],...]
-		if(!exists $improper->{"atom"}->[0]){smog_quit("Declaration of residue $res has an improper that lacks atoms\n")};
-  		my %seenAtom;
-		my $atomstring=$improper->{"atom"}->[0];
-		for(my $I=1;$I<4;$I++){
-			my $T=$improper->{"atom"}->[$I];
-			$atomstring=$atomstring . "-" . $T;
-			if(exists $seenAtom{"$T"}){
-				smog_quit("Error in .bif.  Duplicate declaration of atom $T in improper dihedral for residue $res.");
-			}else{
-				$seenAtom{"$T"}=1;
+	## PARSE RESIDUES INTO A HASH ##
+	## Hash is formatted as below
+	## residue => 
+	##			"residueType" => residue type (ie. amino,rna),
+	##			"atoms" => hash of atoms with nbtype, btype,pairType
+	##			"impropers" => list of 4 atom impropers
+	##			"bonds" => hash of bonds info with key as "atomA-atomB"
+	##
+	
+	## Obtain handle to loop through residue
+	my $residueHandle = $data->{"residues"}->[0]->{"residue"};
+	
+	## Loop through residues
+	foreach my $res ( keys %{$residueHandle} )
+	{
+		#if (exists $residues{}) {smog_quit("Error in .bif. Duplicate declaration of residue $res.");}
+		## CREATE ATOM HASH ##
+		my %atoms; my $index = 0;
+		# Obtain handle to loop through atoms
+		my @atomHandle = @{$residueHandle->{$res}->{"atoms"}->[0]->{"atom"}};
+		my %seen;
+		foreach my $atom(@atomHandle)
+		{
+			my $AT= $atom->{"content"};
+			if(exists $seen{"$AT"}){smog_quit("Error in .bif. Duplicate declaration of atom $AT in residue $res.")};
+			$seen{"$AT"}=1;
+		
+			unless($atom->{"nbType"} =~ /^[a-zA-Z0-9_]+$/){
+		 		my $T=$atom->{"nbType"};
+		 		smog_quit("Only letters, numbers and _ can appear in nbType definitions. nbType \"$T\" found in residue $res");
+			}
+		  	## atom{atomName} => {nbType,bType,index,pairType}
+		      	$atoms{$atom->{"content"}} = {"index"=>$index,"nbType" => $atom->{"nbType"},"bType" => $atom->{"bType"},
+		      	"pairType" => $atom->{"pairType"}};
+		      
+		      	## Save the different (non)bond type declaration to accomade wild-card character
+		      	$index++;
+		}
+		undef %seen;
+		
+		## CREATE IMPROPER ARRAY ##
+		my @impropers;my @improperHandle;
+		# Obtain handle to loop through impropers
+		if(exists $residueHandle->{$res}->{"impropers"})
+			{@improperHandle = @{$residueHandle->{$res}->{"impropers"}->[0]->{"improper"}};}
+		my %seenIMP;
+		foreach my $improper(@improperHandle)
+		{
+		  ## [[A,B,C,D],[E,F,G,H],...]
+		      	if(!exists $improper->{"atom"}->[0]){smog_quit("Declaration of residue $res has an improper that lacks atoms\n")};
+				my %seenAtom;
+		      	my $atomstring=$improper->{"atom"}->[0];
+		      	for(my $I=1;$I<4;$I++){
+		      		my $T=$improper->{"atom"}->[$I];
+		      		$atomstring=$atomstring . "-" . $T;
+		      		if(exists $seenAtom{"$T"}){
+		      			smog_quit("Error in .bif.  Duplicate declaration of atom $T in improper dihedral for residue $res.");
+		      		}else{
+		      			$seenAtom{"$T"}=1;
+		      		}
+		      	}
+		
+		      	my $atomstringRev=$improper->{"atom"}->[3];
+		      	for(my $I=2;$I>=0;$I--){
+		      		my $T=$improper->{"atom"}->[$I];
+		      		$atomstringRev=$atomstringRev . "-". $T;
+		      	}
+		
+		
+		      	if(exists $seenIMP{"$atomstring"} or exists $seenIMP{"$atomstringRev"}){
+		      		smog_quit("Error in .bif.  Duplicate declaration of improper dihedral $atomstring for residue $res.");
+		      	}else{
+		      		$seenIMP{"$atomstring"}=1;
+		      		$seenIMP{"$atomstringRev"}=1;
+		      	}
+				undef %seenAtom;
+			push(@impropers,$improper->{"atom"});
+		}
+		undef %seenIMP;
+		## CREATE BOND HASH ##
+		my %bonds; my %energyGroups; my %rigidGroups;
+		my @bondHandle;
+		# Obtain handle to loop through bonds
+		if(exists $residueHandle->{$res}->{"bonds"})
+		      {@bondHandle = @{$residueHandle->{$res}->{"bonds"}->[0]->{"bond"}};}
+		foreach my $bond(@bondHandle)
+		{
+		  ## bonds{atomA-atomB} = bond info from XML
+			my $atomA = $bond->{"atom"}->[0];
+			my $atomB = $bond->{"atom"}->[1];
+			if(exists $bonds{"$atomA-$atomB"}){
+				smog_quit("Error in .bif.  Duplicate declaration of bond between atoms $atomA and $atomB in residue $res.");
+			}
+			$bonds{"$atomA-$atomB"} = $bond;
+			
+			## If bond is a flexible dihedral
+			if(exists $bond->{"energyGroup"}){
+				$energyGroups{"$atomA-$atomB"} = $bond->{"energyGroup"};
+				$energyGroups{"$atomB-$atomA"} = $bond->{"energyGroup"};
+			}
+			
+			## If bond is rigid dihedral
+			else{
+				$rigidGroups{"$atomA-$atomB"} = $bond->{"rigidGroup"};
+				$rigidGroups{"$atomB-$atomA"} = $bond->{"rigidGroup"};
 			}
 		}
-
-		my $atomstringRev=$improper->{"atom"}->[3];
-		for(my $I=2;$I>=0;$I--){
-			my $T=$improper->{"atom"}->[$I];
-			$atomstringRev=$atomstringRev . "-". $T;
+		
+		##atomCount !exists == -1, else atomCount
+		if(!exists $residueHandle->{$res}->{"atomCount"})
+		{
+			$residueHandle->{$res}->{"atomCount"}=-1;
 		}
+		## Create residue hash containing all data
+		my $interRes = {
+		      "residueType" => $residueHandle->{$res}->{residueType},
+		      "atoms" => \%atoms,
+		      "impropers" => \@impropers,
+		      "bonds" => \%bonds,
+		      "energyGroups" => \%energyGroups,
+		      "rigidGroups" => \%rigidGroups,
+		      "atomCount" => $residueHandle->{$res}->{"atomCount"}
+		      };
+		$residues{$res} = $interRes;
+	  
+	}
 
-
-		if(exists $seenIMP{"$atomstring"} or exists $seenIMP{"$atomstringRev"}){
-			smog_quit("Error in .bif.  Duplicate declaration of improper dihedral $atomstring for residue $res.");
-		}else{
-			$seenIMP{"$atomstring"}=1;
-			$seenIMP{"$atomstringRev"}=1;
+	## PARSE CONNECTIONS ##
+	## Parse connections into an array of connection information.
+	## The index will represent all the unique type of connections
+	##
+	
+	## Obtain handle to loop through connections
+	my $conHandle = $data->{"connections"}->[0]->{"connection"};
+	my $resA; my $resB; 
+	## Loop through connections
+	foreach my $connname (keys %{$conHandle})
+	{
+		$resA = $conHandle->{$connname}->{"residueType1"};
+		$resB = $conHandle->{$connname}->{"residueType2"};
+		if(exists $connections{$resA}->{$resB}){
+			smog_quit ("Duplicate assignment of connections between residueTypes $resA and $resB");
 		}
-  		undef %seenAtom;
-	push(@impropers,$improper->{"atom"});
-  }
-  undef %seenIMP;
-  ## CREATE BOND HASH ##
-  my %bonds; my %energyGroups; my %rigidGroups;
-  my @bondHandle;
-  # Obtain handle to loop through bonds
-  if(exists $residueHandle->{$res}->{"bonds"})
-	{@bondHandle = @{$residueHandle->{$res}->{"bonds"}->[0]->{"bond"}};}
-  foreach my $bond(@bondHandle)
-  {
-    ## bonds{atomA-atomB} = bond info from XML
-	my $atomA = $bond->{"atom"}->[0];
-	my $atomB = $bond->{"atom"}->[1];
-	if(exists $bonds{"$atomA-$atomB"}){
-			smog_quit("Error in .bif.  Duplicate declaration of bond between atoms $atomA and $atomB in residue $res.");
+		$connections{$resA}->{$resB}=$conHandle->{$connname};
 	}
-	$bonds{"$atomA-$atomB"} = $bond;
-	
-	## If bond is a flexible dihedral
-	if(exists $bond->{"energyGroup"}){
-	$energyGroups{"$atomA-$atomB"} = $bond->{"energyGroup"};
-	$energyGroups{"$atomB-$atomA"} = $bond->{"energyGroup"};
-	}
-	
-	## If bond is rigid dihedral
-	else{
-	$rigidGroups{"$atomA-$atomB"} = $bond->{"rigidGroup"};
-	$rigidGroups{"$atomB-$atomA"} = $bond->{"rigidGroup"};
-	}
-	
-  }
-  
-    ##atomCount !exists == -1, else atomCount
-    if(!exists $residueHandle->{$res}->{"atomCount"})
-    {$residueHandle->{$res}->{"atomCount"}=-1;}
-  ## Create residue hash containing all data
-  my $interRes = {
-	"residueType" => $residueHandle->{$res}->{residueType},
-	"atoms" => \%atoms,
-	"impropers" => \@impropers,
-	"bonds" => \%bonds,
-	"energyGroups" => \%energyGroups,
-	"rigidGroups" => \%rigidGroups,
-	"atomCount" => $residueHandle->{$res}->{"atomCount"}
-	};
-  $residues{$res} = $interRes;
-  
 }
-
-## PARSE CONNECTIONS ##
-## Parse connections into an array of connection information.
-## The index will represent all the unique type of connections
-##
-
-## Obtain handle to loop through connections
-my $conHandle = $data->{"connections"}->[0]->{"connection"};
-my $resA; my $resB; 
-## Loop through connections
-foreach my $connname (keys %{$conHandle})
-{
-	$resA = $conHandle->{$connname}->{"residueType1"};
-	$resB = $conHandle->{$connname}->{"residueType2"};
-	if(exists $connections{$resA}->{$resB}){
-		smog_quit ("Duplicate assignment of connections between residueTypes $resA and $resB");
-	}
-	$connections{$resA}->{$resB}=$conHandle->{$connname};
-}
-
-
-}
-
 
 
 ####################
@@ -307,188 +304,187 @@ foreach my $connname (keys %{$conHandle})
 
 sub parseSif {
 
-## Read .sif file ##
-$data = $xml->XMLin($sif,KeyAttr => ['name'],ForceArray=>1);
-## Parse function data
-$functions = $data->{"functions"}->[0]->{"function"};
-foreach my $funcName(keys %{$functions}){
-
-	if($functions->{$funcName}->{"directive"} eq "pairs" 
-		&& !exists $functions->{$funcName}->{"exclusions"}){
-		smog_quit( "Since $funcName is of directive \"pairs\", boolean element \"exclusions\" must be included in the function declaration in the .sif file.\n");
-	}elsif(exists $functions->{$funcName}->{"exclusions"} && $functions->{$funcName}->{"exclusions"} ==1 
-		&& $functions->{$funcName}->{"exclusions"} ==0){
-		smog_quit("function $funcName element exclusions must be 0, or 1.");
-	}elsif($functions->{$funcName}->{"directive"} ne "pairs"
-                && exists $functions->{$funcName}->{"exclusions"}){
-		print "\nNOTE: Element \"exclusions\" is defined for function $funcName. This is likely unnecessary, since the \"exclusions\" element is only relevant for contacts.\n";
-	}
-}
-## Parse settings data
-$settings = $data->{"settings"}->[0];
-our $energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};
-my $contactGroups = $settings->{"Groups"}->[0]->{"contactGroup"};
-my $groupRatios = $settings->{"Groups"}->[0]->{"groupRatios"}->[0];
-my $residueType; 
-my $intraRelativeStrength; my $normalize;
-my $interRelativeStrength;
-my $totalStrength;my $total;
-my $totalEnergyGroup;my $totalContactGroup;
-
-## PARSE ENERGY GROUP INFORMATION ##
-## INFO PLACED IN termRatio HASH
-## $termRatio->"residueType"->"energyGroup" = 
-##	"relativeStrength" -> factor to determine ratios
-##  "normalize" -> if strength is to be normalized among bonds
-##
-
-##
-# Contact to Dihedral Group ratio is global
-# Contact ratio is global
-# Dihedral group ratio is residue dependent
-my $EG_NORM=0;
-foreach my $egName(keys %{$energyGroups})
-{
-	$residueType = $energyGroups->{$egName}->{"residueType"};
-	$intraRelativeStrength = $energyGroups->{$egName}->{"intraRelativeStrength"};
-	$normalize = $energyGroups->{$egName}->{"normalize"};
-	$termRatios->{$residueType}->{"energyGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
-	if($normalize == 0 && exists $energyGroups->{$egName}->{"intraRelativeStrength"}){
-		smog_quit("Issue in .sif, energy group $egName. intraRelativeStrength only supported when normalization is on.");
-	}elsif($normalize == 1 && !exists $energyGroups->{$egName}->{"intraRelativeStrength"}){
-		smog_quit("Issue in .sif, energy group $egName. intraRelativeStrength must be set if normalization is on.");
-	}elsif($normalize != 1 && $normalize != 0){
-		smog_quit("Issue in .sif, energy group $egName. normalization must be 0, or 1. Found $normalize");
-	}elsif(exists $energyGroups->{$egName}->{"intraRelativeStrength"} && $energyGroups->{$egName}->{"intraRelativeStrength"} <=0 ){
-                smog_quit("intraRelativeStrength must be >= 0.  See energyGroup $egName in .sif.");
-        }
+	## Read .sif file ##
+	$data = $xml->XMLin($sif,KeyAttr => ['name'],ForceArray=>1);
+	## Parse function data
+	$functions = $data->{"functions"}->[0]->{"function"};
+	foreach my $funcName(keys %{$functions}){
 	
-	if($normalize==1){
-		$EG_NORM++;
+		if($functions->{$funcName}->{"directive"} eq "pairs" 
+			&& !exists $functions->{$funcName}->{"exclusions"}){
+			smog_quit( "Since $funcName is of directive \"pairs\", boolean element \"exclusions\" must be included in the function declaration in the .sif file.\n");
+		}elsif(exists $functions->{$funcName}->{"exclusions"} && $functions->{$funcName}->{"exclusions"} ==1 
+			&& $functions->{$funcName}->{"exclusions"} ==0){
+			smog_quit("function $funcName element exclusions must be 0, or 1.");
+		}elsif($functions->{$funcName}->{"directive"} ne "pairs"
+	                && exists $functions->{$funcName}->{"exclusions"}){
+			print "\nNOTE: Element \"exclusions\" is defined for function $funcName. This is likely unnecessary, since the \"exclusions\" element is only relevant for contacts.\n";
+		}
+	}
+	## Parse settings data
+	$settings = $data->{"settings"}->[0];
+	our $energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};
+	my $contactGroups = $settings->{"Groups"}->[0]->{"contactGroup"};
+	my $groupRatios = $settings->{"Groups"}->[0]->{"groupRatios"}->[0];
+	my $residueType; 
+	my $intraRelativeStrength; my $normalize;
+	my $interRelativeStrength;
+	my $totalStrength;my $total;
+	my $totalEnergyGroup;my $totalContactGroup;
+	
+	## PARSE ENERGY GROUP INFORMATION ##
+	## INFO PLACED IN termRatio HASH
+	## $termRatio->"residueType"->"energyGroup" = 
+	##	"relativeStrength" -> factor to determine ratios
+	##  "normalize" -> if strength is to be normalized among bonds
+	##
+	
+	##
+	# Contact to Dihedral Group ratio is global
+	# Contact ratio is global
+	# Dihedral group ratio is residue dependent
+	my $EG_NORM=0;
+	foreach my $egName(keys %{$energyGroups})
+	{
+		$residueType = $energyGroups->{$egName}->{"residueType"};
+		$intraRelativeStrength = $energyGroups->{$egName}->{"intraRelativeStrength"};
+		$normalize = $energyGroups->{$egName}->{"normalize"};
+		$termRatios->{$residueType}->{"energyGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
+		if($normalize == 0 && exists $energyGroups->{$egName}->{"intraRelativeStrength"}){
+			smog_quit("Issue in .sif, energy group $egName. intraRelativeStrength only supported when normalization is on.");
+		}elsif($normalize == 1 && !exists $energyGroups->{$egName}->{"intraRelativeStrength"}){
+			smog_quit("Issue in .sif, energy group $egName. intraRelativeStrength must be set if normalization is on.");
+		}elsif($normalize != 1 && $normalize != 0){
+			smog_quit("Issue in .sif, energy group $egName. normalization must be 0, or 1. Found $normalize");
+		}elsif(exists $energyGroups->{$egName}->{"intraRelativeStrength"} && $energyGroups->{$egName}->{"intraRelativeStrength"} <=0 ){
+	                smog_quit("intraRelativeStrength must be >= 0.  See energyGroup $egName in .sif.");
+	        }
+		
+		if($normalize==1){
+			$EG_NORM++;
+		}
+		
 	}
 	
-}
-
-my $CG_NORM=0;
-my $setflag = 0;$total=0;
-foreach my $egName(keys %{$contactGroups})
-{
-	$intraRelativeStrength = $contactGroups->{$egName}->{"intraRelativeStrength"};
-	$normalize = $contactGroups->{$egName}->{"normalize"};
-	$termRatios->{"contactGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
-	if($normalize){$total+=$intraRelativeStrength; $CG_NORM++}
-
-	if($normalize == 0 && exists $contactGroups->{$egName}->{"intraRelativeStrength"}){
-		smog_quit("Issue in .sif, contact group $egName. intraRelativeStrength only supported when normalization is on.");
-	}elsif($normalize == 1 && !exists $contactGroups->{$egName}->{"intraRelativeStrength"}){
-		smog_quit("Issue in .sif, contact group $egName. intraRelativeStrength must be set if normalization is on.");
-	}elsif($normalize != 1 && $normalize != 0){
-		smog_quit("Issue in .sif, contact group $egName. normalization must be 0, or 1. Found $normalize");
-	}elsif(exists $contactGroups->{$egName}->{"intraRelativeStrength"} && $contactGroups->{$egName}->{"intraRelativeStrength"} <=0 ){
-		smog_quit("intraRelativeStrength must be >= 0.  See contactGroup $egName .sif.");
+	my $CG_NORM=0;
+	my $setflag = 0;$total=0;
+	foreach my $egName(keys %{$contactGroups})
+	{
+		$intraRelativeStrength = $contactGroups->{$egName}->{"intraRelativeStrength"};
+		$normalize = $contactGroups->{$egName}->{"normalize"};
+		$termRatios->{"contactGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
+		if($normalize){$total+=$intraRelativeStrength; $CG_NORM++}
+	
+		if($normalize == 0 && exists $contactGroups->{$egName}->{"intraRelativeStrength"}){
+			smog_quit("Issue in .sif, contact group $egName. intraRelativeStrength only supported when normalization is on.");
+		}elsif($normalize == 1 && !exists $contactGroups->{$egName}->{"intraRelativeStrength"}){
+			smog_quit("Issue in .sif, contact group $egName. intraRelativeStrength must be set if normalization is on.");
+		}elsif($normalize != 1 && $normalize != 0){
+			smog_quit("Issue in .sif, contact group $egName. normalization must be 0, or 1. Found $normalize");
+		}elsif(exists $contactGroups->{$egName}->{"intraRelativeStrength"} && $contactGroups->{$egName}->{"intraRelativeStrength"} <=0 ){
+			smog_quit("intraRelativeStrength must be >= 0.  See contactGroup $egName .sif.");
+		}
 	}
-}
-
-if(($CG_NORM > 0 and $EG_NORM ==0) or ($EG_NORM > 0 and $CG_NORM ==0)){
-	smog_quit('Issue in .sif. Normalization only turned on for ContactGroups, or EnergyGroups. Normalization must be off, or on, for both.');
-}
-
-
-
-
-
-## NOTE:Contact Type is Global ##
-## Sum of contact scalings ##
-$termRatios->{"cintraRelativeTotal"} = $total;
-
-if($groupRatios->{"contacts"} <=0 || $groupRatios->{"contacts"} <=0){
-	smog_quit("All values for groupRatios must be greater than zero. See .sif file.")
-}
-## contact/dihe relative Scale ##
-$termRatios->{"contactRelative"} = $groupRatios->{"contacts"};
-## dihe/contact relative Scale ##
-$termRatios->{"energyRelative"} = $groupRatios->{"dihedrals"};
-## Sum of total global scaling ##
-$termRatios->{"interRelativeTotal"} = $groupRatios->{"contacts"}+$groupRatios->{"dihedrals"};
-
-
-## PARSE TERM STRENGTH INFORMATION ##
-## Term strengths are copied to a hash with key
-## as epsilonBonds, epsilonAngles, epsilonPlanar, epsilonNC
-## according to the all-atom paper
-my $termStrengths = $settings->{"termStrengths"}->[0];
-
-
-## PARSE CONTACT MAP SETTINGS ##
-$contactSettings = $data->{"settings"}->[0]->{"Contacts"}->[0];
-
-## check for consistency in the contact settings
-my $method = $contactSettings->{"method"};
-
-if($method =~ m/shadow/)
-{
-
- if(!exists $contactSettings->{"shadowRadiusBonded"}){
-  smog_quit("When using contact method=shadow, you must supply a value for shadowRadiusBonded in the .sif file.");
- }
- if(!exists $contactSettings->{"shadowRadius"}){
-  smog_quit("When using contact method=shadow, you must supply a value for shadowRadius in the .sif file.");
- }
-
-}
-elsif($method =~ m/cutoff/)
-{
- if(exists $contactSettings->{"shadowRadiusBonded"}){
-  smog_quit("Contact method=cutoff can not use shadowRadiusBonded.  Either change the method, or remove shadowRadiusBonded in the .sif file.");
- }
- if(exists $contactSettings->{"shadowRadius"}){
-  smog_quit("Contact method=cutoff can not use shadowRadius.  Either change the method, or remove shadowRadius in the .sif file.");
- }
-}else{smog_quit ("Contact map method $method is not supported.");}
-
-# Scaling Parameters #
-if(exists $contactSettings->{"contactScaling"}){
-my $contactScaling = $contactSettings->{"contactScaling"};
-my %seenScaling;
-foreach my $k(keys %{$contactScaling})
-{
-
-   my $scale = $contactScaling->{$k}->{"scale"};
-   my $deltaMin = $contactScaling->{$k}->{"deltaMin"};
-   my $deltaMax = $contactScaling->{$k}->{"deltaMax"};
-   my $atomListString = $contactScaling->{$k}->{"atomList"};
-   $atomListString = trim($atomListString);
-   my @atomList = split(/\s+/,$atomListString);
-   if(scalar(@atomList) == 0){smog_quit("No atom list at contact scaling");}
-   my %atomListHash = map {$_=>1} @atomList;
-
-   my $A = $contactScaling->{$k}->{"residueType1"};
-   my $B = $contactScaling->{$k}->{"residueType2"};
-   if(exists $seenScaling{"$A-$B"}  || exists $seenScaling{"$B-$A"} ){
-   	smog_quit("In .sif file, contactScaling given twice for residueType pair $A-$B.");
-   }else{
-    $seenScaling{"$A-$B"}=1;
-    $seenScaling{"$B-$A"}=1;
-   }
-
-
-
-   delete $contactScaling->{$k};
-   $contactScaling->{$A}->{$B} 
-   = {"deltaMin"=>$deltaMin,"deltaMax"=>$deltaMax,"scale"=>$scale,"atomList"=>\%atomListHash};
-   $contactScaling->{$B}->{$A} 
-   = {"deltaMin"=>$deltaMin,"deltaMax"=>$deltaMax,"scale"=>$scale,"atomList"=>\%atomListHash};
-}
-}
-
-## PARSE INTERACTION THRESHOLD SETTINGS ##
-my $bondsThreshold = $data->{"settings"}->[0]->{"bondsThreshold"}->[0];
-my $anglesThreshold = $data->{"settings"}->[0]->{"anglesThreshold"}->[0];
-my $contactsThreshold = $data->{"settings"}->[0]->{"contactsThreshold"}->[0];
-$interactionThreshold->{"bonds"}={"shortBond"=>$bondsThreshold->{"shortBond"},
-								  "longBond"=>$bondsThreshold->{"longBond"}};
-$interactionThreshold->{"angles"}={"smallAngles"=>$anglesThreshold->{"smallAngles"},"largeAngles"=>$anglesThreshold->{"largeAngles"}};
-$interactionThreshold->{"contacts"}={"shortContacts"=>$contactsThreshold->{"shortContacts"}};
+	
+	if(($CG_NORM > 0 and $EG_NORM ==0) or ($EG_NORM > 0 and $CG_NORM ==0)){
+		smog_quit('Issue in .sif. Normalization only turned on for ContactGroups, or EnergyGroups. Normalization must be off, or on, for both.');
+	}
+	
+	
+	
+	
+	
+	## NOTE:Contact Type is Global ##
+	## Sum of contact scalings ##
+	$termRatios->{"cintraRelativeTotal"} = $total;
+	
+	if($groupRatios->{"contacts"} <=0 || $groupRatios->{"contacts"} <=0){
+		smog_quit("All values for groupRatios must be greater than zero. See .sif file.")
+	}
+	## contact/dihe relative Scale ##
+	$termRatios->{"contactRelative"} = $groupRatios->{"contacts"};
+	## dihe/contact relative Scale ##
+	$termRatios->{"energyRelative"} = $groupRatios->{"dihedrals"};
+	## Sum of total global scaling ##
+	$termRatios->{"interRelativeTotal"} = $groupRatios->{"contacts"}+$groupRatios->{"dihedrals"};
+	
+	
+	## PARSE TERM STRENGTH INFORMATION ##
+	## Term strengths are copied to a hash with key
+	## as epsilonBonds, epsilonAngles, epsilonPlanar, epsilonNC
+	## according to the all-atom paper
+	my $termStrengths = $settings->{"termStrengths"}->[0];
+	
+	
+	## PARSE CONTACT MAP SETTINGS ##
+	$contactSettings = $data->{"settings"}->[0]->{"Contacts"}->[0];
+	
+	## check for consistency in the contact settings
+	my $method = $contactSettings->{"method"};
+	
+	if($method =~ m/shadow/)
+	{
+	
+		if(!exists $contactSettings->{"shadowRadiusBonded"}){
+			smog_quit("When using contact method=shadow, you must supply a value for shadowRadiusBonded in the .sif file.");
+		}
+		if(!exists $contactSettings->{"shadowRadius"}){
+			smog_quit("When using contact method=shadow, you must supply a value for shadowRadius in the .sif file.");
+		}
+	}
+	elsif($method =~ m/cutoff/)
+	{
+		if(exists $contactSettings->{"shadowRadiusBonded"}){
+			smog_quit("Contact method=cutoff can not use shadowRadiusBonded.  Either change the method, or remove shadowRadiusBonded in the .sif file.");
+		}
+		if(exists $contactSettings->{"shadowRadius"}){
+			smog_quit("Contact method=cutoff can not use shadowRadius.  Either change the method, or remove shadowRadius in the .sif file.");
+		}
+	}else{
+		smog_quit ("Contact map method $method is not supported.");
+	}
+	
+	# Scaling Parameters #
+	if(exists $contactSettings->{"contactScaling"}){
+		my $contactScaling = $contactSettings->{"contactScaling"};
+		my %seenScaling;
+		foreach my $k(keys %{$contactScaling})
+		{
+		
+			my $scale = $contactScaling->{$k}->{"scale"};
+			my $deltaMin = $contactScaling->{$k}->{"deltaMin"};
+			my $deltaMax = $contactScaling->{$k}->{"deltaMax"};
+			my $atomListString = $contactScaling->{$k}->{"atomList"};
+			$atomListString = trim($atomListString);
+			my @atomList = split(/\s+/,$atomListString);
+			if(scalar(@atomList) == 0){smog_quit("No atom list at contact scaling");}
+			my %atomListHash = map {$_=>1} @atomList;
+			
+			my $A = $contactScaling->{$k}->{"residueType1"};
+			my $B = $contactScaling->{$k}->{"residueType2"};
+			if(exists $seenScaling{"$A-$B"}  || exists $seenScaling{"$B-$A"} ){
+				smog_quit("In .sif file, contactScaling given twice for residueType pair $A-$B.");
+			}else{
+				$seenScaling{"$A-$B"}=1;
+				$seenScaling{"$B-$A"}=1;
+			}
+			
+			delete $contactScaling->{$k};
+			$contactScaling->{$A}->{$B} 
+			= {"deltaMin"=>$deltaMin,"deltaMax"=>$deltaMax,"scale"=>$scale,"atomList"=>\%atomListHash};
+			$contactScaling->{$B}->{$A} 
+			= {"deltaMin"=>$deltaMin,"deltaMax"=>$deltaMax,"scale"=>$scale,"atomList"=>\%atomListHash};
+		}
+	}
+	
+	## PARSE INTERACTION THRESHOLD SETTINGS ##
+	my $bondsThreshold = $data->{"settings"}->[0]->{"bondsThreshold"}->[0];
+	my $anglesThreshold = $data->{"settings"}->[0]->{"anglesThreshold"}->[0];
+	my $contactsThreshold = $data->{"settings"}->[0]->{"contactsThreshold"}->[0];
+	$interactionThreshold->{"bonds"}={"shortBond"=>$bondsThreshold->{"shortBond"},
+									  "longBond"=>$bondsThreshold->{"longBond"}};
+	$interactionThreshold->{"angles"}={"smallAngles"=>$anglesThreshold->{"smallAngles"},"largeAngles"=>$anglesThreshold->{"largeAngles"}};
+	$interactionThreshold->{"contacts"}={"shortContacts"=>$contactsThreshold->{"shortContacts"}};
 
 }
 
@@ -498,50 +494,63 @@ $interactionThreshold->{"contacts"}={"shortContacts"=>$contactsThreshold->{"shor
 
 sub funcToInt
 {
- my($interType,$func,$eG) = @_;
+	my($interType,$func,$eG) = @_;
 	
- if($interType eq "dihedrals")
- {
+	if($interType eq "dihedrals")
+ 	{
   
- if(exists $funcTable{$interType} && exists $funcTable{$interType}->{$eG} && exists $funcTable{$interType}->{$eG}->{$func})
-		{return $funcTable{$interType}->{$eG}->{$func};}
-	else{return -1;}
+		if(exists $funcTable{$interType} && exists $funcTable{$interType}->{$eG} && exists $funcTable{$interType}->{$eG}->{$func})
+		{
+			return $funcTable{$interType}->{$eG}->{$func};
+		}
+		else
+		{
+			return -1;
+		}
  
- }
+	}
 	elsif($interType eq "contacts")
 	{
 		if(exists $funcTable{"contacts"} && exists $funcTable{"contacts"}->{"func"}->{$func})
 		{return $funcTable{"contacts"}->{"func"}->{$func};}
 		else {return -1;}
- }
- else
- {
-	if(exists $funcTable{$interType} && exists $funcTable{$interType}->{$func}) 
- {return  $funcTable{$interType}->{$func};}
-	else {return -1;}
- }
-
+	}
+	else
+	{
+		if(exists $funcTable{$interType} && exists $funcTable{$interType}->{$func}) 
+ 		{
+			return  $funcTable{$interType}->{$func};
+		}
+		else {
+			return -1;
+		}
+	}
 }
 
 sub intToFunc
 {
- 
- my($interType,$int,$eG) = @_;
- if($interType eq "dihedrals")
- {
+	my($interType,$int,$eG) = @_;
+	if($interType eq "dihedrals")
+	{
 		$eG = $eGTable{$eG};
-		
-	if(exists $funcTableRev{$interType} && exists $funcTableRev{$interType}->{$eG} && exists $funcTableRev{$interType}->{$eG}->{$int})
-	{return $funcTableRev{$interType}->{$eG}->{$int};}
-	else{return -1;}
- }
- else
- {
-	if(exists $funcTableRev{$interType} && exists $funcTableRev{$interType}->{$int})
-	{return $funcTableRev{$interType}->{$int};}
-	else{smog_quit ("NO EXISTENCE OF INTERACTION $interType,$int");}
- }
-
+		if(exists $funcTableRev{$interType} && exists $funcTableRev{$interType}->{$eG} && exists $funcTableRev{$interType}->{$eG}->{$int})
+		{
+			return $funcTableRev{$interType}->{$eG}->{$int};
+		}
+		else{
+			return -1;
+		}
+	}
+	else
+	{
+		if(exists $funcTableRev{$interType} && exists $funcTableRev{$interType}->{$int})
+		{
+			return $funcTableRev{$interType}->{$int};
+		}
+		else{
+			smog_quit ("NO EXISTENCE OF INTERACTION $interType,$int");
+		}
+	}
 }
 # getEnergyGroup: Return the energy group for both connected, and internal dihedrals
 sub getEnergyGroup
@@ -585,8 +594,6 @@ sub getEnergyGroup
 		}
 		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
 	}
-
-
 }
 
 
@@ -597,121 +604,119 @@ sub getEnergyGroup
 ## PARSE BOND FILE ##
 
 sub parseBonds {
-$data = $xml->XMLin($bondxml,KeyAttr=>{function=>"name"},ForceArray=>1);
-
-## Obtain bond handle
-my @interHandle = @{$data->{"bonds"}->[0]->{"bond"}};
-
-## Loop over bonds, save in $interaction{bonds}{typeA}{typeB} = func info.
-my $counter = 0;
-foreach my $inter(@interHandle)
-{
-	my $typeA = $inter->{"bType"}->[0];
-	my $typeB = $inter->{"bType"}->[1];
-	my $func = $inter->{"func"};
-	if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
-               exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
-		smog_quit ("bond type between bType $typeA and bType $typeB defined more than once. Check .b file.");
+	$data = $xml->XMLin($bondxml,KeyAttr=>{function=>"name"},ForceArray=>1);
+	
+	## Obtain bond handle
+	my @interHandle = @{$data->{"bonds"}->[0]->{"bond"}};
+	
+	## Loop over bonds, save in $interaction{bonds}{typeA}{typeB} = func info.
+	my $counter = 0;
+	foreach my $inter(@interHandle)
+	{
+		my $typeA = $inter->{"bType"}->[0];
+		my $typeB = $inter->{"bType"}->[1];
+		my $func = $inter->{"func"};
+		if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
+	               exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
+			smog_quit ("bond type between bType $typeA and bType $typeB defined more than once. Check .b file.");
+		}
+		$interactions->{"bonds"}->{$typeA}->{$typeB} = $func;
+		$interactions->{"bonds"}->{$typeB}->{$typeA} = $func;
+		$funcTable{"bonds"}->{$func} = $counter;
+		$funcTableRev{"bonds"}->{$counter} = $func;
+		$counter++;
 	}
-	$interactions->{"bonds"}->{$typeA}->{$typeB} = $func;
-	$interactions->{"bonds"}->{$typeB}->{$typeA} = $func;
-	$funcTable{"bonds"}->{$func} = $counter;
-	$funcTableRev{"bonds"}->{$counter} = $func;
-	$counter++;
-}
-
-## Obtain dihedral handle
-@interHandle = @{$data->{"dihedrals"}->[0]->{"dihedral"}};
-
-## Loop over dihedrals, save $interaction{dihedrals}{typeA}{typeB}{typeC}{typeD}
-## = function info. 
-$counter=0;
-foreach my $inter(@interHandle)
-{
-	my $typeA = $inter->{"bType"}->[0];
-	my $typeB = $inter->{"bType"}->[1];
-	my $typeC = $inter->{"bType"}->[2];
-	my $typeD = $inter->{"bType"}->[3];
-	my $func = $inter->{"func"};
-	my $eG;
-	if(exists $inter->{"energyGroup"})
-		{$eG = $inter->{"energyGroup"};}
-	else
-		{$eG = $inter->{"rigidGroup"};}
 	
-	my $keyString = "$typeA-$typeB-$typeC-$typeD";
-	if(exists $interactions->{"dihedrals"}->{$eG}->{$keyString}){
-		smog_quit ("dihedral type between bTypes $typeA-$typeB-$typeC-$typeD and energy group $eG defined more than once. Check .b file.");
+	## Obtain dihedral handle
+	@interHandle = @{$data->{"dihedrals"}->[0]->{"dihedral"}};
+	
+	## Loop over dihedrals, save $interaction{dihedrals}{typeA}{typeB}{typeC}{typeD}
+	## = function info. 
+	$counter=0;
+	foreach my $inter(@interHandle)
+	{
+		my $typeA = $inter->{"bType"}->[0];
+		my $typeB = $inter->{"bType"}->[1];
+		my $typeC = $inter->{"bType"}->[2];
+		my $typeD = $inter->{"bType"}->[3];
+		my $func = $inter->{"func"};
+		my $eG;
+		if(exists $inter->{"energyGroup"})
+			{$eG = $inter->{"energyGroup"};}
+		else
+			{$eG = $inter->{"rigidGroup"};}
+		
+		my $keyString = "$typeA-$typeB-$typeC-$typeD";
+		if(exists $interactions->{"dihedrals"}->{$eG}->{$keyString}){
+			smog_quit ("dihedral type between bTypes $typeA-$typeB-$typeC-$typeD and energy group $eG defined more than once. Check .b file.");
+		}
+		$interactions->{"dihedrals"}->{$eG}->{$keyString} = $func;
+		
+		$keyString = "$typeD-$typeC-$typeB-$typeA";
+	
+		$interactions->{"dihedrals"}->{$eG}->{$keyString} = $func;
+		
+		$funcTable{"dihedrals"}->{$eG}->{$func} = $counter;
+		$funcTableRev{"dihedrals"}->{$eG}->{$counter} = $func;
+		
+		$eGTable{$counter} = $eG;
+		$eGRevTable{$eG} = $counter;
+		$counter++;
 	}
-	$interactions->{"dihedrals"}->{$eG}->{$keyString} = $func;
 	
-	$keyString = "$typeD-$typeC-$typeB-$typeA";
-
-	$interactions->{"dihedrals"}->{$eG}->{$keyString} = $func;
+	## Obtain improper handle
+	@interHandle = @{$data->{"impropers"}->[0]->{"improper"}};
 	
-	$funcTable{"dihedrals"}->{$eG}->{$func} = $counter;
-	$funcTableRev{"dihedrals"}->{$eG}->{$counter} = $func;
+	## Loop over dihedrals, save $interaction{dihedrals}{typeA}{typeB}{typeC}{typeD}
+	## = function info. 
+	$counter=0;
+	foreach my $inter(@interHandle)
+	{
+		my $typeA = $inter->{"bType"}->[0];
+		my $typeB = $inter->{"bType"}->[1];
+		my $typeC = $inter->{"bType"}->[2];
+		my $typeD = $inter->{"bType"}->[3];
+		my $func = $inter->{"func"};
+		
+		my $keyString = "$typeA-$typeB-$typeC-$typeD";
+		if(exists $interactions->{"impropers"}->{$keyString}){
+			smog_quit ("improper type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.");
+		}
+		$interactions->{"impropers"}->{$keyString} = $func;
+		
+		$keyString = "$typeD-$typeC-$typeB-$typeA";
 	
-	$eGTable{$counter} = $eG;
-	$eGRevTable{$eG} = $counter;
-	$counter++;
-}
-
-
-
-## Obtain improper handle
-@interHandle = @{$data->{"impropers"}->[0]->{"improper"}};
-
-## Loop over dihedrals, save $interaction{dihedrals}{typeA}{typeB}{typeC}{typeD}
-## = function info. 
-$counter=0;
-foreach my $inter(@interHandle)
-{
-	my $typeA = $inter->{"bType"}->[0];
-	my $typeB = $inter->{"bType"}->[1];
-	my $typeC = $inter->{"bType"}->[2];
-	my $typeD = $inter->{"bType"}->[3];
-	my $func = $inter->{"func"};
-	
-	my $keyString = "$typeA-$typeB-$typeC-$typeD";
-	if(exists $interactions->{"impropers"}->{$keyString}){
-		smog_quit ("improper type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.");
+		$interactions->{"impropers"}->{$keyString} = $func;
+		
+		$funcTable{"impropers"}->{$func} = $counter;
+		$funcTableRev{"impropers"}->{$counter} = $func;
+		
+		
+		$counter++;
 	}
-	$interactions->{"impropers"}->{$keyString} = $func;
 	
-	$keyString = "$typeD-$typeC-$typeB-$typeA";
-
-	$interactions->{"impropers"}->{$keyString} = $func;
-	
-	$funcTable{"impropers"}->{$func} = $counter;
-	$funcTableRev{"impropers"}->{$counter} = $func;
-	
-	
-	$counter++;
-}
-
-## Obtain angles handle
-@interHandle = @{$data->{"angles"}->[0]->{"angle"}};
-## Loop over angles, save $interaction{angles}{A}{B}{C} = function info.
-$counter = 0;
-foreach my $inter(@interHandle)
-{
-	my $typeA = $inter->{"bType"}->[0];
-	my $typeB = $inter->{"bType"}->[1];
-	my $typeC = $inter->{"bType"}->[2];
-	my $func = $inter->{"func"};
-	my $keyString = "$typeA-$typeB-$typeC";
-	## NOTE THE ORDER OF CENTRAL TYPE LISTED IN XML FILE MATTERS ##
-	if(exists $interactions->{"angles"}->{$keyString}){
-		smog_quit ("bond angle type between bTypes $typeA-$typeB-$typeC defined more than once. Check .b file.");
+	## Obtain angles handle
+	@interHandle = @{$data->{"angles"}->[0]->{"angle"}};
+	## Loop over angles, save $interaction{angles}{A}{B}{C} = function info.
+	$counter = 0;
+	foreach my $inter(@interHandle)
+	{
+		my $typeA = $inter->{"bType"}->[0];
+		my $typeB = $inter->{"bType"}->[1];
+		my $typeC = $inter->{"bType"}->[2];
+		my $func = $inter->{"func"};
+		my $keyString = "$typeA-$typeB-$typeC";
+		## NOTE THE ORDER OF CENTRAL TYPE LISTED IN XML FILE MATTERS ##
+		if(exists $interactions->{"angles"}->{$keyString}){
+			smog_quit ("bond angle type between bTypes $typeA-$typeB-$typeC defined more than once. Check .b file.");
+		}
+		$interactions->{"angles"}->{$keyString} = $func;
+		$keyString = "$typeC-$typeB-$typeA";
+		$interactions->{"angles"}->{$keyString} = $func;
+		$funcTable{"angles"}->{$func} = $counter;
+		$funcTableRev{"angles"}->{$counter} = $func;
+		$counter++;
 	}
-	$interactions->{"angles"}->{$keyString} = $func;
-	$keyString = "$typeC-$typeB-$typeA";
-	$interactions->{"angles"}->{$keyString} = $func;
-	$funcTable{"angles"}->{$func} = $counter;
-	$funcTableRev{"angles"}->{$counter} = $func;
-	$counter++;
-}
 
 }
 
@@ -1008,48 +1013,46 @@ sub adjListTraversalHelper
 ## Traverse through the adjacency list of bonds
 sub adjListTraversal
 {
- #print "START ROUTINE\n";
- my($listHandle) = @_;
- my @diheStringList; ## List of Dihedral atoms
- my @angleStringList; ## List of Angle atoms
- my @oneFourStringList; ## List of 1-4 atoms
- 
- ## Loop through all the atoms in the residue
- foreach my $atomOut(keys(%{$listHandle}))
- {
-	my %visitedList; my $visitedString;
-    ## Add the current atom as the first atom in the dihedral
-	$visitedString="$atomOut";
-	$visitedList{$visitedString}=1; ## Set visited flag
-	adjListTraversalHelper($listHandle,$atomOut,$visitedString,\@diheStringList,\@angleStringList,\%visitedList,1); ## Traverse through bond graph
- }
- 
- ## Remove duplicate dihedrals and angles
-  my @combined = (@diheStringList,@angleStringList);
-  my @uniqueD = ();my %seen  = ();
-  my @uniqueA = (); my @uniqueOF;
-  foreach my $elem (@combined)
-  {
-     my @orgsplit = split('-', $elem);
-     my $testKey = join('-', reverse(@orgsplit));
-     if(exists $seen{$testKey}){next;}
-	 $seen{$elem} = 1;
-	
-	 if(scalar(@orgsplit) == 3) ## ANGLES
-		{push (@uniqueA,$elem);}
-	 else ## DIHEDRALS & 1-4 ##
-		{
-			push (@uniqueD,$elem);
-			push(@uniqueOF,"$orgsplit[0]-$orgsplit[3]");}
-  }
-  ## Reset diheStringList, angleStringList after removing duplicates
-  @diheStringList = @uniqueD;
-  @angleStringList = @uniqueA;
-  @oneFourStringList = @uniqueOF;
-  
-  
-  return (\@diheStringList,\@angleStringList,\@oneFourStringList);
-  
+	#print "START ROUTINE\n";
+	my($listHandle) = @_;
+	my @diheStringList; ## List of Dihedral atoms
+	my @angleStringList; ## List of Angle atoms
+	my @oneFourStringList; ## List of 1-4 atoms
+
+	## Loop through all the atoms in the residue
+	foreach my $atomOut(keys(%{$listHandle}))
+	{
+       		my %visitedList; my $visitedString;
+   		## Add the current atom as the first atom in the dihedral
+       		$visitedString="$atomOut";
+       		$visitedList{$visitedString}=1; ## Set visited flag
+       		adjListTraversalHelper($listHandle,$atomOut,$visitedString,\@diheStringList,\@angleStringList,\%visitedList,1); ## Traverse through bond graph
+	}
+
+	## Remove duplicate dihedrals and angles
+ 	my @combined = (@diheStringList,@angleStringList);
+ 	my @uniqueD = ();my %seen  = ();
+ 	my @uniqueA = (); my @uniqueOF;
+ 	foreach my $elem (@combined)
+ 	{
+    		my @orgsplit = split('-', $elem);
+    		my $testKey = join('-', reverse(@orgsplit));
+    		if(exists $seen{$testKey}){next;}
+        	$seen{$elem} = 1;
+       
+        	if(scalar(@orgsplit) == 3) ## ANGLES
+       		{push (@uniqueA,$elem);}
+        	else ## DIHEDRALS & 1-4 ##
+       		{
+       			push (@uniqueD,$elem);
+       			push(@uniqueOF,"$orgsplit[0]-$orgsplit[3]");
+		}
+ 	}
+ 	## Reset diheStringList, angleStringList after removing duplicates
+ 	@diheStringList = @uniqueD;
+ 	@angleStringList = @uniqueA;
+ 	@oneFourStringList = @uniqueOF;
+ 	return (\@diheStringList,\@angleStringList,\@oneFourStringList);
 }
 
 ####################################
@@ -1061,150 +1064,150 @@ sub createDihedralAngleFunctionals {
 ## AND MATCH IT WITH THE SPECIFIC ATOM TYPE FUNCTIONS
 ##
 
-foreach my $res(keys %dihedralAdjList)
-{
-	my ($dihes,$angles) = adjListTraversal($dihedralAdjList{$res});
-	## MATCH DIHEDRALS WITH FUNCTIONS ##
-	my $diheHandle = $interactions->{"dihedrals"};
-	my @allAngles; my @allDihes;
-	my @allAnglesFunct; my @allDihesFunct;
-	 foreach my $dihs(@{$dihes})
+	foreach my $res(keys %dihedralAdjList)
 	{
-		my @atoms = split("-",$dihs);
-		my $atomHandle = $residues{$res}->{"atoms"};
-		my $a = $atomHandle->{$atoms[0]}->{"bType"};
-		my $b = $atomHandle->{$atoms[1]}->{"bType"};
-		my $c = $atomHandle->{$atoms[2]}->{"bType"};
-		my $d = $atomHandle->{$atoms[3]}->{"bType"};
-		
-		my $eG = getEnergyGroup($res,$res,$atoms[1],$atoms[2]);
-		
-		## WILD CARD MATCHING CONDITIONALS ##
-		my $matchScore = 0; my $saveScore = 0;my $matchScoreCount=0; my $symmatch=0;
-		my $Nd=0;
-		foreach my $matches(keys %{$diheHandle->{$eG}})
+		my ($dihes,$angles) = adjListTraversal($dihedralAdjList{$res});
+		## MATCH DIHEDRALS WITH FUNCTIONS ##
+		my $diheHandle = $interactions->{"dihedrals"};
+		my @allAngles; my @allDihes;
+		my @allAnglesFunct; my @allDihesFunct;
+		 foreach my $dihs(@{$dihes})
 		{
-		$Nd++;
-			$matchScore = 0;
-			my ($aM,$bM,$cM,$dM) = split("-",$matches);
-			unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
-				|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-				|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
-				|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){
-			if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($matchScore >= $saveScore){
-
-				if(($aM eq $dM and $bM eq $cM) || ($aM eq $bM and $bM eq $cM and $cM eq $dM)){
-					$symmatch=1;
-				}else{
-					$symmatch=0;
-				}
-				## this to make sure that the highest scoring angle is unique
-				if($matchScore == $saveScore){
-					if($saveScore != 0){
-					$matchScoreCount++;
-					}
-				}else{
-					$matchScoreCount=0;
-				}
-				$saveScore = $matchScore;$funct = $diheHandle->{$eG}->{$matches};
-			}
-		    }
-		}
-
-		if($Nd ==0){
-			smog_quit ("energy group $eG is used in .bif file, but it is not defined in .b file.");
-		}
-		
-		my $sym=0;
-		if(($a eq $d and $b eq $c) || ($a eq $b and $b eq $c and $c eq $d)){
-			$sym=1;
-		}
-		if(($symmatch ==0 && $sym == 1 && $matchScoreCount > 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount > 0)){
-
-			smog_quit ("$symmatch  $sym $matchScoreCount Multiple possible angles match $a-$b-$c-$d, and energyGroup $eG equally well. Can not determine function based on .b file.");
-		}
-
-		if($matchScore == 0){
-			smog_quit ("Dihedral Angle between bTypes $a-$b-$c-$d and energyGroup $eG: Unable to match to a function in .b file.");
-		}
-
-		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
-		my $indexB = $residues{$res}->{"atoms"}->{$atoms[1]}->{"index"};
-		my $indexC = $residues{$res}->{"atoms"}->{$atoms[2]}->{"index"};
-		my $indexD = $residues{$res}->{"atoms"}->{$atoms[3]}->{"index"};
-		my $inputString = "$indexA-$indexB-$indexC-$indexD";
-		push(@allDihes,$inputString);
-		push(@allDihesFunct,$funct);
+			my @atoms = split("-",$dihs);
+			my $atomHandle = $residues{$res}->{"atoms"};
+			my $a = $atomHandle->{$atoms[0]}->{"bType"};
+			my $b = $atomHandle->{$atoms[1]}->{"bType"};
+			my $c = $atomHandle->{$atoms[2]}->{"bType"};
+			my $d = $atomHandle->{$atoms[3]}->{"bType"};
+			
+			my $eG = getEnergyGroup($res,$res,$atoms[1],$atoms[2]);
+			
+			## WILD CARD MATCHING CONDITIONALS ##
+			my $matchScore = 0; my $saveScore = 0;my $matchScoreCount=0; my $symmatch=0;
+			my $Nd=0;
+			foreach my $matches(keys %{$diheHandle->{$eG}})
+			{
+			$Nd++;
+				$matchScore = 0;
+				my ($aM,$bM,$cM,$dM) = split("-",$matches);
+				unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
+					|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
+					|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
+					|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){
+				if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($matchScore >= $saveScore){
 	
-	}
-	$dihedralFunctionals{$res} = {"dihedrals"=>\@allDihes,"functions"=>\@allDihesFunct};
-
-#######################
-## ANGLE FUNCTIONALS ##
-#######################
-
-	## MATCH ANGLES WITH FUNCTIONS ##
-	my $angHandle = $interactions->{"angles"};
-	foreach my $angs(@{$angles})
-	{
-		my @atoms = split("-",$angs);
-		my $atomHandle = $residues{$res}->{"atoms"};
-		my $a = $atomHandle->{$atoms[0]}->{"bType"};
-		my $b = $atomHandle->{$atoms[1]}->{"bType"};
-		my $c = $atomHandle->{$atoms[2]}->{"bType"};
-		#print $angHandle->{$atoms[0]}->{$atoms[1]}->{$atoms[2]},"\n";
-		
-		## WILD CARD MATCHING CONDITIONALS ##
-		my $matchScore = 0; my $saveScore = 0; my $matchScoreCount=0; my $symmatch=0;
-		foreach my $matches(keys %{$angHandle})
-		{
-			$matchScore = 0;
-			my ($aM,$bM,$cM) = split("-",$matches);
-			unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
-				|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-				|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){
-			if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($matchScore >= $saveScore)
-				{
-				if($aM eq $cM || ($aM eq $bM and $bM eq $cM)){
-					$symmatch=1;
-				}else{
-					$symmatch=0;
-				}
-				## this to make sure that the highest scoring angle is unique
-				if($matchScore == $saveScore){
-					if($saveScore != 0){
-					$matchScoreCount++;
+					if(($aM eq $dM and $bM eq $cM) || ($aM eq $bM and $bM eq $cM and $cM eq $dM)){
+						$symmatch=1;
+					}else{
+						$symmatch=0;
 					}
-				}else{
-					$matchScoreCount=0;
+					## this to make sure that the highest scoring angle is unique
+					if($matchScore == $saveScore){
+						if($saveScore != 0){
+						$matchScoreCount++;
+						}
+					}else{
+						$matchScoreCount=0;
+					}
+					$saveScore = $matchScore;$funct = $diheHandle->{$eG}->{$matches};
 				}
-				$saveScore = $matchScore;$funct = $angHandle->{$matches};
+			    }
 			}
-		    }
+	
+			if($Nd ==0){
+				smog_quit ("energy group $eG is used in .bif file, but it is not defined in .b file.");
+			}
+			
+			my $sym=0;
+			if(($a eq $d and $b eq $c) || ($a eq $b and $b eq $c and $c eq $d)){
+				$sym=1;
+			}
+			if(($symmatch ==0 && $sym == 1 && $matchScoreCount > 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount > 0)){
+	
+				smog_quit ("$symmatch  $sym $matchScoreCount Multiple possible angles match $a-$b-$c-$d, and energyGroup $eG equally well. Can not determine function based on .b file.");
+			}
+	
+			if($matchScore == 0){
+				smog_quit ("Dihedral Angle between bTypes $a-$b-$c-$d and energyGroup $eG: Unable to match to a function in .b file.");
+			}
+	
+			my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
+			my $indexB = $residues{$res}->{"atoms"}->{$atoms[1]}->{"index"};
+			my $indexC = $residues{$res}->{"atoms"}->{$atoms[2]}->{"index"};
+			my $indexD = $residues{$res}->{"atoms"}->{$atoms[3]}->{"index"};
+			my $inputString = "$indexA-$indexB-$indexC-$indexD";
+			push(@allDihes,$inputString);
+			push(@allDihesFunct,$funct);
+		
 		}
-		my $sym=0;
-		if($a eq $c || ($a eq $b and $b eq $c)){
-			$sym=1;
+		$dihedralFunctionals{$res} = {"dihedrals"=>\@allDihes,"functions"=>\@allDihesFunct};
+	
+	#######################
+	## ANGLE FUNCTIONALS ##
+	#######################
+	
+		## MATCH ANGLES WITH FUNCTIONS ##
+		my $angHandle = $interactions->{"angles"};
+		foreach my $angs(@{$angles})
+		{
+			my @atoms = split("-",$angs);
+			my $atomHandle = $residues{$res}->{"atoms"};
+			my $a = $atomHandle->{$atoms[0]}->{"bType"};
+			my $b = $atomHandle->{$atoms[1]}->{"bType"};
+			my $c = $atomHandle->{$atoms[2]}->{"bType"};
+			#print $angHandle->{$atoms[0]}->{$atoms[1]}->{$atoms[2]},"\n";
+			
+			## WILD CARD MATCHING CONDITIONALS ##
+			my $matchScore = 0; my $saveScore = 0; my $matchScoreCount=0; my $symmatch=0;
+			foreach my $matches(keys %{$angHandle})
+			{
+				$matchScore = 0;
+				my ($aM,$bM,$cM) = split("-",$matches);
+				unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
+					|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
+					|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){
+				if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($matchScore >= $saveScore)
+					{
+					if($aM eq $cM || ($aM eq $bM and $bM eq $cM)){
+						$symmatch=1;
+					}else{
+						$symmatch=0;
+					}
+					## this to make sure that the highest scoring angle is unique
+					if($matchScore == $saveScore){
+						if($saveScore != 0){
+						$matchScoreCount++;
+						}
+					}else{
+						$matchScoreCount=0;
+					}
+					$saveScore = $matchScore;$funct = $angHandle->{$matches};
+				}
+			    }
+			}
+			my $sym=0;
+			if($a eq $c || ($a eq $b and $b eq $c)){
+				$sym=1;
+			}
+			if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
+				smog_quit ("Multiple possible angles match $a-$b-$c equally well. Unclear assignment of function type");
+			}
+			my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
+			my $indexB = $residues{$res}->{"atoms"}->{$atoms[1]}->{"index"};
+			my $indexC = $residues{$res}->{"atoms"}->{$atoms[2]}->{"index"};
+			my $inputString = "$indexA-$indexB-$indexC";
+			push(@allAngles,$inputString);
+			push(@allAnglesFunct,$funct);
 		}
-		if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
-			smog_quit ("Multiple possible angles match $a-$b-$c equally well. Unclear assignment of function type");
-		}
-		my $indexA = $residues{$res}->{"atoms"}->{$atoms[0]}->{"index"};
-		my $indexB = $residues{$res}->{"atoms"}->{$atoms[1]}->{"index"};
-		my $indexC = $residues{$res}->{"atoms"}->{$atoms[2]}->{"index"};
-		my $inputString = "$indexA-$indexB-$indexC";
-		push(@allAngles,$inputString);
-		push(@allAnglesFunct,$funct);
+		$angleFunctionals{$res} = {"angles"=>\@allAngles,"functions"=>\@allAnglesFunct};
 	}
-	$angleFunctionals{$res} = {"angles"=>\@allAngles,"functions"=>\@allAnglesFunct};
-}
 
 }
 
