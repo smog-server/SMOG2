@@ -37,7 +37,7 @@ sub tablequit
 # prefactor is a combination of several terms.
 # the DH potential that we want to use is
 # U=K_Coulomb*B(kappa) Sum {q_i*q_j*exp(-kappa*r_ij)/(epsilon*r_ij)}
-# K_Coulomb=1/(4*pi*epsilon_{0})=~332 kcal*mol^-1 (Angstroms, elemetary charge units e, will have to divide by 10 for Gromacs units in nm)
+# K_Coulomb=1/(4*pi*epsilon_{0})=~332 kcal*mol^-1 (Angstroms, elementary charge units e, will have to divide by 10 for Gromacs units in nm)
 # for dilute systems, B(kappa)~1
 # Gromacs automatically multiplies by an 'electric conversion factor,' 
 #   equal to 138.935485. We want to undo that, hence the division by 138.
