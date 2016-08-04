@@ -4,12 +4,19 @@ use List::Util qw(max);
 
 print <<EOT;
 *****************************************************************************************
-                                      smog_optim
+                                      smog_extract
 
-      smog_optim is part of the SMOG 2 distribution, available at smog-server.org
+      smog_extract is part of the SMOG 2 distribution, available at smog-server.org
 
-        This tool uses a SMOG .top and .gro file to generate OPTIM input files. 
-			 This tool is to be run interactively. 
+     This tool uses a SMOG .top and .gro file, along with an atomlist file to generate 
+		SMOG model that only includes a subset of the original atoms.
+	This allows one to generate a SMOG model for a large system, and the simulate
+	the subset of atoms using identical interactions.  In addition, the module will 
+	optionally generate atomic restraints for any atom that has interactions removed
+	during the truncation step.
+ 
+	usage: smog_extract -f <.top file> -g <.gro file> -n <list of atoms> [-restraints]
+	-restraints tells smog_extract to include restraints
 
                        See the SMOG manual for usage guidelines.
 
@@ -30,6 +37,57 @@ sub remainder {
     return 0 unless $b && $a;
     return $a / $b - int($a / $b);
 }
+
+#####################
+# Error call        #
+# ##################
+
+sub smog_quit
+{
+        my ($LINE)=@_;
+        if($main::noexit){
+                warn("$LINE");
+        }else{
+                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow SMOG to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
+                exit;
+        }
+}
+
+sub usage
+{
+  print <<EOT;
+
+usage: smog_extract  [-f .top file] [-g .gro file] [-of output .top file] [-og output .gro file] [--help|-?]
+
+   Required Input
+	-f [smog.top]: Input SMOG forcefield file
+	-g [smog.gro]: Input SMOG configuration file
+	-n [smog.include]: List of atoms to extract
+   Optional Input/Output parameters
+	-of [extracted.top]: Output SMOG forcefield file for extracted system
+	-og [extracted.gro]: Output SMOG configuration file for extracted system
+	-restraints: Generate restraints for atoms that have interactions removed during extraction
+EOT
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit;
+  }
+}
+
+
+
+
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
+	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
+	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 
+         'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
+         'rescaleCD=s' => \$rescaleCD, '<>' => \&usage)
+          or defined $help 
+          or !defined $inputPDB 
+          or (!defined $inputFolder  && !defined $coarseFolder));
+
+
 
 ### read the options
 
