@@ -412,7 +412,7 @@ print GROFILE "$grodim\n";
 		if($gen_restraints){
 			print TOPOUT "[ position_restraints ]\n";
         		foreach my $res(keys %atoms2restrain){
-				print TOPOUT "$atoms2restrain{$res} 1 100 100 100\n";
+				print TOPOUT "$res 1 100 100 100\n";
         		}
 		}
 	}
