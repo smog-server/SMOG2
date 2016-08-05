@@ -1,24 +1,22 @@
-use strict;
+##use strict;
 use warnings;
 use List::Util qw(max);
+use Getopt::Long;
 
 print <<EOT;
 *****************************************************************************************
                                       smog_extract
 
-      smog_extract is part of the SMOG 2 distribution, available at smog-server.org
+      	smog_extract is part of the SMOG 2 distribution, available at smog-server.org
 
-     This tool uses a SMOG .top and .gro file, along with an atomlist file to generate 
-		SMOG model that only includes a subset of the original atoms.
-	This allows one to generate a SMOG model for a large system, and the simulate
-	the subset of atoms using identical interactions.  In addition, the module will 
-	optionally generate atomic restraints for any atom that has interactions removed
-	during the truncation step.
- 
-	usage: smog_extract -f <.top file> -g <.gro file> -n <list of atoms> [-restraints]
-	-restraints tells smog_extract to include restraints
+        This tool uses a SMOG .top and .gro file, along with an atomlist file to 
+	generate SMOG model that only includes a subset of the original atoms.This 
+	allows one to generate a SMOG model for a large system, and the simulate the 
+	subset of atoms using identical interactions.  In addition, the module will 
+	optionally generate atomic restraints for any atom that has interactions 
+	removed	during the truncation step.
 
-                       See the SMOG manual for usage guidelines.
+            For more information, use the flag --help, or see the SMOG manual.
 
             For questions regarding this script, contact info\@smog-server.org
 
@@ -76,372 +74,61 @@ EOT
 }
 
 
+my $topFile="smog.top";
+my $groFile="smog.gro";
+my $indexFile="smog.include";
+my $outputTOP="extracted.top";
+my $outputGRO="extracted.gro";
+my $help;
+my $gen_restraints;
+my $warnonly=0;
+my $noexit=0;
+usage() if (!GetOptions('help|?' => \$help, 'f=s' => \$topFile, 'g=s' => \$groFile, 'n=s' => \$indexFile, 
+        'of=s' => \$outputTOP, 'og=s' => \$outputGRO, 'restraints' => \$gen_restraints,  'warnonly' => \$warnonly, 
+        '<>' => \&usage)
+        or defined $help); 
+
+if($warnonly){
+	$noexit=1;
+	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
+}else{
+	$noexit=0;
+}
 
 
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
-	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
-	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 
-         'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
-         'rescaleCD=s' => \$rescaleCD, '<>' => \&usage)
-          or defined $help 
-          or !defined $inputPDB 
-          or (!defined $inputFolder  && !defined $coarseFolder));
+### read in the list of atoms that we want to keep
+my %keepatoms;
+my $KEEPN=0;
+open(ATLIST,"$indexFile") or die "\nCan\'t open $indexFile. Quitting\n\n";
+while(<ATLIST>){
+	my $LINE=$_;
+	chomp($LINE);
+	# remove comments first
+	$LINE =~ s/;.*$//g; 
+	$LINE =~ s/^\s+|\s+$//g;
+	$LINE =~ s/\s+|\t+/ /g;
+	my @A=split(/ /,$LINE);
+	for(my $I=0;$I<=$#A;$I++){
+		unless($A[$I] =~ m/^\d+$/){
+			smog_quit("Non-numerical value for atom number: $A[$I]");
+		}
+		if(exists $keepatoms{$A[$I]}){
+			smog_quit("Duplicate atom in atomlist: $A[$I]");
+		}else{
+			$keepatoms{$A[$I]}=$KEEPN+1;
+			$KEEPN++;
+		}
+	}
+}
+
+close(ATLIST);
+
+
+### extract the atoms for a new gro file (note: the atoms will be listed in the order appearing in the listfile)
 
 
 
 ### read the options
-
-print "\nWould you like to convert a .top and .gro file to make input for OPTIM? [Y/N]\n";
-my $TMP;
-$TMP=<STDIN>;
-$TMP =~ s/^\s+|\s+$//g;
-
-until($TMP=~ m/^[YN]$/){
-	print "Please answer Y, or N.\n";
-	$TMP=<STDIN>;
-        $TMP =~ s/^\s+|\s+$//g;
-}
-
-my $SBMINPON=$TMP;
-
-print "\nWould you like to generate files necessary for rigidification code in OPTIM? [Y/N]\n";
-$TMP=<STDIN>;
-
-until($TMP=~ m/^[YN]$/ ){
-	print "Please answer Y, or N.\n";
-	$TMP=<STDIN>;
-        $TMP =~ s/^\s+|\s+$//g;
-}
-
-my $RIGIDON=$TMP;
-
-my $CONTTYPE;
-if($SBMINPON =~ m/^Y$/){
-	print "\nWhat is the name of the input .top file?\n";
-	$TOPFILE=<STDIN>;
-        $TOPFILE =~ s/^\s+|\s+$//g;
-
-	print "\nAre the contacts of type 1 modeled with 10-12, or 6-12 interactions? [10/6]\n";
-	my $TMP;
-	$TMP=<STDIN>;
-        $TMP =~ s/^\s+|\s+$//g;
-	until($TMP=~ m/^10$/  || $TMP=~ m/^6$/ ){
-		print "Please answer 6, or 10.\n";
-		$TMP=<STDIN>;
-        	$TMP =~ s/^\s+|\s+$//g;
-	}
-
-	if($TMP=~ m/^6$/){
-		$CONTTYPE = 6;
-	}elsif($TMP=~ m/^10$/){
-		$CONTTYPE = 10;
-	}
-
-}
-
-print "\nWhat is the name of input .gro file\n";
-$GROFILE=<STDIN>;
-$GROFILE =~ s/^\s+|\s+$//g;
-
-## Generate rigidification files
-
-my %GROUPS;
-my %RESCOUNT;
-my %ATOMSINRES;
-my %rigidified;
-my %excludedlist;
-
-if($RIGIDON =~ m/^Y$/){
-	print "\n\nUsing $GROFILE to generate rbodyconfig and coordsinrigid for OPTIM....\n\n";
-
-	print "Would you like to provide an index file that defines the rigid atoms [F], use the defaults [D], or both [B]?\n";
-
-	$TMP=<STDIN>;
-
-	until($TMP=~ m/^[FD]$/){
-		print "Please answer F (file), or D (default).\n";
-		$TMP=<STDIN>;
-        	$TMP =~ s/^\s+|\s+$//g;
-	}
-	my $RDEF=$TMP;
-	my $NATOMS;
-	my $RIGIDINDEX=0;
-	my $RBDOF=0; # count the number of degrees of freedom that are moved by rigid bodies
-	if($RDEF =~ m/^[FB]$/){
-		# using file
-		print "What file should be read for defining the rigid groups?\n";
-		my $RGFILE=<STDIN>;
-		open(RGFILE,"$RGFILE") or die "Can\'t open $RGFILE.\n";
-		open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";
-		while(<RGFILE>){
-
-			my $LINE=$_;
-			chomp($LINE);
-			$LINE =~ s/\t/ /g; 
-			$LINE =~ s/^\s+|\s+$//g;
-			$LINE =~ s/\s+/ /g;
-			my @A=split(/ /,$LINE);
-			unless($A[0] eq "GROUP"){
-				print "ERROR: Each line of the rigid group file must start with GROUP. Quitting.\n";
-				exit;
-			}
-			my $PRINTBUFF ="";
-			for (my $J=1;$J<=$#A;$J++){
-				if(exists $rigidified{$A[$J]}){
-					print "atom index $A[$J] appeared in two groups. Quitting\n";
-                                        exit;
-                                }else{
-					$rigidified{$A[$J]}=$RIGIDINDEX;
-					$PRINTBUFF .= "$A[$J]\n";
-					# remember that this atom is of a specific rigid group
-				}
-			}
-
-			if($#A>3){
-				$RBDOF+=($#A)*3-6;
-				print RIGIDOUT "GROUP $#A\n";
-				print RIGIDOUT "$PRINTBUFF";
-			}else{
-				print "Only found $#A atoms in group $RIGIDINDEX. Not adding as rigid group\n";
-			}
-			$RIGIDINDEX++;
-		}
-		if($RDEF =~ m/^F$/){
-			# make coordsinrigid file, since we are not going to repeat later 
-			if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will not overwrite. Quitting.\n"; exit;}
-			open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
-			open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
-			$TMP=<GROFILE>;
-			$TMP=<GROFILE>;
-			chomp($TMP);
-			$TMP =~ s/\t/ /g; 
-			$TMP =~ s/^\s+|\s+$//g;
-			$TMP =~ s/\s+/ /g;
-			my @A=split(/\s+/,$TMP);
-			$NATOMS=$A[0];
-			for(my $I=0;$I<$NATOMS;$I++){
-				my $LINE=<GROFILE>;
-				my $COORDS=substr($LINE,20,24);
-				$COORDS =~ s/\t/ /g; 
-				$COORDS =~ s/^\s+|\s+$//g;
-				$COORDS =~ s/ +/ /g;
-				my @E=split(/ /,$COORDS);
-				$E[0]*=10.0;
-				$E[1]*=10.0;
-				$E[2]*=10.0;
-				$X[$I+1][0]=$E[0];
-				$X[$I+1][1]=$E[1];
-				$X[$I+1][2]=$E[2];
-				print RIGIDCOORDS "$E[0] $E[1] $E[2]\n";
-			}
-			close(RIGIDCOORDS);
-		}
-
-	}elsif($RDEF =~ m/^[DB]$/){
-		# using defaults
-
-		open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
-		
-		## for now, always use a default generic definitions for rigid groups
-		## format: <RESIDUE NAME> <LIST OF ATOM NAMES IN GROUP>
-		
-		open(MAPFILE,"$ENV{SMOG_PATH}/tools/rigidmap") or die "Can\'t open rigidmap file\n";
-		if(-e "rbodyconfig"){print "rbodyconfig already exists.  Will not overwrite. Quitting.\n"; exit;}
-		if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will not overwrite. Quitting.\n"; exit;}
-		open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";
-		open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
-		
-		while(<MAPFILE>){
-			my $LINE=$_;
-			chomp($LINE);
-			my @A=split(/\s+/,$LINE);
-			my $A1=$A[0];
-			if(exists $RESCOUNT{$A1}){
-				$RESCOUNT{$A1}=eval($RESCOUNT{$A1})+1;
-			}else{
-				$RESCOUNT{$A1}=1;
-			}
-				$A1=$A1 . "-" . $RESCOUNT{$A1};
-			for(my $I=1;$I<=$#A;$I++){
-				$GROUPS{$A1}->[$I-1]=$A[$I];
-			}
-		
-			$ATOMSINRES{$A1}=$#A;
-		
-			if($ATOMSINRES{$A1}<3){
-				print "Rigid group definition $A1 only has $ATOMSINRES{$A1} atoms. Must have at least 3.  Quitting\n";
-				exit;
-			}
-		
-		}
-		
-		my $GROUPS=%GROUPS;
-		
-		# add a check to make sure that atoms don't appear in two different group
-		
-		$TMP=<GROFILE>;
-		$TMP=<GROFILE>;
-		chomp($TMP);
-		$TMP =~ s/\t/ /g; 
-		$TMP =~ s/^\s+|\s+$//g;
-		$TMP =~ s/ +/ /g;
-		my @A=split(/\s+/,$TMP);
-
-		$NATOMS=$A[0];
-		my %ATOMNUM;
-		my $LINE=<GROFILE>;
-		
-		my $LASTRESNUM=substr($LINE,0,5);
-		$LASTRESNUM =~ s/^\s+|\s+$//g;
-		
-		my $ATOMNAME=substr($LINE,10,5);
-		$ATOMNAME =~ s/^\s+|\s+$//g;
-		
-		my $NUMT=substr($LINE,15,5);
-		$NUMT =~ s/^\s+|\s+$//g;
-		$ATOMNUM{$ATOMNAME}= $NUMT;
-		
-		my $LASTRESNAME=substr($LINE,5,5);
-		$LASTRESNAME =~ s/^\s+|\s+$//g;
-		my $COORDS=substr($LINE,20,24);
-
-		$COORDS =~ s/\t/ /g; 
-		$COORDS =~ s/^\s+|\s+$//g;
-		$COORDS =~ s/ +/ /g;
-		my @E=split(/ /,$COORDS);
-		$E[0]*=10.0;
-		$E[1]*=10.0;
-		$E[2]*=10.0;
-		my $ATOMINDEX=substr($LINE,15,5);
-		$X[1][0]=$E[0];
-		$X[1][1]=$E[1];
-		$X[1][2]=$E[2];
-
-		print RIGIDCOORDS "$E[0] $E[1] $E[2]\n";
-		for(my $I=1;$I<$NATOMS;$I++){
-		# read a line
-		# parse using fixed formatting
-			my $LINE=<GROFILE>;
-			my $RESNUM=substr($LINE,0,5);
-			$RESNUM =~ s/^\s+|\s+$//g;
-			my $ATOMNAME=substr($LINE,10,5);
-			$ATOMNAME =~ s/^\s+|\s+$//g;
-			my $ATOMNUMT=substr($LINE,15,5);
-			$ATOMNUMT =~ s/^\s+|\s+$//g;
-			my $RESNAME=substr($LINE,5,5);
-			$RESNAME =~ s/^\s+|\s+$//g;
-			my $COORDS=substr($LINE,20,24);
-			$COORDS =~ s/\t/ /g; 
-			$COORDS =~ s/^\s+|\s+$//g;
-			$COORDS =~ s/ +/ /g;
-			my @E=split(/ /,$COORDS);
-			$E[0]*=10.0;
-			$E[1]*=10.0;
-			$E[2]*=10.0;
-			my $ATOMINDEX=substr($LINE,15,5);
-			$X[$I+1][0]=$E[0];
-			$X[$I+1][1]=$E[1];
-			$X[$I+1][2]=$E[2];
-
-			print RIGIDCOORDS "$E[0] $E[1] $E[2]\n";
-
-			# Once done reading a residue, create the rigid groups
-			if($RESNUM != $LASTRESNUM && exists $RESCOUNT{$LASTRESNAME}){
-				# go through the rigid groups for that residue
-				for (my $J=1;$J<=eval($RESCOUNT{$LASTRESNAME});$J++){
-					my $GROUPSIZE=0;
-					my $PRINTBUFF = "";;
-			                my $A1=$LASTRESNAME . "-" . $J ;
-					my %rgroup;
-					for (my $K=0;$K<$ATOMSINRES{$A1};$K++){
-						if( !exists $ATOMNUM{$GROUPS{$A1}->[$K]}){
-							print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
-						}else{
-							if(exists $rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}){
-								print "atom index $ATOMNUM{$GROUPS{$A1}->[$K]} ($LASTRESNAME$LASTRESNUM:$GROUPS{$A1}->[$K]) appeared in two groups. Quitting\n";
-								exit;
-							}else{
-								$rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}=$RIGIDINDEX;
-								# remember that this atom is of a specific rigid group
-							}
-							$PRINTBUFF = $PRINTBUFF."$ATOMNUM{$GROUPS{$A1}->[$K]}\n";
-							$GROUPSIZE++;
-						}
-					}
-		
-					if($GROUPSIZE>2){
-						$RBDOF+=($GROUPSIZE)*3-6;
-						print RIGIDOUT "GROUP $GROUPSIZE\n";
-						print RIGIDOUT "$PRINTBUFF";
-					}elsif($GROUPSIZE==1 || $GROUPSIZE==2){
-						print "Only found $GROUPSIZE atoms in group $J of $LASTRESNAME$LASTRESNUM. Not adding as rigid group\n";
-					}
-
-
-					for (my $K1=0;$K1<$ATOMSINRES{$A1};$K1++){
-						for (my $K2=0;$K2<$ATOMSINRES{$A1};$K2++){
-
-							if( exists $ATOMNUM{$GROUPS{$A1}->[$K1]} && exists $ATOMNUM{$GROUPS{$A1}->[$K2]} ){
-								if( $ATOMNUM{$GROUPS{$A1}->[$K1]} < $ATOMNUM{$GROUPS{$A1}->[$K2]}){
-									$excludedlist{"$ATOMNUM{$GROUPS{$A1}->[$K1]}-$ATOMNUM{$GROUPS{$A1}->[$K2]}"}=1;
-								}elsif($ATOMNUM{$GROUPS{$A1}->[$K1]} !=  $ATOMNUM{$GROUPS{$A1}->[$K2]}){
-									$excludedlist{"$ATOMNUM{$GROUPS{$A1}->[$K2]}-$ATOMNUM{$GROUPS{$A1}->[$K1]}"}=1;
-								}
-							}
-						}
-					}
-					$RIGIDINDEX++;
-				}
-				undef %ATOMNUM;
-			}
-		
-		
-			$LASTRESNAME=$RESNAME;
-			$LASTRESNUM=$RESNUM;
-			$ATOMNUM{$ATOMNAME}= $ATOMNUMT;
-		
-		}
-		# check last residue
-		
-		# go through the rigid groups for that residue
-		
-		if( exists $RESCOUNT{$LASTRESNAME}){
-			for (my $J=1;$J<=eval($RESCOUNT{$LASTRESNAME});$J++){
-				my $GROUPSIZE=0;
-				my $PRINTBUFF = "";;
-			        my $A1=$LASTRESNAME . "-" . $J ;
-				for (my $K=0;$K<$ATOMSINRES{$A1};$K++){
-					if( !exists $ATOMNUM{$GROUPS{$A1}->[$K]}){
-						print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
-					}else{
-						if(exists $rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}){
-							print "atom index $ATOMNUM{$GROUPS{$A1}->[$K]} ($LASTRESNAME$LASTRESNUM) appeared in two groups. Quitting\n";
-							exit;
-						}else{
-							$rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}=$RIGIDINDEX;
-							# remember that this atom is of a specific rigid group
-						}
-	
-						$PRINTBUFF = $PRINTBUFF . "$ATOMNUM{$GROUPS{$A1}->[$K]}\n";
-						$GROUPSIZE++;
-					}
-				}
-				if($GROUPSIZE>0){
-					$RBDOF+=($GROUPSIZE)*3-6;
-					print RIGIDOUT "GROUP $GROUPSIZE\n";
-					print RIGIDOUT "$PRINTBUFF";
-				}
-				$RIGIDINDEX++;
-			}
-			undef %ATOMNUM;
-		}
-		close(GROFILE);
-	}
-	$RBDOF=$NATOMS*3-$RBDOF;
-	print "When using rigidification routines in PATHSAMPLE, make sure to indicate the number of degrees of freedom, after rigidification.\nFor this system, there are $RBDOF degrees of freedom.\n";
-	
-}
-
 ## Generate SBM.INP
 
 if($SBMINPON =~ m/^Y$/){
@@ -507,23 +194,7 @@ if($SBMINPON =~ m/^Y$/){
 		}
 	}
 	
-	my $PREFACTOR=332.0;
- 	my $DC=80;
-	my $CONCENTRATION=0.1;
-	my $DHswitch=12;
-	my $DHcut=15;
-	
-	my $MASS;	
 	# write out odata
-
-	if(-e "odata"){print "odata already exists.  Quitting.\n"; exit;}
-	open(ODATA,">odata") or die "Can not open odata\n";
-	print ODATA "STEPS 100000000\nBFGSMIN 0.000001\n";
-
-	if($RIGIDON =~ m/^Y$/){
-		print ODATA "RIGIDINIT\nSLERP\n";
-	}
-		print ODATA "POINTS\n";
 
 	open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
 	$TMP=<GROFILE>;
