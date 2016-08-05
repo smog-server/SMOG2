@@ -31,13 +31,13 @@
 	<bType>*</bType>
 	</dihedral>
 	<!-- NUCLEIC DIHEDRALS -->
-	<dihedral func="dihedral_harmonic(?,80)" energyGroup="pr_n">
+	<dihedral func="dihedral_harmonic(?,40)" energyGroup="pr_n">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="dihedral_harmonic(?,20)" energyGroup="r_n">
+	<dihedral func="dihedral_harmonic(?,10)" energyGroup="r_n">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
@@ -45,20 +45,20 @@
 	</dihedral>
 
 	<!-- AMINO DIHEDRALS -->
-	<dihedral func="dihedral_harmonic(?,80)" energyGroup="pr_a">
+	<dihedral func="dihedral_harmonic(?,40)" energyGroup="pr_a">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="dihedral_harmonic(?,20)" energyGroup="r_a">
+	<dihedral func="dihedral_harmonic(?,10)" energyGroup="r_a">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
 	<!-- LIGAND DIHEDRALS -->
-    <dihedral func="dihedral_harmonic(?,20)" energyGroup="lig">
+    <dihedral func="dihedral_harmonic(?,10)" energyGroup="lig">
     <bType>*</bType>
     <bType>*</bType>
     <bType>*</bType>

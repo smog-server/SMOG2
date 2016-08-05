@@ -34,13 +34,13 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="dihedral_harmonic(?,80)" energyGroup="pr_a">
+	<dihedral func="dihedral_harmonic(?,40)" energyGroup="pr_a">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="dihedral_harmonic(?,20)" energyGroup="r_a">
+	<dihedral func="dihedral_harmonic(?,10)" energyGroup="r_a">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
@@ -64,7 +64,7 @@
 
 <!-- IMPROPERS -->
 <impropers>
-	<improper func="dihedral_harmonic(?,20)">
+	<improper func="dihedral_harmonic(?,10)">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
