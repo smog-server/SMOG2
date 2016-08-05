@@ -10,9 +10,9 @@ print <<EOT;
       	smog_extract is part of the SMOG 2 distribution, available at smog-server.org
 
         This tool uses a SMOG .top and .gro file, along with an atomlist file to 
-	generate SMOG model that only includes a subset of the original atoms.This 
-	allows one to generate a SMOG model for a large system, and the simulate the 
-	subset of atoms using identical interactions.  In addition, the module will 
+	generate a SMOG model that only includes a subset of the original atoms. This 
+	allows one to generate a SMOG model for a large system, and then simulate the 
+	subset of atoms using identical interactions. In addition, the module will 
 	optionally generate atomic restraints for any atom that has interactions 
 	removed	during the truncation step.
 
@@ -51,7 +51,8 @@ usage: smog_extract  [-f .top file] [-g .gro file] [-of output .top file] [-og o
    Optional Input/Output parameters
 	-of [extracted.top]: Output SMOG forcefield file for extracted system
 	-og [extracted.gro]: Output SMOG configuration file for extracted system
-	-restraints: Generate restraints for atoms that have interactions removed during extraction
+	-restraints <restraint weight>: Generate restraints with a specific strength for atoms 
+                                        that have interactions removed during extraction
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
@@ -71,7 +72,7 @@ my $gen_restraints=0;
 my $warnonly=0;
 our $noexit=0;
 usage() if (!GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
-        'of=s' => \$outputTOP, 'og=s' => \$outputGRO, 'restraints' => \$gen_restraints,  'warnonly' => \$warnonly, 
+        'of=s' => \$outputTOP, 'og=s' => \$outputGRO, 'restraints=s' => \$gen_restraints,  'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -82,6 +83,9 @@ if($warnonly){
 	$noexit=0;
 }
 
+unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen_restraints eq 0){
+	smog_quit("-restraints given with a non-numerical value: $gen_restraints");
+}
 
 ### read in the list of atoms that we want to keep
 my %keepatoms;
@@ -409,10 +413,11 @@ print GROFILE "$grodim\n";
 	if(exists $DIRLIST{"position_restraints"} ){
 		smog_quit("position_restraints not supported in top file (yet).");
 	}else{
-		if($gen_restraints){
+		if($gen_restraints != 0){
+			print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
 			print TOPOUT "[ position_restraints ]\n";
-        		foreach my $res(keys %atoms2restrain){
-				print TOPOUT "$res 1 100 100 100\n";
+        		foreach my $res(sort keys %atoms2restrain){
+				print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";
         		}
 		}
 	}
