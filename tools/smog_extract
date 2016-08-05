@@ -74,8 +74,8 @@ EOT
 }
 
 
-my $topFile="smog.top";
-my $groFile="smog.gro";
+my $inputTOP="smog.top";
+my $inputGRO="smog.gro";
 my $indexFile="smog.include";
 my $outputTOP="extracted.top";
 my $outputGRO="extracted.gro";
@@ -83,7 +83,7 @@ my $help;
 my $gen_restraints;
 my $warnonly=0;
 my $noexit=0;
-usage() if (!GetOptions('help|?' => \$help, 'f=s' => \$topFile, 'g=s' => \$groFile, 'n=s' => \$indexFile, 
+usage() if (!GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
         'of=s' => \$outputTOP, 'og=s' => \$outputGRO, 'restraints' => \$gen_restraints,  'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
@@ -99,6 +99,8 @@ if($warnonly){
 ### read in the list of atoms that we want to keep
 my %keepatoms;
 my $KEEPN=0;
+my $keepatoms2;
+my $message=0;
 open(ATLIST,"$indexFile") or die "\nCan\'t open $indexFile. Quitting\n\n";
 while(<ATLIST>){
 	my $LINE=$_;
@@ -116,7 +118,12 @@ while(<ATLIST>){
 			smog_quit("Duplicate atom in atomlist: $A[$I]");
 		}else{
 			$keepatoms{$A[$I]}=$KEEPN+1;
+			$keepatoms2[$KEEPN]=$A[$I];
 			$KEEPN++;
+			if($message ==0 && $keepatoms2[$KEEPN] < $keepatoms2[$KEEPN-1]){
+				print "\nNote: Atoms listed in $indexFile are not in ascending order.\n";
+				$message=1;
+			}
 		}
 	}
 }
@@ -126,7 +133,38 @@ close(ATLIST);
 
 ### extract the atoms for a new gro file (note: the atoms will be listed in the order appearing in the listfile)
 
+open(GROFILE,"$inputGRO") or die "Can\'t open GRO file \"$inputGRO\"\n";
+my $grohead=<GROFILE>;
+chomp($grohead);
 
+$TMP=<GROFILE>;
+chomp($TMP);
+$TMP =~ s/\t/ /g; 
+$TMP =~ s/^\s+|\s+$//g;
+$TMP =~ s/ +/ /g;
+my @A=split(/\s+/,$TMP);
+my $NATOMS=$A[0];
+my @GROINFO;
+unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
+
+for(my $I=0;$I<$NATOMS;$I++){
+	# read a line
+	my $LINE=<GROFILE>;
+	chomp($LINE);
+	$GROINFO[$I+1]=$LINE;
+}
+my $grodim=<GROFILE>;
+chomp($grodim);
+close(GROFILE);
+
+
+open(GROFILE,">$outputGRO") or die "Can\'t open output GRO file \"$outputGRO\"\n";
+print GROFILE "$grohead\n";
+print GROFILE "$KEEPN\n";
+for(my $I=0;$I<$KEEPN;$I++){
+	print GROFILE "$GROINFO[$keepatoms2[$I]-1]\n";
+}
+print GROFILE "$grodim\n";
 
 ### read the options
 ## Generate SBM.INP
@@ -195,39 +233,6 @@ if($SBMINPON =~ m/^Y$/){
 	}
 	
 	# write out odata
-
-	open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
-	$TMP=<GROFILE>;
-	$TMP=<GROFILE>;
-	chomp($TMP);
-	$TMP =~ s/\t/ /g; 
-	$TMP =~ s/^\s+|\s+$//g;
-	$TMP =~ s/ +/ /g;
-	my @A=split(/\s+/,$TMP);
-	my $NATOMS=$A[0];
-	unless($NATOMS =~ m/^\d+$/){print "ERROR: Number of atoms on line 2 of gro file ($NATOMS), is not an integer.\n"; exit;}
-
-	for(my $I=0;$I<$NATOMS;$I++){
-		# read a line
-		my $LINE=<GROFILE>;
-		my $COORDS=substr($LINE,20,24);
-
-		$COORDS =~ s/\t/ /g; 
-		$COORDS =~ s/^\s+|\s+$//g;
-		$COORDS =~ s/ +/ /g;
-		my @E=split(/ /,$COORDS);
-		$E[0]*=10.0;
-		$E[1]*=10.0;
-		$E[2]*=10.0;
-                my $ATOMINDEX=substr($LINE,15,5);
-                $X[$I+1][0]=$E[0];
-                $X[$I+1][1]=$E[1];
-                $X[$I+1][2]=$E[2];
-
-		print ODATA "SB $E[0] $E[1] $E[2]\n";
-	}
-	close(GROFILE);
-
 	# Write out SBM.INP
 	if(-e "SBM.INP"){print "SBM.INP already exists.  Quitting.\n"; exit;}
 	open(OPTIMTOP,">SBM.INP") or die "Can not open SBM.INP\n";
