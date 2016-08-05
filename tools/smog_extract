@@ -23,17 +23,6 @@ print <<EOT;
 *****************************************************************************************
 EOT
 
-my $PI=3.1415926;
-my $twoPI=2.0*$PI;
-my $DEG2RAD=$PI/180.0;
-my @X;
-
-sub remainder {
-    my ($a, $b) = @_;
-    return 0 unless $b && $a;
-    return $a / $b - int($a / $b);
-}
-
 #####################
 # Error call        #
 # ##################
@@ -243,47 +232,39 @@ print GROFILE "$grodim\n";
 	}
 
 	if(!exists $DIRLIST{"moleculetype"}){
-		print "ERROR: \"moleculetype\" does not appear in .top file.\n";
+		smog_quit("\"moleculetype\" does not appear in .top file.\n");
 	}else{
 		my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
 		if($#C != 1){
 			my $NN=$#C;
-			print "ERROR: Must have one line in the \"moleculetype\" directive. Found $NN\n";
+			smog_quit("Must have one line in the \"moleculetype\" directive. Found $NN\n");
 		}
 		my @D=split(/ /,$C[1]);
 		if($#D != 1){
-			print "ERROR: Improperly formatted moleculetype line. Must provide name and nrexcl value.\n";
+			smog_quit("Improperly formatted moleculetype line. Must provide name and nrexcl value.\n");
 		}
 		print TOPOUT "[ moleculetype ]\n";
 		print TOPOUT "$C[1]\n\n";
 	}
 
 	# start with atomtypes
-	my $CFL=0;
-	my $typeindex=0;
-	my %indexbytype;
 	if(!exists $DIRLIST{"atomtypes"}){
-		print "ERROR: \"atomtypes\" does not appear in .top file.\n";
-		exit;
+		smog_quit("\"atomtypes\" does not appear in .top file.\n");
 	}else{
 		my @indextotype;
 		my $typeindex=0;
 		my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
-
-	# keep at the atomtypes, even though some may not be used in the new system.	
-
+		# keep at the atomtypes, even though some may not be used in the new system.	
 		print TOPOUT "[ atomtypes ]\n";
 		for(my $II=1;$II<=$#C;$II++){
-		print TOPOUT "$C[$II]\n";
+			print TOPOUT "$C[$II]\n";
 		}
 		print TOPOUT "\n";
-	
 	}
 
 	# information about the atoms 
 	if(!exists $DIRLIST{"atoms"}){
-		print "ERROR: \"atoms\" does not appear in .top file.\n";
-		exit;
+		smog_quit("\"atoms\" does not appear in .top file.\n");
 	}else{
 		my @C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
 
@@ -300,8 +281,7 @@ print GROFILE "$grodim\n";
 
 	# information about the contacts 
 	if(!exists $DIRLIST{"pairs"}){
-		print "ERROR: \"pairs\" does not appear in .top file.\n";
-		exit;
+		smog_quit("\"pairs\" does not appear in .top file.\n");
 	}else{
 		print TOPOUT "[ pairs ]\n";
 		my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
@@ -325,13 +305,11 @@ print GROFILE "$grodim\n";
 
 	# information about the bonds 
 	if(!exists $DIRLIST{"bonds"}){
-		print "ERROR: \"bonds\" does not appear in .top file.\n";
-		exit;
+		smog_quit("\"bonds\" does not appear in .top file.\n");
 	}else{
 		my @C= split(/\n/,$DATA[$DIRLIST{"bonds"}]);
 		if($#C<1){
-			print "ERROR: There must be at least 1 bond listed under the bonds directive\n";
-			exit;
+			smog_quit("There must be at least 1 bond listed under the bonds directive\n");
 		}
 
 		print TOPOUT "[ bonds ]\n";
@@ -353,13 +331,11 @@ print GROFILE "$grodim\n";
 
 	# information about the angles 
 	if(!exists $DIRLIST{"angles"}){
-		print "ERROR: \"angles\" does not appear in .top file.\n";
-		exit;
+		smog_quit("\"angles\" does not appear in .top file.\n");
 	}else{
 		my @C= split(/\n/,$DATA[$DIRLIST{"angles"}]);
 		if($#C<1){
-			print "ERROR: There must be at least 1 angle listed under the angles directive\n";
-			exit;
+			smog_quit("There must be at least 1 angle listed under the angles directive\n");
 		}
 		print TOPOUT "[ angles ]\n";
 		for(my $JJ=1;$JJ<=$#C;$JJ++){
@@ -384,14 +360,12 @@ print GROFILE "$grodim\n";
 
 	# information about the dihedrals 
 	if(!exists $DIRLIST{"dihedrals"}){
-		print "ERROR: \"dihedrals\" does not appear in .top file.\n";
-		exit;
+		smog_quit("\"dihedrals\" does not appear in .top file.\n");
 	}else{
 		my @LAST;
 		my @C= split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
 		if($#C<1){
-			print "ERROR: There must be at least 1 dihedral listed under the dihedrals directive\n";
-			exit;
+			smog_quit("There must be at least 1 dihedral listed under the dihedrals directive\n");
 		}
 
 		print TOPOUT "[ dihedrals ]\n";
@@ -415,13 +389,11 @@ print GROFILE "$grodim\n";
 
 	# information about the exclusions 
 	if(!exists $DIRLIST{"exclusions"}){
-		print "ERROR: \"exclusions\" does not appear in .top file.\n";
-		exit;
+		smog_quit("\"exclusions\" does not appear in .top file.\n");
 	}else{
 		my @C= split(/\n/,$DATA[$DIRLIST{"exclusions"}]);
 		if($#C<1){
-			print "ERROR: There must be at least 1 bond listed under the bonds directive\n";
-			exit;
+			smog_quit("There must be at least 1 bond listed under the bonds directive\n");
 		}
 
 		print TOPOUT "[ exclusions ]\n";
@@ -446,8 +418,7 @@ print GROFILE "$grodim\n";
 	}
 
 	if(!exists $DIRLIST{"system"}){
-		print "ERROR: \"system\" does not appear in .top file.\n";
-		exit;
+		smog_quit("\"system\" does not appear in .top file.\n");
 	}else{
 		my @C= split(/\n/,$DATA[$DIRLIST{"system"}]);
 		print TOPOUT "[ system ]\n";
@@ -458,8 +429,7 @@ print GROFILE "$grodim\n";
 	}
 
 	if(!exists $DIRLIST{"molecules"}){
-		print "ERROR: \"molecules\" does not appear in .top file.\n";
-		exit;
+		smog_quit("\"molecules\" does not appear in .top file.\n");
 	}else{
 		my @C= split(/\n/,$DATA[$DIRLIST{"molecules"}]);
 		print TOPOUT "[ molecules ]\n";
@@ -470,6 +440,6 @@ print GROFILE "$grodim\n";
 	}
 
 
-print "\n\n\t\tSUCCESS: Extracted $KEEPN atom subsystem.\n\n";
+print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
 
 
