@@ -305,7 +305,7 @@ print GROFILE "$grodim\n";
 	}else{
 		print TOPOUT "[ pairs ]\n";
 		my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
-		for(my $JJ=0;$JJ<=$#C;$JJ++){
+		for(my $JJ=1;$JJ<=$#C;$JJ++){
 			my @D=split(/ /,$C[$JJ]);
 			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
 				print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
@@ -335,7 +335,7 @@ print GROFILE "$grodim\n";
 		}
 
 		print TOPOUT "[ bonds ]\n";
-		for(my $JJ=0;$JJ<=$#C;$JJ++){
+		for(my $JJ=1;$JJ<=$#C;$JJ++){
 			my @D=split(/ /,$C[$JJ]);
 			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
 				print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
@@ -363,7 +363,7 @@ print GROFILE "$grodim\n";
 			exit;
 		}
 		print TOPOUT "[ angles ]\n";
-		for(my $JJ=0;$JJ<=$#C;$JJ++){
+		for(my $JJ=1;$JJ<=$#C;$JJ++){
 			my @D=split(/ /,$C[$JJ]);
 			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} ){
 				print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} $keepatoms{$D[2]} ";
@@ -396,7 +396,7 @@ print GROFILE "$grodim\n";
 		}
 
 		print TOPOUT "[ dihedrals ]\n";
-		for(my $JJ=0;$JJ<=$#C;$JJ++){
+		for(my $JJ=1;$JJ<=$#C;$JJ++){
 			my @D=split(/ /,$C[$JJ]);
 			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} && exists $keepatoms{$D[3]} ){
 				print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} $keepatoms{$D[2]} $keepatoms{$D[3]} ";
@@ -426,7 +426,7 @@ print GROFILE "$grodim\n";
 		}
 
 		print TOPOUT "[ exclusions ]\n";
-		for(my $JJ=0;$JJ<=$#C;$JJ++){
+		for(my $JJ=1;$JJ<=$#C;$JJ++){
 			my @D=split(/ /,$C[$JJ]);
 			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
 				print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]}\n";
@@ -434,12 +434,11 @@ print GROFILE "$grodim\n";
 		}
 	}
 
-
-
 	# provide information about the atoms 
 	if(exists $DIRLIST{"position_restraints"} ){
 		smog_quit("position_restraints not supported in top file (yet).");
 	}else{
+		print TOPOUT "[ position_restraints ]\n";
         	foreach my $res(keys %atoms2restrain){
 			print TOPOUT "$atoms2restrain{$res} 1 100 100 100\n";
         	}
@@ -474,6 +473,6 @@ print GROFILE "$grodim\n";
 
 
 
-print "\n\n\t\tSUCCESS: OPTIM files generated without errors.\n\n";
+print "\n\n\t\tSUCCESS: Extracted $KEEPN atom subsystem.\n\n";
 
 
