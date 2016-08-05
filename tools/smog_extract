@@ -1,4 +1,4 @@
-##use strict;
+use strict;
 use warnings;
 use List::Util qw(max);
 use Getopt::Long;
@@ -23,8 +23,6 @@ print <<EOT;
 *****************************************************************************************
 EOT
 
-my $GROFILE;
-my $TOPFILE;
 my $PI=3.1415926;
 my $twoPI=2.0*$PI;
 my $DEG2RAD=$PI/180.0;
@@ -44,7 +42,7 @@ sub smog_quit
 {
         my ($LINE)=@_;
         if($main::noexit){
-                warn("$LINE");
+                warn("\nWarning: $LINE\n");
         }else{
                 print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow SMOG to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
                 exit;
@@ -82,7 +80,7 @@ my $outputGRO="extracted.gro";
 my $help;
 my $gen_restraints;
 my $warnonly=0;
-my $noexit=0;
+our $noexit=0;
 usage() if (!GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
         'of=s' => \$outputTOP, 'og=s' => \$outputGRO, 'restraints' => \$gen_restraints,  'warnonly' => \$warnonly, 
         '<>' => \&usage)
@@ -99,8 +97,7 @@ if($warnonly){
 ### read in the list of atoms that we want to keep
 my %keepatoms;
 my $KEEPN=0;
-my $keepatoms2;
-my $message=0;
+my @keepatoms2;
 open(ATLIST,"$indexFile") or die "\nCan\'t open $indexFile. Quitting\n\n";
 while(<ATLIST>){
 	my $LINE=$_;
@@ -119,17 +116,15 @@ while(<ATLIST>){
 		}else{
 			$keepatoms{$A[$I]}=$KEEPN+1;
 			$keepatoms2[$KEEPN]=$A[$I];
-			$KEEPN++;
-			if($message ==0 && $keepatoms2[$KEEPN] < $keepatoms2[$KEEPN-1]){
-				print "\nNote: Atoms listed in $indexFile are not in ascending order.\n";
-				$message=1;
+			if($KEEPN > 0 && $keepatoms2[$KEEPN] < $keepatoms2[$KEEPN-1]){
+				smog_quit("Atoms listed in $indexFile are not in ascending order.\n");
 			}
+			$KEEPN++;
 		}
 	}
 }
 
 close(ATLIST);
-
 
 ### extract the atoms for a new gro file (note: the atoms will be listed in the order appearing in the listfile)
 
@@ -137,40 +132,39 @@ open(GROFILE,"$inputGRO") or die "Can\'t open GRO file \"$inputGRO\"\n";
 my $grohead=<GROFILE>;
 chomp($grohead);
 
-$TMP=<GROFILE>;
+my $TMP=<GROFILE>;
 chomp($TMP);
 $TMP =~ s/\t/ /g; 
 $TMP =~ s/^\s+|\s+$//g;
 $TMP =~ s/ +/ /g;
 my @A=split(/\s+/,$TMP);
 my $NATOMS=$A[0];
-my @GROINFO;
+my @GRODATA;
 unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
 
 for(my $I=0;$I<$NATOMS;$I++){
-	# read a line
+	# store gro data
 	my $LINE=<GROFILE>;
 	chomp($LINE);
-	$GROINFO[$I+1]=$LINE;
+	$GRODATA[$I+1]=$LINE;
 }
 my $grodim=<GROFILE>;
 chomp($grodim);
 close(GROFILE);
 
-
+if(-e $outputGRO){smog_quit("$outputGRO already exists.")};
 open(GROFILE,">$outputGRO") or die "Can\'t open output GRO file \"$outputGRO\"\n";
 print GROFILE "$grohead\n";
 print GROFILE "$KEEPN\n";
 for(my $I=0;$I<$KEEPN;$I++){
-	print GROFILE "$GROINFO[$keepatoms2[$I]-1]\n";
+	print GROFILE "$GRODATA[$keepatoms2[$I]-1]\n";
 }
 print GROFILE "$grodim\n";
 
 ### read the options
 ## Generate SBM.INP
 
-if($SBMINPON =~ m/^Y$/){
-	print "\n\nUsing $TOPFILE and $GROFILE to generate SBM.INP and odata for OPTIM...\n\n";
+	print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted system...\n\n";
 
 	my %supported_directives = ( 'defaults' => '0',
                 'atomtypes' => '1',
@@ -186,10 +180,9 @@ if($SBMINPON =~ m/^Y$/){
                 'position_restraints' => '1'
                 );
 
-
+	my %atoms2restrain;
 	#read in the top file, with comments stripped
-
-	open(FILE, "$TOPFILE") or die "Can not open $TOPFILE\n"; 
+	open(FILE, "$inputTOP") or die "Can not open $inputTOP\n"; 
 	my $string = "";
 	while (<FILE>){
 		my $LINE = $_;
@@ -198,10 +191,8 @@ if($SBMINPON =~ m/^Y$/){
 		$LINE =~ s/\t/ /g; 
 		$LINE =~ s/^\s+|\s+$//g;
 		$LINE =~ s/ +/ /g;
-		if( m/[#!\^\$]/ ){
-			print "ERROR: Special characters not recognized in .top file\n";
-			print "  Offending line: $LINE\n";
-			exit;
+		if( $LINE =~ m/[#!\^\$]/ ){
+			smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
 		}
 		# remove comments
 		if($LINE ne ""){ 
@@ -210,13 +201,13 @@ if($SBMINPON =~ m/^Y$/){
 		}
 	}
 	
-	# read in the top file and check that only supported directives are included.
+	# process the top file and check that only supported directives are included.
 	my %DIRLIST;
 	my @DATA=split(/\[/,$string);
 	for (my $I=1;$I<=$#DATA;$I++){
 		my $string1 = $DATA[$I];
 		open my($fh), "<", \$string1 or die ; # reading from the data in $string
-		my $first_line = <$fh>; # gives "Fred"
+		my $first_line = <$fh>; 
 		$first_line =~  s/^\s//g;
 		close $fh;
 		my @B=split(/ /,$first_line);
@@ -225,80 +216,49 @@ if($SBMINPON =~ m/^Y$/){
 		$DIR =~ s/\]$//g;
 			
 		if(!exists $supported_directives{$DIR}){
-			print "ERROR: Directive \"$DIR \" not supported\n";
-			exit;
+			smog_quit("Directive \"$DIR \" not supported\n");
 		}else{
 			$DIRLIST{$DIR}=$I;
 		}
 	}
 	
-	# write out odata
-	# Write out SBM.INP
-	if(-e "SBM.INP"){print "SBM.INP already exists.  Quitting.\n"; exit;}
-	open(OPTIMTOP,">SBM.INP") or die "Can not open SBM.INP\n";
-	
-	print OPTIMTOP "Structure-based topology file for use with OPTIM.  Generated by smog_optim, as part of the SMOG 2 distrubution\n";
-	print OPTIMTOP "Debye-Huckel Parameters: PREFACTOR, Dielectric Constant, Monovalent Ion Concentration, DH switching distance, DH cutoff distance\n";
-	printf (OPTIMTOP "%8.3f %8.3f %8.3f %8.3f %8.3f\n", $PREFACTOR, $DC, $CONCENTRATION, $DHswitch, $DHcut);
-	print OPTIMTOP  "nonbonded switching distance, truncate distance\n";
-
-	# Go through the directives, in order
+	# Go through the directives, in order, and write out information for the subsystem
+	if(-e $outputTOP){smog_quit("$outputTOP already exists.")}
+	open(TOPOUT,">$outputTOP") or die "Can\'t open $outputTOP for writing.\n";
 
 	if(!exists $DIRLIST{"defaults"}){
-		print "ERROR: \"defaults\" does not appear in .top file.\n";
-		exit;
+		smog_quit("\"defaults\" does not appear in .top file.\n");
 	}else{
 		my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
 		if($#C != 1){
 			my $NN=$#C;
-			print "ERROR: Must have one line in the \"defaults\" directive. Found $NN\n";
-		        exit;	
+			smog_quit("Must have one line in the \"defaults\" directive. Found $NN\n");
 		}
 		my @D=split(/ /,$C[1]);
 		if($#D != 2){
-			print "ERROR: Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n";
-			exit;
+			smog_quit("Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n");
 		}
-		if($D[0] != 1){
-			print "ERROR: Only nbfunc value of 1 is supported by smog_optim\n";
-			exit;
-		}	
-		if($D[1] != 1){
-			print "ERROR: Only comb-rule value of 1 is supported by smog_optim\n";
-			exit;
-		}	
-		unless( $D[2] =~ m/^[nN][oO]$/){
-			print "ERROR: only gen-pairs \"no\" supported by smog_optim\n";
-			exit;
-		}
+		print TOPOUT "[ defaults ]\n";
+		print TOPOUT "$C[1]\n\n";
 	}
 
 	if(!exists $DIRLIST{"moleculetype"}){
 		print "ERROR: \"moleculetype\" does not appear in .top file.\n";
-		exit;
 	}else{
 		my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
 		if($#C != 1){
 			my $NN=$#C;
 			print "ERROR: Must have one line in the \"moleculetype\" directive. Found $NN\n";
-		        exit;	
 		}
 		my @D=split(/ /,$C[1]);
 		if($#D != 1){
 			print "ERROR: Improperly formatted moleculetype line. Must provide name and nrexcl value.\n";
-			exit;
 		}
-		print "\nNOTE: nrexcl value will not be used.  Exclusions will be determined solely by bonds, angles, dihedrals and contacts.\n";
+		print TOPOUT "[ moleculetype ]\n";
+		print TOPOUT "$C[1]\n\n";
 	}
 
-
-
-	
 	# start with atomtypes
-	my %massbytype;
-	my %chargebytype;
-	my %c6bytype;
-	my %c12bytype;
 	my $CFL=0;
 	my $typeindex=0;
 	my %indexbytype;
@@ -309,195 +269,61 @@ if($SBMINPON =~ m/^Y$/){
 		my @indextotype;
 		my $typeindex=0;
 		my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
+
+	# keep at the atomtypes, even though some may not be used in the new system.	
+
+		print TOPOUT "[ atomtypes ]\n";
 		for(my $II=1;$II<=$#C;$II++){
-			my @D=split(/ /,$C[$II]);
-			if($#D != 5){
-				print "ERROR: Wrong number of arguments in atomtypes declaration.\n";
-				print "Offending line:\n$C[$II]\n";
-				exit;
-			}
-			if($D[2] != 0 && $CFL==0){
-				print "\nNOTE: Found charges in atomtypes section.  Debye-Huckel parameters will be assigned.  You may want to double check the output.\n";
-				$CFL=1;
-			}
-			if($D[4] != 0){
-				print "ERROR: Non-zero c6 values not supported by smog_optim.\n";
-				exit;
-			}
-			# check if a previous atomtype has identical parameters
-			my $matchedtype=-1;
-			 
-			foreach my $key(keys %massbytype){
-				if($c6bytype{$key} == $D[4] &&  $c12bytype{$key} == $D[5]){
-					$matchedtype=$indexbytype{$key};
-				}
-			}
-			# is not -1, then it matched.
-			if($matchedtype != -1){
-				$indexbytype{$D[0]}=$matchedtype;
-			}else{
-				$indexbytype{$D[0]}=$typeindex;
-				$indextotype[$typeindex]=$D[0];
-				$typeindex++;
-			}
-
-			$massbytype{$D[0]}=$D[1];
-			$chargebytype{$D[0]}=$D[2];
-			$c6bytype{$D[0]}=$D[4];
-			$c12bytype{$D[0]}=$D[5];
+		print TOPOUT "$C[$II]\n";
 		}
-		# check largest values to find the switching distances
-		my $EPSILON=1.0;
-		my $SIGMAMAX=-1;
-		foreach my $key(keys %massbytype){
-			$SIGMAMAX=max $SIGMAMAX, 10.0*($c12bytype{$key}/$EPSILON)**(1.0/12);
-		}
-
-		# set the switching distance to the distance where the potential is equal to 0.5**12~0.0002
-		my $SWITCHD=2*$SIGMAMAX*($EPSILON**(1.0/12.0));
-		my $CUTD=$SWITCHD+1.0;
-		# print out the number of types first
-		printf (OPTIMTOP "%f %f\n", $SWITCHD, $CUTD);
-		printf (OPTIMTOP "%i atomtypes\n", $typeindex);
-		my $I;
-		for ($I=0;$I<$typeindex;$I++){
-			my $tmptype=$indextotype[$I];
-			my $sigma=10.0*($c12bytype{$tmptype}/$EPSILON)**(1.0/12);
-			my $J=$I+1;
-			printf (OPTIMTOP "%i %f %f\n", $J, $sigma,$EPSILON);
-
-		}
+		print TOPOUT "\n";
+	
 	}
 
-	# provide information about the atoms 
+	# information about the atoms 
 	if(!exists $DIRLIST{"atoms"}){
 		print "ERROR: \"atoms\" does not appear in .top file.\n";
 		exit;
 	}else{
 		my @C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
-		if($#C<1){
-			print "ERROR: There must be at least 1 atom listed under the atoms directive\n";
-			exit;
-		}
-		printf (OPTIMTOP "%i atoms (atomnum, atomtype, resnum, resname, atomname, charge, mass)\n",$#C);
-		for (my $K=1;$K<=$#C;$K++){
-			my @D=split(/ /,$C[$K]);
-			my $AT;
-			if(!exists $indexbytype{$D[1]}){
-				print "ERROR: atomtype $D[1] used in atoms declaration, but not found in atomtypes\n";
-				exit;
-			}else{
-				$AT=$indexbytype{$D[1]}+1;
-			}
-			if($#D == 7){
-				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$AT,$D[2],$D[3],$D[4],$D[6],$D[7]);
-			}elsif($#D == 6){
-				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$AT,$D[2],$D[3],$D[4],$D[6],$massbytype{$D[1]});
-			}elsif($#D == 5){
-				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$AT,$D[2],$D[3],$D[4],$chargebytype{"$D[1]"},$massbytype{$D[1]});
-			}else{
-				print "ERROR: Insufficient number of fields in atom definition\n";
-				exit;
-			}
+
+		print TOPOUT "[ atoms ]\n";
+
+		for(my $I=0;$I<$KEEPN;$I++){
+			my $JJ=$keepatoms2[$I];
+			my @D=split(/ /,$C[$JJ]);
+			print TOPOUT "$keepatoms{$JJ} $D[1] $D[2] $D[3] $D[4] $keepatoms{$JJ}\n";
 		}
 	}
 
-	print OPTIMTOP "\n";
+	print TOPOUT "\n";
 
-
-	# provide information about the contacts 
+	# information about the contacts 
 	if(!exists $DIRLIST{"pairs"}){
 		print "ERROR: \"pairs\" does not appear in .top file.\n";
 		exit;
 	}else{
-
-
-		my @C= split(/\n/,$DATA[$DIRLIST{"pairs"}]);
-		if($#C<1){
-			print "ERROR: There must be at least 1 contact listed under the pairs directive\n";
-			exit;
-		}
-		
-		my $CT=0;
-		my $TEMPSTRING = "";
-		for (my $K=1;$K<=$#C;$K++){
-			my @D=split(/ /,$C[$K]);
-			my $sigma;
-			my $epsilon;
-			my $CSTRING;
-			if($D[2] != 1 && $D[2] != 5 && $D[2] != 6 && $D[2] != 7){
-				print "ERROR: Only contacts of type 1,5,6,7 are supported. Quitting.\n";
-				exit;
-			}else{
-				if($D[2] == 1 && $CONTTYPE == 10){
-					if($#D != 4){
-						print "ERROR: Wrong number of arguments for a pair of type 1\n$C[$K]";
-						exit;
-					}
-					$sigma=(6.0/5.0*$D[4]/$D[3])**(0.5);
-					$epsilon=$D[3]/(6.0*$sigma**10);
-					$sigma*=10.0;
-					$CSTRING=sprintf ("%5i %5i %1i %9.5f %8.5e\n", $D[0],$D[1],2,$sigma,$epsilon);
-				}elsif($D[2] == 1 && $CONTTYPE == 6){
-					if($#D != 4){
-						print "ERROR: Wrong number of arguments for a pair of type 1\n$C[$K]";
-						exit;
-					}
-					$sigma=(2.0*$D[4]/$D[3])**(1.0/6.0);
-					$epsilon=$D[3]**2/(4.0*$D[4]);
-					$sigma*=10.0;
-					$CSTRING=sprintf ("%5i %5i %1i %9.5f %8.5e\n", $D[0],$D[1],1,$sigma,$epsilon);
-				}elsif($D[2] == 5){
-					if($#D != 5){
-						print "ERROR: Wrong number of arguments for a pair of type 5 (single-well gaussian)\n$C[$K]";
-						exit;
-					}
-					$D[4]*=10.0;
-					$D[5]*=10.0;
-					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f\n     %9.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5]);
-				}elsif($D[2] == 6){
-					if($#D != 6){
-						print "ERROR: Wrong number of arguments for a pair of type 6 (single-well gaussian w excluded volume)\n$C[$K]";
-						exit;
-					}
-					$D[4]*=10.0;
-					$D[5]*=10.0;
-					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f\n     %9.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
-
-				}elsif($D[2] == 7){
-					if($#D != 8){
-						print "ERROR: Wrong number of arguments for a pair of type 7 (dual-basin gaussian)\n$C[$K]";
-						exit;
-					}
-					$D[4]*=10.0;
-					$D[5]*=10.0;
-					$D[6]*=10.0;
-					$D[7]*=10.0;
-					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f\n     %9.5f %9.5f %9.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6],$D[7],$D[8]);
-				}else{ 
-					print "Internal error 1: Please contact info\@smog-server.org for help.\n"; 
-					exit;
+		print TOPOUT "[ pairs ]\n";
+		my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
+		for(my $JJ=0;$JJ<=$#C;$JJ++){
+			my @D=split(/ /,$C[$JJ]);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
+				for(my $J=2;$J<=$#D;$J++){
+					print TOPOUT "$D[$J] ";
 				}
-			}
-
-			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
-				$TEMPSTRING .= $CSTRING;
-				$CT++;
-			}else{
-				unless ($rigidified{$D[0]} == $rigidified{$D[1]}){
-					$TEMPSTRING .= $CSTRING;
-					$CT++;
-				}
+				print TOPOUT "\n";
+			}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[0]}}=1;
+			}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[1]}}=1;
 			}
 		}
-
-		printf (OPTIMTOP "%i contacts\n",$CT);	
-		print OPTIMTOP "$TEMPSTRING\n";
 	}
 
 
 
-	# provide information about the bonds 
+	# information about the bonds 
 	if(!exists $DIRLIST{"bonds"}){
 		print "ERROR: \"bonds\" does not appear in .top file.\n";
 		exit;
@@ -508,35 +334,25 @@ if($SBMINPON =~ m/^Y$/){
 			exit;
 		}
 
-
-		my $CT=0;
-		my $TEMPSTRING = "";
-		for (my $K=1;$K<=$#C;$K++){
-			my @D=split(/ /,$C[$K]);
-			$D[3]*=10;
-			$D[4]*=0.01;
-			if($D[2] != 1 && $D[2] != 6){
-				print "ERROR: Only bonds of type 1 and 6 are supported. Quitting.\n";
-				exit;
-			}
-			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
-				$TEMPSTRING .= sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4]);
-				$CT++;
-			}else{
-				unless ($rigidified{$D[0]} == $rigidified{$D[1]}){
-					$TEMPSTRING .= sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4]);
-					$CT++;
+		print TOPOUT "[ bonds ]\n";
+		for(my $JJ=0;$JJ<=$#C;$JJ++){
+			my @D=split(/ /,$C[$JJ]);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
+				for(my $J=2;$J<=$#D;$J++){
+					print TOPOUT "$D[$J] ";
 				}
+				print TOPOUT "\n";
+			}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[0]}}=1;
+			}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[1]}}=1;
 			}
 		}
-
-		printf (OPTIMTOP "%i bonds\n",$CT);	
-		print OPTIMTOP "$TEMPSTRING\n";
-
 	}
 
 
-	# provide information about the angles 
+	# information about the angles 
 	if(!exists $DIRLIST{"angles"}){
 		print "ERROR: \"angles\" does not appear in .top file.\n";
 		exit;
@@ -546,28 +362,23 @@ if($SBMINPON =~ m/^Y$/){
 			print "ERROR: There must be at least 1 angle listed under the angles directive\n";
 			exit;
 		}
-
-		my $CT=0;
-		my $TEMPSTRING = "";
-		for (my $K=1;$K<=$#C;$K++){
-			my @D=split(/ /,$C[$K]);
-			$D[4]*=$DEG2RAD;
-			if($D[3] != 1 ){
-				print "ERROR: Only angles of type 1 are supported. Quitting.\n";
-				exit;
-			}
-			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} || !exists $rigidified{$D[2]} ){
-				$TEMPSTRING .= sprintf ("%5i %5i %5i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[4],$D[5]);
-				$CT++;
-			}else{
-				unless (($rigidified{$D[0]} == $rigidified{$D[1]}) && ($rigidified{$D[1]} == $rigidified{$D[2]})   ){
-					$TEMPSTRING .= sprintf ("%5i %5i %5i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[4],$D[5]);
-					$CT++;
+		print TOPOUT "[ angles ]\n";
+		for(my $JJ=0;$JJ<=$#C;$JJ++){
+			my @D=split(/ /,$C[$JJ]);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} ){
+				print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} $keepatoms{$D[2]} ";
+				for(my $J=3;$J<=$#D;$J++){
+					print TOPOUT "$D[$J] ";
+				}
+				print TOPOUT "\n";
+			}elsif(exists $keepatoms{$D[0]} || exists $keepatoms{$D[1]} || exists $keepatoms{$D[2]}){
+				for(my $M=0;$M<3;$M++){
+					if(exists $keepatoms{$D[$M]}){
+						$atoms2restrain{$keepatoms{$D[$M]}}=1;
+					}
 				}
 			}
 		}
-		printf (OPTIMTOP "%i angles\n",$CT);
-		print OPTIMTOP "$TEMPSTRING\n";
 	}
 
 
@@ -583,90 +394,85 @@ if($SBMINPON =~ m/^Y$/){
 			print "ERROR: There must be at least 1 dihedral listed under the dihedrals directive\n";
 			exit;
 		}
-		my $CT=0;
-		my $TEMPSTRING = "";
-		for (my $K=1;$K<=$#C;$K++){
-			my @D=split(/ /,$C[$K]);
-			$D[5]*=$DEG2RAD;
-			my $D5;
-			if($D[4] ==1){
-				$D5=$D[5]-$PI;
-			}else{
-				$D5=$D[5];
-			}
-			if($D[4] !=1 && $D[4] !=2 ){
-				print "ERROR: Only dihedrals of type 1 and 2 are supported. Quitting.\n";
-				exit;
-			}
-			if(exists $D[7] && $D[7] == 3){
-			# if N=3, it must immediately follow an N=1 dihedral
-				my $DD = remainder($LAST[5]*3.0,$twoPI)- remainder($D[5],  $twoPI);
-				if($DD > 0.001 || $DD < -0.001){
-					print "ERROR: N=3 dihedral has wrong angle, relative to N=1 dihedral.\n";
-					print "See: $C[$K]\n";
-					exit;
-				}
-				$DD=($D[6]/$LAST[6]-0.5);
-				if($DD > 0.01 || $DD < -0.01){
-					print "ERROR: N=3 dihedral has wrong weight, relative to N=1 dihedral.\n";
-					print "See: $C[$K]\n";
-					exit;
-				}
-				if($D[0] != $LAST[0] || $D[1] != $LAST[1] || $D[2] != $LAST[2] || $D[3] != $LAST[3]){
-					print "ERROR: N=3 dihedral has wrong atoms, relative to N=1 dihedral.\n";
-					print "See: $C[$K]\n";
-					exit;
-				}
-				# if type 3, don't write it again, since it is handles inside OPTIM
-				next; 
-			}
-			$D[4]= $D[4] % $PI;
 
-			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} || !exists $rigidified{$D[2]} || !exists $rigidified{$D[3]} ){
-				$TEMPSTRING .= sprintf ("%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D5,$D[6]);
-				$CT++;
-			}else{
-				unless (($rigidified{$D[0]} == $rigidified{$D[1]}) && ($rigidified{$D[1]} == $rigidified{$D[2]})   ){
-					$TEMPSTRING .= sprintf ("%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D5,$D[6]);
-					$CT++;
+		print TOPOUT "[ dihedrals ]\n";
+		for(my $JJ=0;$JJ<=$#C;$JJ++){
+			my @D=split(/ /,$C[$JJ]);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} && exists $keepatoms{$D[3]} ){
+				print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} $keepatoms{$D[2]} $keepatoms{$D[3]} ";
+				for(my $J=4;$J<=$#D;$J++){
+					print TOPOUT "$D[$J] ";
+				}
+				print TOPOUT "\n";
+			}elsif(exists $keepatoms{$D[0]} || exists $keepatoms{$D[1]} || exists $keepatoms{$D[2]} || exists $keepatoms{$D[3]}){
+				for(my $M=0;$M<4;$M++){
+					if(exists $keepatoms{$D[$M]}){
+						$atoms2restrain{$keepatoms{$D[$M]}}=1;
+					}
 				}
 			}
-		@LAST=@D;
 		}
-		printf (OPTIMTOP "%i dihedrals\n",$CT);
-		print OPTIMTOP "$TEMPSTRING\n";
 	}
-	my $NEXC=scalar keys %excludedlist;
-	print OPTIMTOP "$NEXC exclusions\n";
-	for my $exc (keys %excludedlist){
-		my @A=split(/-/,$exc);
-		print OPTIMTOP "$A[0] $A[1]\n";
+
+	# information about the bonds 
+	if(!exists $DIRLIST{"exclusions"}){
+		print "ERROR: \"exclusions\" does not appear in .top file.\n";
+		exit;
+	}else{
+		my @C= split(/\n/,$DATA[$DIRLIST{"exclusions"}]);
+		if($#C<1){
+			print "ERROR: There must be at least 1 bond listed under the bonds directive\n";
+			exit;
+		}
+
+		print TOPOUT "[ exclusions ]\n";
+		for(my $JJ=0;$JJ<=$#C;$JJ++){
+			my @D=split(/ /,$C[$JJ]);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]}\n";
+			}
+		}
 	}
-	print OPTIMTOP "\n";
+
 
 
 	# provide information about the atoms 
-	if(!exists $DIRLIST{"position_restraints"}){
-		print "\nNOTE: \"position_restraints\" does not appear in .top file.\n";
-		print OPTIMTOP "0 position restraints\n";
+	if(exists $DIRLIST{"position_restraints"} ){
+		smog_quit("position_restraints not supported in top file (yet).");
 	}else{
-		my @C= split(/\n/,$DATA[$DIRLIST{"position_restraints"}]);
-		if($#C<1){
-			print "ERROR: \"position_restraints\" found in .top file, but there are not restraints listed.\n";
-			exit;
-		}
-		printf (OPTIMTOP "%i position restraints\n",$#C);
-		for (my $K=1;$K<=$#C;$K++){
-			my @D=split(/ /,$C[$K]);
-			if($#D !=4){
-				print "ERROR: Wrong number of fields in position restaint.  Offending line:\n$C[$K]\n";
-			}
-			if($D[1] != 1){print "ERROR: Only restraints of type 1 are supported\n Quitting.\n"; exit;} 
-			# printing atom number, 6 position restraint contacts and 3 coordinates.  Restraints are xx, yy, zz, xy, xz, yz, though cross terms not yet supported.
-			printf (OPTIMTOP "%5i %8.5e %8.5e %8.5e %8.5e %8.5e %8.5e %8.3f %8.3f %8.3f\n", $D[0],$D[2],$D[3],$D[4],0,0,0,$X[$D[0]][0],$X[$D[0]][1],$X[$D[0]][2]);
-		}
+        	foreach my $res(keys %atoms2restrain){
+			print TOPOUT "$atoms2restrain{$res} 1 100 100 100\n";
+        	}
 	}
-}
+
+
+	if(!exists $DIRLIST{"system"}){
+		print "ERROR: \"system\" does not appear in .top file.\n";
+		exit;
+	}else{
+		my @C= split(/\n/,$DATA[$DIRLIST{"system"}]);
+		print TOPOUT "[ system ]\n";
+		for(my $II=1;$II<=$#C;$II++){
+			print TOPOUT "$C[$II]\n";
+		}
+		print TOPOUT "\n";
+	}
+
+	if(!exists $DIRLIST{"molecules"}){
+		print "ERROR: \"molecules\" does not appear in .top file.\n";
+		exit;
+	}else{
+		my @C= split(/\n/,$DATA[$DIRLIST{"molecules"}]);
+		print TOPOUT "[ molecules ]\n";
+		for(my $II=1;$II<=$#C;$II++){
+			print TOPOUT "$C[$II]\n";
+		}
+		print TOPOUT "\n";
+	}
+
+
+
+
 
 print "\n\n\t\tSUCCESS: OPTIM files generated without errors.\n\n";
 

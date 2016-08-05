@@ -433,7 +433,7 @@ if($SBMINPON =~ m/^Y$/){
 	for (my $I=1;$I<=$#DATA;$I++){
 		my $string1 = $DATA[$I];
 		open my($fh), "<", \$string1 or die ; # reading from the data in $string
-		my $first_line = <$fh>; # gives "Fred"
+		my $first_line = <$fh>; 
 		$first_line =~  s/^\s//g;
 		close $fh;
 		my @B=split(/ /,$first_line);
