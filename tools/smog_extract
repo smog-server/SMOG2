@@ -78,7 +78,7 @@ my $indexFile="smog.include";
 my $outputTOP="extracted.top";
 my $outputGRO="extracted.gro";
 my $help;
-my $gen_restraints;
+my $gen_restraints=0;
 my $warnonly=0;
 our $noexit=0;
 usage() if (!GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
@@ -351,7 +351,6 @@ print GROFILE "$grodim\n";
 		}
 	}
 
-
 	# information about the angles 
 	if(!exists $DIRLIST{"angles"}){
 		print "ERROR: \"angles\" does not appear in .top file.\n";
@@ -383,7 +382,7 @@ print GROFILE "$grodim\n";
 
 
 
-	# provide information about the dihedrals 
+	# information about the dihedrals 
 	if(!exists $DIRLIST{"dihedrals"}){
 		print "ERROR: \"dihedrals\" does not appear in .top file.\n";
 		exit;
@@ -414,7 +413,7 @@ print GROFILE "$grodim\n";
 		}
 	}
 
-	# information about the bonds 
+	# information about the exclusions 
 	if(!exists $DIRLIST{"exclusions"}){
 		print "ERROR: \"exclusions\" does not appear in .top file.\n";
 		exit;
@@ -434,16 +433,17 @@ print GROFILE "$grodim\n";
 		}
 	}
 
-	# provide information about the atoms 
+	# information about the restraints 
 	if(exists $DIRLIST{"position_restraints"} ){
 		smog_quit("position_restraints not supported in top file (yet).");
 	}else{
-		print TOPOUT "[ position_restraints ]\n";
-        	foreach my $res(keys %atoms2restrain){
-			print TOPOUT "$atoms2restrain{$res} 1 100 100 100\n";
-        	}
+		if($gen_restraints){
+			print TOPOUT "[ position_restraints ]\n";
+        		foreach my $res(keys %atoms2restrain){
+				print TOPOUT "$atoms2restrain{$res} 1 100 100 100\n";
+        		}
+		}
 	}
-
 
 	if(!exists $DIRLIST{"system"}){
 		print "ERROR: \"system\" does not appear in .top file.\n";
@@ -468,9 +468,6 @@ print GROFILE "$grodim\n";
 		}
 		print TOPOUT "\n";
 	}
-
-
-
 
 
 print "\n\n\t\tSUCCESS: Extracted $KEEPN atom subsystem.\n\n";
