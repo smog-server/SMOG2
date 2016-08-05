@@ -16,9 +16,9 @@ print <<EOT;
 	optionally generate atomic restraints for any atom that has interactions 
 	removed	during the truncation step.
 
-            For more information, use the flag --help, or see the SMOG manual.
+        For more information, use the flag --help, or see the SMOG manual.
 
-            For questions regarding this script, contact info\@smog-server.org
+        For questions regarding this script, contact info\@smog-server.org
 
 *****************************************************************************************
 EOT
