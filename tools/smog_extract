@@ -23,17 +23,13 @@ print <<EOT;
 *****************************************************************************************
 EOT
 
-#####################
-# Error call        #
-# ##################
-
 sub smog_quit
 {
         my ($LINE)=@_;
         if($main::noexit){
                 warn("\nWarning: $LINE\n");
         }else{
-                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow SMOG to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
+                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow smog_extract to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
                 exit;
         }
 }
@@ -150,7 +146,7 @@ open(GROFILE,">$outputGRO") or die "Can\'t open output GRO file \"$outputGRO\"\n
 print GROFILE "$grohead\n";
 print GROFILE "$KEEPN\n";
 for(my $I=0;$I<$KEEPN;$I++){
-	print GROFILE "$GRODATA[$keepatoms2[$I]-1]\n";
+	print GROFILE "$GRODATA[$keepatoms2[$I]]\n";
 }
 print GROFILE "$grodim\n";
 
