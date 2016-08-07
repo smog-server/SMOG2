@@ -11,7 +11,7 @@
 
 <!-- ANGLES -->
 <angles>
-	<angle func="angle_harmonic(?,80)">
+	<angle func="angle_harmonic(?,40)">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
