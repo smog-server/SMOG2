@@ -481,11 +481,12 @@ sub parseSif {
 	my $bondsThreshold = $data->{"settings"}->[0]->{"bondsThreshold"}->[0];
 	my $anglesThreshold = $data->{"settings"}->[0]->{"anglesThreshold"}->[0];
 	my $contactsThreshold = $data->{"settings"}->[0]->{"contactsThreshold"}->[0];
+	my $distanceThreshold = $data->{"settings"}->[0]->{"distanceThreshold"}->[0];
 	$interactionThreshold->{"bonds"}={"shortBond"=>$bondsThreshold->{"shortBond"},
 									  "longBond"=>$bondsThreshold->{"longBond"}};
 	$interactionThreshold->{"angles"}={"smallAngles"=>$anglesThreshold->{"smallAngles"},"largeAngles"=>$anglesThreshold->{"largeAngles"}};
 	$interactionThreshold->{"contacts"}={"shortContacts"=>$contactsThreshold->{"shortContacts"}};
-
+	$interactionThreshold->{"distance"}={"tooShortDistance"=>$distanceThreshold->{"tooShortDistance"}};
 }
 
 ## [bonds] ai aj fType r0 Kb
