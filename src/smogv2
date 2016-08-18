@@ -880,12 +880,12 @@ sub contactParseNM1
 	shift @{$paramArr};
 }
 
-# Parse LJ NM sigma eps usage
+# Parse LJ: F_N(sigma), G_M(sigma), sigma, epsilon format
 sub contactParseNM2
 {
 	my($paramArr,$r0,$epsilon) = @_;
 	##pararArr holds f(r), g(r), and whether native distances and weights should be used.
-	##epsilon
+	##epsilon  
 	##r0 is native distance##
 	#
 	my $A; my $B;
