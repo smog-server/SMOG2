@@ -107,7 +107,7 @@ sub checkForModules {
 	}
 	$checkPackage=`which java | wc -l | awk '{print \$1}'`;
 	if($checkPackage < 1) { print "Java might not be installed. This package assumes Java 1.7 or greater is in the path as 'java'.\n"; $sum++;}
-	if($sum > 0) { print "Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG2 manual.\n"; exit(1); }
+	if($sum > 0) { print "Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG 2 manual.\n"; exit(1); }
 }
 
 
@@ -1553,7 +1553,7 @@ my $warnonly=0;
 my $backup="yes";
 
 header();
-print "\nSMOG2 called with the command:\n";
+print "\nSMOG 2 called with the command:\n";
 print "smog2 ";
 foreach my $filen(@ARGV){
 	print "$filen ";
