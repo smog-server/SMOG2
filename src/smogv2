@@ -309,7 +309,12 @@ sub bondOutput
 			  		print "$paramArr[0] nm\n\n";
 			 	}
 			}else{
-				smog_quit("Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.");
+				smog_quit("Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.
+In case the numbering of the output is different from the input PDB, these atoms in the PDB are:\n
+ GroIndex  Chain#  Residue#  
+----------------------------
+".$i." ".($allAtoms{$i}[4]+1)." ".$allAtoms{$i}[2]." 
+".$j." ".($allAtoms{$j}[4]+1)." ".$allAtoms{$j}[2]);
 			}
 	        }
 	       
@@ -380,23 +385,36 @@ sub CalculateAnglesHelper
 {
 	my($angleArr,$inputPDL,$angleCache) = @_;
 	my $size = $angleArr->dim(1);
-	
 	for(my $i=0;$i<$size;$i++)
 	{
 		my ($atom1,$atom2,$atom3,$func) = $angleArr->slice(":,$i:$i")->list;
 		my $A1=slice($inputPDL,"0:2,$atom1,:");
 		my $A2=slice($inputPDL,"0:2,$atom2,:");
-		my $A3=slice($inputPDL,"0:2,$atom3,:");
-		
-		
-		my $left = norm($A1-$A2);
-		my $right = norm($A3-$A2);
-		
-		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
-		
+		my $A3=slice($inputPDL,"0:2,$atom3,:");		
 		my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
 		my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
 		my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
+		my $left = norm($A1-$A2);
+		my $right = norm($A3-$A2);
+		my $outer = norm($A3-$A1);
+		#these are the distances
+		my $leftd = sclr(sqrt(inner($A1-$A2,$A1-$A2))*$angToNano);
+		my $rightd = sclr(sqrt(inner($A2-$A3,$A2-$A3))*$angToNano);
+		my $outerd = sclr(sqrt(inner($A3-$A1,$A3-$A1))*$angToNano);
+		#check that these distances are larger than the minimum
+		my $short = $interactionThreshold->{"distance"}->{"tooShortDistance"};
+		if($leftd < $short || $rightd < $short || $outerd < $short) {
+			smog_quit("Distance between one of the atom pairs within: $atomi1 $atomi2 $atomi3, are less than distanceThreshold=$short in the .sif.
+In case the numbering of the output is different from the input PDB, these atoms in the PDB are:\n
+ GroIndex  Chain#  Residue#  
+----------------------------
+".$atomi1." ".($allAtoms{$atomi1}[4]+1)." ".$allAtoms{$atomi1}[2]." 
+".$atomi2." ".($allAtoms{$atomi2}[4]+1)." ".$allAtoms{$atomi2}[2]." 
+".$atomi3." ".($allAtoms{$atomi3}[4]+1)." ".$allAtoms{$atomi3}[2]);
+		}
+		
+		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
+		
 		if($atomi1 > $atomi3) { my $temp = $atomi1; $atomi1 = $atomi3; $atomi3 = $temp; }
 		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos);
 		if(!$val) {next;}
@@ -474,7 +492,6 @@ sub printOrderedDihedrals
 	my @diheCache; ## CACHE BONDS TO ORDER
 	## Cache Bonds ##
 	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache);
-	
 	## Sort dihedrals by i, then j then k then l ## 
 	@diheCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"l"} <=> $b->{"l"}) } @diheCache;
 	
@@ -861,12 +878,12 @@ sub contactParseNM1
 	shift @{$paramArr};
 }
 
-# Parse LJ NM sigma eps usage
+# Parse LJ: F_N(sigma), G_M(sigma), sigma, epsilon format
 sub contactParseNM2
 {
 	my($paramArr,$r0,$epsilon) = @_;
 	##pararArr holds f(r), g(r), and whether native distances and weights should be used.
-	##epsilon
+	##epsilon  
 	##r0 is native distance##
 	#
 	my $A; my $B;
@@ -1458,7 +1475,6 @@ sub printBondedTopOutput {
 	## SET DIHEDRAL RATIOS ##
 	print "Setting energetic ratios\n";
 	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms,$rescaleCD);
-
 	print "Processing atoms\n";
 	calculateAtomTypes(\%allAtoms);
 	readAtoms($inputPDB);
@@ -1470,7 +1486,6 @@ sub printBondedTopOutput {
 	## CALCULATE ANGLES ##
 	print "Saving angles\n";
 	printOrderedAngles(\%AngleData,\%bondPDL);
-
 
 	## CALCULATE DIHEDRALS ##
 	print "Saving dihedrals\n";
