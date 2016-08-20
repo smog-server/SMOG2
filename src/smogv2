@@ -1237,22 +1237,22 @@ sub parseInputFolder
 		if($file =~ m/\.bif$/){
 			$bifexists++;
 			$bif = $file;$bif = "$folderName/$bif";
-			print "\nFound .bif file $bif";
+			print "Found .bif file $bif\n";
 			validateTemplate($bif,"bif");next;}
 		if($file =~ m/\.sif$/){
 			$sifexists++;
 			$sif = $file;$sif = "$folderName/$sif";
-			print "\nFound .sif file $sif";
+			print "Found .sif file $sif\n";
 			validateTemplate($sif,"sif");next;}
 		if($file =~ m/\.b$/){
 			$bexists++;
 			$b = $file;$b = "$folderName/$b";
-			print "\nFound .b file $b";
+			print "Found .b file $b\n";
 			validateTemplate($b,"b");next;}
 		if($file =~ m/\.nb$/){
 			$nbexists++;
 			$nb = $file;$nb = "$folderName/$nb";
-			print "\nFound .nb file $nb";
+			print "Found .nb file $nb\n";
 			validateTemplate($nb,"nb");next;}
 	}
 	$bifForSCM = $bif;
@@ -1720,7 +1720,7 @@ if($CGenabled == 0) {
 }
 my $allowCG = 0;
 
-print "Parsing templates files... ";
+print "Parsing templates files...\n";
 
 parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
 
