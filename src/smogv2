@@ -713,7 +713,6 @@ sub calculateContacts
 		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");} 
 		
 		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
-		
 		## Stacking scaling ##
 		$epsilon = 1;
 		if(exists $contactSettings->{"contactScaling"}->{$resTypea}
@@ -743,11 +742,11 @@ sub calculateContacts
 			}
 		}
 
-		## Non-Native option for contacts ##
+		## Non-normalize option for contacts ##
 		if(!$normalize) {
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
-			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
+			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon,$normalize);
 			addToTop($directive,$outputString);
 			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
 		}else{	
@@ -766,7 +765,7 @@ sub calculateContacts
 			$epsilon = $epsilon*$multFactor*$rescaleCD;
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
-			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
+			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon,$normalize);
 			addToTop($directive,$outputString);
 			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
 		}
@@ -778,7 +777,7 @@ sub calculateContacts
 # internal format is f()+g()
 sub contactOutput
 {
-	my($inputFunc,$i,$j,$c0,$epsilon) = @_;
+	my($inputFunc,$i,$j,$c0,$epsilon,$normalize) = @_;
 	if(!$inputFunc){smog_quit ("CONTACTOUTPUT::NO FUNCTION DEFINED");}
 	$inputFunc =~ s/^\s+|\s+$//g;
 	## If $input contains a + ##
@@ -798,12 +797,12 @@ sub contactOutput
 		if($fType != 0) {
 			$addNewline = "\n";
 			if($fname eq "contact_1"){
-				contactParseNM1(\@paramArr,$c0,$epsilon);
+				contactParseNM1(\@paramArr,$c0,$epsilon,$normalize);
 				if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_1")}
 			}
 			## LJ CONTACTS N-M polynomial, CN, CM usage ##	
 			elsif($fname eq "contact_2"){
-				contactParseNM2(\@paramArr,$c0,$epsilon);
+				contactParseNM2(\@paramArr,$c0,$epsilon,$normalize);
 				if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_2")}
 			}
 			    ## Gaussian ##
@@ -831,7 +830,7 @@ sub contactOutput
 # Parse LJ NM sigma eps usage
 sub contactParseNM1
 {
-	my($paramArr,$r0,$epsilon) = @_;
+	my($paramArr,$r0,$epsilon,$normalize) = @_;
 	##pararArr holds N, M, and whether native distances and weights should be used.
 	##epsilon
 	##r0 is native distance##
@@ -860,10 +859,15 @@ sub contactParseNM1
 	## normalized option used
 	if($paramArr->[3] =~ /^\?$/)
 	{
+		if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
 		$paramArr->[3]=$A;
 		$paramArr->[2]=$B;
 	}
 	## additional rescaling used
+	elsif($paramArr->[3] =~ /\?/)
+	{
+		smog_quit("Epsilon value used in contact_1 interaction can not be an expression that includes ?.\n");
+	}
 	else{
 		$A *= $paramArr->[3];
 		$B *= $paramArr->[3];
@@ -878,7 +882,7 @@ sub contactParseNM1
 # Parse LJ: F_N(sigma), G_M(sigma), sigma, epsilon format
 sub contactParseNM2
 {
-	my($paramArr,$r0,$epsilon) = @_;
+	my($paramArr,$r0,$epsilon,$normalize) = @_;
 	##pararArr holds f(r), g(r), and whether native distances and weights should be used.
 	##epsilon  
 	##r0 is native distance##
@@ -908,8 +912,13 @@ sub contactParseNM2
 	## standard normalization used
 	if($paramArr->[3] =~ /^\?$/)
 	{
+		if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
 		$paramArr->[3]=$A;
 		$paramArr->[2]=$B;
+	}
+	elsif($paramArr->[3] =~ /\?/)
+	{
+		smog_quit("Epsilon value used in contact_2 interaction can not be an expression that includes ?.\n");
 	}
 	## additional rescaling used
 	else{

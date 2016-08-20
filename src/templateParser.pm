@@ -374,6 +374,11 @@ sub parseSif {
 		$numCGs++;
 		if($numCGs > 1){smog_quit("Currently, use of multiple contactGroups is not supported.")}
 		$intraRelativeStrength = $contactGroups->{$egName}->{"intraRelativeStrength"};
+		if($intraRelativeStrength != 1 && exists $contactGroups->{$egName}->{"intraRelativeStrength"}){
+			print "\nNOTE: Contact intraRelativeStrength is not used, yet. Value reset to 1.\n";
+			$contactGroups->{$egName}->{"intraRelativeStrength"}=1;
+			$intraRelativeStrength=1.0;
+		}
 		$normalize = $contactGroups->{$egName}->{"normalize"};
 		$termRatios->{"contactGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
 		##if($normalize){$total+=$intraRelativeStrength;$CG_NORM++}
