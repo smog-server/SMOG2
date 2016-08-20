@@ -373,7 +373,8 @@ sub parseSif {
 		$intraRelativeStrength = $contactGroups->{$egName}->{"intraRelativeStrength"};
 		$normalize = $contactGroups->{$egName}->{"normalize"};
 		$termRatios->{"contactGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
-		if($normalize){$total+=$intraRelativeStrength; $CG_NORM++}
+		##if($normalize){$total+=$intraRelativeStrength;$CG_NORM++}
+		if($normalize){$CG_NORM++}
 	
 		if($normalize == 0 && exists $contactGroups->{$egName}->{"intraRelativeStrength"}){
 			smog_quit("Issue in .sif, contact group $egName. intraRelativeStrength only supported when normalization is on.");
@@ -396,7 +397,6 @@ sub parseSif {
 	
 	## NOTE:Contact Type is Global ##
 	## Sum of contact scalings ##
-	$termRatios->{"cintraRelativeTotal"} = $total;
 	
 	if($groupRatios->{"contacts"} <=0 || $groupRatios->{"contacts"} <=0){
 		smog_quit("All values for groupRatios must be greater than zero. See .sif file.")

@@ -673,7 +673,6 @@ sub calculateContacts
 	my $epsilon;my $cG;my $funct;
  	my $totalStrength; my $outputString;
 	my $contactIntraScale;
-	my $contactIntraTotal;	
 	my $count;
 
 
@@ -692,9 +691,8 @@ sub calculateContacts
 		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");}
 		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 		if(!$normalize){next;}		
-		$contactIntraTotal = $termRatios->{"cintraRelativeTotal"};
 		$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
-		$count+=($contactIntraScale/$contactIntraTotal);
+		$count+=$contactIntraScale;
 	}
 
 	## Adjust ratio ##
@@ -762,9 +760,8 @@ sub calculateContacts
 	   		$multFactor = $contactLeftOver;
 	
 			## CONTACT TO CONTACT SCALING ##			
-			$contactIntraTotal = $termRatios->{"cintraRelativeTotal"};
 			$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
-			$multFactor = $multFactor*($contactIntraScale/$contactIntraTotal);
+			$multFactor = $multFactor*$contactIntraScale;
 	
 			$epsilon = $epsilon*$multFactor*$rescaleCD;
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));

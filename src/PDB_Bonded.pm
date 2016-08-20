@@ -32,12 +32,8 @@ use Exporter;
 use PDL; ## LOAD PDL MODULE
 use Storable qw(dclone);
 
-use Time::HiRes qw( gettimeofday);
 
-## DELETE LATER ##
-#use Devel::Size qw(size total_size);
-
-## DECLEARATION TO SHAR DATA STRUCTURES ##
+## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
 qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %bondFunctionals %AngleData %DihedralData %BondData %resPDL %bondPDL %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
@@ -650,13 +646,7 @@ sub GenerateBondedGeometry {
 
 	print "Generating improper angles for chain $chid.\n";
 
-	my ($seconds, $microseconds) = gettimeofday;
 	appendImpropers($map,$connect,$bondMapHashRev,\@tempArr,\%union);
-  	my ($seconds1, $microseconds1) = gettimeofday;
-	$seconds1-=$seconds;
-	$microseconds1-=$microseconds;
-	$seconds1+=$microseconds/1000000;
-	print "dT=$seconds1\n";
 
 	print "Storing dihedral info for chain $chid.\n";
 	$DihedralData{$counter} = pdl(@tempArr);
