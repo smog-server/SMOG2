@@ -807,7 +807,7 @@ sub contactOutput
 			}
 			    ## Gaussian ##
 			elsif($fname eq "contact_gaussian"){
-				contactParseGaussian(\@paramArr,$c0,$epsilon);
+				contactParseGaussian(\@paramArr,$c0,$epsilon,$normalize);
 				if($fType != 6){smog_quit ("Only fType=6 is supported with contacts contact_gaussian")}
 			}
 			## harmonic bond type 6 ##
@@ -869,6 +869,7 @@ sub contactParseNM1
 		smog_quit("Epsilon value used in contact_1 interaction can not be an expression that includes ?.\n");
 	}
 	else{
+		if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
 		$A *= $paramArr->[3];
 		$B *= $paramArr->[3];
 		$paramArr->[3]=$A;
@@ -922,6 +923,7 @@ sub contactParseNM2
 	}
 	## additional rescaling used
 	else{
+		if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
 		$A *= $paramArr->[3];
 		$B *= $paramArr->[3];
 		$paramArr->[3]=$A;
@@ -938,7 +940,7 @@ sub contactParseNM2
 sub contactParseGaussian
 {
 
-	my($paramArr,$r0,$epsilon) = @_;
+	my($paramArr,$r0,$epsilon,$normalize) = @_;
 	my $A=0;my $sigma_G=0;my $a=0;
 	##i=0 is epsilon_c##
 	##i=1 is epsilon_nc#
@@ -948,10 +950,20 @@ sub contactParseGaussian
 	if($paramArr->[1] =~ /\?/ && !($paramArr->[2] =~ /^\?$/)){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
 	
 	## Epsilon_c ##
-	if($paramArr->[0] =~ /^\?$/){$paramArr->[0]=$epsilon;}
-	else{$paramArr->[0]=$epsilon*($paramArr->[0]);}
+	if($paramArr->[0] =~ /^\?$/){
+		if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
+		$paramArr->[0]=$epsilon;
+	}
+	elsif($paramArr->[0] =~ /\?/)
+	{
+		smog_quit("Epsilon value used in gaussian interaction can not be an expression that includes ?.\n");
+	}
+	else{
+		if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
+		$paramArr->[0]=$epsilon*($paramArr->[0]);
+	}
 	## Epsilon_nc ##
-	if($paramArr->[1] =~ /\?/){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
+	if($paramArr->[1] =~ /\?/){smog_quit("value of a in gaussian can not be a ? mark");}
 	
 	## Check if sigma_G has r0 dependency ##
 	if($paramArr->[2] =~ /\?/)
