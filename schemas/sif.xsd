@@ -108,7 +108,7 @@
     <xs:element name="bondsThreshold" type="bondsThresholdType"/>
     <xs:element name="anglesThreshold" type="anglesThresholdType"/>
     <xs:element name="contactsThreshold" type="contactsThresholdType"/>
-    <xs:element name="distanceThreshold" type="distanceThresholdType"/>
+    <xs:element name="distanceThreshold" type="distanceThresholdType" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
 </xs:complexType>
 <!-- FUNCTIONS TYPE -->

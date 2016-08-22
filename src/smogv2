@@ -403,15 +403,17 @@ sub CalculateAnglesHelper
 		my $rightd = sclr(sqrt(inner($A2-$A3,$A2-$A3))*$angToNano);
 		my $outerd = sclr(sqrt(inner($A3-$A1,$A3-$A1))*$angToNano);
 		#check that these distances are larger than the minimum
-		my $short = $interactionThreshold->{"distance"}->{"tooShortDistance"};
-		if($leftd < $short || $rightd < $short || $outerd < $short) {
-			smog_quit("Distance between one of the atom pairs within: $atomi1 $atomi2 $atomi3, are less than distanceThreshold=$short in the .sif.
+		if( exists $interactionThreshold->{"distance"}->{"tooShortDistance"} ) {
+			my $short = $interactionThreshold->{"distance"}->{"tooShortDistance"};
+			if($leftd < $short || $rightd < $short || $outerd < $short) {
+				smog_quit("Distance between one of the atom pairs within: $atomi1 $atomi2 $atomi3, are less than distanceThreshold=$short in the .sif.
 In case the numbering of the output is different from the input PDB, these atoms in the PDB are:\n
  GroIndex  Chain#  Residue#  
 ----------------------------
 ".$atomi1." ".($allAtoms{$atomi1}[4]+1)." ".$allAtoms{$atomi1}[2]." 
 ".$atomi2." ".($allAtoms{$atomi2}[4]+1)." ".$allAtoms{$atomi2}[2]." 
 ".$atomi3." ".($allAtoms{$atomi3}[4]+1)." ".$allAtoms{$atomi3}[2]);
+			}
 		}
 		
 		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
