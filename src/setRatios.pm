@@ -8,7 +8,7 @@
 #                     Copyright (c) 2015, The SMOG development team at
 #                        Rice University and Northeastern University
 #
-#              SMOG v2 & Shadow are available at http://smog-server.org
+#              SMOG 2 & Shadow are available at http://smog-server.org
 #
 #                        Direct questions to: info@smog-server.org
 #
