@@ -104,10 +104,17 @@ To use the default C-alpha model (proteins only)
 
 smog2 -i <PDBFILE> -CA  
 
+For the default C-alpha model with gaussian contacts (proteins only) 
+
+smog2 -i <PDBFILE> -CAgaussian  
+
 For the default All-atom model: 
 
 smog2 -i <PDBFILE> -AA
 
+For the default All-atom model with gaussian contacts: 
+
+smog2 -i <PDBFILE> -AAgaussian
 
 If you would like to use other models:
 
