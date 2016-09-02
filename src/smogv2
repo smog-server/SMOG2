@@ -59,8 +59,10 @@ my $mapOpt = "shadow";my $contactOpt = "6 1";
 my $numContacts = 0;
 my $rescaleCD = 1.0; ## rescale all contacts and dihedrals ##
 my $coarseFolder = ""; ## Coarse Grain Folder ##
-my $AAdefault = 0; ## Duplicate ##
-my $CAdefault = 0; ## Duplicate ##
+my $AAdefault = 0; 
+my $CAdefault = 0;
+my $AAGdefault = 0; 
+my $CAGdefault = 0;
 our $noexit=0;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
@@ -1350,7 +1352,9 @@ usage: smog2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
 	-i [filename.pdb]: Input PDB to generate Hamiltonian
    Optional Input/Output parameters
 	-AA: Use default All-atom model
+	-AAgaussian: Use default All-atom model with gaussian contacts
 	-CA: Use default Calpha protein model
+	-CAgaussian: Use default Calpha protein model with gaussian contacts
 	-t [templateFolder]: Folder containing templates of molecular and interaction definitions. Required when defaults are not used.
 	-tCG [templateFolder]: Folder containing templates Coarse Graining. Indicates that the program should coarse grain.
 	-g [smog.gro]: Output .gro file name
@@ -1584,7 +1588,7 @@ print "\n";
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
-	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 
+	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 
          'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
          'rescaleCD=s' => \$rescaleCD, '<>' => \&usage)
           or defined $help 
@@ -1603,7 +1607,8 @@ if($warnonly){
 	$noexit=0;
 }
 
-if($inputFolder eq "" && $CAdefault==0 && $AAdefault==0){
+my $numdefaults=$CAdefault+$AAdefault+$AAGdefault+$CAGdefault;
+if($inputFolder eq "" && $numdefaults==0){
 	smog_quit("No model specified. You must use either -t, -AA, or -CA. Try -help for usage information.");
 }
 
@@ -1615,20 +1620,31 @@ if($backup ne "yes" and $backup ne "no"){
 	print "-backup no issued.  Will overwrite any existing output files.\n";
 }
 
-if($CAdefault == 1 and $AAdefault == 1){
-	smog_quit('Can not use -CA and -AA options at the same time.');
+if($numdefaults > 1){
+	smog_quit('Can not select more than one default model at a time.');
 }
 if($CAdefault == 1 and $CGenabled == 1){
-	smog_quit('Can not use -tCG and -AA options at the same time.');
+	smog_quit('Can not use -tCG and -CA options at the same time.');
 }
+if($CAGdefault == 1 and $CGenabled == 1){
+	smog_quit('Can not use -tCG and -CAgaussian options at the same time.');
+}
+
 if($CAdefault == 1 and $inputFolder ne ""){
 	smog_quit('Can not use -CA and -t options at the same time.');
 }
+if($CAGdefault == 1 and $inputFolder ne ""){
+	smog_quit('Can not use -CAgaussian and -t options at the same time.');
+}
+
 if($AAdefault == 1 and $inputFolder ne ""){
 	smog_quit('Can not use -AA and -t options at the same time.');
 }
-if(($CAdefault == 1 || $AAdefault == 1) and $coarseFolder ne ""){
-	smog_quit('Can not use -AA, or -CA with -tCG.');
+if($AAGdefault == 1 and $inputFolder ne ""){
+	smog_quit('Can not use -AAgaussian and -t options at the same time.');
+}
+if($numdefaults and $coarseFolder ne ""){
+	smog_quit('Can not use a default model with -tCG.');
 }
 
 if($CAdefault == 1){
@@ -1649,6 +1665,30 @@ if($AAdefault == 1){
 	print "\n-AA given. Will use the default All-Atom SMOG model provided with the distribution.\n";
 	my $SMOGDIR=$ENV{'SMOG_PATH'};
 	$inputFolder="$SMOGDIR/SBM_AA";
+	print "Will try to use templates found in \n$inputFolder\n\n";
+	if(! -d $inputFolder){
+		smog_quit("$inputFolder is not a valid template directory.");
+	}
+}
+
+if($CAGdefault == 1){
+	print "\n -CAgaussian given. Will use the default Calpha SMOG model with gaussian contacts, as provided with the distribution.\n";
+	my $SMOGDIR=$ENV{'SMOG_PATH'};
+	$inputFolder="$SMOGDIR/SBM_AA";
+	$coarseFolder="$SMOGDIR/SBM_calpha+gaussian";
+	print "Will try to use templates found in \n$inputFolder\n and\n$coarseFolder\n\n";
+	if(! -d $inputFolder){
+		smog_quit("$inputFolder is not a valid template directory.");
+	}
+	if(! -d $coarseFolder){
+		smog_quit("$coarseFolder is not a valid template directory.");
+	}
+	$CGenabled=1;
+}
+if($AAGdefault == 1){
+	print "\n-AAgaussian given. Will use the default All-Atom SMOG model with gaussian contacts, as provided with the distribution.\n";
+	my $SMOGDIR=$ENV{'SMOG_PATH'};
+	$inputFolder="$SMOGDIR/SBM_AA+gaussian";
 	print "Will try to use templates found in \n$inputFolder\n\n";
 	if(! -d $inputFolder){
 		smog_quit("$inputFolder is not a valid template directory.");
