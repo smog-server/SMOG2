@@ -4,14 +4,14 @@ use List::Util qw(max);
 
 print <<EOT;
 *****************************************************************************************
-                                      smog_optim
+                                        smog_optim
 
-      smog_optim is part of the SMOG 2 distribution, available at smog-server.org
+       smog_optim is part of the SMOG 2 distribution, available at smog-server.org     
 
-        This tool uses a SMOG .top and .gro file to generate OPTIM input files. 
-			 This tool is to be run interactively. 
+         This tool uses a SMOG .top and .gro file to generate OPTIM input files.         
+			  This tool is to be run interactively. 
 
-                       See the SMOG manual for usage guidelines.
+                        See the SMOG manual for usage guidelines.
 
             For questions regarding this script, contact info\@smog-server.org
 
@@ -415,7 +415,7 @@ if($SBMINPON =~ m/^Y$/){
 		$LINE =~ s/\t/ /g; 
 		$LINE =~ s/^\s+|\s+$//g;
 		$LINE =~ s/ +/ /g;
-		if( m/[#!\^\$]/ ){
+		if( $LINE =~ m/[#!\^\$]/ ){
 			print "ERROR: Special characters not recognized in .top file\n";
 			print "  Offending line: $LINE\n";
 			exit;
