@@ -189,12 +189,12 @@ sub parsePDBATOMS
 		my $chaina1=$chaina+1;
 		my $chainb1=$chainb+1;
 		print "Generating user-specified bonded interaction between chain-atom pair $chaina1-$atoma,$chainb1-$atomb.\nWill assign to energy group $eG.\n";
-#		if(exists $connectedatom{$idxA}){ 
-#			smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomA, in $resA$resAIdx) and line:$record");
-#		}
-#		if(exists $connectedatom{$idxB}){ 
-#			smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
-#		}
+		if(exists $connectedatom{$idxA}){ 
+			smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomA, in $resA$resAIdx) and line:$record");
+		}
+		if(exists $connectedatom{$idxB}){ 
+			smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
+		}
 		$bondPDL{$counter}=$union;
 		## Check if improper directive is present ##
 		if($record =~ m/IMPROPER/)
