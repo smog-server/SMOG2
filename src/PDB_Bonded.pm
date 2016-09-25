@@ -720,9 +720,6 @@ sub appendImpropersBOND
   	
 }
 
-
-
-
 sub connCreateInteractionsSingleBOND
 {
 
