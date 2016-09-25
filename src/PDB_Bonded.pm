@@ -155,7 +155,7 @@ sub parsePDBATOMS
    
 		my @TMP = split(/\s+/,$record);
 		if(@TMP <= 5){
-			smog_quit("Directive BOND must have 5 arguments. Offending line:\n$record");
+			smog_quit("Directive BOND must have 5 arguments (chain A, atom number A, chain B, atom number B, energy group). Offending line:\n$record");
 		}
 		my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
 		
