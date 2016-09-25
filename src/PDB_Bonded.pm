@@ -137,7 +137,7 @@ sub parsePDBATOMS
 	chomp($lng);
 	$lng =~ s/\s+//g;	
 	$lng =~ s/\t+//g;	
-	if($record =~ m/^COMMENT/ || $lng eq ""){
+	if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $lng eq ""){
 		next;
 	# make sure BOND appears after END
 	}elsif($record !~ m/^BOND/ && $endfound ==1){
