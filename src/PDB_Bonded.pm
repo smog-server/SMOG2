@@ -133,12 +133,15 @@ sub parsePDBATOMS
 	
 		my @impAtoms = ();
 		## PARSE BOND LINES ##
-	
-	if($record =~ m/^COMMENT/){
+	my $lng = $record;
+	chomp($lng);
+	$lng =~ s/\s+//g;	
+	$lng =~ s/\t+//g;	
+	if($record =~ m/^COMMENT/ || $lng eq ""){
 		next;
 	# make sure BOND appears after END
 	}elsif($record !~ m/^BOND/ && $endfound ==1){
-		smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END.");
+		smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"a $lng a\"\n");
 	}
 
  	if($record =~ m/^BOND/)
@@ -186,12 +189,12 @@ sub parsePDBATOMS
 		my $chaina1=$chaina+1;
 		my $chainb1=$chainb+1;
 		print "Generating user-specified bonded interaction between chain-atom pair $chaina1-$atoma,$chainb1-$atomb.\nWill assign to energy group $eG.\n";
-		if(exists $connectedatom{$idxA}){ 
-			smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomA, in $resA$resAIdx) and line:$record");
-		}
-		if(exists $connectedatom{$idxB}){ 
-			smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
-		}
+#		if(exists $connectedatom{$idxA}){ 
+#			smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomA, in $resA$resAIdx) and line:$record");
+#		}
+#		if(exists $connectedatom{$idxB}){ 
+#			smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
+#		}
 		$bondPDL{$counter}=$union;
 		## Check if improper directive is present ##
 		if($record =~ m/IMPROPER/)
