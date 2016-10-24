@@ -1346,7 +1346,7 @@ sub usage
 {
   print <<EOT;
 
-usage: smog2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
+usage: smog2  -i PDB file name [-o smog.top] [-g smog.gro] [--help|-?]
 
    Required Input
 	-i [filename.pdb]: Input PDB to generate Hamiltonian
