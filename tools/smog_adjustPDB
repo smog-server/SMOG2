@@ -1,6 +1,33 @@
 use strict;
 use warnings;
 
+## VARS: ##
+my %map;
+my $rows;
+my $atomCount;
+my $isHead;
+my $isTail;
+my $resInd;
+my $chainName;
+my $resName;
+my @residue;
+my @pArr;
+my $loopInd;
+my $prevResTypeRNA;
+my $noexit=0;
+my $outputPDB;
+my $inputPDB;
+my $mapFile;
+my $default;
+my $warnonly;
+my $renumber;
+my $mapOption;
+
+## MODULE HEADERS ##
+use Getopt::Long;
+
+sub usage
+{
 print <<EOT;
 *****************************************************************************************
                                       smog_adjustPDB                                   
@@ -16,55 +43,62 @@ print <<EOT;
 *****************************************************************************************
 EOT
 
-my %map;
+  if ( @_ ){
+   	exitSmog("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit;
+  }
 
-## VARS: ##
-my $rows;
-my $atomCount;
-## TAIL/HEAD FLAG INITIALIZATION ##
-my $isHead;
-my $isTail;
-my $resInd;
-my $chainName;
-my $resName;
-my @residue;
-my @pArr;
-my $loopInd;
-my $prevResTypeRNA;
+}
 
 sub exitSmog{
 	my @msg = @_;
-	print "\n\nERROR: @msg\n\n\tReformatting incomplete...\n\n";
-	exit;
+	if (!$noexit){
+		print "\n\nERROR: @msg\n\n\tReformatting incomplete...\n\n";
+		exit;
+	}else{
+		print "\n\nWARNING: @msg\n\n\tReformatting incomplete...\n\n";
+	}
 }
 
-open(OLDPDB,"$ARGV[0]") or die "Can't open molecule PDB file.\n";
+usage() if (@ARGV < 1 || !GetOptions('o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warnonly' => \$warnonly, 'renumber' => \$renumber, '<>' => \&usage) or !defined $inputPDB);
 
-print "Will reformat the PDB file $ARGV[0]\n";
-
-## CHECK INPUT ##
-if(scalar(@ARGV) != 3 && scalar(@ARGV) != 4){
-	exitSmog("Usage: smog_adjustPDB <PDB> <-f filename | default> <output file>\n 
-For default templates use the option default, else provide a filename with the option -f \n");
-}
-if(!exists $ENV{"SMOG_PATH"}){
-	exitSmog("Environmental Variable SMOG_PATH not set\n");
+if($warnonly){
+	$noexit=1;	
+	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
 }
 
-my $mapOption = $ARGV[1];
-if($mapOption =~ m/^default$/){
-	$mapOption = "$ENV{SMOG_PATH}/tools/sbmMap";
-	open(NEWPDB,">$ARGV[2]") or die "Can't open the output PDB file. \n";
-	print "New file will be written: $ARGV[2]\n";
+if ($renumber){
+	print "\n\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n\n";
 }
-elsif($mapOption =~ m/^-f$/ && exists $ARGV[2]){
-	$mapOption = $ARGV[2];
-	open(NEWPDB,">$ARGV[3]") or die "Can't open the output PDB file. \n";
-	print "New file will be written: $ARGV[3]\n";
+
+if($inputPDB eq ""){
+	exitSmog("No input PDB was specified. Use -i to specify your input pdb file.");
+}else{
+	open(OLDPDB,"$inputPDB") or die "Can't open molecule PDB file.\n";
+	print "Will reformatl the PDB file: $inputPDB\n";	
 }
-else{
-	exitSmog("Usage: smog-adjustPDB <PDB> <-f filename | default> <output file>\n 
-			For default templates use the option default, else provide a filename with the option -f \n");
+
+if ($default){
+	print "\n\n-default selected. Will use the default map file provided for terminal residue names.\n\n";
+	if(!exists $ENV{"SMOG_PATH"}){
+        exitSmog("Environmental Variable SMOG_PATH not set\n");
+	}
+	$mapOption = "$ENV{SMOG_PATH}/tools/sbmMap";	
+}else{
+	if ($mapFile eq ""){
+		exitSmog("No map file was provided. Please chose a map file or use the default map settings: -default.");
+	}else{
+		open(MAP,$mapOption) or die "Can't open $mapOption.\n";
+	}
+}
+
+if ($outputPDB eq ""){
+	print "\n\nNo output PDB file name was specified. Will produce a default PDB file name: $inputPDB.modified\n\n";
+	open(NEWPDB,">$inputPDB.modified") or die "Can't open the output PDB file. \n";
+}else{
+	open(NEWPDB,">$outputPDB") or die "Can't open the output PDB file. \n";
+	print "New file will be written: $outputPDB\n";
 }
 
 ## CACHE MAP ##
@@ -103,8 +137,6 @@ sub adjustInputFile(){
 	
 	# Read the molecule PDB into an array (for convinience)
 	
-	my $endFlag = 0;
-	
 	$rows=0;
 	while(<OLDPDB>){
 		my $line=$_;
@@ -131,7 +163,6 @@ sub adjustInputFile(){
 		## If end of file: ##
 		if ($pArr[$k] =~ m/^END/){
 			print NEWPDB "END\n";
-			$endFlag = 1;
 			last;
 		}
 		
@@ -162,11 +193,14 @@ sub adjustInputFile(){
 			my $resNum = substr($pArr[$k],22,5);
 			$resNum =~ s/^\s+|\s+$//g;		
 			my $newResNum = $resNum;
-
-			if($resNum-$lastresidue > 1 && $firstresidue !=1){
-				exitSmog("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum.");
+			if($resNum =~ /^\d+$/ && $lastresidue =~ /^\d+$/){
+				if($resNum-$lastresidue > 1 && $firstresidue !=1 && !$renumber){
+					exitSmog("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum.");
+				}
+			}elsif(!$renumber){
+				exitSmog("Non-integer residue ID found: $resNum.");
 			}
-			
+	
 			$resName = substr($pArr[$k],17,4);
 			$resName =~ s/^\s+|\s+$//g;
 			my $altLoc = substr($pArr[$k],16,1);
@@ -254,9 +288,6 @@ sub adjustInputFile(){
 		}
 	}
 	
-	if (not($endFlag)){
-		printf NEWPDB "END\n";
-	}
 	close NEWPDB;
 }
 
