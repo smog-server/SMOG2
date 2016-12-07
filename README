@@ -8,7 +8,7 @@ smog-server.org webserver (i.e. SMOG v1). These models
 may be used to perform simulations using Gromacs, 
 or NAMD.
 
-SMOG2 is free software, distributed under the GNU 
+SMOG 2 is free software, distributed under the GNU 
 General Public License. See COPYING.
 
 This distribution of SMOG 2 includes two versions of 
@@ -21,7 +21,6 @@ to modify the source code.
 This README provides the absolute basics for using
 SMOG 2.  For more advanced usage information, consult
 the manual, available at smog-server.org
-
 
 We encourage everyone to provide feedback/suggestions
 on usage, extensions and bugs to info@smog-server.org,
@@ -39,7 +38,7 @@ https://mailman.rice.edu/mailman/listinfo/smog-users
 
 		  CONFIGURING SMOG 2
 
-Before using SMOG v2, you need to configure your settings.
+Before using SMOG 2, you need to configure your settings.
 This is a relatively simple  process.
 
 1) SMOG 2 is written in Perl, and requires the 
@@ -97,7 +96,7 @@ SMOG is producing accurate forcefield files.
 			USAGE
 
 If your configuration step completes successfully, 
-running SMOG v2 can be quite simple.  
+running SMOG 2 can be quite simple.  
 
 Note: It is assumed that $SMOG_PATH is properly defined.
 
@@ -105,10 +104,17 @@ To use the default C-alpha model (proteins only)
 
 smog2 -i <PDBFILE> -CA  
 
+For the default C-alpha model with gaussian contacts (proteins only) 
+
+smog2 -i <PDBFILE> -CAgaussian  
+
 For the default All-atom model: 
 
 smog2 -i <PDBFILE> -AA
 
+For the default All-atom model with gaussian contacts: 
+
+smog2 -i <PDBFILE> -AAgaussian
 
 If you would like to use other models:
 
@@ -126,7 +132,7 @@ smog2 -i <PDBFILE> -t $SMOG_PATH/SBM_AA
 For a list of all supported flags and options, type:
 smog2 --help
 
-For more advanced usage of SMOG v2, please consult the
+For more advanced usage of SMOG 2, please consult the
 manual available with the distribution.
 
 ########################################################

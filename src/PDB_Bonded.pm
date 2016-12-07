@@ -8,7 +8,7 @@
 #                     Copyright (c) 2015, The SMOG development team at
 #                        Rice University and Northeastern University
 #
-#              SMOG v2 & Shadow are available at http://smog-server.org
+#              SMOG 2 & Shadow are available at http://smog-server.org
 #
 #                        Direct questions to: info@smog-server.org
 #
@@ -32,12 +32,8 @@ use Exporter;
 use PDL; ## LOAD PDL MODULE
 use Storable qw(dclone);
 
-use Time::HiRes qw( gettimeofday);
 
-## DELETE LATER ##
-#use Devel::Size qw(size total_size);
-
-## DECLEARATION TO SHAR DATA STRUCTURES ##
+## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
 qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %bondFunctionals %AngleData %DihedralData %BondData %resPDL %bondPDL %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
@@ -137,246 +133,246 @@ sub parsePDBATOMS
 	
 		my @impAtoms = ();
 		## PARSE BOND LINES ##
-	
-	if($record =~ m/^COMMENT/){
-		next;
-	# make sure BOND appears after END
-	}elsif($record !~ m/^BOND/ && $endfound ==1){
-		smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END.");
-	}
-
- 	if($record =~ m/^BOND/)
- 	{
-
-		if($CGenabled==1){
-			smog_quit("User-defined bonds, via BOND declaration, are not supported with Coarse-Grained models. Remove BOND lines and try again.");
+		my $lng = $record;
+		chomp($lng);
+		$lng =~ s/\s+//g;	
+		$lng =~ s/\t+//g;	
+		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $lng eq ""){
 			next;
-  		}elsif($endfound ==0){
-   			smog_quit("PDB format issue: User-defined bonds given by BOND should be listed immediately after END.");
-  		}
+		# make sure BOND appears after END
+		}elsif($record !~ m/^BOND/ && $endfound ==1){
+			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"a $lng a\"\n");
+		}
 
-    		chomp($record);
-   
-		my @TMP = split(/\s+/,$record);
-		if(@TMP <= 5){
-			smog_quit("Directive BOND must have 5 arguments. Offending line:\n$record");
-		}
-		my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
-		
-		#internally, chains are indexed 0,1...
-		$chaina--;
-		$chainb--;
-		if(!exists $indexMap{"$chaina-$atoma"}){
-			my $chaina1=$chaina+1;
-			smog_quit("Can not find atom $atoma in chain $chaina1");
-		}
-		if(!exists $indexMap{"$chainb-$atomb"}){
-			my $chainb1=$chainb+1;
-			smog_quit("Can not find atom $atomb in chain $chainb1");
-		}
-		my $idxA = $indexMap{"$chaina-$atoma"};
-		my $idxB = $indexMap{"$chainb-$atomb"};
-		my $resA = $allAtoms{$idxA}->[5];
-		my $resB = $allAtoms{$idxB}->[5];
-		my $atomA = $allAtoms{$idxA}->[3];
-		my $atomB = $allAtoms{$idxB}->[3];
-		my $resAIdx = $allAtoms{$idxA}->[2];
-		my $resBIdx = $allAtoms{$idxB}->[2];
-		
-		my $sizeA = scalar(keys %{$residues{$resA}->{"atoms"}});
-		my $union;
-		$union=($tempPDL{$resA}->{$resAIdx})->glue(1,$tempPDL{$resB}->{$resBIdx});
-		print "\nNOTE:";
-		my $chaina1=$chaina+1;
-		my $chainb1=$chainb+1;
-		print "Generating user-specified bonded interaction between chain-atom pair $chaina1-$atoma,$chainb1-$atomb.\nWill assign to energy group $eG.\n";
-		if(exists $connectedatom{$idxA}){ 
-			smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomA, in $resA$resAIdx) and line:$record");
-		}
-		if(exists $connectedatom{$idxB}){ 
-			smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
-		}
-		$bondPDL{$counter}=$union;
-		## Check if improper directive is present ##
-		if($record =~ m/IMPROPER/)
-		{
-			my($left,$right) = split(/IMPROPER/,$record);
-			$right =~ s/^\s+|\s+$//g;
-			@impAtoms = split(/\s+/,$right);
-			print "IMPROPER DETECTED @impAtoms\n";
-		}
-		connCreateInteractionsSingleBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
-		$counter++;
-		next;
-	}
+ 		if($record =~ m/^BOND/){
 
-	## IF TER LINE  ##
-	if($record =~ m/TER|END/)
-	{
- 		$lastresindex="null";
-		$chainNumber++; ## INCREMENT CHAIN NUMBER ##
-		## CREATE INTERACTION ##
-		my $chainlength=$atomSerial-$lastchainstart;
-		print "Building covalent geometry for chain $chainNumber\n";
-        	my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength);
-		my @connset=@{$connset};
-		foreach my $I(@connset){
-			my $T=$I+$lastchainstart+1;
-			$connectedatom{$T}=1;
-		}
-	   	$bondPDL{$counter}=pdl(@union);
-		@union = ();$counter++;
-        	@consecResidues = ();
-		$lastchainstart=$atomSerial;
-		if($record =~ m/END/){$endfound=1;}
-		next;
-	} 
-	
-	## ONLY WORK WITH ATOM LINES ##
-	if($record =~ m/ATOM/ || $record =~ m/HETATM/)
-	{
-        	$lineNumber--;
-		$outLength = length($record);
-	 	## OBTAIN RESIDUE NAME ##
-		$residue = substr($record,17,4);
-		$residue =~ s/^\s+|\s+$//g;
-		if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
-		## if first iteration, save residueBackup, and use residues
-		#if(exists $residueBackup{$residue}){
-		if($CGenabled == 1){
-			$atomsInRes = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
-		}else{
-			$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
-		}
-		my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
-		if($atomsInBif != 1 && $CGenabled ==1)
-                {
-			smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
-		}
-		my $atomsmatch=0;
-	 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
-		my $resname=$residue;
-        	my $resindex = substr($record,22,5);
-		if ($lastresindex ne "null" && $resindex-$lastresindex ==0 ){
-			$lineNumber++;
-			smog_quit("Extra atoms found in residue $resname. Check near line $lineNumber.");
-		}elsif ($lastresindex ne "null" && $resindex-$lastresindex != 1){
-			smog_quit("Non-sequential residue numbers ($lastresindex,$resindex) appear at line $lineNumber.");
-		}
-		$lastresindex=$resindex;
-		my %uniqueAtom;
-		$residueSerial++;
-		for($i=0;$i<$atomsInRes;$i++)
-		{
- 			$lineNumber++;
-			$record = <PDBFILE>;
-			if($record !~ m/^ATOM|^HETATM/)
-			{smog_quit("Expected ATOM or HETATM at line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
-
-			$interiorResidue = substr($record,17,4);
-			$interiorResidue =~ s/^\s+|\s+$//g;
-	   		$residue = substr($record,17,4);
-        	        $residue =~ s/^\s+|\s+$//g;
-	   		my $altlocator = substr($record,16,1);
-			if($altlocator ne " "){
-				smog_quit("Alternate location indicator found at line $lineNumber.  Alt. Loc. Indic. not supported by SMOG.");
-			}
-
-	        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
-            		$interiorPdbResidueIndex = substr($record,22,5);  
-			if($resname ne $residue or $resindex ne $interiorPdbResidueIndex){
-				$lineNumber--;
-				my $missingatoms="";
-				$uniqueAtom{$atom}=1;
-			        if($CGenabled == 1){
-					foreach my $atomcheck(keys (%{$residueBackup{$resname}->{"atoms"}})){
-                        			if(!exists $uniqueAtom{$atomcheck}){
-							$missingatoms=$missingatoms . "$atomcheck ";
-						}
-					}		
-                		}else{
-					foreach my $atomcheck(keys (%{$residues{$resname}->{"atoms"}})){
-                        			if(!exists $uniqueAtom{$atomcheck}){
-							$missingatoms=$missingatoms . "$atomcheck ";
-						}
-					}		
-                		}
-				smog_quit("It appears that a residue in the PDB file does not contain all of the atoms defined in the .bif file.\nOffending residue: $resname (ending at line $lineNumber).  Missing atoms: $missingatoms");	
-			}
-
-			$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
-			unless($interiorPdbResidueIndex =~ /^\d+$/){;
-				smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
-			}
-
-			## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
-			$atom = substr($record, 12, 4);
-			$atom =~ s/^\s+|\s+$//g;
-
-			if(exists $uniqueAtom{$atom})
-			{
-				smog_quit("$atom appears twice in $residue at line $lineNumber\n");
-			}
-			else {
-				$uniqueAtom{$atom}=1;
-			}
-				
-			if($CGenabled == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
-			{
-				smog_quit ("\"$atom\" doesn't exist in .bif declaration of \"$residue\"");
-			}
-			
-			## CHECK IF ATOM EXISTS IN MODEL ##
-			if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
-			$atomsmatch++;
-			$x = substr($record, 30, 8);
-			$y = substr($record, 38, 8);
-			$z = substr($record, 46, 8);
-			$atomCounter++;
-			$atomSerial=$atomCounter;
-			$atomSerial =~ s/^\s+|\s+$//g;	
-			
-			$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
-			$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
-			$pairType = $residues{$residue}->{"atoms"}->{$atom}->{"pairType"};
-			$residueType = $residues{$residue}->{"residueType"};
-			
-			$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType]; 
-			my $pdbIndex;
 			if($CGenabled==1){
-				$pdbIndex = $interiorPdbResidueIndex;
-			}else{
-				$pdbIndex = substr($record,6,5);
+				smog_quit("User-defined bonds, via BOND declaration, are not supported with Coarse-Grained models. Remove BOND lines and try again.");
+				next;
+  			}elsif($endfound ==0){
+   				smog_quit("PDB format issue: User-defined bonds given by BOND should be listed immediately after END.");
+  			}
+
+    			chomp($record);
+   
+			my @TMP = split(/\s+/,$record);
+			if(@TMP <= 5){
+				smog_quit("Directive BOND must have 5 arguments (chain A, atom number A, chain B, atom number B, energy group). Offending line:\n$record");
 			}
-			$pdbIndex =~ s/^\s+|\s+$//g;
-			if(exists $indexMap{"$chainNumber-$pdbIndex"}){
-				my $chainID=$chainNumber+1;
-				smog_quit("Atom/Residue numbers must be unique within each chain. Offending line:\n$record");
+			my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
+			
+			#internally, chains are indexed 0,1...
+			$chaina--;
+			$chainb--;
+			if(!exists $indexMap{"$chaina-$atoma"}){
+				my $chaina1=$chaina+1;
+				smog_quit("Can not find atom $atoma in chain $chaina1");
 			}
-			$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
-			$temp[$putIndex]=[$x,$y,$z,$atomSerial];
-			$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
-			$totalAtoms++;
+			if(!exists $indexMap{"$chainb-$atomb"}){
+				my $chainb1=$chainb+1;
+				smog_quit("Can not find atom $atomb in chain $chainb1");
+			}
+			my $idxA = $indexMap{"$chaina-$atoma"};
+			my $idxB = $indexMap{"$chainb-$atomb"};
+			my $resA = $allAtoms{$idxA}->[5];
+			my $resB = $allAtoms{$idxB}->[5];
+			my $atomA = $allAtoms{$idxA}->[3];
+			my $atomB = $allAtoms{$idxB}->[3];
+			my $resAIdx = $allAtoms{$idxA}->[2];
+			my $resBIdx = $allAtoms{$idxB}->[2];
+			
+			my $sizeA = scalar(keys %{$residues{$resA}->{"atoms"}});
+			my $union;
+			$union=($tempPDL{$resA}->{$resAIdx})->glue(1,$tempPDL{$resB}->{$resBIdx});
+			print "\nNOTE:";
+			my $chaina1=$chaina+1;
+			my $chainb1=$chainb+1;
+			print "Generating user-specified bonded interaction between chain-atom pair $chaina1-$atoma,$chainb1-$atomb.\nWill assign to energy group $eG.\n";
+			if(exists $connectedatom{$idxA}){ 
+				smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomA, in $resA$resAIdx) and line:$record");
+			}
+			if(exists $connectedatom{$idxB}){ 
+				smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
+			}
+			$bondPDL{$counter}=$union;
+			## Check if improper directive is present ##
+			if($record =~ m/^IMPROPER/)
+			{
+				my($left,$right) = split(/IMPROPER/,$record);
+				$right =~ s/^\s+|\s+$//g;
+				@impAtoms = split(/\s+/,$right);
+				print "IMPROPER DETECTED @impAtoms\n";
+			}
+			connCreateInteractionsSingleBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
+			$counter++;
+			next;
 		}
 
-
-
-		if($atomsmatch != $atomsInBif){
-			smog_quit ("Not all atoms in the bif appear in the PDB. See line $lineNumber");
-		}
-
-		if($i != $atomsInRes){smog_quit ("Total number of atoms of $residue doesn't match with .bif declaration");}
-		## CONCAT RESIDUE ##
-	  	@union = (@union,@temp);@temp=();
-		push(@consecResidues,$residue);
-		$headFlag = 0;		
-        	$tempPDL{$residue}->{$residueIndex}=pdl(@tempBond);
-		@tempBond = ();
-		$residueIndex++;
-				
-		}else{smog_quit(" Expected ATOM or HETATM line at Line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
-		$record = "";
+		## IF TER LINE  ##
+		if($record =~ m/^TER|^END/)
+		{
+ 			$lastresindex="null";
+			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
+			## CREATE INTERACTION ##
+			my $chainlength=$atomSerial-$lastchainstart;
+			print "Building covalent geometry for chain $chainNumber\n";
+        		my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength);
+			my @connset=@{$connset};
+			foreach my $I(@connset){
+				my $T=$I+$lastchainstart+1;
+				$connectedatom{$T}=1;
+			}
+		   	$bondPDL{$counter}=pdl(@union);
+			@union = ();$counter++;
+        		@consecResidues = ();
+			$lastchainstart=$atomSerial;
+			if($record =~ m/^END/){$endfound=1;}
+			next;
+		} 
 	
+		## ONLY WORK WITH ATOM LINES ##
+		if($record =~ m/^ATOM/ || $record =~ m/^HETATM/)
+		{
+	        	$lineNumber--;
+			$outLength = length($record);
+		 	## OBTAIN RESIDUE NAME ##
+			$residue = substr($record,17,4);
+			$residue =~ s/^\s+|\s+$//g;
+			if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
+			## if first iteration, save residueBackup, and use residues
+			#if(exists $residueBackup{$residue}){
+			if($CGenabled == 1){
+				$atomsInRes = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
+			}else{
+				$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
+			}
+			my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
+			if($atomsInBif != 1 && $CGenabled ==1){
+				smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
+			}
+			my $atomsmatch=0;
+		 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
+			my $resname=$residue;
+	        	my $resindex = substr($record,22,5);
+			if ($lastresindex ne "null" && $resindex-$lastresindex ==0 ){
+				$lineNumber++;
+				smog_quit("Extra atoms found in residue $resname. Check near line $lineNumber.");
+			}elsif ($lastresindex ne "null" && $resindex-$lastresindex != 1){
+				smog_quit("Non-sequential residue numbers ($lastresindex,$resindex) appear at line $lineNumber.");
+			}
+			$lastresindex=$resindex;
+			my %uniqueAtom;
+			$residueSerial++;
+			for($i=0;$i<$atomsInRes;$i++)
+			{
+	 			$lineNumber++;
+				$record = <PDBFILE>;
+				if($record !~ m/^ATOM|^HETATM/)
+				{smog_quit("Expected ATOM or HETATM at line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
+	
+				$interiorResidue = substr($record,17,4);
+				$interiorResidue =~ s/^\s+|\s+$//g;
+		   		$residue = substr($record,17,4);
+	        	        $residue =~ s/^\s+|\s+$//g;
+		   		my $altlocator = substr($record,16,1);
+				if($altlocator ne " "){
+					smog_quit("Alternate location indicator found at line $lineNumber.  Alt. Loc. Indic. not supported by SMOG.");
+				}
+	
+		        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
+	            		$interiorPdbResidueIndex = substr($record,22,5);  
+				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex){
+					$lineNumber--;
+					my $missingatoms="";
+					$uniqueAtom{$atom}=1;
+				        if($CGenabled == 1){
+						foreach my $atomcheck(keys (%{$residueBackup{$resname}->{"atoms"}})){
+	                        			if(!exists $uniqueAtom{$atomcheck}){
+								$missingatoms=$missingatoms . "$atomcheck ";
+							}
+						}		
+	                		}else{
+						foreach my $atomcheck(keys (%{$residues{$resname}->{"atoms"}})){
+	                        			if(!exists $uniqueAtom{$atomcheck}){
+								$missingatoms=$missingatoms . "$atomcheck ";
+							}
+						}		
+	                		}
+					smog_quit("It appears that a residue in the PDB file does not contain all of the atoms defined in the .bif file.\nOffending residue: $resname (ending at line $lineNumber).  Missing atoms: $missingatoms");	
+				}
+	
+				$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
+				unless($interiorPdbResidueIndex =~ /^\d+$/){;
+					smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
+				}
+	
+				## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
+				$atom = substr($record, 12, 4);
+				$atom =~ s/^\s+|\s+$//g;
+	
+				if(exists $uniqueAtom{$atom})
+				{
+					smog_quit("$atom appears twice in $residue at line $lineNumber\n");
+				}
+				else {
+					$uniqueAtom{$atom}=1;
+				}
+					
+				if($CGenabled == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
+				{
+					smog_quit ("\"$atom\" doesn't exist in .bif declaration of \"$residue\"");
+				}
+				
+				## CHECK IF ATOM EXISTS IN MODEL ##
+				if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
+				$atomsmatch++;
+				$x = substr($record, 30, 8);
+				$y = substr($record, 38, 8);
+				$z = substr($record, 46, 8);
+				$atomCounter++;
+				$atomSerial=$atomCounter;
+				$atomSerial =~ s/^\s+|\s+$//g;	
+				
+				$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
+				$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
+				$pairType = $residues{$residue}->{"atoms"}->{$atom}->{"pairType"};
+				$residueType = $residues{$residue}->{"residueType"};
+				
+				$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType]; 
+				my $pdbIndex;
+				if($CGenabled==1){
+					$pdbIndex = $interiorPdbResidueIndex;
+				}else{
+					$pdbIndex = substr($record,6,5);
+				}
+				$pdbIndex =~ s/^\s+|\s+$//g;
+				if(exists $indexMap{"$chainNumber-$pdbIndex"}){
+					my $chainID=$chainNumber+1;
+					smog_quit("Atom/Residue numbers must be unique within each chain. Offending line:\n$record");
+				}
+				$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
+				$temp[$putIndex]=[$x,$y,$z,$atomSerial];
+				$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
+				$totalAtoms++;
+			}
+	
+			if($atomsmatch != $atomsInBif){
+				smog_quit ("Not all atoms in the bif appear in the PDB. See line $lineNumber");
+			}
+	
+			if($i != $atomsInRes){smog_quit ("Total number of atoms of $residue doesn't match with .bif declaration");}
+			## CONCAT RESIDUE ##
+		  	@union = (@union,@temp);@temp=();
+			push(@consecResidues,$residue);
+			$headFlag = 0;		
+	        	$tempPDL{$residue}->{$residueIndex}=pdl(@tempBond);
+			@tempBond = ();
+			$residueIndex++;
+				
+		}else{
+			smog_quit("Expected ATOM or HETATM line at line $lineNumber.");
+		}
+		$record = "";
  	}
 }
 
@@ -650,13 +646,7 @@ sub GenerateBondedGeometry {
 
 	print "Generating improper angles for chain $chid.\n";
 
-	my ($seconds, $microseconds) = gettimeofday;
 	appendImpropers($map,$connect,$bondMapHashRev,\@tempArr,\%union);
-  	my ($seconds1, $microseconds1) = gettimeofday;
-	$seconds1-=$seconds;
-	$microseconds1-=$microseconds;
-	$seconds1+=$microseconds/1000000;
-	print "dT=$seconds1\n";
 
 	print "Storing dihedral info for chain $chid.\n";
 	$DihedralData{$counter} = pdl(@tempArr);
@@ -726,9 +716,6 @@ sub appendImpropersBOND
  	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);
   	
 }
-
-
-
 
 sub connCreateInteractionsSingleBOND
 {

@@ -9,7 +9,7 @@
 #                     Copyright (c) 2015, The SMOG development team at
 #                        Rice University and Northeastern University
 #
-#              SMOG v2 & Shadow are available at http://smog-server.org
+#              SMOG 2 & Shadow are available at http://smog-server.org
 #
 #                        Direct questions to: info@smog-server.org
 #
@@ -39,8 +39,6 @@ use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
 
-use Time::HiRes qw( gettimeofday);
-
 ######################
 ## GLOBAL VARIABLES ##
 ######################
@@ -61,8 +59,10 @@ my $mapOpt = "shadow";my $contactOpt = "6 1";
 my $numContacts = 0;
 my $rescaleCD = 1.0; ## rescale all contacts and dihedrals ##
 my $coarseFolder = ""; ## Coarse Grain Folder ##
-my $AAdefault = 0; ## Duplicate ##
-my $CAdefault = 0; ## Duplicate ##
+my $AAdefault = 0; 
+my $CAdefault = 0;
+my $AAGdefault = 0; 
+my $CAGdefault = 0;
 our $noexit=0;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
@@ -110,7 +110,7 @@ sub checkForModules {
 	}
 	$checkPackage=`which java | wc -l | awk '{print \$1}'`;
 	if($checkPackage < 1) { print "Java might not be installed. This package assumes Java 1.7 or greater is in the path as 'java'.\n"; $sum++;}
-	if($sum > 0) { print "Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG2 manual.\n"; exit(1); }
+	if($sum > 0) { print "Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG 2 manual.\n"; exit(1); }
 }
 
 
@@ -332,7 +332,12 @@ sub bondOutput
 			  		print "$paramArr[0] nm\n\n";
 			 	}
 			}else{
-				smog_quit("Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.");
+				smog_quit("Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.
+In case the numbering of the output is different from the input PDB, these atoms in the PDB are:\n
+ GroIndex  Chain#  Residue#  
+----------------------------
+".$i." ".($allAtoms{$i}[4]+1)." ".$allAtoms{$i}[2]." 
+".$j." ".($allAtoms{$j}[4]+1)." ".$allAtoms{$j}[2]);
 			}
 	        }
 	       
@@ -403,23 +408,38 @@ sub CalculateAnglesHelper
 {
 	my($angleArr,$inputPDL,$angleCache) = @_;
 	my $size = $angleArr->dim(1);
-	
 	for(my $i=0;$i<$size;$i++)
 	{
 		my ($atom1,$atom2,$atom3,$func) = $angleArr->slice(":,$i:$i")->list;
 		my $A1=slice($inputPDL,"0:2,$atom1,:");
 		my $A2=slice($inputPDL,"0:2,$atom2,:");
-		my $A3=slice($inputPDL,"0:2,$atom3,:");
-		
-		
-		my $left = norm($A1-$A2);
-		my $right = norm($A3-$A2);
-		
-		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
-		
+		my $A3=slice($inputPDL,"0:2,$atom3,:");		
 		my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
 		my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
 		my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
+		my $left = norm($A1-$A2);
+		my $right = norm($A3-$A2);
+		my $outer = norm($A3-$A1);
+		#these are the distances
+		my $leftd = sclr(sqrt(inner($A1-$A2,$A1-$A2))*$angToNano);
+		my $rightd = sclr(sqrt(inner($A2-$A3,$A2-$A3))*$angToNano);
+		my $outerd = sclr(sqrt(inner($A3-$A1,$A3-$A1))*$angToNano);
+		#check that these distances are larger than the minimum
+		if( exists $interactionThreshold->{"distance"}->{"tooShortDistance"} ) {
+			my $short = $interactionThreshold->{"distance"}->{"tooShortDistance"};
+			if($leftd < $short || $rightd < $short || $outerd < $short) {
+				smog_quit("Distance between one of the atom pairs within: $atomi1 $atomi2 $atomi3, are less than distanceThreshold=$short in the .sif.
+In case the numbering of the output is different from the input PDB, these atoms in the PDB are:\n
+ GroIndex  Chain#  Residue#  
+----------------------------
+".$atomi1." ".($allAtoms{$atomi1}[4]+1)." ".$allAtoms{$atomi1}[2]." 
+".$atomi2." ".($allAtoms{$atomi2}[4]+1)." ".$allAtoms{$atomi2}[2]." 
+".$atomi3." ".($allAtoms{$atomi3}[4]+1)." ".$allAtoms{$atomi3}[2]);
+			}
+		}
+		
+		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
+		
 		if($atomi1 > $atomi3) { my $temp = $atomi1; $atomi1 = $atomi3; $atomi3 = $temp; }
 		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos);
 		if(!$val) {next;}
@@ -496,14 +516,7 @@ sub printOrderedDihedrals
 	my($DihedralData,$bondPDL) = @_;
 	my @diheCache; ## CACHE BONDS TO ORDER
 	## Cache Bonds ##
-	my ($seconds, $microseconds) = gettimeofday;
 	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache);
-	my ($seconds1, $microseconds1) = gettimeofday;
-	$seconds1-=$seconds;
-	$microseconds1-=$microseconds;
-	$seconds1+=$microseconds/1000000;
-	print "Calc Dih dT=$seconds1\n";
-	
 	## Sort dihedrals by i, then j then k then l ## 
 	@diheCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"l"} <=> $b->{"l"}) } @diheCache;
 	
@@ -685,7 +698,6 @@ sub calculateContacts
 	my $epsilon;my $cG;my $funct;
  	my $totalStrength; my $outputString;
 	my $contactIntraScale;
-	my $contactIntraTotal;	
 	my $count;
 
 
@@ -704,9 +716,8 @@ sub calculateContacts
 		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");}
 		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 		if(!$normalize){next;}		
-		$contactIntraTotal = $termRatios->{"cintraRelativeTotal"};
 		$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
-		$count+=($contactIntraScale/$contactIntraTotal);
+		$count+=$contactIntraScale;
 	}
 
 	## Adjust ratio ##
@@ -727,7 +738,6 @@ sub calculateContacts
 		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");} 
 		
 		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
-		
 		## Stacking scaling ##
 		$epsilon = 1;
 		if(exists $contactSettings->{"contactScaling"}->{$resTypea}
@@ -757,11 +767,11 @@ sub calculateContacts
 			}
 		}
 
-		## Non-Native option for contacts ##
+		## Non-normalize option for contacts ##
 		if(!$normalize) {
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
-			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
+			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon,$normalize);
 			addToTop($directive,$outputString);
 			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
 		}else{	
@@ -774,14 +784,13 @@ sub calculateContacts
 	   		$multFactor = $contactLeftOver;
 	
 			## CONTACT TO CONTACT SCALING ##			
-			$contactIntraTotal = $termRatios->{"cintraRelativeTotal"};
 			$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
-			$multFactor = $multFactor*($contactIntraScale/$contactIntraTotal);
+			$multFactor = $multFactor*$contactIntraScale;
 	
 			$epsilon = $epsilon*$multFactor*$rescaleCD;
 			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
 			$c0=$dist;
-			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon);
+			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon,$normalize);
 			addToTop($directive,$outputString);
 			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
 		}
@@ -793,7 +802,7 @@ sub calculateContacts
 # internal format is f()+g()
 sub contactOutput
 {
-	my($inputFunc,$i,$j,$c0,$epsilon) = @_;
+	my($inputFunc,$i,$j,$c0,$epsilon,$normalize) = @_;
 	if(!$inputFunc){smog_quit ("CONTACTOUTPUT::NO FUNCTION DEFINED");}
 	$inputFunc =~ s/^\s+|\s+$//g;
 	## If $input contains a + ##
@@ -813,17 +822,17 @@ sub contactOutput
 		if($fType != 0) {
 			$addNewline = "\n";
 			if($fname eq "contact_1"){
-				contactParseNM1(\@paramArr,$c0,$epsilon);
+				contactParseNM1(\@paramArr,$c0,$epsilon,$normalize);
 				if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_1")}
 			}
 			## LJ CONTACTS N-M polynomial, CN, CM usage ##	
 			elsif($fname eq "contact_2"){
-				contactParseNM2(\@paramArr,$c0,$epsilon);
+				contactParseNM2(\@paramArr,$c0,$epsilon,$normalize);
 				if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_2")}
 			}
 			    ## Gaussian ##
 			elsif($fname eq "contact_gaussian"){
-				contactParseGaussian(\@paramArr,$c0,$epsilon);
+				contactParseGaussian(\@paramArr,$c0,$epsilon,$normalize);
 				if($fType != 6){smog_quit ("Only fType=6 is supported with contacts contact_gaussian")}
 			}
 			## harmonic bond type 6 ##
@@ -846,7 +855,7 @@ sub contactOutput
 # Parse LJ NM sigma eps usage
 sub contactParseNM1
 {
-	my($paramArr,$r0,$epsilon) = @_;
+	my($paramArr,$r0,$epsilon,$normalize) = @_;
 	##pararArr holds N, M, and whether native distances and weights should be used.
 	##epsilon
 	##r0 is native distance##
@@ -875,11 +884,17 @@ sub contactParseNM1
 	## normalized option used
 	if($paramArr->[3] =~ /^\?$/)
 	{
+		if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
 		$paramArr->[3]=$A;
 		$paramArr->[2]=$B;
 	}
 	## additional rescaling used
+	elsif($paramArr->[3] =~ /\?/)
+	{
+		smog_quit("Epsilon value used in contact_1 interaction can not be an expression that includes ?.\n");
+	}
 	else{
+		if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
 		$A *= $paramArr->[3];
 		$B *= $paramArr->[3];
 		$paramArr->[3]=$A;
@@ -890,12 +905,12 @@ sub contactParseNM1
 	shift @{$paramArr};
 }
 
-# Parse LJ NM sigma eps usage
+# Parse LJ: F_N(sigma), G_M(sigma), sigma, epsilon format
 sub contactParseNM2
 {
-	my($paramArr,$r0,$epsilon) = @_;
+	my($paramArr,$r0,$epsilon,$normalize) = @_;
 	##pararArr holds f(r), g(r), and whether native distances and weights should be used.
-	##epsilon
+	##epsilon  
 	##r0 is native distance##
 	#
 	my $A; my $B;
@@ -923,11 +938,17 @@ sub contactParseNM2
 	## standard normalization used
 	if($paramArr->[3] =~ /^\?$/)
 	{
+		if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
 		$paramArr->[3]=$A;
 		$paramArr->[2]=$B;
 	}
+	elsif($paramArr->[3] =~ /\?/)
+	{
+		smog_quit("Epsilon value used in contact_2 interaction can not be an expression that includes ?.\n");
+	}
 	## additional rescaling used
 	else{
+		if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
 		$A *= $paramArr->[3];
 		$B *= $paramArr->[3];
 		$paramArr->[3]=$A;
@@ -944,7 +965,7 @@ sub contactParseNM2
 sub contactParseGaussian
 {
 
-	my($paramArr,$r0,$epsilon) = @_;
+	my($paramArr,$r0,$epsilon,$normalize) = @_;
 	my $A=0;my $sigma_G=0;my $a=0;
 	##i=0 is epsilon_c##
 	##i=1 is epsilon_nc#
@@ -954,10 +975,20 @@ sub contactParseGaussian
 	if($paramArr->[1] =~ /\?/ && !($paramArr->[2] =~ /^\?$/)){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
 	
 	## Epsilon_c ##
-	if($paramArr->[0] =~ /^\?$/){$paramArr->[0]=$epsilon;}
-	else{$paramArr->[0]=$epsilon*($paramArr->[0]);}
+	if($paramArr->[0] =~ /^\?$/){
+		if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
+		$paramArr->[0]=$epsilon;
+	}
+	elsif($paramArr->[0] =~ /\?/)
+	{
+		smog_quit("Epsilon value used in gaussian interaction can not be an expression that includes ?.\n");
+	}
+	else{
+		if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
+		$paramArr->[0]=$epsilon*($paramArr->[0]);
+	}
 	## Epsilon_nc ##
-	if($paramArr->[1] =~ /\?/){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
+	if($paramArr->[1] =~ /\?/){smog_quit("value of a in gaussian can not be a ? mark");}
 	
 	## Check if sigma_G has r0 dependency ##
 	if($paramArr->[2] =~ /\?/)
@@ -1252,22 +1283,22 @@ sub parseInputFolder
 		if($file =~ m/\.bif$/){
 			$bifexists++;
 			$bif = $file;$bif = "$folderName/$bif";
-			print "\nFound .bif file $bif";
+			print "Found .bif file $bif\n";
 			validateTemplate($bif,"bif");next;}
 		if($file =~ m/\.sif$/){
 			$sifexists++;
 			$sif = $file;$sif = "$folderName/$sif";
-			print "\nFound .sif file $sif";
+			print "Found .sif file $sif\n";
 			validateTemplate($sif,"sif");next;}
 		if($file =~ m/\.b$/){
 			$bexists++;
 			$b = $file;$b = "$folderName/$b";
-			print "\nFound .b file $b";
+			print "Found .b file $b\n";
 			validateTemplate($b,"b");next;}
 		if($file =~ m/\.nb$/){
 			$nbexists++;
 			$nb = $file;$nb = "$folderName/$nb";
-			print "\nFound .nb file $nb";
+			print "Found .nb file $nb\n";
 			validateTemplate($nb,"nb");next;}
 		if($file =~ m/^extras$/) {
 			$extrasexists++;
@@ -1344,13 +1375,15 @@ sub usage
 {
   print <<EOT;
 
-usage: smogv2  [-i PDB file name] [-o smog.top] [-g smog.gro] [--help|-?]
+usage: smog2  -i PDB file name [-o smog.top] [-g smog.gro] [--help|-?]
 
    Required Input
 	-i [filename.pdb]: Input PDB to generate Hamiltonian
    Optional Input/Output parameters
 	-AA: Use default All-atom model
+	-AAgaussian: Use default All-atom model with gaussian contacts
 	-CA: Use default Calpha protein model
+	-CAgaussian: Use default Calpha protein model with gaussian contacts
 	-t [templateFolder]: Folder containing templates of molecular and interaction definitions. Required when defaults are not used.
 	-tCG [templateFolder]: Folder containing templates Coarse Graining. Indicates that the program should coarse grain.
 	-g [smog.gro]: Output .gro file name
@@ -1427,9 +1460,9 @@ print <<EOT;
              when using SMOG models. See http://www.smog-server.org/refs.html
 
 --Software-- 
-Noel JK, Levi M, Rangunathan M, Lammert H, Hayes R, Onuchic JN, and Whitford PC. (2016)
+Noel JK, Levi M, Raghunathan M, Lammert H, Hayes R, Onuchic JN, and Whitford PC. (2016)
 SMOG V2, A Versatile Software Package for Generating Structure-Based Models.
-PLOS Computational Biology, DOI:10.1371/journal.pcbi.1004794.
+PLoS Comput Biol 12(3): e1004794. doi:10.1371/journal.pcbi.1004794
 
 $citationFile
 ########################################################################################
@@ -1487,75 +1520,29 @@ sub parseTemplatesAndPDB
 
 sub printBondedTopOutput {
 
-	my ($seconds, $microseconds) = gettimeofday;
 
 	my ($inputPDB,$groFile,$ndxFile) = @_;
 	print "Counting dihedrals\n";
 	getSetDiheCounts(\%DihedralData,\%bondPDL);
 
-  	my ($seconds1, $microseconds1) = gettimeofday;
-	$seconds1-=$seconds;
-	$microseconds1-=$microseconds;
-	$seconds1+=$microseconds/1000000;
-	print "dT=$seconds1\n";
-	
-	($seconds, $microseconds) = gettimeofday;
 	## SET DIHEDRAL RATIOS ##
 	print "Setting energetic ratios\n";
 	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms,$rescaleCD);
-
-  	($seconds1, $microseconds1) = gettimeofday;
-	$seconds1-=$seconds;
-	$microseconds1-=$microseconds;
-	$seconds1+=$microseconds/1000000;
-	print "dT=$seconds1\n";
-	($seconds, $microseconds) = gettimeofday;
-
-
 	print "Processing atoms\n";
 	calculateAtomTypes(\%allAtoms);
 	readAtoms($inputPDB);
-  	($seconds1, $microseconds1) = gettimeofday;
-	$seconds1-=$seconds;
-	$microseconds1-=$microseconds;
-	$seconds1+=$microseconds/1000000;
-	print "dT=$seconds1\n";
-	($seconds, $microseconds) = gettimeofday;
-
 
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "Saving bonds\n";
 	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL);
-  	($seconds1, $microseconds1) = gettimeofday;
-	$seconds1-=$seconds;
-	$microseconds1-=$microseconds;
-	$seconds1+=$microseconds/1000000;
-	print "dT=$seconds1\n";
-	($seconds, $microseconds) = gettimeofday;
-
 
 	## CALCULATE ANGLES ##
 	print "Saving angles\n";
 	printOrderedAngles(\%AngleData,\%bondPDL);
 
-  	($seconds1, $microseconds1) = gettimeofday;
-	$seconds1-=$seconds;
-	$microseconds1-=$microseconds;
-	$seconds1+=$microseconds/1000000;
-	print "dT=$seconds1\n";
-	($seconds, $microseconds) = gettimeofday;
-
-
 	## CALCULATE DIHEDRALS ##
 	print "Saving dihedrals\n";
 	printOrderedDihedrals(\%DihedralData,\%bondPDL);
-
-  	($seconds1, $microseconds1) = gettimeofday;
-	$seconds1-=$seconds;
-	$microseconds1-=$microseconds;
-	$seconds1+=$microseconds/1000000;
-	print "dT=$seconds1\n";
-	($seconds, $microseconds) = gettimeofday;
 
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
@@ -1620,7 +1607,7 @@ my $warnonly=0;
 my $backup="yes";
 
 header();
-print "\nSMOG2 called with the command:\n";
+print "\nSMOG 2 called with the command:\n";
 print "smog2 ";
 foreach my $filen(@ARGV){
 	print "$filen ";
@@ -1631,7 +1618,7 @@ print "\n";
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
-	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 
+	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 
          'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
          'rescaleCD=s' => \$rescaleCD, '<>' => \&usage)
           or defined $help 
@@ -1650,7 +1637,8 @@ if($warnonly){
 	$noexit=0;
 }
 
-if($inputFolder eq "" && $CAdefault==0 && $AAdefault==0){
+my $numdefaults=$CAdefault+$AAdefault+$AAGdefault+$CAGdefault;
+if($inputFolder eq "" && $numdefaults==0){
 	smog_quit("No model specified. You must use either -t, -AA, or -CA. Try -help for usage information.");
 }
 
@@ -1662,20 +1650,31 @@ if($backup ne "yes" and $backup ne "no"){
 	print "-backup no issued.  Will overwrite any existing output files.\n";
 }
 
-if($CAdefault == 1 and $AAdefault == 1){
-	smog_quit('Can not use -CA and -AA options at the same time.');
+if($numdefaults > 1){
+	smog_quit('Can not select more than one default model at a time.');
 }
 if($CAdefault == 1 and $CGenabled == 1){
-	smog_quit('Can not use -tCG and -AA options at the same time.');
+	smog_quit('Can not use -tCG and -CA options at the same time.');
 }
+if($CAGdefault == 1 and $CGenabled == 1){
+	smog_quit('Can not use -tCG and -CAgaussian options at the same time.');
+}
+
 if($CAdefault == 1 and $inputFolder ne ""){
 	smog_quit('Can not use -CA and -t options at the same time.');
 }
+if($CAGdefault == 1 and $inputFolder ne ""){
+	smog_quit('Can not use -CAgaussian and -t options at the same time.');
+}
+
 if($AAdefault == 1 and $inputFolder ne ""){
 	smog_quit('Can not use -AA and -t options at the same time.');
 }
-if(($CAdefault == 1 || $AAdefault == 1) and $coarseFolder ne ""){
-	smog_quit('Can not use -AA, or -CA with -tCG.');
+if($AAGdefault == 1 and $inputFolder ne ""){
+	smog_quit('Can not use -AAgaussian and -t options at the same time.');
+}
+if($numdefaults and $coarseFolder ne ""){
+	smog_quit('Can not use a default model with -tCG.');
 }
 
 if($CAdefault == 1){
@@ -1696,6 +1695,30 @@ if($AAdefault == 1){
 	print "\n-AA given. Will use the default All-Atom SMOG model provided with the distribution.\n";
 	my $SMOGDIR=$ENV{'SMOG_PATH'};
 	$inputFolder="$SMOGDIR/SBM_AA";
+	print "Will try to use templates found in \n$inputFolder\n\n";
+	if(! -d $inputFolder){
+		smog_quit("$inputFolder is not a valid template directory.");
+	}
+}
+
+if($CAGdefault == 1){
+	print "\n -CAgaussian given. Will use the default Calpha SMOG model with gaussian contacts, as provided with the distribution.\n";
+	my $SMOGDIR=$ENV{'SMOG_PATH'};
+	$inputFolder="$SMOGDIR/SBM_AA";
+	$coarseFolder="$SMOGDIR/SBM_calpha+gaussian";
+	print "Will try to use templates found in \n$inputFolder\n and\n$coarseFolder\n\n";
+	if(! -d $inputFolder){
+		smog_quit("$inputFolder is not a valid template directory.");
+	}
+	if(! -d $coarseFolder){
+		smog_quit("$coarseFolder is not a valid template directory.");
+	}
+	$CGenabled=1;
+}
+if($AAGdefault == 1){
+	print "\n-AAgaussian given. Will use the default All-Atom SMOG model with gaussian contacts, as provided with the distribution.\n";
+	my $SMOGDIR=$ENV{'SMOG_PATH'};
+	$inputFolder="$SMOGDIR/SBM_AA+gaussian";
 	print "Will try to use templates found in \n$inputFolder\n\n";
 	if(! -d $inputFolder){
 		smog_quit("$inputFolder is not a valid template directory.");
@@ -1790,7 +1813,7 @@ if($CGenabled == 0) {
 }
 my $allowCG = 0;
 
-print "Parsing templates files... ";
+print "Parsing templates files...\n";
 
 parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
 

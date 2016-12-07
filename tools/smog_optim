@@ -4,14 +4,14 @@ use List::Util qw(max);
 
 print <<EOT;
 *****************************************************************************************
-                                      smog_optim
+                                        smog_optim
 
-      smog_optim is part of the SMOG 2 distribution, available at smog-server.org
+       smog_optim is part of the SMOG 2 distribution, available at smog-server.org     
 
-        This tool uses a SMOG .top and .gro file to generate OPTIM input files. 
-			 This tool is to be run interactively. 
+         This tool uses a SMOG .top and .gro file to generate OPTIM input files.         
+			  This tool is to be run interactively. 
 
-                       See the SMOG manual for usage guidelines.
+                        See the SMOG manual for usage guidelines.
 
             For questions regarding this script, contact info\@smog-server.org
 
@@ -415,7 +415,7 @@ if($SBMINPON =~ m/^Y$/){
 		$LINE =~ s/\t/ /g; 
 		$LINE =~ s/^\s+|\s+$//g;
 		$LINE =~ s/ +/ /g;
-		if( m/[#!\^\$]/ ){
+		if( $LINE =~ m/[#!\^\$]/ ){
 			print "ERROR: Special characters not recognized in .top file\n";
 			print "  Offending line: $LINE\n";
 			exit;
@@ -433,7 +433,7 @@ if($SBMINPON =~ m/^Y$/){
 	for (my $I=1;$I<=$#DATA;$I++){
 		my $string1 = $DATA[$I];
 		open my($fh), "<", \$string1 or die ; # reading from the data in $string
-		my $first_line = <$fh>; # gives "Fred"
+		my $first_line = <$fh>; 
 		$first_line =~  s/^\s//g;
 		close $fh;
 		my @B=split(/ /,$first_line);
@@ -911,7 +911,7 @@ if($SBMINPON =~ m/^Y$/){
 	print OPTIMTOP "\n";
 
 
-	# provide information about the atoms 
+	# provide information about the restraints 
 	if(!exists $DIRLIST{"position_restraints"}){
 		print "\nNOTE: \"position_restraints\" does not appear in .top file.\n";
 		print OPTIMTOP "0 position restraints\n";
@@ -929,6 +929,9 @@ if($SBMINPON =~ m/^Y$/){
 			}
 			if($D[1] != 1){print "ERROR: Only restraints of type 1 are supported\n Quitting.\n"; exit;} 
 			# printing atom number, 6 position restraint contacts and 3 coordinates.  Restraints are xx, yy, zz, xy, xz, yz, though cross terms not yet supported.
+			$D[2]=$D[2]/100;
+			$D[3]=$D[3]/100;
+			$D[4]=$D[4]/100;
 			printf (OPTIMTOP "%5i %8.5e %8.5e %8.5e %8.5e %8.5e %8.5e %8.3f %8.3f %8.3f\n", $D[0],$D[2],$D[3],$D[4],0,0,0,$X[$D[0]][0],$X[$D[0]][1],$X[$D[0]][2]);
 		}
 	}

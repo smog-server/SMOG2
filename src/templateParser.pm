@@ -9,7 +9,7 @@
 #                     Copyright (c) 2015, The SMOG development team at
 #                        Rice University and Northeastern University
 #
-#              SMOG v2 & Shadow are available at http://smog-server.org
+#              SMOG 2 & Shadow are available at http://smog-server.org
 #
 #                        Direct questions to: info@smog-server.org
 #
@@ -368,12 +368,21 @@ sub parseSif {
 	
 	my $CG_NORM=0;
 	my $setflag = 0;$total=0;
+	my $numCGs=0;
 	foreach my $egName(keys %{$contactGroups})
 	{
+		$numCGs++;
+		if($numCGs > 1){smog_quit("Currently, use of multiple contactGroups is not supported.")}
 		$intraRelativeStrength = $contactGroups->{$egName}->{"intraRelativeStrength"};
+		if(exists $contactGroups->{$egName}->{"intraRelativeStrength"} && $contactGroups->{$egName}->{"intraRelativeStrength"} != 1){
+			print "\nNOTE: Contact intraRelativeStrength is not used, yet. Value reset to 1.\n";
+			$contactGroups->{$egName}->{"intraRelativeStrength"}=1;
+			$intraRelativeStrength=1.0;
+		}
 		$normalize = $contactGroups->{$egName}->{"normalize"};
 		$termRatios->{"contactGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
-		if($normalize){$total+=$intraRelativeStrength; $CG_NORM++}
+		##if($normalize){$total+=$intraRelativeStrength;$CG_NORM++}
+		if($normalize){$CG_NORM++}
 	
 		if($normalize == 0 && exists $contactGroups->{$egName}->{"intraRelativeStrength"}){
 			smog_quit("Issue in .sif, contact group $egName. intraRelativeStrength only supported when normalization is on.");
@@ -396,7 +405,6 @@ sub parseSif {
 	
 	## NOTE:Contact Type is Global ##
 	## Sum of contact scalings ##
-	$termRatios->{"cintraRelativeTotal"} = $total;
 	
 	if($groupRatios->{"contacts"} <=0 || $groupRatios->{"contacts"} <=0){
 		smog_quit("All values for groupRatios must be greater than zero. See .sif file.")
@@ -481,11 +489,12 @@ sub parseSif {
 	my $bondsThreshold = $data->{"settings"}->[0]->{"bondsThreshold"}->[0];
 	my $anglesThreshold = $data->{"settings"}->[0]->{"anglesThreshold"}->[0];
 	my $contactsThreshold = $data->{"settings"}->[0]->{"contactsThreshold"}->[0];
+	my $distanceThreshold = $data->{"settings"}->[0]->{"distanceThreshold"}->[0];
 	$interactionThreshold->{"bonds"}={"shortBond"=>$bondsThreshold->{"shortBond"},
 									  "longBond"=>$bondsThreshold->{"longBond"}};
 	$interactionThreshold->{"angles"}={"smallAngles"=>$anglesThreshold->{"smallAngles"},"largeAngles"=>$anglesThreshold->{"largeAngles"}};
 	$interactionThreshold->{"contacts"}={"shortContacts"=>$contactsThreshold->{"shortContacts"}};
-
+	$interactionThreshold->{"distance"}={"tooShortDistance"=>$distanceThreshold->{"tooShortDistance"}};
 }
 
 ## [bonds] ai aj fType r0 Kb

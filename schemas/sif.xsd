@@ -95,6 +95,10 @@
     <xs:attribute name="shortContacts" type="xs:decimal" use="required"/>
 </xs:complexType>
 
+<!-- distanceThreshold -->
+<xs:complexType name="distanceThresholdType">
+    <xs:attribute name="tooShortDistance" type="xs:decimal" use="required"/>
+</xs:complexType>
 
 <!-- SETTINGS TYPE -->
 <xs:complexType name="settingsType">
@@ -104,6 +108,7 @@
     <xs:element name="bondsThreshold" type="bondsThresholdType"/>
     <xs:element name="anglesThreshold" type="anglesThresholdType"/>
     <xs:element name="contactsThreshold" type="contactsThresholdType"/>
+    <xs:element name="distanceThreshold" type="distanceThresholdType" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
 </xs:complexType>
 <!-- FUNCTIONS TYPE -->
