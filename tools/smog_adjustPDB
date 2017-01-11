@@ -22,6 +22,7 @@ my $default;
 my $warnonly;
 my $renumber;
 my $mapOption;
+my $help;
 
 ## MODULE HEADERS ##
 use Getopt::Long;
@@ -41,6 +42,16 @@ print <<EOT;
 
             For questions regarding this script, contact info\@smog-server.org              
 *****************************************************************************************
+
+usage: smog_adjustPDB -i PDB file name [ -o smog.pdb ] [ -map file-name] | [ -defualt ] [--help|-?]
+
+Required Input
+	-i [filename.pdb]: Input PDB to adjust to smog2 format
+	-map filename | -default : specify a map file name or use the default file name provided by smog2
+Optional Input parameters
+	-warnonly : Convert fatal errors to warnings (Caution: Consult manual before using this option)
+	-renumber : Ignore any residue numbering inconsistencies and renumber residues sequentially.
+
 EOT
 
   if ( @_ ){
@@ -61,7 +72,7 @@ sub exitSmog{
 	}
 }
 
-usage() if (@ARGV < 1 || !GetOptions('o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warnonly' => \$warnonly, 'renumber' => \$renumber, '<>' => \&usage) or !defined $inputPDB);
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warnonly' => \$warnonly, 'renumber' => \$renumber, '<>' => \&usage) or !defined $inputPDB);
 
 if($warnonly){
 	$noexit=1;	
@@ -89,13 +100,13 @@ if ($default){
 	if ($mapFile eq ""){
 		exitSmog("No map file was provided. Please chose a map file or use the default map settings: -default.");
 	}else{
-		open(MAP,$mapOption) or die "Can't open $mapOption.\n";
+		$mapOption = $mapFile;
 	}
 }
 
 if ($outputPDB eq ""){
-	print "\n\nNo output PDB file name was specified. Will produce a default PDB file name: $inputPDB.modified\n\n";
-	open(NEWPDB,">$inputPDB.modified") or die "Can't open the output PDB file. \n";
+	print "\n\nNo output PDB file name was specified. Will produce a default PDB file name: smog.pdb\n\n";
+	open(NEWPDB,">smog.pdb") or die "Can't open the output PDB file. \n";
 }else{
 	open(NEWPDB,">$outputPDB") or die "Can't open the output PDB file. \n";
 	print "New file will be written: $outputPDB\n";
