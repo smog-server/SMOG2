@@ -7665,7 +7665,7 @@
 		</connection>
 		
 		<!-- AMINO/AMINO -->
-			<connection name="amino-amino" residueType1="amino" residueType2="amino">
+		<connection name="amino-amino" residueType1="amino" residueType2="amino">
 			<bond energyGroup="r_a" >
 				<atom>C</atom>
 				<atom>N</atom>
@@ -7677,6 +7677,19 @@
                         	<atom>CA</atom>
                         	<atom>C</atom>
                         	<atom>N+</atom>
+                	</improper>
+		</connection>
+		<!-- NUCLEIC to AMINO (e.g. aa-tRNA) -->
+		<connection name="nucleic-amino" residueType1="nucleic" residueType2="amino">
+			<bond energyGroup="r_a" >
+				<atom>O3*</atom>
+				<atom>C</atom>
+			</bond>
+                	<improper>
+                        	<atom>O3*</atom>
+                        	<atom>C+</atom>
+                        	<atom>O+</atom>
+                        	<atom>CA+</atom>
                 	</improper>
 		</connection>
 	</connections>
