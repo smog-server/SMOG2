@@ -374,6 +374,7 @@ sub parsePDBATOMS
 		}
 		$record = "";
  	}
+        unless($endfound){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 }
 
 # returnFunction: Return the fType and directive field for a specified function
