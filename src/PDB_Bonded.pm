@@ -1491,10 +1491,10 @@ sub parseCONTACT
 				{
 				  if($main::setContacttoLimit){
 				    $dist=$interactionThreshold->{"contacts"}->{"shortContacts"};
-	                            print "NOTE: Contact between atoms $contact1 $contact2 exceed contacts threshold with value $dist\n";
+	                            print "NOTE: Contact between atoms $contact1 $contact2 below threshold with value $dist\n";
 				    print "-limitcontactlength is being used, will set distance of contact to $dist\n\n";
 				  }else{
-	                            smog_quit("Contact between atoms $contact1 $contact2 exceed contacts threshold with value $dist");
+	                            smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");
 	 			  }
 				}
 				push(@interiorTempPDL,[0,$contact1,$contact2,$dist]);
