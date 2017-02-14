@@ -101,6 +101,7 @@ if ($default){
 		exitSmog("No map file was provided. Please chose a map file or use the default map settings: -default.");
 	}else{
 		$mapOption = $mapFile;
+		open(MAP,$mapOption) or die "Can't open $mapOption.\n";
 	}
 }
 
