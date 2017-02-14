@@ -121,10 +121,33 @@ sub parsePDBATOMS
 	my $residueSerial=0;
 	## OPEN .PDB FILE ##
 
+	# first check and make sure there is an END and there are no ATOM lines afterwards
 	unless (open(PDBFILE, $fileName)) {
 		smog_quit ("Cannot read from '$fileName'.");
 	}
 
+	while(my $record = <PDBFILE>)
+	{
+		my $lng = $record;
+		if($record =~m/^END/){
+			$endfound=1;
+			next;
+		}
+		if($lng eq "" || $record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/){
+			next;
+		# make sure BOND appears after END
+		}
+		if($record !~ m/^BOND/ && $endfound ==1){
+			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$record\"\n");
+		}
+	}
+	close(PDBFILE);
+        unless($endfound){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
+
+	unless (open(PDBFILE, $fileName)) {
+		smog_quit ("Cannot read from '$fileName'.");
+	}
+	$endfound=0;
 	my $lastresindex="null";
 	 ## LOOP THROUGH EACH LINE ##
 	while(my $record = <PDBFILE>)
@@ -141,7 +164,7 @@ sub parsePDBATOMS
 			next;
 		# make sure BOND appears after END
 		}elsif($record !~ m/^BOND/ && $endfound ==1){
-			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"a $lng a\"\n");
+			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$lng\"\n");
 		}
 
  		if($record =~ m/^BOND/){
@@ -374,7 +397,6 @@ sub parsePDBATOMS
 		}
 		$record = "";
  	}
-        unless($endfound){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 }
 
 # returnFunction: Return the fType and directive field for a specified function
