@@ -1527,6 +1527,14 @@ sub generateContactMap {
 	my $SCMparams = setContactParams();
     	my $memoryMax = "";
 	my $absAtomCount = keys(%allAtoms);
+
+    	if($absAtomCount >= 100000)
+    	{
+		$memoryMax = 1000;
+		print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
+		$memoryMax = "-Xmx$memoryMax"."m";
+    	} 
+
     	if($absAtomCount >= 1000000)
     	{
 		$memoryMax = 4000;
