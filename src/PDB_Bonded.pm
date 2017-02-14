@@ -121,10 +121,33 @@ sub parsePDBATOMS
 	my $residueSerial=0;
 	## OPEN .PDB FILE ##
 
+	# first check and make sure there is an END and there are no ATOM lines afterwards
 	unless (open(PDBFILE, $fileName)) {
 		smog_quit ("Cannot read from '$fileName'.");
 	}
 
+	while(my $record = <PDBFILE>)
+	{
+		my $lng = $record;
+		if($record =~m/^END/){
+			$endfound=1;
+			next;
+		}
+		if($lng eq "" || $record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/){
+			next;
+		# make sure BOND appears after END
+		}
+		if($record !~ m/^BOND/ && $endfound ==1){
+			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$record\"\n");
+		}
+	}
+	close(PDBFILE);
+        unless($endfound){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
+
+	unless (open(PDBFILE, $fileName)) {
+		smog_quit ("Cannot read from '$fileName'.");
+	}
+	$endfound=0;
 	my $lastresindex="null";
 	 ## LOOP THROUGH EACH LINE ##
 	while(my $record = <PDBFILE>)
@@ -141,7 +164,7 @@ sub parsePDBATOMS
 			next;
 		# make sure BOND appears after END
 		}elsif($record !~ m/^BOND/ && $endfound ==1){
-			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"a $lng a\"\n");
+			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$lng\"\n");
 		}
 
  		if($record =~ m/^BOND/){
@@ -908,32 +931,51 @@ my %bondMapHashRev=%{$bondMapHashRev};
 	  			my($an,$bn,$cn,$dn) = @{$ips->{"atom"}};
 	  
 	  
-	        		if($a =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $a found.")};
-	        		if($b =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $b found.")};
-	        		if($c =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $c found.")};
-	        		if($d =~ /[*?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $d found.")};
+	        		if($a =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $a found.")};
+	        		if($b =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $b found.")};
+	        		if($c =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $c found.")};
+	        		if($d =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $d found.")};
 	  
-	  
+	  			# check if there is a + sign appended to any of the atoms. This indicates which is the subsequent residue.
+				my $atomname;
 	  			if( $a =~ s/\+$//g ){
+					$atomname=$a;
 	   				$a=$bondMapHashRev{"$a-$resIndB"};
+					if(!defined $a){smog_quit("$atomname not found in definition for residue $resIndB");}
 	  			}else{
+					$atomname=$a;
 	   				$a=$bondMapHashRev{"$a-$resIndA"};
+					if(!defined $a){smog_quit("$atomname not found in definition for residue $resIndA");}
 	  			}
+
 	  			if( $b =~ s/\+$//g ){
+					$atomname=$b;
 	   				$b=$bondMapHashRev{"$b-$resIndB"};
+					if(!defined $b){smog_quit("$atomname not found in definition for residue $resIndB");}
 	  			}else{
+					$atomname=$b;
 	   				$b=$bondMapHashRev{"$b-$resIndA"};
+					if(!defined $b){smog_quit("$atomname not found in definition for residue $resIndA");}
 	  			}
 	  			if( $c =~ s/\+$//g ){
+					$atomname=$c;
 	   				$c=$bondMapHashRev{"$c-$resIndB"};
+					if(!defined $c){smog_quit("$atomname not found in definition for residue $resIndB");}
 	  			}else{
+					$atomname=$c;
 	   				$c=$bondMapHashRev{"$c-$resIndA"};
+					if(!defined $c){smog_quit("$atomname not found in definition for residue $resIndA");}
 	  			}
 	  			if( $d =~ s/\+$//g ){
+					$atomname=$d;
 	   				$d=$bondMapHashRev{"$d-$resIndB"};
+					if(!defined $d){smog_quit("$atomname not found in definition for residue $resIndB");}
 	  			}else{
+					$atomname=$d;
 	   				$d=$bondMapHashRev{"$d-$resIndA"};
+					if(!defined $d){smog_quit("$atomname not found in definition for residue $resIndA");}
 	  			}
+				#print "$a $b $c $d\n";
 	  			my $IMPFLAG1=0;
 	  			my $IMPFLAG2=0;
 	  			my @TMPARR2 = ($a,$b,$c,$d);
@@ -987,7 +1029,6 @@ my %bondMapHashRev=%{$bondMapHashRev};
 			my $ra;my $rb;my $rc;my $rd;
 			my $sizeA; my $sizeB;my $sizeC;my $sizeD;
 			my($a,$b,$c,$d) = @{$ips};
-	
 	 		$a=$bondMapHashRev{"$a-$resIndA"};
 	 		$b=$bondMapHashRev{"$b-$resIndA"};
 	 		$c=$bondMapHashRev{"$c-$resIndA"};
