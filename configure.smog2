@@ -30,6 +30,7 @@ fi
 if (( $ERR == 0 )); then
 	export smog_exec="$perl4smog $smog2dir/src/smogv2"
 	export PERLLIB=$smog2dir/src:$PERLLIB
+	export PERL5LIB=$smog2dir/src:$PERL5LIB
 	export SMOG_PATH=$smog2dir
 	export perl4smog
 	
@@ -42,6 +43,7 @@ if (( $ERR == 0 )); then
 		echo '#!/bin/bash' > $SMOG_PATH/bin/smog2
 		echo "# Wrapper for SMOG V2" >> $SMOG_PATH/bin/smog2
 		echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $SMOG_PATH/bin/smog2
+		echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $SMOG_PATH/bin/smog2
 		echo $smog_exec \"\$\@\" >> $SMOG_PATH/bin/smog2
 		chmod u+x $SMOG_PATH/bin/smog2
 	
@@ -51,6 +53,7 @@ if (( $ERR == 0 )); then
 			echo '#!/bin/bash' > $SMOG_PATH/bin/smog_$tool
 			echo "# Wrapper for smog_$tool" >> $SMOG_PATH/bin/smog_$tool
 			echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $SMOG_PATH/bin/smog_$tool
+			echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $SMOG_PATH/bin/smog_$tool
 			echo $perl4smog $SMOG_PATH/tools/smog_$tool \"\$\@\" >> $SMOG_PATH/bin/smog_$tool
 			chmod u+x $SMOG_PATH/bin/smog_$tool
 		done
@@ -63,6 +66,7 @@ if (( $ERR == 0 )); then
 			echo '#!/bin/bash' > $SMOG_PATH/bin/smog2
 			echo "# Wrapper for SMOG V2" >> $SMOG_PATH/bin/smog2
 			echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $SMOG_PATH/bin/smog2
+			echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $SMOG_PATH/bin/smog2
 			echo $smog_exec \"\$\@\" >> $SMOG_PATH/bin/smog2
 			chmod u+x $SMOG_PATH/bin/smog2
 		fi
@@ -74,6 +78,7 @@ if (( $ERR == 0 )); then
 				echo '#!/bin/bash' > $SMOG_PATH/bin/smog_$tool
 				echo "# Wrapper for smog_$tool" >> $SMOG_PATH/bin/smog_$tool
 				echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $SMOG_PATH/bin/smog_$tool
+				echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $SMOG_PATH/bin/smog_$tool
 				echo $perl4smog $SMOG_PATH/tools/smog_$tool \"\$\@\" >> $SMOG_PATH/bin/smog_$tool
 				chmod u+x $SMOG_PATH/bin/smog_$tool
 			fi
