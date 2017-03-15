@@ -22,6 +22,7 @@ my $default;
 my $warnonly;
 my $renumber;
 my $mapOption;
+my $help;
 
 ## MODULE HEADERS ##
 use Getopt::Long;
@@ -41,6 +42,16 @@ print <<EOT;
 
             For questions regarding this script, contact info\@smog-server.org              
 *****************************************************************************************
+
+usage: smog_adjustPDB [-i filename.pdb] [-o smog.pdb] [-default] | [-map filename] [--help|-?]
+
+Required Input
+	-i [filename.pdb]: Input PDB to adjust to smog2 format
+	-default | -map filename : use the default file name provided by smog2 or specify a map file name
+Optional Input parameters
+	-warnonly : Convert fatal errors to warnings (Caution: Consult manual before using this option)
+	-renumber : Ignore any residue numbering inconsistencies and renumber residues sequentially.
+
 EOT
 
   if ( @_ ){
@@ -61,41 +72,41 @@ sub exitSmog{
 	}
 }
 
-usage() if (@ARGV < 1 || !GetOptions('o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warnonly' => \$warnonly, 'renumber' => \$renumber, '<>' => \&usage) or !defined $inputPDB);
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warnonly' => \$warnonly, 'renumber' => \$renumber, '<>' => \&usage) or !defined $inputPDB);
 
 if($warnonly){
 	$noexit=1;	
 	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
 }
 
-if ($renumber){
+if (defined $renumber){
 	print "\n\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n\n";
 }
 
-if($inputPDB eq ""){
+if(!defined $inputPDB){
 	exitSmog("No input PDB was specified. Use -i to specify your input pdb file.");
 }else{
 	open(OLDPDB,"$inputPDB") or die "Can't open molecule PDB file.\n";
-	print "Will reformatl the PDB file: $inputPDB\n";	
+	print "Will reformat the PDB file: $inputPDB\n";	
 }
 
-if ($default){
-	print "\n\n-default selected. Will use the default map file provided for terminal residue names.\n\n";
+if (defined $default){
+	print "\n-default selected. Will use the default map file provided for terminal residue names.\n";
 	if(!exists $ENV{"SMOG_PATH"}){
         exitSmog("Environmental Variable SMOG_PATH not set\n");
 	}
 	$mapOption = "$ENV{SMOG_PATH}/tools/sbmMap";	
 }else{
-	if ($mapFile eq ""){
+	if (!defined $mapFile ){
 		exitSmog("No map file was provided. Please chose a map file or use the default map settings: -default.");
 	}else{
-		open(MAP,$mapOption) or die "Can't open $mapOption.\n";
+		$mapOption = $mapFile;
 	}
 }
 
-if ($outputPDB eq ""){
-	print "\n\nNo output PDB file name was specified. Will produce a default PDB file name: $inputPDB.modified\n\n";
-	open(NEWPDB,">$inputPDB.modified") or die "Can't open the output PDB file. \n";
+if (!defined $outputPDB){
+	print "\nNo output PDB file name was specified. Will produce a default PDB file name: smog.pdb\n";
+	open(NEWPDB,">smog.pdb") or die "Can't open the output PDB file. \n";
 }else{
 	open(NEWPDB,">$outputPDB") or die "Can't open the output PDB file. \n";
 	print "New file will be written: $outputPDB\n";

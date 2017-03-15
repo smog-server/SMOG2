@@ -67,7 +67,7 @@ my $help;
 my $gen_restraints=0;
 my $warnonly=0;
 our $noexit=0;
-usage() if (!GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
         'of=s' => \$outputTOP, 'og=s' => \$outputGRO, 'restraints=s' => \$gen_restraints,  'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
@@ -87,7 +87,7 @@ unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen
 my %keepatoms;
 my $KEEPN=0;
 my @keepatoms2;
-open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Quitting\n\n";
+open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
 while(<ATOMLIST>){
 	my $LINE=$_;
 	chomp($LINE);
