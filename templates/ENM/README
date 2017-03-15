@@ -1,1 +1,11 @@
-This all-heavy-atom potential is defined in the spirit of Tirion (Tirion et al.1996 PRL), where the interactions are all harmonic springs and are of identical strengths. The contact map defaults to a 6 A cutoff between heavy atom centers (Note: the Tirion contact map uses a variable cutoff to define contacts of Rvdw(a)+Rvdw(b)+Rc which is not available in smog2, but a user generated map can be used with option -c). The spring constants between non-bonded atoms are uniformly unity and can be changed in ENM.nb. There are no angle or dihedral potentials, the covalent geometry is maintained by harmonic springs of strength 10, which can be changed in ENM.b. The resulting potential does not correspond exactly to any particular published study, but serves as a example starting point.
+This all-heavy-atom potential is defined in the spirit of Tirion (Tirion et
+al.1996 PRL), where the interactions are all harmonic springs and are of
+identical strengths. The contact map defaults to a 6 A cutoff between heavy atom
+centers (Note: the Tirion contact map uses a variable cutoff to define contacts
+of Rvdw(a)+Rvdw(b)+Rc which is not available in smog2, but a user generated map
+can be used with option -c). The spring constants between non-bonded atoms are
+uniformly unity and can be changed in ENM.nb. There are no angle or dihedral
+potentials, the covalent geometry is maintained by harmonic springs of strength
+10, which can be changed in ENM.b. The resulting potential does not correspond
+exactly to any particular published study, but serves as a example starting
+point.
