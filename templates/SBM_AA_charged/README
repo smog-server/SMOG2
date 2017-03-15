@@ -1,0 +1,15 @@
+This potential is identical to SBM_AA, but with electric charges added to acidic
+and basic residues, phosphates in RNA, and bound magnesium (when named BMG). A
+full -1 charge is placed on the acidic or basic group in the PDB. Histidine is
+uncharged. Because of the lack of an explicit solvent, it is intended that this
+potential is used in conjunction with a Debye-Hueckel non-bonded charge
+interaction shape. A script to generate a Gromacs tabulated potential
+(smog_tablegen) can be found in the tools directory of the smog2
+distribution.
+
+As suggested for Calpha models by Azia A, (2009) JMB, native
+contacts with charge-charge interactions have unchanged native contact
+potentials. Note that these native charge-charge interactions can perturb the
+basic assumption of lack of energetic frustration in the SBM. To avoid this
+complication, the cited ribosome study (.citation file) the charge-charge 
+interactions are only considered between molecules, not within molecules.
