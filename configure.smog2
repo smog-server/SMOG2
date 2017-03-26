@@ -29,6 +29,7 @@ fi
 
 if (( $ERR == 0 )); then
 	export smog_exec="$perl4smog $smog2dir/src/smogv2"
+        export PATH=$PATH:$smog2dir/bin
 	export PERLLIB=$smog2dir/src:$PERLLIB
 	export PERL5LIB=$smog2dir/src:$PERL5LIB
 	export SMOG_PATH=$smog2dir
