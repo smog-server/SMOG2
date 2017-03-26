@@ -2,11 +2,11 @@
 <b>
 <!-- BONDS -->
 <bonds>
-	<bond func="bond_harmonic(?,20000)">
+	<bond func="bond_harmonic(?,10)">
 	<bType>*</bType>
 	<bType>*</bType>
         </bond>
-	<bond func="bond_type6(?,200)">
+	<bond func="bond_type6(?,10)">
 	<bType>*</bType>
     	<bType>MG</bType>
         </bond>
