@@ -1,6 +1,3 @@
-title                    = AA template Gromacs 4.X
-;Preprocessor
-cpp			 = /lib/cpp
 ;Run control: A leap-frog algorithm for integrating Newton's equations. 
 integrator		 = sd
 :time step in femtoseconds 
@@ -25,7 +22,7 @@ xtc_grps		 = system
 energygrps		 = system  
 ;Frequency to update the neighbor list (and the long-range forces, 
 ;when using twin-range cut-off's). 
-nstlist 		 = 50
+nstlist 		 = 5
 coulombtype 		 = Cut-off
 table-extension		 = 20
 ;Make a grid in the box and only check atoms in neighboring grid cells 
