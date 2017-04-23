@@ -1661,13 +1661,18 @@ if($backup ne "yes" and $backup ne "no"){
 if($numdefaults > 1){
 	smog_quit('Can not select more than one default model at a time.');
 }
+if($CAdefault == 1 and defined $ContactFile){
+	smog_quit('Can not use -c and -CA options at the same time.');
+}
+if(defined $ContactFile and $CGenabled == 1){
+	smog_quit('Can not use -tCG and -c options at the same time.');
+}
 if($CAdefault == 1 and $CGenabled == 1){
 	smog_quit('Can not use -tCG and -CA options at the same time.');
 }
 if($CAGdefault == 1 and $CGenabled == 1){
 	smog_quit('Can not use -tCG and -CAgaussian options at the same time.');
 }
-
 if($CAdefault == 1 and $inputFolder ne ""){
 	smog_quit('Can not use -CA and -t options at the same time.');
 }
@@ -1684,6 +1689,7 @@ if($AAGdefault == 1 and $inputFolder ne ""){
 if($numdefaults and $coarseFolder ne ""){
 	smog_quit('Can not use a default model with -tCG.');
 }
+
 
 if($CAdefault == 1){
 	print "\n -CA given. Will use the default Calpha SMOG model provided with the distribution.\n";
