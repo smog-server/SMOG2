@@ -58,4 +58,4 @@ gen_seed		 = -1
 constraints		 = none
 ;if you have a very big box that the molecule doesn't cross
 ;you can use this, otherwise no
-comm_mode = none
+comm_mode = angular
