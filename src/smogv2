@@ -1527,19 +1527,12 @@ sub generateContactMap {
 	my $SCMparams = setContactParams();
     	my $memoryMax = "";
 	my $absAtomCount = keys(%allAtoms);
-
-    	if($absAtomCount >= 100000)
+		#AKE lattice with 6e5 atoms needs 70 MB. Use 80MB for safety...
+		my $megabytesNeeded = int($absAtomCount / 60000 * 80);
+		if( $megabytesNeeded > 100 ) #default java heapsize is 1/4 physical memory. Don't think anyone will have <400MB these days 
     	{
-		$memoryMax = 1000;
-		print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
-		$memoryMax = "-Xmx$memoryMax"."m";
-    	} 
-
-    	if($absAtomCount >= 1000000)
-    	{
-		$memoryMax = 4000;
-		print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
-		$memoryMax = "-Xmx$memoryMax"."m";
+		print "JAVA HEAP SIZE INCREASED to $megabytesNeeded Mb\n";
+		$memoryMax = "-Xmx$megabytesNeeded"."m";
     	} 
 	
 	## Delete Preexisting contact file ##
