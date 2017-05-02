@@ -53,5 +53,5 @@ gen_vel = yes
 gen_temp = 100.0 
 gen_seed = -1 
 ld_seed = -1 
-comm_mode = none ; center of mass velocity removal. Make sure you select what is proper for your simulation. 
+comm_mode = angular ; center of mass velocity removal. Make sure you select what is proper for your simulation. 
 ;NOTE on comm_mode: When using periodic boundary conditions, which improves the speed of neighbor searching, removing the angular velocity will lead to a warning at the grompp stage of simulations. So long as the box size is properly sized, such that your system does not cross the boundaries, then this warning is harmless and you can simply issue -maxwarn X, where X is the number of allowed warning messages.
