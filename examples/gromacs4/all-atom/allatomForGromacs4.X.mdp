@@ -44,7 +44,7 @@ rvdw			 = 1.2
 pbc                      = no
 ;Temperature coupling
 tc-grps 		 = system
-tau_t			 = 2.0 
+tau_t			 = 1.0 
 ref_t			 = 130
 ;Pressure coupling
 Pcoupl  		 = no

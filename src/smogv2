@@ -52,7 +52,7 @@ my $inputFolder=""; my $bifForSCM;
 my $userProvidedMap=0;
 my $topFile = "";
 my $groFile = "";
-my $ContactFile = "";
+my $ContactFile;
 my $shadowFile = "";
 my $ndxFile = "";
 my $mapOpt = "shadow";my $contactOpt = "6 1";
