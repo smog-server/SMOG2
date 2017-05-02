@@ -404,7 +404,7 @@ sub CalculateAnglesHelper
 		my $rightd = sclr(sqrt(inner($A2-$A3,$A2-$A3))*$angToNano);
 		my $outerd = sclr(sqrt(inner($A3-$A1,$A3-$A1))*$angToNano);
 		#check that these distances are larger than the minimum
-		if( exists $interactionThreshold->{"distance"}->{"tooShortDistance"} ) {
+		if( $interactionThreshold->{"distance"}->{"tooShortDistance"} ) { #check if it is defined in .sif
 			my $short = $interactionThreshold->{"distance"}->{"tooShortDistance"};
 			if($leftd < $short || $rightd < $short || $outerd < $short) {
 				smog_quit("Distance between one of the atom pairs within: $atomi1 $atomi2 $atomi3, are less than distanceThreshold=$short in the .sif.
