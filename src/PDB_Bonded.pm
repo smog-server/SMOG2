@@ -1503,6 +1503,11 @@ sub parseCONTACT
 		}
 		if($CGenabled == 1) { close($COARSECONT); }
 	} else { #read in contact from file
+		if($CGenabled == 1) {
+			smog_quit ("User input contact map is not supported with automatic coarse graining (e.g., -CA, -CAgauss, -tCG).".
+			" This is because the coarse graining options are only to enable automatic contact generation from an all-atom input pdb.".
+			" If the user wishes to use their own contact map, use a .bif and .pdb that already have the correct graining.".
+			" For example, for a C-alpha model, directly use the template \$SMOG2_LOCATION/templates/SBM_calpha with the -t option." ); }
 		print "\nNOTE: Not calculating contact map\n";
 		print "Reading contacts from $fileName2\n";
 		## OPEN user provided contact FILE ##

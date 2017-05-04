@@ -404,7 +404,7 @@ sub CalculateAnglesHelper
 		my $rightd = sclr(sqrt(inner($A2-$A3,$A2-$A3))*$angToNano);
 		my $outerd = sclr(sqrt(inner($A3-$A1,$A3-$A1))*$angToNano);
 		#check that these distances are larger than the minimum
-		if( exists $interactionThreshold->{"distance"}->{"tooShortDistance"} ) {
+		if( $interactionThreshold->{"distance"}->{"tooShortDistance"} ) { #check if it is defined in .sif
 			my $short = $interactionThreshold->{"distance"}->{"tooShortDistance"};
 			if($leftd < $short || $rightd < $short || $outerd < $short) {
 				smog_quit("Distance between one of the atom pairs within: $atomi1 $atomi2 $atomi3, are less than distanceThreshold=$short in the .sif.
@@ -1527,19 +1527,12 @@ sub generateContactMap {
 	my $SCMparams = setContactParams();
     	my $memoryMax = "";
 	my $absAtomCount = keys(%allAtoms);
-
-    	if($absAtomCount >= 100000)
+		#AKE lattice with 6e5 atoms needs 70 MB. Use 80MB for safety...
+		my $megabytesNeeded = int($absAtomCount / 60000 * 80);
+		if( $megabytesNeeded > 100 ) #default java heapsize is 1/4 physical memory. Don't think anyone will have <400MB these days 
     	{
-		$memoryMax = 1000;
-		print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
-		$memoryMax = "-Xmx$memoryMax"."m";
-    	} 
-
-    	if($absAtomCount >= 1000000)
-    	{
-		$memoryMax = 4000;
-		print "JAVA HEAP SIZE INCREASED to $memoryMax Mb\n";
-		$memoryMax = "-Xmx$memoryMax"."m";
+		print "JAVA HEAP SIZE INCREASED to $megabytesNeeded Mb\n";
+		$memoryMax = "-Xmx$megabytesNeeded"."m";
     	} 
 	
 	## Delete Preexisting contact file ##
