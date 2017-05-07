@@ -1796,9 +1796,7 @@ if($CGenabled == 0) {
 	print "\n*****************************************************\n";
 }
 my $allowCG = 0;
-
 print "Parsing templates files...\n";
-
 parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
 
 if($CGenabled == 0) {
