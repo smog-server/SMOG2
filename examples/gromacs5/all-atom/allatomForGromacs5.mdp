@@ -22,7 +22,7 @@ xtc_grps		 = system
 energygrps		 = system  
 ;Frequency to update the neighbor list (and the long-range forces, 
 ;when using twin-range cut-off's). 
-nstlist 		 = 5
+nstlist 		 = 20
 coulombtype 		 = Cut-off
 table-extension		 = 20
 ;Make a grid in the box and only check atoms in neighboring grid cells 
