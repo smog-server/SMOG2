@@ -1704,7 +1704,7 @@ if($AAGdefault == 1){
 
 
 # if a contact file is provided, then don't calculate contacts
-if($ContactFile ne ""){
+if(defined $ContactFile){
 	$userProvidedMap=1;
 }
 
@@ -1762,7 +1762,7 @@ if($backup eq "yes"){
 
 # files we will read
 foreach my $filen($inputPDB,$ContactFile){
-	if($filen ne "" && ! -f $filen){
+	if(defined $filen  && ! -f $filen){
 		smog_quit("Can't find file $filen !! ");
 	}
 }
