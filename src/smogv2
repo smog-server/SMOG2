@@ -63,7 +63,8 @@ my $AAdefault = 0;
 my $CAdefault = 0;
 my $AAGdefault = 0; 
 my $CAGdefault = 0;
-our $noexit=0;
+our $maxwarn=0;
+our $warncount=0;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
 our $setContacttoLimit=0;
@@ -1364,7 +1365,7 @@ usage: smog2  -i PDB file name [-o smog.top] [-g smog.gro] [--help|-?]
 	-c [contacts.txt]: Input contact map file
 	-dname [smog]: Default name to use for all output files
 	-backup [yes]: Back up any pre-existing output files
-	-warnonly: Convert fatal errors to warnings (Caution: Consult manual before using this option)
+	-warn [N]: Convert the first N fatal errors to warnings. Default: N=0 (Caution: Consult manual before using this option)
 	-limitbondlength: If a bond length is outside of the allowable range, set it to limiting value
 	-limitcontactlength: If a contact length is too short, set it to the minimal value
 	-ignH: Ignore any atoms with name starting with 'H' in the internal contact algorithm
@@ -1574,7 +1575,6 @@ sub appendContactsAndFinish {
 ##################
 
 my $DNAME="smog";
-my $warnonly=0;
 my $backup="yes";
 
 header();
@@ -1589,7 +1589,7 @@ print "\n";
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
-	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 
+	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warn=i' => \$maxwarn, 
          'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
          'rescaleCD=s' => \$rescaleCD, '<>' => \&usage)
           or defined $help 
@@ -1601,11 +1601,8 @@ unless ($rescaleCD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
 	smog_quit("$rescaleCD is not a valid value for -rescaleCD.  Must be an integer, or decimal.");
 }
 
-if($warnonly){
-	$noexit=1;
-	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
-}else{
-	$noexit=0;
+if($maxwarn > 0){
+	print "\n\n-warn selected. The first $maxwarn errors will be reported as warnings.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
 }
 
 my $numdefaults=$CAdefault+$AAdefault+$AAGdefault+$CAGdefault;
