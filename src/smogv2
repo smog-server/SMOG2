@@ -1365,7 +1365,7 @@ usage: smog2  -i PDB file name [-o smog.top] [-g smog.gro] [--help|-?]
 	-c [contacts.txt]: Input contact map file
 	-dname [smog]: Default name to use for all output files
 	-backup [yes]: Back up any pre-existing output files
-	-warn [N]: Convert the first N fatal errors to warnings. Default: N=0 (Caution: Consult manual before using this option)
+	-warn [N]: Convert the first N fatal errors to warnings. Default: N=0. Convert all errors if N=-1 (Caution: Consult manual before using this option)
 	-limitbondlength: If a bond length is outside of the allowable range, set it to limiting value
 	-limitcontactlength: If a contact length is too short, set it to the minimal value
 	-ignH: Ignore any atoms with name starting with 'H' in the internal contact algorithm

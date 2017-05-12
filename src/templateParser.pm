@@ -102,7 +102,7 @@ our $nbondxml = "nb.xml";
 sub smog_quit
 {
 	my ($LINE)=@_;
-	if($main::maxwarn > $main::warncount){
+	if($main::maxwarn > $main::warncount || $main::maxwarn ==-1){
 		$main::warncount++;
 		warn("\nWARNING $main::warncount: $LINE\n");
 	}else{
