@@ -231,21 +231,7 @@ if(!exists $DIRLIST{"defaults"}){
 	print TOPOUT "$C[1]\n\n";
 }
 
-if(!exists $DIRLIST{"moleculetype"}){
-	smog_quit("\"moleculetype\" does not appear in .top file.\n");
-}else{
-	my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
-	if($#C != 1){
-		my $NN=$#C;
-		smog_quit("Must have one line in the \"moleculetype\" directive. Found $NN\n");
-	}
-	my @D=split(/ /,$C[1]);
-	if($#D != 1){
-		smog_quit("Improperly formatted moleculetype line. Must provide name and nrexcl value.\n");
-	}
-	print TOPOUT "[ moleculetype ]\n";
-	print TOPOUT "$C[1]\n\n";
-}
+
 
 # start with atomtypes
 if(!exists $DIRLIST{"atomtypes"}){
@@ -260,6 +246,22 @@ if(!exists $DIRLIST{"atomtypes"}){
 		print TOPOUT "$C[$II]\n";
 	}
 	print TOPOUT "\n";
+}
+
+if(!exists $DIRLIST{"moleculetype"}){
+	smog_quit("\"moleculetype\" does not appear in .top file.\n");
+}else{
+	my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
+	if($#C != 1){
+		my $NN=$#C;
+		smog_quit("Must have one line in the \"moleculetype\" directive. Found $NN\n");
+	}
+	my @D=split(/ /,$C[1]);
+	if($#D != 1){
+		smog_quit("Improperly formatted moleculetype line. Must provide name and nrexcl value.\n");
+	}
+	print TOPOUT "[ moleculetype ]\n";
+	print TOPOUT "$C[1]\n\n";
 }
 
 # information about the atoms 
