@@ -281,28 +281,6 @@ if(!exists $DIRLIST{"atoms"}){
 
 print TOPOUT "\n";
 
-# information about the contacts 
-if(!exists $DIRLIST{"pairs"}){
-	smog_quit("\"pairs\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[ pairs ]\n";
-	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
-	for(my $JJ=1;$JJ<=$#C;$JJ++){
-		my @D=split(/ /,$C[$JJ]);
-		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
-			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
-			for(my $J=2;$J<=$#D;$J++){
-				print TOPOUT "$D[$J] ";
-			}
-			print TOPOUT "\n";
-		}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
-			$atoms2restrain{$keepatoms{$D[0]}}=1;
-		}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
-			$atoms2restrain{$keepatoms{$D[1]}}=1;
-		}
-	}
-}
-
 # information about the bonds 
 if(!exists $DIRLIST{"bonds"}){
 	smog_quit("\"bonds\" does not appear in .top file.\n");
@@ -384,6 +362,30 @@ if(!exists $DIRLIST{"dihedrals"}){
 		}
 	}
 }
+
+# information about the contacts 
+if(!exists $DIRLIST{"pairs"}){
+	smog_quit("\"pairs\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[ pairs ]\n";
+	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
+	for(my $JJ=1;$JJ<=$#C;$JJ++){
+		my @D=split(/ /,$C[$JJ]);
+		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
+			for(my $J=2;$J<=$#D;$J++){
+				print TOPOUT "$D[$J] ";
+			}
+			print TOPOUT "\n";
+		}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
+			$atoms2restrain{$keepatoms{$D[0]}}=1;
+		}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+			$atoms2restrain{$keepatoms{$D[1]}}=1;
+		}
+	}
+}
+
+
 
 # information about the exclusions 
 if(!exists $DIRLIST{"exclusions"}){
