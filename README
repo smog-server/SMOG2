@@ -50,6 +50,11 @@ XML::Simple
 Exporter
 perl PDL
 
+Note: If installing a module fails, it may be necessary 
+to use cpan to install additional modules. Just check 
+the error messages to see which additional modules are
+missing. 
+
 1a) If you do not have java installed (uncommon), then
 you will have to install it.
 
