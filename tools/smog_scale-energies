@@ -1,0 +1,365 @@
+use strict;
+use warnings;
+use List::Util qw(max);
+use Getopt::Long;
+
+print <<EOT;
+*****************************************************************************************
+                                      smog_scale-energies
+
+      	smog_scale-energies is part of the SMOG 2 distribution, available at smog-server.org
+
+        This tool uses a SMOG .top and .gro file, along with an index file to 
+	generate a SMOG model in which contacts and/or dihedrals weights are modified.
+	This is a common task when using SMOG models, and we provide this script as a 
+	convenience to our users
+
+        For usage information, issue flag -help, or see the SMOG manual.
+
+        For questions regarding this script, contact info\@smog-server.org
+
+*****************************************************************************************
+EOT
+
+sub smog_quit
+{
+        my ($LINE)=@_;
+        if($main::noexit){
+                warn("\nWarning: $LINE\n");
+        }else{
+                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow smog_extract to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
+                exit;
+        }
+}
+
+sub usage
+{
+  print <<EOT;
+
+usage: smog_scale-energies  [-f .top file] [-of output .top file] [-help|-?]
+
+   Required Input
+	-f [smog.top]: Input SMOG forcefield file
+	-n [smog.ndx]: index file of group
+   Optional Input/Output parameters
+        -of [rescaled.top]: Output SMOG forcefield file with rescaled energies
+	-rc [1.0]: rescale inter-group contact weights (default all groups) 
+	-rd [1.0]: rescale intra-group dihedral weights (default all groups)
+EOT
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit;
+  }
+}
+
+
+my $inputTOP="smog.top";
+my $indexFile="smog.ndx";
+my $outputTOP="rescaled.top";
+my $rescaleC=1.0;
+my $rescaleD=1.0;
+my $help;
+my $warnonly=0;
+our $noexit=0;
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
+        'of=s' => \$outputTOP, 'rc=s' => \$rescaleC, 'rd=s' => \$rescaleD, 'warnonly' => \$warnonly, 
+        '<>' => \&usage)
+        or defined $help); 
+
+unless ($rescaleC =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
+        smog_quit("$rescaleC is not a valid value for -rc.  Must be an integer, or decimal.");
+}
+unless ($rescaleD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
+        smog_quit("$rescaleD is not a valid value for -rd.  Must be an integer, or decimal.");
+}
+
+if($warnonly){
+	$noexit=1;
+	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
+}else{
+	$noexit=0;
+}
+
+### read in the list of atoms that we want to keep
+my %keepatoms;
+my $KEEPN=0;
+my @keepatoms2;
+open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
+while(<ATOMLIST>){
+	my $LINE=$_;
+	chomp($LINE);
+	# remove comments first
+	$LINE =~ s/;.*$//g; 
+	$LINE =~ s/^\s+|\s+$//g;
+	$LINE =~ s/\s+|\t+/ /g;
+	my @A=split(/ /,$LINE);
+	for(my $I=0;$I<=$#A;$I++){
+		unless($A[$I] =~ m/^\d+$/){
+			smog_quit("Non-numerical value for atom number in index file: $A[$I]");
+		}
+		if(exists $keepatoms{$A[$I]}){
+			smog_quit("Duplicate atom in atomlist: $A[$I]");
+		}else{
+			$keepatoms{$A[$I]}=$KEEPN+1;
+			$keepatoms2[$KEEPN]=$A[$I];
+			if($KEEPN > 0 && $keepatoms2[$KEEPN] < $keepatoms2[$KEEPN-1]){
+				smog_quit("Atoms listed in $indexFile are not in ascending order.\n");
+			}
+			$KEEPN++;
+		}
+	}
+}
+
+close(ATOMLIST);
+
+### extract the atoms and make a new gro file 
+
+print "\n\nUsing $inputTOP and $indexFile to generate system with contacts rescaled by $rescaleC and dihedrals by $rescaleD...\n\n";
+
+my %supported_directives = ( 'defaults' => '0',
+        'atomtypes' => '1',
+        'moleculetype' => '0',
+        'atoms' => '1',
+        'bonds' => '1',
+        'angles' => '1',
+        'dihedrals' => '1',
+        'pairs' => '1',
+        'exclusions' => '1',
+        'system' => '1',
+        'molecules' => '1',
+        'position_restraints' => '1'
+        );
+
+my %atoms2restrain;
+#read in the top file, with comments stripped
+open(FILE, "$inputTOP") or die "Can not open $inputTOP\n"; 
+my $string = "";
+while (<FILE>){
+	my $LINE = $_;
+	chomp($LINE);
+	$LINE =~ s/;.*$//g; 
+	$LINE =~ s/\t/ /g; 
+	$LINE =~ s/^\s+|\s+$//g;
+	$LINE =~ s/ +/ /g;
+	if( $LINE =~ m/[#!\^\$]/ ){
+		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
+	}
+	# remove comments
+	if($LINE ne ""){ 
+	## remove blank lines
+		 $string .= "$LINE\n";
+	}
+}
+
+# process the top file and check that only supported directives are included.
+my %DIRLIST;
+my @DATA=split(/\[/,$string);
+for (my $I=1;$I<=$#DATA;$I++){
+	my $string1 = $DATA[$I];
+	open my($fh), "<", \$string1 or die ; # reading from the data in $string
+	my $first_line = <$fh>; 
+	$first_line =~  s/^\s//g;
+	close $fh;
+	my @B=split(/ /,$first_line);
+	my $DIR=$B[0];
+	chomp($DIR);
+	$DIR =~ s/\]$//g;
+		
+	if(!exists $supported_directives{$DIR}){
+		smog_quit("Directive \"$DIR \" not supported\n");
+	}else{
+		$DIRLIST{$DIR}=$I;
+	}
+}
+
+# Go through the directives, in order, and write out information for the subsystem
+if(-e $outputTOP){smog_quit("$outputTOP already exists.")}
+open(TOPOUT,">$outputTOP") or die "Can\'t open $outputTOP for writing.\n";
+
+if(!exists $DIRLIST{"defaults"}){
+	smog_quit("\"defaults\" does not appear in .top file.\n");
+}else{
+	my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
+	if($#C != 1){
+		my $NN=$#C;
+		smog_quit("Must have one line in the \"defaults\" directive. Found $NN\n");
+	}
+	my @D=split(/ /,$C[1]);
+	if($#D != 2){
+		smog_quit("Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n");
+	}
+	print TOPOUT "[ defaults ]\n";
+	print TOPOUT "$C[1]\n\n";
+}
+
+
+
+# start with atomtypes
+if(!exists $DIRLIST{"atomtypes"}){
+	smog_quit("\"atomtypes\" does not appear in .top file.\n");
+}else{
+	my @indextotype;
+	my $typeindex=0;
+	my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
+	# keep at the atomtypes, even though some may not be used in the new system.	
+	print TOPOUT "[ atomtypes ]\n";
+	for(my $II=1;$II<=$#C;$II++){
+		print TOPOUT "$C[$II]\n";
+	}
+	print TOPOUT "\n";
+}
+
+if(!exists $DIRLIST{"moleculetype"}){
+	smog_quit("\"moleculetype\" does not appear in .top file.\n");
+}else{
+	my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
+	if($#C != 1){
+		my $NN=$#C;
+		smog_quit("Must have one line in the \"moleculetype\" directive. Found $NN\n");
+	}
+	my @D=split(/ /,$C[1]);
+	if($#D != 1){
+		smog_quit("Improperly formatted moleculetype line. Must provide name and nrexcl value.\n");
+	}
+	print TOPOUT "[ moleculetype ]\n";
+	print TOPOUT "$C[1]\n\n";
+}
+
+# information about the atoms 
+if(!exists $DIRLIST{"atoms"}){
+	smog_quit("\"atoms\" does not appear in .top file.\n");
+}else{	
+	my @C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
+	if($#C<1){
+		smog_quit("There must be at least 1 atom listed under the atoms directive\n");
+	}
+
+	print TOPOUT "[ atoms ] \n$DATA[$DIRLIST{"atoms"}]";
+}
+
+print TOPOUT "\n";
+
+# information about the bonds 
+if(!exists $DIRLIST{"bonds"}){
+	smog_quit("\"bonds\" does not appear in .top file.\n");
+}else{	
+	my @C= split(/\n/,$DATA[$DIRLIST{"bonds"}]);
+	if($#C<1){
+		smog_quit("There must be at least 1 bond listed under the bonds directive\n");
+	}
+
+	print TOPOUT "[ bonds ] \n$DATA[$DIRLIST{"bonds"}]";
+}
+
+# information about the angles 
+if(!exists $DIRLIST{"angles"}){
+	smog_quit("\"angles\" does not appear in .top file.\n");
+}else{
+	my @C= split(/\n/,$DATA[$DIRLIST{"angles"}]);
+	if($#C<1){
+		smog_quit("There must be at least 1 angle listed under the angles directive\n");
+	}
+
+	print TOPOUT "[ angles ] \n$DATA[$DIRLIST{"angles"}]";
+}
+
+# information about the dihedrals 
+if(!exists $DIRLIST{"dihedrals"}){
+	smog_quit("\"dihedrals\" does not appear in .top file.\n");
+}else{
+	my @LAST;
+	my @C= split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
+	if($#C<1){
+		smog_quit("There must be at least 1 dihedral listed under the dihedrals directive\n");
+	}
+
+	print TOPOUT "[ dihedrals ]\n";
+	for(my $JJ=1;$JJ<=$#C;$JJ++){
+		my @D=split(/ /,$C[$JJ]);
+		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} && exists $keepatoms{$D[3]} ){
+			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} $keepatoms{$D[2]} $keepatoms{$D[3]} ";
+			for(my $J=4;$J<=$#D;$J++){
+				print TOPOUT "$D[$J] ";
+			}
+			print TOPOUT "\n";
+		}elsif(exists $keepatoms{$D[0]} || exists $keepatoms{$D[1]} || exists $keepatoms{$D[2]} || exists $keepatoms{$D[3]}){
+			for(my $M=0;$M<4;$M++){
+				if(exists $keepatoms{$D[$M]}){
+					$atoms2restrain{$keepatoms{$D[$M]}}=1;
+				}
+			}
+		}
+	}
+}
+
+# information about the contacts 
+if(!exists $DIRLIST{"pairs"}){
+	smog_quit("\"pairs\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[ pairs ]\n";
+	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
+	for(my $JJ=1;$JJ<=$#C;$JJ++){
+		my @D=split(/ /,$C[$JJ]);
+		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
+			for(my $J=2;$J<=$#D;$J++){
+				print TOPOUT "$D[$J] ";
+			}
+			print TOPOUT "\n";
+		}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
+			$atoms2restrain{$keepatoms{$D[0]}}=1;
+		}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+			$atoms2restrain{$keepatoms{$D[1]}}=1;
+		}
+	}
+}
+
+
+
+# information about the exclusions 
+if(!exists $DIRLIST{"exclusions"}){
+	smog_quit("\"exclusions\" does not appear in .top file.\n");
+}else{
+	my @C= split(/\n/,$DATA[$DIRLIST{"exclusions"}]);
+	if($#C<1){
+		smog_quit("There must be at least 1 bond listed under the bonds directive\n");
+	}
+
+	print TOPOUT "[ exclusions ]\n$DATA[$DIRLIST{"exclusions"}]";
+}
+
+# information about the restraints 
+if(exists $DIRLIST{"position_restraints"} ){
+	smog_quit("position_restraints not supported in the input top file (yet).");
+}else{
+	my @C= split(/\n/,$DATA[$DIRLIST{"position_restraints"}]);
+	if($#C<1){
+		smog_quit("There must be at least 1 position restraint listed under the position_restraints directive\n");
+	}
+
+	print TOPOUT "[ position_restraints ]\n$DATA[$DIRLIST{"position_restriants"}]";
+}
+
+if(!exists $DIRLIST{"system"}){
+	smog_quit("\"system\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[ system ]\n $DATA[$DIRLIST{"system"}]\n";
+}
+
+if(!exists $DIRLIST{"molecules"}){
+	smog_quit("\"molecules\" does not appear in .top file.\n");
+}else{
+	my @C= split(/\n/,$DATA[$DIRLIST{"molecules"}]);
+        if($#C<1){
+                smog_quit("There must be at least 1 molecule listed under the molecules directive\n");
+        }
+	print TOPOUT "[ molecules ]\n $DATA[$DIRLIST{"molecules"}]\n";
+}
+
+if($warnonly){
+	print "\n\trescaled interactions. Since -warnonly was used, carefully check output.\n\n";
+}else{
+	print "\n\tSUCCESS: Extracted interactions rescaled.\n\n";
+}
+
