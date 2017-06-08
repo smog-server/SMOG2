@@ -82,31 +82,42 @@ if($warnonly){
 }
 
 ### read in the list of atoms that we want to keep
-my %keepatoms;
-my $KEEPN=0;
-my @keepatoms2;
+my %atomgroup;
+my %groupnames;
 open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
 while(<ATOMLIST>){
 	my $LINE=$_;
+	my $groupname;
 	chomp($LINE);
 	# remove comments first
 	$LINE =~ s/;.*$//g; 
 	$LINE =~ s/^\s+|\s+$//g;
 	$LINE =~ s/\s+|\t+/ /g;
 	my @A=split(/ /,$LINE);
+	if($#A == -1){
+		# blank line
+		next;
+	}
+	if($A[0] eq "[" and $A[2] eq "]"){
+		# must be a new group
+		$groupname=$A[1];
+		if(defined $A[3]){
+			smog_quit("Group name definitions must not have trailing characters.  $A[3] appears after $A[0] $A[1] $A[2]\n;")	
+		}
+		if(exists $groupnames{$groupname}){
+			smog_quit("Group name $groupname declared more than once.");
+		}
+		next; # this is a new group, so go to next line.
+	}
+
 	for(my $I=0;$I<=$#A;$I++){
 		unless($A[$I] =~ m/^\d+$/){
 			smog_quit("Non-numerical value for atom number in index file: $A[$I]");
 		}
-		if(exists $keepatoms{$A[$I]}){
-			smog_quit("Duplicate atom in atomlist: $A[$I]");
+		if(exists $atomgroup{$A[$I]}){
+			smog_quit("Duplicate atom: $A[$I] already defined in group $atomgroup{$A[$I]}");
 		}else{
-			$keepatoms{$A[$I]}=$KEEPN+1;
-			$keepatoms2[$KEEPN]=$A[$I];
-			if($KEEPN > 0 && $keepatoms2[$KEEPN] < $keepatoms2[$KEEPN-1]){
-				smog_quit("Atoms listed in $indexFile are not in ascending order.\n");
-			}
-			$KEEPN++;
+			$atomgroup{$A[$I]}=$groupname;
 		}
 	}
 }
@@ -277,19 +288,19 @@ if(!exists $DIRLIST{"dihedrals"}){
 	print TOPOUT "[ dihedrals ]\n";
 	for(my $JJ=1;$JJ<=$#C;$JJ++){
 		my @D=split(/ /,$C[$JJ]);
-		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} && exists $keepatoms{$D[3]} ){
-			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} $keepatoms{$D[2]} $keepatoms{$D[3]} ";
-			for(my $J=4;$J<=$#D;$J++){
-				print TOPOUT "$D[$J] ";
-			}
-			print TOPOUT "\n";
-		}elsif(exists $keepatoms{$D[0]} || exists $keepatoms{$D[1]} || exists $keepatoms{$D[2]} || exists $keepatoms{$D[3]}){
-			for(my $M=0;$M<4;$M++){
-				if(exists $keepatoms{$D[$M]}){
-					$atoms2restrain{$keepatoms{$D[$M]}}=1;
-				}
+
+		if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]} && exists $atomgroup{$D[2]} && exists $atomgroup{$D[3]} ){
+			if($D[4] == 1 && $atomgroup{$D[0]}==$atomgroup{$D[1]} && $atomgroup{$D[1]} == $atomgroup{$D[2]} && $atomgroup{$D[2]} == $atomgroup{$D[3]}){
+				# rescale dihedral potential
+				$D[6] *= $rescaleD;	
 			}
 		}
+
+		# print atoms and function type
+		for(my $J=0;$J<=$#D;$J++){
+			print TOPOUT "$D[$J] ";
+		}
+		print TOPOUT "\n";
 	}
 }
 
@@ -301,16 +312,22 @@ if(!exists $DIRLIST{"pairs"}){
 	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
 	for(my $JJ=1;$JJ<=$#C;$JJ++){
 		my @D=split(/ /,$C[$JJ]);
-		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
-			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
-			for(my $J=2;$J<=$#D;$J++){
+		for(my $JJ=1;$JJ<=$#C;$JJ++){
+			my @D=split(/ /,$C[$JJ]);
+	
+			if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]}){
+				if($D[2] == 1 && $atomgroup{$D[0]} !=$atomgroup{$D[1]}){
+					# rescale dihedral potential
+					$D[3] *= $rescaleC;	
+					$D[4] *= $rescaleC;	
+				}
+			}
+	
+			# print atoms and function type
+			for(my $J=0;$J<=$#D;$J++){
 				print TOPOUT "$D[$J] ";
 			}
 			print TOPOUT "\n";
-		}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
-			$atoms2restrain{$keepatoms{$D[0]}}=1;
-		}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
-			$atoms2restrain{$keepatoms{$D[1]}}=1;
 		}
 	}
 }
