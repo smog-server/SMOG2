@@ -234,8 +234,8 @@ if(!exists $DIRLIST{"atoms"}){
 	if($#C<1){
 		smog_quit("There must be at least 1 atom listed under the atoms directive\n");
 	}
-
-	print TOPOUT "[ atoms ] \n$DATA[$DIRLIST{"atoms"}]";
+	my $TMP=$DIRLIST{"atoms"};
+	print TOPOUT "[ atoms ] \n$DATA[$TMP]";
 }
 
 print TOPOUT "\n";
@@ -248,8 +248,8 @@ if(!exists $DIRLIST{"bonds"}){
 	if($#C<1){
 		smog_quit("There must be at least 1 bond listed under the bonds directive\n");
 	}
-
-	print TOPOUT "[ bonds ] \n$DATA[$DIRLIST{"bonds"}]";
+	my $TMP=$DIRLIST{"bonds"};
+	print TOPOUT "[ bonds ] \n$DATA[$TMP]";
 }
 
 # information about the angles 
@@ -260,8 +260,8 @@ if(!exists $DIRLIST{"angles"}){
 	if($#C<1){
 		smog_quit("There must be at least 1 angle listed under the angles directive\n");
 	}
-
-	print TOPOUT "[ angles ] \n$DATA[$DIRLIST{"angles"}]";
+	my $TMP=$DIRLIST{"angles"};
+	print TOPOUT "[ angles ] \n$DATA[$TMP]";
 }
 
 # information about the dihedrals 
@@ -325,8 +325,8 @@ if(!exists $DIRLIST{"exclusions"}){
 	if($#C<1){
 		smog_quit("There must be at least 1 bond listed under the bonds directive\n");
 	}
-
-	print TOPOUT "[ exclusions ]\n$DATA[$DIRLIST{"exclusions"}]";
+	my $TMP=$DIRLIST{"exclusions"};
+	print TOPOUT "[ exclusions ]\n$DATA[$TMP]";
 }
 
 # information about the restraints 
@@ -337,14 +337,15 @@ if(exists $DIRLIST{"position_restraints"} ){
 	if($#C<1){
 		smog_quit("There must be at least 1 position restraint listed under the position_restraints directive\n");
 	}
-
-	print TOPOUT "[ position_restraints ]\n$DATA[$DIRLIST{"position_restriants"}]";
+	my $TMP=$DIRLIST{"position_restraints"};
+	print TOPOUT "[ position_restraints ]\n$DATA[$TMP]";
 }
 
 if(!exists $DIRLIST{"system"}){
 	smog_quit("\"system\" does not appear in .top file.\n");
 }else{
-	print TOPOUT "[ system ]\n $DATA[$DIRLIST{"system"}]\n";
+	my $TMP=$DIRLIST{"system"};
+	print TOPOUT "[ system ]\n $DATA[$TMP]\n";
 }
 
 if(!exists $DIRLIST{"molecules"}){
@@ -354,7 +355,8 @@ if(!exists $DIRLIST{"molecules"}){
         if($#C<1){
                 smog_quit("There must be at least 1 molecule listed under the molecules directive\n");
         }
-	print TOPOUT "[ molecules ]\n $DATA[$DIRLIST{"molecules"}]\n";
+	my $TMP=$DIRLIST{"molecules"};
+	print TOPOUT "[ molecules ]\n $DATA[$TMP]\n";
 }
 
 if($warnonly){
