@@ -4,7 +4,7 @@ use List::Util qw(max);
 use Getopt::Long;
 
 print <<EOT;
-*****************************************************************************************
+********************************************************************************************
                                       smog_scale-energies
 
       	smog_scale-energies is part of the SMOG 2 distribution, available at smog-server.org
@@ -12,13 +12,16 @@ print <<EOT;
         This tool uses a SMOG .top and .gro file, along with an index file to 
 	generate a SMOG model in which contacts and/or dihedrals weights are modified.
 	This is a common task when using SMOG models, and we provide this script as a 
-	convenience to our users
+	convenience. 
+
+	-rc <value> will indicate that all inter-group contacts should be scaled by value
+	-rd <value> will indicate that all intra-group dihedrals should be scaled by value
 
         For usage information, issue flag -help, or see the SMOG manual.
 
         For questions regarding this script, contact info\@smog-server.org
 
-*****************************************************************************************
+********************************************************************************************
 EOT
 
 sub smog_quit
