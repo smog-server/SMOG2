@@ -82,7 +82,9 @@ if($rescaleC <= 0){
 if($rescaleD <= 0){
 	smog_quit("only positive values may be provided with -rd.")
 }
-
+if($outputTOP !~ m/.top$/){
+	$outputTOP .= ".top";
+}
 if($warnonly){
 	$noexit=1;
 	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
@@ -94,12 +96,16 @@ if($warnonly){
 my %atomgroup;
 my %groupnames;
 my $groupname;
+print "Reading index file $indexFile\n";
 open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Use --help for usage guidelines.\n\nRescaling Incomplete!\n\n";
 while(<ATOMLIST>){
 	my $LINE=$_;
 	chomp($LINE);
 	# remove comments first
 	$LINE =~ s/;.*$//g; 
+	# in case we have a group directive w/o spaces
+	$LINE =~ s/\[/\[ /g;
+	$LINE =~ s/\]/ \]/g;
 	$LINE =~ s/^\s+|\s+$//g;
 	$LINE =~ s/\s+|\t+/ /g;
 	my @A=split(/ /,$LINE);
@@ -135,7 +141,6 @@ close(ATOMLIST);
 
 ### extract the atoms and make a new gro file 
 
-print "\n\nUsing $inputTOP and $indexFile to generate system with contacts rescaled by $rescaleC and dihedrals by $rescaleD...\n\n";
 
 my %supported_directives = ( 'defaults' => '0',
         'atomtypes' => '1',
@@ -153,6 +158,7 @@ my %supported_directives = ( 'defaults' => '0',
 
 my %atoms2restrain;
 #read in the top file, with comments stripped
+print "Reading top file $inputTOP\n";
 open(FILE, "$inputTOP") or die "Can not open $inputTOP\n"; 
 my $string = "";
 while (<FILE>){
@@ -172,6 +178,7 @@ while (<FILE>){
 	}
 }
 
+print "\n\nUsing $inputTOP and $indexFile to generate $outputTOP. Contacts will be rescaled by $rescaleC and dihedrals by $rescaleD...\n\n";
 # process the top file and check that only supported directives are included.
 my %DIRLIST;
 my @DATA=split(/\[/,$string);
