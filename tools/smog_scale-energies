@@ -27,7 +27,7 @@ sub smog_quit
         if($main::noexit){
                 warn("\nWarning: $LINE\n");
         }else{
-                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow smog_extract to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
+                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow smog_scale-energies to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
                 exit;
         }
 }
@@ -73,6 +73,13 @@ unless ($rescaleD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
         smog_quit("$rescaleD is not a valid value for -rd.  Must be an integer, or decimal.");
 }
 
+if($rescaleC <= 0){
+	smog_quit("only positive values may be provided with -rc.")
+}
+if($rescaleD <= 0){
+	smog_quit("only positive values may be provided with -rd.")
+}
+
 if($warnonly){
 	$noexit=1;
 	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
@@ -83,10 +90,10 @@ if($warnonly){
 ### read in the list of atoms that we want to keep
 my %atomgroup;
 my %groupnames;
-open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
+my $groupname;
+open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Use --help for usage guidelines.\n\nRescaling Incomplete!\n\n";
 while(<ATOMLIST>){
 	my $LINE=$_;
-	my $groupname;
 	chomp($LINE);
 	# remove comments first
 	$LINE =~ s/;.*$//g; 
@@ -100,7 +107,7 @@ while(<ATOMLIST>){
 	if($A[0] eq "[" and $A[2] eq "]"){
 		# must be a new group
 		$groupname=$A[1];
-		if(defined $A[3]){
+		if(exists $A[3]){
 			smog_quit("Group name definitions must not have trailing characters.  $A[3] appears after $A[0] $A[1] $A[2]\n;")	
 		}
 		if(exists $groupnames{$groupname}){
@@ -114,7 +121,7 @@ while(<ATOMLIST>){
 			smog_quit("Non-numerical value for atom number in index file: $A[$I]");
 		}
 		if(exists $atomgroup{$A[$I]}){
-			smog_quit("Duplicate atom: $A[$I] already defined in group $atomgroup{$A[$I]}");
+			smog_quit("Duplicate atom in index file: Atom $A[$I] already defined in group $atomgroup{$A[$I]}");
 		}else{
 			$atomgroup{$A[$I]}=$groupname;
 		}
@@ -288,10 +295,11 @@ if(!exists $DIRLIST{"dihedrals"}){
 	for(my $JJ=1;$JJ<=$#C;$JJ++){
 		my @D=split(/ /,$C[$JJ]);
 
-		if(defined $atomgroup{$D[0]} && defined $atomgroup{$D[1]} && defined $atomgroup{$D[2]} && defined $atomgroup{$D[3]} ){
+		if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]} && exists $atomgroup{$D[2]} && exists $atomgroup{$D[3]} ){
 			if($D[4] == 1 && $atomgroup{$D[0]} eq $atomgroup{$D[1]} && $atomgroup{$D[1]} eq $atomgroup{$D[2]} && $atomgroup{$D[2]} eq $atomgroup{$D[3]}){
 				# rescale dihedral potential
 				$D[6] *= $rescaleD;	
+
 			}
 		}
 
@@ -309,25 +317,22 @@ if(!exists $DIRLIST{"pairs"}){
 }else{
 	print TOPOUT "[ pairs ]\n";
 	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
+
 	for(my $JJ=1;$JJ<=$#C;$JJ++){
 		my @D=split(/ /,$C[$JJ]);
-		for(my $JJ=1;$JJ<=$#C;$JJ++){
-			my @D=split(/ /,$C[$JJ]);
-	
-			if(defined $atomgroup{$D[0]} && defined $atomgroup{$D[1]}){
-				if($D[2] == 1 && $atomgroup{$D[0]}  ne $atomgroup{$D[1]}){
-					# rescale dihedral potential
-					$D[3] *= $rescaleC;	
-					$D[4] *= $rescaleC;	
-				}
+		if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]}){
+			if($D[2] == 1 && $atomgroup{$D[0]}  ne $atomgroup{$D[1]}){
+				# rescale dihedral potential
+				$D[3] *= $rescaleC;	
+				$D[4] *= $rescaleC;	
 			}
-	
-			# print atoms and function type
-			for(my $J=0;$J<=$#D;$J++){
-				print TOPOUT "$D[$J] ";
-			}
-			print TOPOUT "\n";
 		}
+
+		# print atoms and function type
+		for(my $J=0;$J<=$#D;$J++){
+			print TOPOUT "$D[$J] ";
+		}
+		print TOPOUT "\n";
 	}
 }
 
@@ -376,6 +381,6 @@ if(!exists $DIRLIST{"molecules"}){
 if($warnonly){
 	print "\n\trescaled interactions. Since -warnonly was used, carefully check output.\n\n";
 }else{
-	print "\n\tSUCCESS: Extracted interactions rescaled.\n\n";
+	print "\n\tSUCCESS: Interactions rescaled.\n\n";
 }
 
