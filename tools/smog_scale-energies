@@ -179,7 +179,7 @@ while (<FILE>){
 	}
 }
 
-print "\n\nUsing $inputTOP and $indexFile to generate $outputTOP. Contacts will be rescaled by $rescaleC and dihedrals by $rescaleD...\n\n";
+print "\nUsing $inputTOP and $indexFile to generate $outputTOP. Contacts will be rescaled by $rescaleC and dihedrals by $rescaleD...\n";
 # process the top file and check that only supported directives are included.
 my %DIRLIST;
 my @DATA=split(/\[/,$string);
