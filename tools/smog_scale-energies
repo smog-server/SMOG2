@@ -38,10 +38,9 @@ sub usage
 
 usage: smog_scale-energies  [-f .top file] [-of output .top file] [-help|-?]
 
-   Required Input
+   Optional Input/Output parameters
 	-f [smog.top]: Input SMOG forcefield file
 	-n [smog.ndx]: index file of group
-   Optional Input/Output parameters
         -of [rescaled.top]: Output SMOG forcefield file with rescaled energies
 	-rc [1.0]: rescale inter-group contact weights (default all groups) 
 	-rd [1.0]: rescale intra-group dihedral weights (default all groups)
@@ -62,7 +61,7 @@ my $rescaleD=1.0;
 my $help;
 my $warnonly=0;
 our $noexit=0;
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
+usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
         'of=s' => \$outputTOP, 'rc=s' => \$rescaleC, 'rd=s' => \$rescaleD, 'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
@@ -289,8 +288,8 @@ if(!exists $DIRLIST{"dihedrals"}){
 	for(my $JJ=1;$JJ<=$#C;$JJ++){
 		my @D=split(/ /,$C[$JJ]);
 
-		if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]} && exists $atomgroup{$D[2]} && exists $atomgroup{$D[3]} ){
-			if($D[4] == 1 && $atomgroup{$D[0]}==$atomgroup{$D[1]} && $atomgroup{$D[1]} == $atomgroup{$D[2]} && $atomgroup{$D[2]} == $atomgroup{$D[3]}){
+		if(defined $atomgroup{$D[0]} && defined $atomgroup{$D[1]} && defined $atomgroup{$D[2]} && defined $atomgroup{$D[3]} ){
+			if($D[4] == 1 && $atomgroup{$D[0]} eq $atomgroup{$D[1]} && $atomgroup{$D[1]} eq $atomgroup{$D[2]} && $atomgroup{$D[2]} eq $atomgroup{$D[3]}){
 				# rescale dihedral potential
 				$D[6] *= $rescaleD;	
 			}
@@ -315,8 +314,8 @@ if(!exists $DIRLIST{"pairs"}){
 		for(my $JJ=1;$JJ<=$#C;$JJ++){
 			my @D=split(/ /,$C[$JJ]);
 	
-			if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]}){
-				if($D[2] == 1 && $atomgroup{$D[0]} !=$atomgroup{$D[1]}){
+			if(defined $atomgroup{$D[0]} && defined $atomgroup{$D[1]}){
+				if($D[2] == 1 && $atomgroup{$D[0]}  ne $atomgroup{$D[1]}){
 					# rescale dihedral potential
 					$D[3] *= $rescaleC;	
 					$D[4] *= $rescaleC;	
@@ -348,8 +347,6 @@ if(!exists $DIRLIST{"exclusions"}){
 
 # information about the restraints 
 if(exists $DIRLIST{"position_restraints"} ){
-	smog_quit("position_restraints not supported in the input top file (yet).");
-}else{
 	my @C= split(/\n/,$DATA[$DIRLIST{"position_restraints"}]);
 	if($#C<1){
 		smog_quit("There must be at least 1 position restraint listed under the position_restraints directive\n");
