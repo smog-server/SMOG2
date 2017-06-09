@@ -85,6 +85,7 @@ if($rescaleD <= 0){
 if($outputTOP !~ m/.top$/){
 	$outputTOP .= ".top";
 }
+if(-e $outputTOP){smog_quit("$outputTOP already exists.")}
 if($warnonly){
 	$noexit=1;
 	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
@@ -201,8 +202,9 @@ for (my $I=1;$I<=$#DATA;$I++){
 }
 
 # Go through the directives, in order, and write out information for the subsystem
-if(-e $outputTOP){smog_quit("$outputTOP already exists.")}
 open(TOPOUT,">$outputTOP") or die "Can\'t open $outputTOP for writing.\n";
+
+print TOPOUT "# $inputTOP and $indexFile were used to generate this file: $outputTOP.\n# Contacts were rescaled by $rescaleC and dihedrals by $rescaleD.\n\n";
 
 if(!exists $DIRLIST{"defaults"}){
 	smog_quit("\"defaults\" does not appear in .top file.\n");
