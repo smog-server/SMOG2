@@ -1,5 +1,5 @@
 #########################################################################################
-# smogv2 contains the main routines
+# smog2 contains the main routines
 #
 #                          Structure-based Model (SMOG) software
 #    This package is the product of contributions from a number of people, including:
@@ -63,7 +63,8 @@ my $AAdefault = 0;
 my $CAdefault = 0;
 my $AAGdefault = 0; 
 my $CAGdefault = 0;
-our $noexit=0;
+our $maxwarn=0;
+our $warncount=0;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
 our $setContacttoLimit=0;
@@ -1364,7 +1365,7 @@ usage: smog2  -i PDB file name [-o smog.top] [-g smog.gro] [--help|-?]
 	-c [contacts.txt]: Input contact map file
 	-dname [smog]: Default name to use for all output files
 	-backup [yes]: Back up any pre-existing output files
-	-warnonly: Convert fatal errors to warnings (Caution: Consult manual before using this option)
+	-warn [N]: Convert the first N fatal errors to warnings. Default: N=0. Convert all errors if N=-1 (Caution: Consult manual before using this option)
 	-limitbondlength: If a bond length is outside of the allowable range, set it to limiting value
 	-limitcontactlength: If a contact length is too short, set it to the minimal value
 	-ignH: Ignore any atoms with name starting with 'H' in the internal contact algorithm
@@ -1546,7 +1547,7 @@ sub generateContactMap {
 	system("java $memoryMax -jar $ENV{SMOG_PATH}/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
 }
 
-sub appendContactsAndFinish {
+sub appendContacts {
 	my($fileName,$fileName2,$userProvidedMap) = @_;
 	#Parse the contact map, either the generated one or the user provided one
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled);
@@ -1563,18 +1564,13 @@ sub appendContactsAndFinish {
 	}
 	if(exists $interactions->{"gen-pairs"} && $interactions->{"gen-pairs"} == 1) { $genpairs = "yes"; }
 	addToTop("defaults", "  1      $combrule         $genpairs\n");
-	print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$ndxFile\n";
-	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
-	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
-	printCitation();
-}
+	}
 
 ##################
 ## PARSE INPUTS ##
 ##################
 
 my $DNAME="smog";
-my $warnonly=0;
 my $backup="yes";
 
 header();
@@ -1589,7 +1585,7 @@ print "\n";
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
-	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warnonly' => \$warnonly, 
+	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warn=i' => \$maxwarn, 
          'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
          'rescaleCD=s' => \$rescaleCD, '<>' => \&usage)
           or defined $help 
@@ -1601,11 +1597,8 @@ unless ($rescaleCD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
 	smog_quit("$rescaleCD is not a valid value for -rescaleCD.  Must be an integer, or decimal.");
 }
 
-if($warnonly){
-	$noexit=1;
-	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
-}else{
-	$noexit=0;
+if($maxwarn > 0 || $maxwarn ==-1 ){
+	print "\n\n-warn $maxwarn selected. Errors will be reported as warnings.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
 }
 
 my $numdefaults=$CAdefault+$AAdefault+$AAGdefault+$CAGdefault;
@@ -1704,7 +1697,7 @@ if($AAGdefault == 1){
 
 
 # if a contact file is provided, then don't calculate contacts
-if($ContactFile ne ""){
+if(defined $ContactFile){
 	$userProvidedMap=1;
 }
 
@@ -1762,7 +1755,7 @@ if($backup eq "yes"){
 
 # files we will read
 foreach my $filen($inputPDB,$ContactFile){
-	if($filen ne "" && ! -f $filen){
+	if(defined $filen  && ! -f $filen){
 		smog_quit("Can't find file $filen !! ");
 	}
 }
@@ -1789,9 +1782,7 @@ if($CGenabled == 0) {
 	print "\n*****************************************************\n";
 }
 my $allowCG = 0;
-
 print "Parsing templates files...\n";
-
 parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
 
 if($CGenabled == 0) {
@@ -1811,6 +1802,13 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
 	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
 }
-appendContactsAndFinish($shadowFile,$ContactFile,$userProvidedMap);
+appendContacts($shadowFile,$ContactFile,$userProvidedMap);
 printTop($topFile);
+print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$ndxFile\n";
+	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
+	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
+	printCitation();
+
+if ($warncount != 0){ print "\n\n NOTE: There were $warncount warnings. It is recommended that you read all warnings carefully.  \n\n"; }
+
 ## END ##

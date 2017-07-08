@@ -146,6 +146,9 @@ open(GROFILE,">$outputGRO") or die "Can\'t open output GRO file \"$outputGRO\"\n
 print GROFILE "$groheader\n";
 print GROFILE "$KEEPN\n";
 for(my $I=0;$I<$KEEPN;$I++){
+	if(!exists $GRODATA[$keepatoms2[$I]]){
+		smog_quit("Atom index $I given in include list, but not found in $inputGRO");
+	}
 	print GROFILE "$GRODATA[$keepatoms2[$I]]\n";
 }
 print GROFILE "$grodim\n";
@@ -228,21 +231,7 @@ if(!exists $DIRLIST{"defaults"}){
 	print TOPOUT "$C[1]\n\n";
 }
 
-if(!exists $DIRLIST{"moleculetype"}){
-	smog_quit("\"moleculetype\" does not appear in .top file.\n");
-}else{
-	my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
-	if($#C != 1){
-		my $NN=$#C;
-		smog_quit("Must have one line in the \"moleculetype\" directive. Found $NN\n");
-	}
-	my @D=split(/ /,$C[1]);
-	if($#D != 1){
-		smog_quit("Improperly formatted moleculetype line. Must provide name and nrexcl value.\n");
-	}
-	print TOPOUT "[ moleculetype ]\n";
-	print TOPOUT "$C[1]\n\n";
-}
+
 
 # start with atomtypes
 if(!exists $DIRLIST{"atomtypes"}){
@@ -257,6 +246,22 @@ if(!exists $DIRLIST{"atomtypes"}){
 		print TOPOUT "$C[$II]\n";
 	}
 	print TOPOUT "\n";
+}
+
+if(!exists $DIRLIST{"moleculetype"}){
+	smog_quit("\"moleculetype\" does not appear in .top file.\n");
+}else{
+	my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
+	if($#C != 1){
+		my $NN=$#C;
+		smog_quit("Must have one line in the \"moleculetype\" directive. Found $NN\n");
+	}
+	my @D=split(/ /,$C[1]);
+	if($#D != 1){
+		smog_quit("Improperly formatted moleculetype line. Must provide name and nrexcl value.\n");
+	}
+	print TOPOUT "[ moleculetype ]\n";
+	print TOPOUT "$C[1]\n\n";
 }
 
 # information about the atoms 
@@ -275,28 +280,6 @@ if(!exists $DIRLIST{"atoms"}){
 }
 
 print TOPOUT "\n";
-
-# information about the contacts 
-if(!exists $DIRLIST{"pairs"}){
-	smog_quit("\"pairs\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[ pairs ]\n";
-	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
-	for(my $JJ=1;$JJ<=$#C;$JJ++){
-		my @D=split(/ /,$C[$JJ]);
-		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
-			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
-			for(my $J=2;$J<=$#D;$J++){
-				print TOPOUT "$D[$J] ";
-			}
-			print TOPOUT "\n";
-		}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
-			$atoms2restrain{$keepatoms{$D[0]}}=1;
-		}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
-			$atoms2restrain{$keepatoms{$D[1]}}=1;
-		}
-	}
-}
 
 # information about the bonds 
 if(!exists $DIRLIST{"bonds"}){
@@ -379,6 +362,30 @@ if(!exists $DIRLIST{"dihedrals"}){
 		}
 	}
 }
+
+# information about the contacts 
+if(!exists $DIRLIST{"pairs"}){
+	smog_quit("\"pairs\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[ pairs ]\n";
+	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
+	for(my $JJ=1;$JJ<=$#C;$JJ++){
+		my @D=split(/ /,$C[$JJ]);
+		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
+			for(my $J=2;$J<=$#D;$J++){
+				print TOPOUT "$D[$J] ";
+			}
+			print TOPOUT "\n";
+		}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
+			$atoms2restrain{$keepatoms{$D[0]}}=1;
+		}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+			$atoms2restrain{$keepatoms{$D[1]}}=1;
+		}
+	}
+}
+
+
 
 # information about the exclusions 
 if(!exists $DIRLIST{"exclusions"}){
