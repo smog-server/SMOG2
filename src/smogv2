@@ -1601,6 +1601,11 @@ if($maxwarn > 0 || $maxwarn ==-1 ){
 	print "\n\n-warn $maxwarn selected. Errors will be reported as warnings.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
 }
 
+
+if($coarseFolder ne "" and $inputFolder eq ""){
+	smog_quit("When using a CG model with -tCG, you must also specify the model to be used when calculating the contact map by invoking the option -t. Check -help for usage information. ");
+}
+
 my $numdefaults=$CAdefault+$AAdefault+$AAGdefault+$CAGdefault;
 if($inputFolder eq "" && $numdefaults==0){
 	smog_quit("No model specified. You must use either -t, -AA, or -CA. Try -help for usage information.");
