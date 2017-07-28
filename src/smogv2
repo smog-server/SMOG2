@@ -11,7 +11,8 @@
 #
 #              SMOG 2 & Shadow are available at http://smog-server.org
 #
-#                        Direct questions to: info@smog-server.org
+#          You can direct questions to info@smog-server.org, or the smog-users forum, 
+#          which you can find at https://mailman.rice.edu/mailman/listinfo/smog-users
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -1332,7 +1333,8 @@ print <<EOT;
 
               SMOG v$VERSION & Shadow are available at http://smog-server.org
 
-                        Direct questions to: info\@smog-server.org
+         You can direct questions to info@smog-server.org, or the smog-users forum, 
+         which can be found at https://mailman.rice.edu/mailman/listinfo/smog-users
 
 EOT
 
