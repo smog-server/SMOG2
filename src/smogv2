@@ -11,7 +11,8 @@
 #
 #              SMOG 2 & Shadow are available at http://smog-server.org
 #
-#                        Direct questions to: info@smog-server.org
+#          You can direct questions to info@smog-server.org, or the smog-users forum, 
+#          which you can find at https://mailman.rice.edu/mailman/listinfo/smog-users
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -316,8 +317,8 @@ sub bondOutput
 In case the numbering of the output is different from the input PDB, these atoms in the PDB are:\n
  GroIndex  Chain#  Residue#  
 ----------------------------
-".$i." ".($allAtoms{$i}[4]+1)." ".$allAtoms{$i}[2]." 
-".$j." ".($allAtoms{$j}[4]+1)." ".$allAtoms{$j}[2]);
+".$i."\t ".($allAtoms{$i}[4]+1)."\t ".$allAtoms{$i}[2]." 
+".$j."\t ".($allAtoms{$j}[4]+1)."\t ".$allAtoms{$j}[2]);
 			}
 	        }
 	       
@@ -451,11 +452,11 @@ sub angleOutput
 		## Check angles threshold ##
 	 	if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
 			my $THETA=int($paramArr[0]*100)/100.0;
-			print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\n");
+			print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.\n");
 		}
 	 	if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
 			my $THETA=int($paramArr[0]*100)/100.0;
-			print("\n\nWARNING: ANGLE between atoms $i $j $k greater than largeAngles (see .sif): theta=$THETA degrees\n\n");
+			print("\n\nWARNING: ANGLE between atoms $i $j $k greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.\n");
 		}
  		## Format output <i j k function p1 p2 ... pn>
  		foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
@@ -1332,7 +1333,8 @@ print <<EOT;
 
               SMOG v$VERSION & Shadow are available at http://smog-server.org
 
-                        Direct questions to: info\@smog-server.org
+         You can direct questions to info\@smog-server.org, or the smog-users forum, 
+         which can be found at https://mailman.rice.edu/mailman/listinfo/smog-users
 
 EOT
 
