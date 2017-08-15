@@ -1333,7 +1333,7 @@ print <<EOT;
 
               SMOG v$VERSION & Shadow are available at http://smog-server.org
 
-         You can direct questions to info@smog-server.org, or the smog-users forum, 
+         You can direct questions to info\@smog-server.org, or the smog-users forum, 
          which can be found at https://mailman.rice.edu/mailman/listinfo/smog-users
 
 EOT
