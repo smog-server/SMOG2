@@ -18,7 +18,13 @@ print <<EOT;
  Electrostatics: When using direct Coulomb interactions, then there is no need for a 
  table. If you would like to use a Debye-Huckel potential, to describe screened
  electrostatic interactions, then you should use this script. Parameters for the D-H
- potential are decsribed in Givaty and Levy (2009) J. Mol. Biol., 385, pp 1087-1097. 
+ potential are decsribed in Givaty and Levy (2009) J. Mol. Biol., 385, pp 1087-1097.
+
+ Parameter descriptions:
+	ion conc. - concentration (Molar) of monovalent ions used for Debye screening.
+	elec. switch dist. - start switching (4th order polynomial) at this distance (nm).
+	elec. truncate dist. - set switching function, such that F goes to zero at this
+		distance (nm).
 
  If you are not including electrostatics, set electrostatic truncate distance to zero.
 
