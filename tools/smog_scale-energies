@@ -204,7 +204,7 @@ for (my $I=1;$I<=$#DATA;$I++){
 # Go through the directives, in order, and write out information for the subsystem
 open(TOPOUT,">$outputTOP") or die "Can\'t open $outputTOP for writing.\n";
 
-print TOPOUT "# $inputTOP and $indexFile were used to generate this file: $outputTOP.\n# Contacts were rescaled by $rescaleC and dihedrals by $rescaleD.\n\n";
+print TOPOUT "; $inputTOP and $indexFile were used to generate this file: $outputTOP.\n; Contacts were rescaled by $rescaleC and dihedrals by $rescaleD.\n\n";
 
 if(!exists $DIRLIST{"defaults"}){
 	smog_quit("\"defaults\" does not appear in .top file.\n");
@@ -264,7 +264,7 @@ if(!exists $DIRLIST{"atoms"}){
 		smog_quit("There must be at least 1 atom listed under the atoms directive\n");
 	}
 	my $TMP=$DIRLIST{"atoms"};
-	print TOPOUT "[ atoms ] \n$DATA[$TMP]";
+	print TOPOUT "[$DATA[$TMP]";
 }
 
 print TOPOUT "\n";
@@ -278,7 +278,7 @@ if(!exists $DIRLIST{"bonds"}){
 		smog_quit("There must be at least 1 bond listed under the bonds directive\n");
 	}
 	my $TMP=$DIRLIST{"bonds"};
-	print TOPOUT "[ bonds ] \n$DATA[$TMP]";
+	print TOPOUT "[$DATA[$TMP]";
 }
 
 # information about the angles 
@@ -290,7 +290,7 @@ if(!exists $DIRLIST{"angles"}){
 		smog_quit("There must be at least 1 angle listed under the angles directive\n");
 	}
 	my $TMP=$DIRLIST{"angles"};
-	print TOPOUT "[ angles ] \n$DATA[$TMP]";
+	print TOPOUT "[$DATA[$TMP]";
 }
 
 # information about the dihedrals 
@@ -356,10 +356,10 @@ if(!exists $DIRLIST{"exclusions"}){
 }else{
 	my @C= split(/\n/,$DATA[$DIRLIST{"exclusions"}]);
 	if($#C<1){
-		smog_quit("There must be at least 1 bond listed under the bonds directive\n");
+		smog_quit("There must be at least 1 bond listed under the exclusions directive\n");
 	}
 	my $TMP=$DIRLIST{"exclusions"};
-	print TOPOUT "[ exclusions ]\n$DATA[$TMP]";
+	print TOPOUT "[$DATA[$TMP]";
 }
 
 # information about the restraints 
@@ -369,14 +369,14 @@ if(exists $DIRLIST{"position_restraints"} ){
 		smog_quit("There must be at least 1 position restraint listed under the position_restraints directive\n");
 	}
 	my $TMP=$DIRLIST{"position_restraints"};
-	print TOPOUT "[ position_restraints ]\n$DATA[$TMP]";
+	print TOPOUT "[$DATA[$TMP]";
 }
 
 if(!exists $DIRLIST{"system"}){
 	smog_quit("\"system\" does not appear in .top file.\n");
 }else{
 	my $TMP=$DIRLIST{"system"};
-	print TOPOUT "[ system ]\n $DATA[$TMP]\n";
+	print TOPOUT "[$DATA[$TMP]\n";
 }
 
 if(!exists $DIRLIST{"molecules"}){
@@ -387,7 +387,7 @@ if(!exists $DIRLIST{"molecules"}){
                 smog_quit("There must be at least 1 molecule listed under the molecules directive\n");
         }
 	my $TMP=$DIRLIST{"molecules"};
-	print TOPOUT "[ molecules ]\n $DATA[$TMP]\n";
+	print TOPOUT "[$DATA[$TMP]\n";
 }
 
 if($warnonly){
