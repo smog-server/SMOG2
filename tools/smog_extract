@@ -417,9 +417,11 @@ if(exists $DIRLIST{"position_restraints"} ){
 }else{
 	if($gen_restraints != 0){
 		print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
+		print MAPPING "\nThe following atoms are restrained (old and new numbering)\n";
 		print TOPOUT "[ position_restraints ]\n";
-		foreach my $res(sort keys %atoms2restrain){
+		foreach my $res(sort {$a<=>$b} keys %atoms2restrain){
 			print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";
+			print MAPPING "$res $keepatoms2[$res-1]\n";
 		}
 	}
 }
