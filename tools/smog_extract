@@ -38,7 +38,7 @@ sub usage
 {
   print <<EOT;
 
-usage: smog_extract  [-f .top file] [-g .gro file] [-of output .top file] [-og output .gro file] [-help|-?]
+usage: smog_extract  [-f .top file] [-g .gro file] [-of output .top file] [-og output .gro file] [-om output index mapping file] [-help|-?]
 
    Required Input
 	-f [smog.top]: Input SMOG forcefield file
@@ -47,6 +47,7 @@ usage: smog_extract  [-f .top file] [-g .gro file] [-of output .top file] [-og o
    Optional Input/Output parameters
 	-of [extracted.top]: Output SMOG forcefield file for extracted system
 	-og [extracted.gro]: Output SMOG configuration file for extracted system
+	-om [atomindex.map]: Output file with old-to-new atom index mapping
 	-restraints <restraint weight>: Generate restraints with a specific strength for atoms 
                                         that have interactions removed during extraction
 EOT
@@ -63,12 +64,13 @@ my $inputGRO="smog.gro";
 my $indexFile="smog.include";
 my $outputTOP="extracted.top";
 my $outputGRO="extracted.gro";
+my $outputMAP="atomindex.map";
 my $help;
 my $gen_restraints=0;
 my $warnonly=0;
 our $noexit=0;
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
-        'of=s' => \$outputTOP, 'og=s' => \$outputGRO, 'restraints=s' => \$gen_restraints,  'warnonly' => \$warnonly, 
+        'of=s' => \$outputTOP, 'og=s' => \$outputGRO, 'om=s' => \$outputMAP, 'restraints=s' => \$gen_restraints,  'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -88,6 +90,9 @@ my %keepatoms;
 my $KEEPN=0;
 my @keepatoms2;
 open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
+if(-e $outputMAP){smog_quit("$outputMAP already exists.")};
+open(MAPPING,">$outputMAP") or die "\nCan\'t open $outputMAP. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
+print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
 while(<ATOMLIST>){
 	my $LINE=$_;
 	chomp($LINE);
@@ -109,6 +114,7 @@ while(<ATOMLIST>){
 				smog_quit("Atoms listed in $indexFile are not in ascending order.\n");
 			}
 			$KEEPN++;
+			print MAPPING "$KEEPN $A[$I]\n";
 		}
 	}
 }
@@ -240,7 +246,7 @@ if(!exists $DIRLIST{"atomtypes"}){
 	my @indextotype;
 	my $typeindex=0;
 	my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
-	# keep at the atomtypes, even though some may not be used in the new system.	
+	# keep all the atomtypes, even though some may not be used in the new system.	
 	print TOPOUT "[ atomtypes ]\n";
 	for(my $II=1;$II<=$#C;$II++){
 		print TOPOUT "$C[$II]\n";
