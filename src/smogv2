@@ -1715,27 +1715,19 @@ if($groFile eq ""){$groFile=$DNAME};
 if($shadowFile eq ""){$shadowFile=$DNAME};
 if($ndxFile eq ""){$ndxFile=$DNAME};
 my ($ext)=$topFile =~ /(\.[^.]+)$/;
-if($topFile !~ /(\.[^.]+)$/){
-	$topFile = $topFile . ".top";
-}elsif($ext ne ".top"){
+if(!defined $ext || $ext ne ".top"){
 	$topFile = $topFile . ".top";
 }
 ($ext)=$groFile =~ /(\.[^.]+)$/;
-if($groFile !~ /(\.[^.]+)$/){
-	$groFile = $groFile . ".gro";
-}elsif($ext ne ".gro"){
+if(!defined $ext || $ext ne ".gro"){
 	$groFile = $groFile . ".gro";
 }
 ($ext)=$shadowFile =~ /(\.[^.]+)$/;
-if($shadowFile !~ /(\.[^.]+)$/){
-	$shadowFile = $shadowFile . ".contacts";
-}elsif($ext ne ".contacts"){
+if(!defined $ext || $ext ne ".contacts"){
 	$shadowFile = $shadowFile . ".contacts";
 }
 ($ext)=$ndxFile =~ /(\.[^.]+)$/;
-if($ndxFile !~ /(\.[^.]+)$/){
-	$ndxFile = $ndxFile . ".ndx";
-}elsif($ext ne ".ndx"){
+if(!defined $ext || $ext ne ".ndx"){
 	$ndxFile = $ndxFile . ".ndx";
 }
 
