@@ -62,15 +62,15 @@ EOT
 my $inputTOP="smog.top";
 my $inputGRO="smog.gro";
 my $indexFile="smog.include";
-my $outputTOP="extracted.top";
-my $outputGRO="extracted.gro";
-my $outputMAP="atomindex.map";
+my $outputtop="extracted.top";
+my $outputgro="extracted.gro";
+my $outputmap="atomindex.map";
 my $help;
 my $gen_restraints=0;
 my $warnonly=0;
 our $noexit=0;
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
-        'of=s' => \$outputTOP, 'og=s' => \$outputGRO, 'om=s' => \$outputMAP, 'restraints=s' => \$gen_restraints,  'warnonly' => \$warnonly, 
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'restraints=s' => \$gen_restraints,  'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -90,8 +90,23 @@ my %keepatoms;
 my $KEEPN=0;
 my @keepatoms2;
 open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
-if(-e $outputMAP){smog_quit("$outputMAP already exists.")};
-open(MAPPING,">$outputMAP") or die "\nCan\'t open $outputMAP. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
+
+#check and add file name extensions, if missing
+my ($ext)= $outputgro =~ /(\.[^.]+)$/;
+if(!defined $ext || $ext ne ".gro"){
+	$outputgro .=  ".gro";
+}
+($ext)= $outputtop =~ /(\.[^.]+)$/;
+if(!defined $ext || $ext ne ".top"){
+	$outputtop .=  ".top";
+}
+($ext)= $outputmap =~ /(\.[^.]+)$/;
+if(!defined $ext || $ext ne ".map"){
+	$outputmap .=  ".map";
+}
+
+if(-e $outputmap){smog_quit("$outputmap already exists.")};
+open(MAPPING,">$outputmap") or die "\nCan\'t open $outputmap. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
 print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
 while(<ATOMLIST>){
 	my $LINE=$_;
@@ -147,8 +162,8 @@ my $grodim=<GROFILE>;
 chomp($grodim);
 close(GROFILE);
 
-if(-e $outputGRO){smog_quit("$outputGRO already exists.")};
-open(GROFILE,">$outputGRO") or die "Can\'t open output GRO file \"$outputGRO\"\n";
+if(-e $outputgro){smog_quit("$outputgro already exists.")};
+open(GROFILE,">$outputgro") or die "Can\'t open output GRO file \"$outputgro\"\n";
 print GROFILE "$groheader\n";
 print GROFILE "$KEEPN\n";
 for(my $I=0;$I<$KEEPN;$I++){
@@ -218,8 +233,8 @@ for (my $I=1;$I<=$#DATA;$I++){
 }
 
 # Go through the directives, in order, and write out information for the subsystem
-if(-e $outputTOP){smog_quit("$outputTOP already exists.")}
-open(TOPOUT,">$outputTOP") or die "Can\'t open $outputTOP for writing.\n";
+if(-e $outputtop){smog_quit("$outputtop already exists.")}
+open(TOPOUT,">$outputtop") or die "Can\'t open $outputtop for writing.\n";
 
 if(!exists $DIRLIST{"defaults"}){
 	smog_quit("\"defaults\" does not appear in .top file.\n");
