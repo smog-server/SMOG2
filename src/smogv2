@@ -36,6 +36,8 @@ use PDL;
 use mathFunctions;
 use setRatios;
 use Getopt::Long;
+Getopt::Long::Configure("pass_through");
+use Data::Dumper;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
@@ -151,19 +153,19 @@ sub initializeDirectives {
 	addToTop("defaults", "\n[ defaults ]\n");
 	addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
 	addToTop("bonds","\n[ bonds ]\n");
-	addToTop("bonds",";ai     aj      func    r0(nm)  Kb\n");
+	addToTop("bonds",";     ai       aj     func  r0(nm)          Kb\n");
 	addToTop("angles","\n[ angles ]\n");
-	addToTop("angles",";ai  aj   ak  func  th0(deg)   Ka\n");
+	addToTop("angles",";      ai      aj       ak   func th0(deg)        Ka\n");
   	addToTop("dihedrals","\n[ dihedrals ]\n");
-  	addToTop("dihedrals",";ai  aj  ak  al  func  phi0(deg) kd mult\n");
+  	addToTop("dihedrals",";     ai       aj       ak       al  func  phi0(deg)        kd         mult\n");
 	addToTop("pairs","\n[ pairs ]\n");
 	addToTop("pairs","; ai aj type A B\n");
 	addToTop("exclusions","\n[ exclusions ]\n");
 	addToTop("exclusions","; ai	aj\n");
-	addToTop("atomtypes","\n [ atomtypes ] \n");
-	addToTop("atomtypes","; name mass   charge ptype c6            c12\n");
+	addToTop("atomtypes","\n[ atomtypes ] \n");
+	addToTop("atomtypes","; name  mass     charge    ptype c6           c12\n");
 	addToTop("atoms","\n[ atoms ]\n");
-	addToTop("atoms",";nr  type  resnr residue atom  cgnr\n");
+	addToTop("atoms",";  nr        type   resnr residue atom   cgnr\n");
 	addToTop("moleculetype","\n[ moleculetype ]\n");
 	addToTop("moleculetype","; name            nrexcl\n");
 	addToTop("moleculetype","  Macromolecule   3\n");
@@ -1069,7 +1071,7 @@ sub calculateAtomTypes
 		if(!$c6 || !$c12 || !$ptype || !$mass || !$charge)
 		{smog_quit("Nonbond Params at atom types not set for nbType $tmptype");}
 		
-		$formattedString = sprintf("  %-4s %-6.3f %-5.3f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
+		$formattedString = sprintf(" %-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
 		addToTop("atomtypes",$formattedString."\n");
 		$obtained{$nbtype}=1;
 	}
