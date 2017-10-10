@@ -1042,17 +1042,17 @@ sub contactFuncParser
 
 sub calculateAtomTypes
 {
-	my($uniqeHandle) = @_;
+	my($uniqueHandle) = @_;
 	my $formattedString = "";	
 	
 	## OBTAIN UNIQUE ATOM TYPES ##
 	my %obtained;my $nbtype ="";
 	my $c12;my $c6;my $ptype;my $charge;my $mass;
 	
-	foreach my $atoms(keys %{$uniqeHandle})
+	foreach my $atoms(keys %{$uniqueHandle})
 	{
-		$nbtype = $uniqeHandle->{$atoms}->[0];
-  		if(!$uniqeHandle->{$atoms}->[0])
+		$nbtype = $uniqueHandle->{$atoms}->[0];
+  		if(!$uniqueHandle->{$atoms}->[0])
         {
           smog_quit("Atom $atoms has no nbType");
         }
@@ -1111,8 +1111,13 @@ sub readAtoms
 			$counter++;$atomNum=$counter;
 			$atomType = $residues{$resName}->{"atoms"}->{$atomName}->{"nbType"};
 			#printf $OUTPUT "%6d %10s %6d %6s %6s %6d\n", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum;
-			addToTop("atoms",sprintf("%6d %10s %6d %6s %6s %6d\n", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum));
-
+			addToTop("atoms",sprintf("%6d %10s %6d %6s %6s %6d", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum));
+			if(defined $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}){
+				#if charge is defined for a specific atom in a residue, then write it
+				addToTop("atoms",sprintf(" %9.6f\n", $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}));
+			}else{
+				addToTop("atoms",sprintf("\n"));
+			}
 		}
 	}
 

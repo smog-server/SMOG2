@@ -184,7 +184,7 @@ sub parseBif {
 			}
 		  	## atom{atomName} => {nbType,bType,index,pairType}
 		      	$atoms{$atom->{"content"}} = {"index"=>$index,"nbType" => $atom->{"nbType"},"bType" => $atom->{"bType"},
-		      	"pairType" => $atom->{"pairType"}};
+		      	"pairType" => $atom->{"pairType"}, "charge" => $atom->{"charge"}};
 		      
 		      	## Save the different (non)bond type declaration to accomade wild-card character
 		      	$index++;
