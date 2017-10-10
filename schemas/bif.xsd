@@ -8,6 +8,7 @@
       <xs:attribute name="bType" type="xs:string" use="required"/>
       <xs:attribute name="nbType" type="xs:string" use="required"/>
       <xs:attribute name="pairType" type="xs:string" use="required"/>
+      <xs:attribute name="charge" type="xs:decimal" use="optional"/>
     </xs:extension>
     </xs:simpleContent>
 </xs:complexType>
