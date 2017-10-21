@@ -298,9 +298,9 @@ if(!exists $DIRLIST{"atoms"}){
 		my @D=split(/ /,$C[$JJ]);
 		print TOPOUT "$keepatoms{$JJ} $D[1] $D[2] $D[3] $D[4] $keepatoms{$JJ}\n";
 	}
+	print TOPOUT "\n";
 }
 
-print TOPOUT "\n";
 
 # information about the bonds 
 if(!exists $DIRLIST{"bonds"}){
@@ -326,6 +326,7 @@ if(!exists $DIRLIST{"bonds"}){
 			$atoms2restrain{$keepatoms{$D[1]}}=1;
 		}
 	}
+	print TOPOUT "\n";
 }
 
 # information about the angles 
@@ -353,6 +354,7 @@ if(!exists $DIRLIST{"angles"}){
 			}
 		}
 	}
+	print TOPOUT "\n";
 }
 
 # information about the dihedrals 
@@ -382,6 +384,7 @@ if(!exists $DIRLIST{"dihedrals"}){
 			}
 		}
 	}
+	print TOPOUT "\n";
 }
 
 # information about the contacts 
@@ -404,6 +407,7 @@ if(!exists $DIRLIST{"pairs"}){
 			$atoms2restrain{$keepatoms{$D[1]}}=1;
 		}
 	}
+	print TOPOUT "\n";
 }
 
 
@@ -424,6 +428,7 @@ if(!exists $DIRLIST{"exclusions"}){
 			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]}\n";
 		}
 	}
+	print TOPOUT "\n";
 }
 
 # information about the restraints 
@@ -439,6 +444,7 @@ if(exists $DIRLIST{"position_restraints"} ){
 			print MAPPING "$res $keepatoms2[$res-1]\n";
 		}
 	}
+	print TOPOUT "\n";
 }
 
 if(!exists $DIRLIST{"system"}){
