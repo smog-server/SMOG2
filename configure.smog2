@@ -1,5 +1,5 @@
 #!/bin/bash
-# Configuring script for SMOG V2.0
+# Configuring script for SMOG V2.1
 #NOTE: MAKE SURE YOU HAVE INSTALLED String::Util, XML::Simple, Exporter and perl PDL
 
 ## You need to set smog2dir and perl4smog.  smog2dir is the main directory of the smog2 package(not the src directory).  perl4smog is the version of perl that you prefer to use.  
@@ -46,9 +46,9 @@ if (( $ERR == 0 )); then
 		echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $SMOG_PATH/bin/smog2
 		echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $SMOG_PATH/bin/smog2
 		echo $smog_exec \"\$\@\" >> $SMOG_PATH/bin/smog2
-		chmod u+x $SMOG_PATH/bin/smog2
+		chmod 755 $SMOG_PATH/bin/smog2
 	
-		for tool in adjustPDB  removeH  tablegen optim extract 
+		for tool in adjustPDB  removeH  tablegen optim extract scale-energies ione 
 		do
 			echo Creating wrapper $SMOG_PATH/bin/smog_$tool
 			echo '#!/bin/bash' > $SMOG_PATH/bin/smog_$tool
@@ -56,7 +56,7 @@ if (( $ERR == 0 )); then
 			echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $SMOG_PATH/bin/smog_$tool
 			echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $SMOG_PATH/bin/smog_$tool
 			echo $perl4smog $SMOG_PATH/tools/smog_$tool \"\$\@\" >> $SMOG_PATH/bin/smog_$tool
-			chmod u+x $SMOG_PATH/bin/smog_$tool
+			chmod 755 $SMOG_PATH/bin/smog_$tool
 		done
 	else
 		# if the directories exist, see if we need to update anything.
@@ -69,9 +69,9 @@ if (( $ERR == 0 )); then
 			echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $SMOG_PATH/bin/smog2
 			echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $SMOG_PATH/bin/smog2
 			echo $smog_exec \"\$\@\" >> $SMOG_PATH/bin/smog2
-			chmod u+x $SMOG_PATH/bin/smog2
+			chmod 755 $SMOG_PATH/bin/smog2
 		fi
-		for tool in adjustPDB  removeH  tablegen optim 
+		for tool in adjustPDB  removeH  tablegen optim extract scale-energies ions
 		do
 			LN=`grep "$perl4smog $SMOG_PATH/tools/smog_$tool" $SMOG_PATH/bin/smog_$tool | wc -l`
 			if (( $LN == 0 )); then
@@ -81,7 +81,7 @@ if (( $ERR == 0 )); then
 				echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $SMOG_PATH/bin/smog_$tool
 				echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $SMOG_PATH/bin/smog_$tool
 				echo $perl4smog $SMOG_PATH/tools/smog_$tool \"\$\@\" >> $SMOG_PATH/bin/smog_$tool
-				chmod u+x $SMOG_PATH/bin/smog_$tool
+				chmod 755 $SMOG_PATH/bin/smog_$tool
 			fi
 		done
 

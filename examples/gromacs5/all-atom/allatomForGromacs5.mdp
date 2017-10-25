@@ -22,7 +22,7 @@ xtc_grps		 = system
 energygrps		 = system  
 ;Frequency to update the neighbor list (and the long-range forces, 
 ;when using twin-range cut-off's). 
-nstlist 		 = 5
+nstlist 		 = 20
 coulombtype 		 = Cut-off
 table-extension		 = 20
 ;Make a grid in the box and only check atoms in neighboring grid cells 
@@ -46,7 +46,7 @@ rvdw			 = 1.2
 pbc                      = xyz
 ;Temperature coupling
 tc-grps 		 = system
-tau_t			 = 2.0 
+tau_t			 = 1.0 
 ref_t			 = 130
 ;Pressure coupling
 Pcoupl  		 = no
@@ -54,8 +54,8 @@ Pcoupl  		 = no
 gen_vel 		 = yes 
 gen_temp		 = 130
 gen_seed		 = -1
-;Constrain all bonds
+; no constraints
 constraints		 = none
 ;if you have a very big box that the molecule doesn't cross
 ;you can use this, otherwise no
-comm_mode = none
+comm_mode = angular

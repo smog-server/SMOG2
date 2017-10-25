@@ -1,0 +1,385 @@
+use strict;
+use warnings;
+use Getopt::Long;
+
+print <<EOT;
+*****************************************************************************************
+                                      smog_ions
+
+      	smog_ions is part of the SMOG 2 distribution, available at smog-server.org
+
+        This tool uses a SMOG .top and .gro file, along command line arguments to 
+	add ions to a SMOG model. Note, this does not change the underlying model, it 
+ 	only adds ions to the system and ensures that the .gro and .top files are 
+	consistent.
+
+        For usage information, issue flag -help, or see the SMOG manual.
+
+        For questions regarding this script, contact info\@smog-server.org
+
+*****************************************************************************************
+EOT
+
+sub smog_quit
+{
+        my ($LINE)=@_;
+        if($main::noexit){
+                warn("\nWarning: $LINE\n");
+        }else{
+                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow smog_ions to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
+                exit;
+        }
+}
+
+sub usage
+{
+  print <<EOT;
+
+usage: smog_ions  [-f .top file] [-g .gro file] [-of output .top file] [-og output .gro file] -ionnm <ion name> -ionq <ion charge> -ionn <number to add> -ionm <mass of ion> -ionc12 <c12 parameter of ion> -mindist [0.5] [-help|-?]
+
+   Required Input
+	-f [smog.top]: Input SMOG forcefield file
+	-g [smog.gro]: Input SMOG configuration file
+   Optional Input/Output parameters
+	-of [smog.ions.top]: Output SMOG forcefield file for smog.ions system
+	-og [smog.ions.gro]: Output SMOG configuration file for smog.ions system
+                                        that have interactions removed during extraction
+EOT
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit;
+  }
+}
+
+
+my $inputTOP="smog.top";
+my $inputGRO="smog.gro";
+my $outputtop="smog.ions.top";
+my $outputgro="smog.ions.gro";
+my $addnum=0;
+my $mindist=0.5;
+my $addname ="";
+my $addC12 = "";
+my $addcharge = "";
+my $addmass = "";
+my $help;
+my $warnonly=0;
+our $noexit=0;
+usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=s' => \$addmass, 'ionc12=s' => \$addC12, 'ionnm=s' => \$addname, 'ionq=s' => \$addcharge,  'mindist=s' => \$mindist,  'warnonly' => \$warnonly, 
+        '<>' => \&usage)
+        or defined $help); 
+
+if($warnonly){
+	$noexit=1;
+	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
+}else{
+	$noexit=0;
+}
+$mindist*=$mindist;
+if($addnum <1){
+	smog_quit("At least one ion must be added.");
+}
+
+
+#check and add file name extensions, if missing
+my ($ext)= $outputgro =~ /(\.[^.]+)$/;
+if(!defined $ext || $ext ne ".gro"){
+	$outputgro .=  ".gro";
+}
+($ext)= $outputtop =~ /(\.[^.]+)$/;
+if(!defined $ext || $ext ne ".top"){
+	$outputtop .=  ".top";
+}
+
+print "\n\nUsing $inputTOP and $inputGRO to generate system with ions...\n\n";
+### make a new gro file 
+
+open(GROFILE,"$inputGRO") or die "Can\'t open GRO file \"$inputGRO\"\n";
+my $groheader=<GROFILE>;
+chomp($groheader);
+
+my $TMP=<GROFILE>;
+chomp($TMP);
+$TMP =~ s/\t/ /g; 
+$TMP =~ s/^\s+|\s+$//g;
+$TMP =~ s/ +/ /g;
+my @A=split(/\s+/,$TMP);
+my $NATOMS=$A[0];
+my @GRODATA;
+my @X;
+my @Y;
+my @Z;
+my $tmpp;
+
+unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
+
+for(my $I=0;$I<$NATOMS;$I++){
+	# store gro data
+	my $LINE=<GROFILE>;
+	chomp($LINE);
+	$GRODATA[$I+1]=$LINE;
+}
+my $grodim=<GROFILE>;
+chomp($grodim);
+$grodim =~ s/^\s+//g; 
+my @grobox = split(/\s+/,$grodim);
+close(GROFILE);
+
+if(-e $outputgro){smog_quit("$outputgro already exists.")};
+open(GROFILE,">$outputgro") or die "Can\'t open output GRO file \"$outputgro\"\n";
+print GROFILE "$groheader\n";
+$NATOMS+=$addnum;
+print GROFILE "$NATOMS\n";
+for(my $I=1;$I<=$NATOMS-$addnum;$I++){
+	print GROFILE "$GRODATA[$I]\n";
+	$X[$I]=substr($GRODATA[$I],20,8);
+	$Y[$I]=substr($GRODATA[$I],28,8);
+	$Z[$I]=substr($GRODATA[$I],36,8);
+	if($X[$I]<0 || $X[$I]> $grobox[0] || $Y[$I]<0 || $Y[$I]> $grobox[1] ||$Z[$I]<0 || $Z[$I]> $grobox[2]){
+		smog_quit("Not all atoms are inside the box. Offending atom: $I.");
+	}
+
+}
+print "adding ions to gro file...\n";
+my $XT;
+my $YT;
+my $ZT;
+for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
+	my $mindistt=-1;
+	until($mindistt > $mindist){
+		$XT=$grobox[0]*rand();
+		$YT=$grobox[1]*rand();
+		$ZT=$grobox[2]*rand();
+		$mindistt=($X[1]-$XT)**2+($Y[1]-$YT)**2+($Z[1]-$ZT)**2;
+		#check dist with all previous atoms
+		for(my $J=2;$J<$I;$J++){
+			my $dist=($X[$J]-$XT)**2+($Y[$J]-$YT)**2+($Z[$J]-$ZT)**2;
+			if($mindistt > $dist){
+				$mindistt=$dist;
+			}
+		}
+	}
+	$X[$I]=$XT;	
+	$Y[$I]=$YT;	
+	$Z[$I]=$ZT;	
+	printf GROFILE "%5i%-5s%5s%5i%8.3f%8.3f%8.3f\n", $I,$addname, $addname, $I, $X[$I], $Y[$I], $Z[$I];
+
+}
+
+### end of adding ions to the gro
+
+print GROFILE "$grodim\n";
+
+
+
+##******************* END OF GRO MODIFICATIONS**************************
+
+
+my %supported_directives = ( 'defaults' => '0',
+        'atomtypes' => '1',
+        'moleculetype' => '0',
+        'atoms' => '1',
+        'bonds' => '1',
+        'angles' => '1',
+        'dihedrals' => '1',
+        'pairs' => '1',
+        'exclusions' => '1',
+        'system' => '1',
+        'molecules' => '1',
+        'position_restraints' => '1'
+        );
+
+#read in the top file, with comments stripped
+open(FILE, "$inputTOP") or die "Can not open $inputTOP\n"; 
+my $string = "";
+while (<FILE>){
+	my $LINE = $_;
+	chomp($LINE);
+	$LINE =~ s/;.*$//g; 
+	$LINE =~ s/\t/ /g; 
+	$LINE =~ s/^\s+|\s+$//g;
+	$LINE =~ s/ +/ /g;
+	if( $LINE =~ m/[#!\^\$]/ ){
+		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
+	}
+	# remove comments
+	if($LINE ne ""){ 
+	## remove blank lines
+		 $string .= "$LINE\n";
+	}
+}
+
+# process the top file and check that only supported directives are included.
+my %DIRLIST;
+my @DATA=split(/\[/,$string);
+for (my $I=1;$I<=$#DATA;$I++){
+	my $string1 = $DATA[$I];
+	open my($fh), "<", \$string1 or die ; # reading from the data in $string
+	my $first_line = <$fh>; 
+	$first_line =~  s/^\s//g;
+	close $fh;
+	my @B=split(/ /,$first_line);
+	my $DIR=$B[0];
+	chomp($DIR);
+	$DIR =~ s/\]$//g;
+		
+	if(!exists $supported_directives{$DIR}){
+		smog_quit("Directive \"$DIR \" not supported\n");
+	}else{
+		$DIRLIST{$DIR}=$I;
+	}
+}
+
+# Go through the directives, in order, and write out information for the subsystem
+if(-e $outputtop){smog_quit("$outputtop already exists.")}
+open(TOPOUT,">$outputtop") or die "Can\'t open $outputtop for writing.\n";
+
+if(!exists $DIRLIST{"defaults"}){
+	smog_quit("\"defaults\" does not appear in .top file.\n");
+}else{
+	my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
+	if($#C != 1){
+		my $NN=$#C;
+		smog_quit("Must have one line in the \"defaults\" directive. Found $NN\n");
+	}
+	my @D=split(/ /,$C[1]);
+	if($#D != 2){
+		smog_quit("Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n");
+	}
+	print TOPOUT "[ defaults ]\n";
+	print TOPOUT "$C[1]\n\n";
+}
+
+
+
+# start with atomtypes
+	my $match = 0;
+if(!exists $DIRLIST{"atomtypes"}){
+	smog_quit("\"atomtypes\" does not appear in .top file.\n");
+}else{
+	my @C=split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
+	print TOPOUT "[";
+	print TOPOUT $DATA[$DIRLIST{"atomtypes"}];
+
+# check for atomtype we are adding
+	for(my $II=1;$II<=$#C;$II++){
+		my @D=split(/ /,$C[$II]);
+		if($D[0] eq "$addname"){
+			$match=1;
+		}
+	}
+	if($match == 0){
+		print "Note: since atomtype $addname is not in top file, will add it to atomtypes section.\n";
+		if($addmass eq ""){
+			smog_quit("mass of ion must be provided on command line.");
+		}
+		if($addcharge eq ""){
+			smog_quit("charge of ion must be provided on command line.");
+		}
+		if($addC12 eq ""){
+			smog_quit("C12 parameter of ion must be provided on command line.");
+		}
+		print TOPOUT "$addname $addmass $addcharge A 0.0 $addC12\n";
+	}
+	print TOPOUT "\n";
+}
+
+# add a new molecule type
+print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
+
+
+#added ion molecule type
+if(!exists $DIRLIST{"moleculetype"}){
+	smog_quit("\"moleculetype\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[";
+	print TOPOUT $DATA[$DIRLIST{"moleculetype"}];
+	print TOPOUT "\n";
+}
+
+# information about the atoms 
+if(!exists $DIRLIST{"atoms"}){
+	smog_quit("\"atoms\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[";
+	print TOPOUT $DATA[$DIRLIST{"atoms"}];
+	print TOPOUT "\n";
+}
+
+
+# information about the bonds 
+if(!exists $DIRLIST{"bonds"}){
+	smog_quit("\"bonds\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[";
+	print TOPOUT $DATA[$DIRLIST{"bonds"}];
+	print TOPOUT "\n";
+}
+
+# information about the angles 
+if(!exists $DIRLIST{"angles"}){
+	smog_quit("\"angles\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[";
+	print TOPOUT $DATA[$DIRLIST{"angles"}];
+	print TOPOUT "\n";
+}
+
+# information about the dihedrals 
+if(!exists $DIRLIST{"dihedrals"}){
+	smog_quit("\"dihedrals\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[";
+	print TOPOUT $DATA[$DIRLIST{"dihedrals"}];
+	print TOPOUT "\n";
+}
+
+# information about the contacts 
+if(!exists $DIRLIST{"pairs"}){
+	smog_quit("\"pairs\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[";
+	print TOPOUT $DATA[$DIRLIST{"pairs"}];
+	print TOPOUT "\n";
+}
+
+# information about the exclusions 
+if(!exists $DIRLIST{"exclusions"}){
+	smog_quit("\"exclusions\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[";
+	print TOPOUT $DATA[$DIRLIST{"exclusions"}];
+	print TOPOUT "\n";
+}
+
+# information about the restraints 
+if(exists $DIRLIST{"position_restraints"} ){
+	smog_quit("position_restraints not supported in the input top file (yet).");
+}
+
+if(!exists $DIRLIST{"system"}){
+	smog_quit("\"system\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[";
+	print TOPOUT $DATA[$DIRLIST{"system"}];
+	print TOPOUT "\n";
+}
+
+if(!exists $DIRLIST{"molecules"}){
+	smog_quit("\"molecules\" does not appear in .top file.\n");
+}else{
+	print TOPOUT "[";
+	print TOPOUT $DATA[$DIRLIST{"molecules"}];
+	#add the ions
+	print TOPOUT "$addname $addnum\n";
+	print TOPOUT "\n";
+}
+
+if($warnonly){
+	print "\n\tIons added. Since -warnonly was used, carefully check output.\n\n";
+}else{
+	print "\n\tSUCCESS: Added $addnum $addname ions.\n\n";
+}
+

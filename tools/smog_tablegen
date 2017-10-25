@@ -18,7 +18,13 @@ print <<EOT;
  Electrostatics: When using direct Coulomb interactions, then there is no need for a 
  table. If you would like to use a Debye-Huckel potential, to describe screened
  electrostatic interactions, then you should use this script. Parameters for the D-H
- potential are decsribed in Givaty and Levy (2009) J. Mol. Biol., 385, pp 1087-1097. 
+ potential are decsribed in Givaty and Levy (2009) J. Mol. Biol., 385, pp 1087-1097.
+
+ Parameter descriptions:
+	ion conc. - concentration (Molar) of monovalent ions used for Debye screening.
+	elec. switch dist. - start switching (4th order polynomial) at this distance (nm).
+	elec. truncate dist. - set switching function, such that F goes to zero at this
+		distance (nm).
 
  If you are not including electrostatics, set electrostatic truncate distance to zero.
 
@@ -37,7 +43,7 @@ sub tablequit
 # prefactor is a combination of several terms.
 # the DH potential that we want to use is
 # U=K_Coulomb*B(kappa) Sum {q_i*q_j*exp(-kappa*r_ij)/(epsilon*r_ij)}
-# K_Coulomb=1/(4*pi*epsilon_{0})=~332 kcal*mol^-1 (Angstroms, elementary charge units e, will have to divide by 10 for Gromacs units in nm)
+# K_Coulomb=1/(4*pi*epsilon_{0})=~33.2 kcal*mol^-1 (nm)
 # for dilute systems, B(kappa)~1
 # Gromacs automatically multiplies by an 'electric conversion factor,' 
 #   equal to 138.935485. We want to undo that, hence the division by 138.
@@ -45,7 +51,7 @@ if (scalar(@ARGV) != 7 ){
  tablequit("Incorrect number of arguments.\n\nUsage: smog_tablegen <M> <N> <ion conc.> <elec. switch dist.> <elec. truncate dist.> <table length> <output name>");
 }
 
-my $prefactor=332.0/138.935485;
+my $prefactor=33.20/138.935485;
 my $exponent2=$ARGV[0];
 my $exponent1=$ARGV[1];
 unless($exponent1 =~ /^\d+$/ and $exponent2 =~ /^\d+$/){
@@ -165,15 +171,15 @@ $R=$i*$DR;
  my $R4=$exponent1/$R**($exponent1+1);
  if( $R < $r1 && $rc !=0){
   $VE=V($kappa, $R);
-  $VE=$prefactor*$VE/10.0;
+  $VE=$prefactor*$VE;
   $VpE=Vprime($kappa, $R);
-  $VpE=-$prefactor*$VpE/10.0;
+  $VpE=-$prefactor*$VpE;
  print OUTFILE "$R $VE $VpE $R1 $R2 $R3 $R4\n";
  }elsif($R >= $r1 && $R<=$rc){
   $VE=V($kappa, $R)+$A*($R-$r1)**2+$B*($R-$r1)**3;
-  $VE=$prefactor*$VE/10.0;
+  $VE=$prefactor*$VE;
   $VpE=Vprime($kappa, $R)+$A*2*($R-$r1)+$B*3*($R-$r1)**2;
-  $VpE=-$prefactor*$VpE/10.0;
+  $VpE=-$prefactor*$VpE;
    print OUTFILE "$R $VE $VpE $R1 $R2 $R3 $R4\n";
  }else{
   print OUTFILE "$R 0.0 0.0 $R1 $R2 $R3 $R4\n"

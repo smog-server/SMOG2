@@ -86,7 +86,7 @@ if (defined $renumber){
 if(!defined $inputPDB){
 	exitSmog("No input PDB was specified. Use -i to specify your input pdb file.");
 }else{
-	open(OLDPDB,"$inputPDB") or die "Can't open molecule PDB file.\n";
+	open(OLDPDB,"$inputPDB") or die "Can't open PDB file $inputPDB.\n";
 	print "Will reformat the PDB file: $inputPDB\n";	
 }
 

@@ -286,10 +286,11 @@ sub parsePDBATOMS
 			$lastresindex=$resindex;
 			my %uniqueAtom;
 			$residueSerial++;
+			my $lastrecord="";
 			for($i=0;$i<$atomsInRes;$i++)
 			{
-	 			$lineNumber++;
-				$record = <PDBFILE>;
+					$record = <PDBFILE>;
+	 				$lineNumber++;
 				if($record !~ m/^ATOM|^HETATM/)
 				{smog_quit("Expected ATOM or HETATM at line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
 	
@@ -305,7 +306,7 @@ sub parsePDBATOMS
 		        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 	            		$interiorPdbResidueIndex = substr($record,22,5);  
 				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex){
-					$lineNumber--;
+					my $linetemp=$lineNumber-1;
 					my $missingatoms="";
 					$uniqueAtom{$atom}=1;
 				        if($CGenabled == 1){
@@ -321,7 +322,11 @@ sub parsePDBATOMS
 							}
 						}		
 	                		}
-					smog_quit("It appears that a residue in the PDB file does not contain all of the atoms defined in the .bif file.\nOffending residue: $resname (ending at line $lineNumber).  Missing atoms: $missingatoms");	
+					smog_quit("It appears that a residue in the PDB file does not contain all of the atoms defined in the .bif file.\nOffending residue: $resname (ending at line $linetemp).  Missing atoms: $missingatoms");	
+					# these next lines only matter if errors are being reported as warnings
+		 			seek(PDBFILE, -length($record), 1); # place the same line in the handle
+	        			$lineNumber--;
+					last;
 				}
 	
 				$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
@@ -379,11 +384,11 @@ sub parsePDBATOMS
 				$totalAtoms++;
 			}
 	
-			if($atomsmatch != $atomsInBif){
-				smog_quit ("Not all atoms in the bif appear in the PDB. See line $lineNumber");
-			}
+#			if($atomsmatch != $atomsInBif){
+#				smog_quit ("Not all atoms in the bif appear in the PDB. See line $lineNumber");
+#			}
 	
-			if($i != $atomsInRes){smog_quit ("Total number of atoms of $residue doesn't match with .bif declaration");}
+#			if($i != $atomsInRes){smog_quit ("Total number of atoms of $residue doesn't match with .bif declaration");}
 			## CONCAT RESIDUE ##
 		  	@union = (@union,@temp);@temp=();
 			push(@consecResidues,$residue);
@@ -564,7 +569,7 @@ sub GenerateBondedGeometry {
 		if($missed==0 && $connected == $chainlength){
 			print "All $connected atoms connected via covalent bonds \n"; 
 		}else{
-			smog_quit("Only connected $connected of $chainlength atoms in chain $chid.  Unable to connect atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file.\nSee messages above. ")
+			smog_quit("We appear to have connected $connected of $chainlength atoms in chain $chid.  There is an issue connecting atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file, or missing atoms in the PDB.\nCheck for earlier warning messages. ")
 		}
 	}elsif($chainlength == 1){
 		print "Only 1 atom in chain $chid.  Will not perform connectivity checks.";
@@ -1503,6 +1508,11 @@ sub parseCONTACT
 		}
 		if($CGenabled == 1) { close($COARSECONT); }
 	} else { #read in contact from file
+		if($CGenabled == 1) {
+			smog_quit ("User input contact map is not supported with automatic coarse graining (e.g., -CA, -CAgauss, -tCG).".
+			" This is because the coarse graining options are only to enable automatic contact generation from an all-atom input pdb.".
+			" If the user wishes to use their own contact map, use a .bif and .pdb that already have the correct graining.".
+			" For example, for a C-alpha model, directly use the template \$SMOG2_LOCATION/templates/SBM_calpha with the -t option." ); }
 		print "\nNOTE: Not calculating contact map\n";
 		print "Reading contacts from $fileName2\n";
 		## OPEN user provided contact FILE ##
