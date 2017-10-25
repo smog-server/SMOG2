@@ -37,7 +37,7 @@
 <xs:complexType name="nonbondType">
     <xs:element name="nbType" type="nbTypeType"/>
     <xs:attribute name="mass" type="xs:decimal" use="required"/>
-    <xs:attribute name="charge" type="xs:double" use="required"/>
+    <xs:attribute name="charge" type="xs:decimal" use="required"/>
     <xs:attribute name="ptype" type="xs:string" use="required"/>
     <xs:attribute name="c6" type="xs:double" use="required"/>
     <xs:attribute name="c12" type="xs:double" use="required"/>

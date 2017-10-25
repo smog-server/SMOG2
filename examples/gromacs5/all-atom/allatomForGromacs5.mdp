@@ -54,7 +54,7 @@ Pcoupl  		 = no
 gen_vel 		 = yes 
 gen_temp		 = 130
 gen_seed		 = -1
-;Constrain all bonds
+; no constraints
 constraints		 = none
 ;if you have a very big box that the molecule doesn't cross
 ;you can use this, otherwise no

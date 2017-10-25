@@ -36,6 +36,8 @@ use PDL;
 use mathFunctions;
 use setRatios;
 use Getopt::Long;
+Getopt::Long::Configure("pass_through");
+use Data::Dumper;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
@@ -151,19 +153,19 @@ sub initializeDirectives {
 	addToTop("defaults", "\n[ defaults ]\n");
 	addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
 	addToTop("bonds","\n[ bonds ]\n");
-	addToTop("bonds",";ai     aj      func    r0(nm)  Kb\n");
+	addToTop("bonds",";     ai       aj     func  r0(nm)          Kb\n");
 	addToTop("angles","\n[ angles ]\n");
-	addToTop("angles",";ai  aj   ak  func  th0(deg)   Ka\n");
+	addToTop("angles",";      ai      aj       ak   func th0(deg)        Ka\n");
   	addToTop("dihedrals","\n[ dihedrals ]\n");
-  	addToTop("dihedrals",";ai  aj  ak  al  func  phi0(deg) kd mult\n");
+  	addToTop("dihedrals",";     ai       aj       ak       al  func  phi0(deg)        kd         mult\n");
 	addToTop("pairs","\n[ pairs ]\n");
 	addToTop("pairs","; ai aj type A B\n");
 	addToTop("exclusions","\n[ exclusions ]\n");
 	addToTop("exclusions","; ai	aj\n");
-	addToTop("atomtypes","\n [ atomtypes ] \n");
-	addToTop("atomtypes","; name mass   charge ptype c6            c12\n");
+	addToTop("atomtypes","\n[ atomtypes ] \n");
+	addToTop("atomtypes","; name  mass     charge    ptype c6           c12\n");
 	addToTop("atoms","\n[ atoms ]\n");
-	addToTop("atoms",";nr  type  resnr residue atom  cgnr\n");
+	addToTop("atoms",";  nr        type   resnr residue atom   cgnr\n");
 	addToTop("moleculetype","\n[ moleculetype ]\n");
 	addToTop("moleculetype","; name            nrexcl\n");
 	addToTop("moleculetype","  Macromolecule   3\n");
@@ -1040,17 +1042,17 @@ sub contactFuncParser
 
 sub calculateAtomTypes
 {
-	my($uniqeHandle) = @_;
+	my($uniqueHandle) = @_;
 	my $formattedString = "";	
 	
 	## OBTAIN UNIQUE ATOM TYPES ##
 	my %obtained;my $nbtype ="";
 	my $c12;my $c6;my $ptype;my $charge;my $mass;
 	
-	foreach my $atoms(keys %{$uniqeHandle})
+	foreach my $atoms(keys %{$uniqueHandle})
 	{
-		$nbtype = $uniqeHandle->{$atoms}->[0];
-  		if(!$uniqeHandle->{$atoms}->[0])
+		$nbtype = $uniqueHandle->{$atoms}->[0];
+  		if(!$uniqueHandle->{$atoms}->[0])
         {
           smog_quit("Atom $atoms has no nbType");
         }
@@ -1067,9 +1069,9 @@ sub calculateAtomTypes
 		$charge = $interactions->{"nonbonds"}->{$tmptype}->{"charge"};
 
 		if(!$c6 || !$c12 || !$ptype || !$mass || !$charge)
-		{smog_quit("Nonbond Params at atom types not set for nbType $tmptype");}
+		{smog_quit("Nonbond params not set for nbType $tmptype");}
 		
-		$formattedString = sprintf("  %-4s %-6.3f %-5.3f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
+		$formattedString = sprintf(" %-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
 		addToTop("atomtypes",$formattedString."\n");
 		$obtained{$nbtype}=1;
 	}
@@ -1109,8 +1111,13 @@ sub readAtoms
 			$counter++;$atomNum=$counter;
 			$atomType = $residues{$resName}->{"atoms"}->{$atomName}->{"nbType"};
 			#printf $OUTPUT "%6d %10s %6d %6s %6s %6d\n", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum;
-			addToTop("atoms",sprintf("%6d %10s %6d %6s %6s %6d\n", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum));
-
+			addToTop("atoms",sprintf("%6d %10s %6d %6s %6s %6d", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum));
+			if(defined $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}){
+				#if charge is defined for a specific atom in a residue, then write it
+				addToTop("atoms",sprintf(" %9.6f\n", $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}));
+			}else{
+				addToTop("atoms",sprintf("\n"));
+			}
 		}
 	}
 
@@ -1715,27 +1722,19 @@ if($groFile eq ""){$groFile=$DNAME};
 if($shadowFile eq ""){$shadowFile=$DNAME};
 if($ndxFile eq ""){$ndxFile=$DNAME};
 my ($ext)=$topFile =~ /(\.[^.]+)$/;
-if($topFile !~ /(\.[^.]+)$/){
-	$topFile = $topFile . ".top";
-}elsif($ext ne ".top"){
+if(!defined $ext || $ext ne ".top"){
 	$topFile = $topFile . ".top";
 }
 ($ext)=$groFile =~ /(\.[^.]+)$/;
-if($groFile !~ /(\.[^.]+)$/){
-	$groFile = $groFile . ".gro";
-}elsif($ext ne ".gro"){
+if(!defined $ext || $ext ne ".gro"){
 	$groFile = $groFile . ".gro";
 }
 ($ext)=$shadowFile =~ /(\.[^.]+)$/;
-if($shadowFile !~ /(\.[^.]+)$/){
-	$shadowFile = $shadowFile . ".contacts";
-}elsif($ext ne ".contacts"){
+if(!defined $ext || $ext ne ".contacts"){
 	$shadowFile = $shadowFile . ".contacts";
 }
 ($ext)=$ndxFile =~ /(\.[^.]+)$/;
-if($ndxFile !~ /(\.[^.]+)$/){
-	$ndxFile = $ndxFile . ".ndx";
-}elsif($ext ne ".ndx"){
+if(!defined $ext || $ext ne ".ndx"){
 	$ndxFile = $ndxFile . ".ndx";
 }
 

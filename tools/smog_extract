@@ -38,7 +38,7 @@ sub usage
 {
   print <<EOT;
 
-usage: smog_extract  [-f .top file] [-g .gro file] [-of output .top file] [-og output .gro file] [-help|-?]
+usage: smog_extract  [-f .top file] [-g .gro file] [-of output .top file] [-og output .gro file] [-om output index mapping file] [-help|-?]
 
    Required Input
 	-f [smog.top]: Input SMOG forcefield file
@@ -47,6 +47,7 @@ usage: smog_extract  [-f .top file] [-g .gro file] [-of output .top file] [-og o
    Optional Input/Output parameters
 	-of [extracted.top]: Output SMOG forcefield file for extracted system
 	-og [extracted.gro]: Output SMOG configuration file for extracted system
+	-om [atomindex.map]: Output file with old-to-new atom index mapping
 	-restraints <restraint weight>: Generate restraints with a specific strength for atoms 
                                         that have interactions removed during extraction
 EOT
@@ -61,14 +62,15 @@ EOT
 my $inputTOP="smog.top";
 my $inputGRO="smog.gro";
 my $indexFile="smog.include";
-my $outputTOP="extracted.top";
-my $outputGRO="extracted.gro";
+my $outputtop="extracted.top";
+my $outputgro="extracted.gro";
+my $outputmap="atomindex.map";
 my $help;
 my $gen_restraints=0;
 my $warnonly=0;
 our $noexit=0;
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
-        'of=s' => \$outputTOP, 'og=s' => \$outputGRO, 'restraints=s' => \$gen_restraints,  'warnonly' => \$warnonly, 
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'restraints=s' => \$gen_restraints,  'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -88,6 +90,24 @@ my %keepatoms;
 my $KEEPN=0;
 my @keepatoms2;
 open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
+
+#check and add file name extensions, if missing
+my ($ext)= $outputgro =~ /(\.[^.]+)$/;
+if(!defined $ext || $ext ne ".gro"){
+	$outputgro .=  ".gro";
+}
+($ext)= $outputtop =~ /(\.[^.]+)$/;
+if(!defined $ext || $ext ne ".top"){
+	$outputtop .=  ".top";
+}
+($ext)= $outputmap =~ /(\.[^.]+)$/;
+if(!defined $ext || $ext ne ".map"){
+	$outputmap .=  ".map";
+}
+
+if(-e $outputmap){smog_quit("$outputmap already exists.")};
+open(MAPPING,">$outputmap") or die "\nCan\'t open $outputmap. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
+print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
 while(<ATOMLIST>){
 	my $LINE=$_;
 	chomp($LINE);
@@ -109,6 +129,7 @@ while(<ATOMLIST>){
 				smog_quit("Atoms listed in $indexFile are not in ascending order.\n");
 			}
 			$KEEPN++;
+			print MAPPING "$KEEPN $A[$I]\n";
 		}
 	}
 }
@@ -141,8 +162,8 @@ my $grodim=<GROFILE>;
 chomp($grodim);
 close(GROFILE);
 
-if(-e $outputGRO){smog_quit("$outputGRO already exists.")};
-open(GROFILE,">$outputGRO") or die "Can\'t open output GRO file \"$outputGRO\"\n";
+if(-e $outputgro){smog_quit("$outputgro already exists.")};
+open(GROFILE,">$outputgro") or die "Can\'t open output GRO file \"$outputgro\"\n";
 print GROFILE "$groheader\n";
 print GROFILE "$KEEPN\n";
 for(my $I=0;$I<$KEEPN;$I++){
@@ -212,8 +233,8 @@ for (my $I=1;$I<=$#DATA;$I++){
 }
 
 # Go through the directives, in order, and write out information for the subsystem
-if(-e $outputTOP){smog_quit("$outputTOP already exists.")}
-open(TOPOUT,">$outputTOP") or die "Can\'t open $outputTOP for writing.\n";
+if(-e $outputtop){smog_quit("$outputtop already exists.")}
+open(TOPOUT,">$outputtop") or die "Can\'t open $outputtop for writing.\n";
 
 if(!exists $DIRLIST{"defaults"}){
 	smog_quit("\"defaults\" does not appear in .top file.\n");
@@ -240,7 +261,7 @@ if(!exists $DIRLIST{"atomtypes"}){
 	my @indextotype;
 	my $typeindex=0;
 	my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
-	# keep at the atomtypes, even though some may not be used in the new system.	
+	# keep all the atomtypes, even though some may not be used in the new system.	
 	print TOPOUT "[ atomtypes ]\n";
 	for(my $II=1;$II<=$#C;$II++){
 		print TOPOUT "$C[$II]\n";
@@ -277,9 +298,9 @@ if(!exists $DIRLIST{"atoms"}){
 		my @D=split(/ /,$C[$JJ]);
 		print TOPOUT "$keepatoms{$JJ} $D[1] $D[2] $D[3] $D[4] $keepatoms{$JJ}\n";
 	}
+	print TOPOUT "\n";
 }
 
-print TOPOUT "\n";
 
 # information about the bonds 
 if(!exists $DIRLIST{"bonds"}){
@@ -305,6 +326,7 @@ if(!exists $DIRLIST{"bonds"}){
 			$atoms2restrain{$keepatoms{$D[1]}}=1;
 		}
 	}
+	print TOPOUT "\n";
 }
 
 # information about the angles 
@@ -332,6 +354,7 @@ if(!exists $DIRLIST{"angles"}){
 			}
 		}
 	}
+	print TOPOUT "\n";
 }
 
 # information about the dihedrals 
@@ -361,6 +384,7 @@ if(!exists $DIRLIST{"dihedrals"}){
 			}
 		}
 	}
+	print TOPOUT "\n";
 }
 
 # information about the contacts 
@@ -383,6 +407,7 @@ if(!exists $DIRLIST{"pairs"}){
 			$atoms2restrain{$keepatoms{$D[1]}}=1;
 		}
 	}
+	print TOPOUT "\n";
 }
 
 
@@ -403,6 +428,7 @@ if(!exists $DIRLIST{"exclusions"}){
 			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]}\n";
 		}
 	}
+	print TOPOUT "\n";
 }
 
 # information about the restraints 
@@ -411,11 +437,14 @@ if(exists $DIRLIST{"position_restraints"} ){
 }else{
 	if($gen_restraints != 0){
 		print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
+		print MAPPING "\nThe following atoms are restrained (old and new numbering)\n";
 		print TOPOUT "[ position_restraints ]\n";
-		foreach my $res(sort keys %atoms2restrain){
+		foreach my $res(sort {$a<=>$b} keys %atoms2restrain){
 			print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";
+			print MAPPING "$res $keepatoms2[$res-1]\n";
 		}
 	}
+	print TOPOUT "\n";
 }
 
 if(!exists $DIRLIST{"system"}){

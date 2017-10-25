@@ -41,6 +41,7 @@ $TMP =~ s/^\s+|\s+$//g;
 until($TMP=~ m/^[YN]$/){
 	print "Please answer Y, or N.\n";
 	$TMP=<STDIN>;
+	chomp($TMP);
         $TMP =~ s/^\s+|\s+$//g;
 }
 
@@ -52,16 +53,43 @@ $TMP=<STDIN>;
 until($TMP=~ m/^[YN]$/ ){
 	print "Please answer Y, or N.\n";
 	$TMP=<STDIN>;
+	chomp($TMP);
         $TMP =~ s/^\s+|\s+$//g;
 }
 
 my $RIGIDON=$TMP;
+if($RIGIDON =~ m/^N$/  && $SBMINPON =~ m/^N$/){
+	print "No optim input and no rigid body generation selection.  Quitting.\n";
+	exit;
+}
 
 my $CONTTYPE;
 if($SBMINPON =~ m/^Y$/){
 	print "\nWhat is the name of the input .top file?\n";
 	$TOPFILE=<STDIN>;
         $TOPFILE =~ s/^\s+|\s+$//g;
+	my ($ext)=$TOPFILE =~ /(\.[^.]+)$/;
+
+	until(defined $ext && $ext eq ".top"){
+		print "\n\tForcefield file must have suffix .top. Please provide valid .top file name.\n";
+		$TOPFILE=<STDIN>;
+		$TOPFILE =~ s/^\s+|\s+$//g;
+		($ext)=$TOPFILE =~ /(\.[^.]+)$/;
+	}
+
+	until(-e "$TOPFILE"){
+		print "\n\tForcefield file $TOPFILE not found. Please provide valid .top file name.\n";
+		$TOPFILE=<STDIN>;
+        	$TOPFILE =~ s/^\s+|\s+$//g;
+		($ext)=$TOPFILE =~ /(\.[^.]+)$/;
+		until(defined $ext && $ext eq ".top"){
+			print "\n\tForcefield file must have suffix .top. Please provide valid .top file name.\n";
+			$TOPFILE=<STDIN>;
+			$TOPFILE =~ s/^\s+|\s+$//g;
+			($ext)=$TOPFILE =~ /(\.[^.]+)$/;
+		}
+	}
+
 
 	print "\nAre the contacts of type 1 modeled with 10-12, or 6-12 interactions? [10/6]\n";
 	my $TMP;
@@ -84,6 +112,29 @@ if($SBMINPON =~ m/^Y$/){
 print "\nWhat is the name of input .gro file\n";
 $GROFILE=<STDIN>;
 $GROFILE =~ s/^\s+|\s+$//g;
+my ($ext)=$GROFILE =~ /(\.[^.]+)$/;
+
+my ($ext)=$GROFILE =~ /(\.[^.]+)$/;
+
+until(defined $ext && $ext eq ".gro"){
+	print "\n\tCoordinate file must have suffix .gro. Please provide valid .gro file name.\n";
+	$GROFILE=<STDIN>;
+	$GROFILE =~ s/^\s+|\s+$//g;
+	($ext)=$GROFILE =~ /(\.[^.]+)$/;
+}
+
+until(-e "$GROFILE"){
+	print "\n\tCoordinate file $GROFILE not found. Please provide valid .gro file name.\n";
+	$GROFILE=<STDIN>;
+	$GROFILE =~ s/^\s+|\s+$//g;
+	($ext)=$GROFILE =~ /(\.[^.]+)$/;
+	until(defined $ext && $ext eq ".gro"){
+		print "\n\tCoordinate file must have suffix .gro. Please provide valid .gro file name.\n";
+		$GROFILE=<STDIN>;
+		$GROFILE =~ s/^\s+|\s+$//g;
+		($ext)=$GROFILE =~ /(\.[^.]+)$/;
+	}
+}
 
 ## Generate rigidification files
 
@@ -150,8 +201,8 @@ if($RIGIDON =~ m/^Y$/){
 		}
 		if($RDEF =~ m/^F$/){
 			# make coordsinrigid file, since we are not going to repeat later 
-			if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will not overwrite. Quitting.\n"; exit;}
-			open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
+			if(-e "coordsinrigid"){print "coordsinrigid already exists. Will move to coordsinrigid.bu.\n"; `mv coordsinrigid coordsinrigid.bu`;}
+			open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open coordsinirigid for writing\n";
 			open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
 			$TMP=<GROFILE>;
 			$TMP=<GROFILE>;
@@ -188,10 +239,10 @@ if($RIGIDON =~ m/^Y$/){
 		## format: <RESIDUE NAME> <LIST OF ATOM NAMES IN GROUP>
 		
 		open(MAPFILE,"$ENV{SMOG_PATH}/tools/rigidmap") or die "Can\'t open rigidmap file\n";
-		if(-e "rbodyconfig"){print "rbodyconfig already exists.  Will not overwrite. Quitting.\n"; exit;}
-		if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will not overwrite. Quitting.\n"; exit;}
+		if(-e "rbodyconfig"){print "rbodyconfig already exists.  Will move to rbodyconfig.bu.\n"; `mv rbodyconfig rbodyconfig.bu`;}
+		if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will move to coordsinrigid.bu.\n"; `mv coordsinrigid coordsinrigid.bu`;}
 		open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";
-		open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open rbodyconfig for writing\n";
+		open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open coordsinrigid for writing\n";
 		
 		while(<MAPFILE>){
 			my $LINE=$_;
@@ -239,9 +290,7 @@ if($RIGIDON =~ m/^Y$/){
 		my $ATOMNAME=substr($LINE,10,5);
 		$ATOMNAME =~ s/^\s+|\s+$//g;
 		
-		my $NUMT=substr($LINE,15,5);
-		$NUMT =~ s/^\s+|\s+$//g;
-		$ATOMNUM{$ATOMNAME}= $NUMT;
+		$ATOMNUM{$ATOMNAME}= 1;
 		
 		my $LASTRESNAME=substr($LINE,5,5);
 		$LASTRESNAME =~ s/^\s+|\s+$//g;
@@ -254,7 +303,6 @@ if($RIGIDON =~ m/^Y$/){
 		$E[0]*=10.0;
 		$E[1]*=10.0;
 		$E[2]*=10.0;
-		my $ATOMINDEX=substr($LINE,15,5);
 		$X[1][0]=$E[0];
 		$X[1][1]=$E[1];
 		$X[1][2]=$E[2];
@@ -268,8 +316,7 @@ if($RIGIDON =~ m/^Y$/){
 			$RESNUM =~ s/^\s+|\s+$//g;
 			my $ATOMNAME=substr($LINE,10,5);
 			$ATOMNAME =~ s/^\s+|\s+$//g;
-			my $ATOMNUMT=substr($LINE,15,5);
-			$ATOMNUMT =~ s/^\s+|\s+$//g;
+			my $ATOMNUMT  =$I+1;
 			my $RESNAME=substr($LINE,5,5);
 			$RESNAME =~ s/^\s+|\s+$//g;
 			my $COORDS=substr($LINE,20,24);
@@ -280,7 +327,6 @@ if($RIGIDON =~ m/^Y$/){
 			$E[0]*=10.0;
 			$E[1]*=10.0;
 			$E[2]*=10.0;
-			my $ATOMINDEX=substr($LINE,15,5);
 			$X[$I+1][0]=$E[0];
 			$X[$I+1][1]=$E[1];
 			$X[$I+1][2]=$E[2];
@@ -458,7 +504,7 @@ if($SBMINPON =~ m/^Y$/){
 	my $MASS;	
 	# write out odata
 
-	if(-e "odata"){print "odata already exists.  Quitting.\n"; exit;}
+	if(-e "odata"){print "odata already exists. Moving to odata.bu.\n"; `mv odata odata.bu`;}
 	open(ODATA,">odata") or die "Can not open odata\n";
 	print ODATA "STEPS 100000000\nBFGSMIN 0.000001\n";
 
@@ -490,7 +536,6 @@ if($SBMINPON =~ m/^Y$/){
 		$E[0]*=10.0;
 		$E[1]*=10.0;
 		$E[2]*=10.0;
-                my $ATOMINDEX=substr($LINE,15,5);
                 $X[$I+1][0]=$E[0];
                 $X[$I+1][1]=$E[1];
                 $X[$I+1][2]=$E[2];
@@ -500,7 +545,7 @@ if($SBMINPON =~ m/^Y$/){
 	close(GROFILE);
 
 	# Write out SBM.INP
-	if(-e "SBM.INP"){print "SBM.INP already exists.  Quitting.\n"; exit;}
+	if(-e "SBM.INP"){print "SBM.INP already exists. Moving to SBM.INP.bu.\n"; `mv SBM.INP SBM.INP.bu`;}
 	open(OPTIMTOP,">SBM.INP") or die "Can not open SBM.INP\n";
 	
 	print OPTIMTOP "Structure-based topology file for use with OPTIM.  Generated by smog_optim, as part of the SMOG 2 distrubution\n";
