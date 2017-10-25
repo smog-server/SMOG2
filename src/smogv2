@@ -1069,7 +1069,7 @@ sub calculateAtomTypes
 		$charge = $interactions->{"nonbonds"}->{$tmptype}->{"charge"};
 
 		if(!$c6 || !$c12 || !$ptype || !$mass || !$charge)
-		{smog_quit("Nonbond Params at atom types not set for nbType $tmptype");}
+		{smog_quit("Nonbond params not set for nbType $tmptype");}
 		
 		$formattedString = sprintf(" %-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
 		addToTop("atomtypes",$formattedString."\n");
