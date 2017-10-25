@@ -71,6 +71,7 @@ our $warncount=0;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
 our $setContacttoLimit=0;
+our $extrasexists=0; #this is set to 1 if extras file is in the template directory
 our %funtypechecked;
 my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
 ## this is the array that defines how function names are converted to gromacs function types
@@ -89,8 +90,8 @@ our %fTypes = (	'bond_harmonic' => '1',
 		);
 
 ## this is the topfile buffer stuff
-our %directives = ("defaults",1,"atomtypes",2,"moleculetype",3,"atoms",4,"bonds",5,"angles",6,"dihedrals",7,"pairs",8,"exclusions",9,"system",10,"molecules",11);
-our @directivesList=("defaults","atomtypes","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","system","molecules");
+our %directives = ("defaults",1,"atomtypes",2,"nonbond_params",3,"moleculetype",4,"atoms",5,"bonds",6,"angles",7,"dihedrals",8,"pairs",9,"exclusions",10,"position_restraints",11,"system",12,"molecules",13);
+our @directivesList=("defaults","atomtypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
 our @topFileBuffer;
 our @linesInDirectives;
 our $inputArguments=join(' ',@ARGV);
@@ -164,6 +165,10 @@ sub initializeDirectives {
 	addToTop("exclusions","; ai	aj\n");
 	addToTop("atomtypes","\n[ atomtypes ] \n");
 	addToTop("atomtypes","; name  mass     charge    ptype c6           c12\n");
+	addToTop("nonbond_params","\n[ nonbond_params ]\n");
+	addToTop("nonbond_params",";ai     aj    func    c6      c12\n");
+	addToTop("position_restraints","\n[ position_restraints ]\n");
+	addToTop("position_restraints",";ai    func    kx    ky   kz\n");
 	addToTop("atoms","\n[ atoms ]\n");
 	addToTop("atoms",";  nr        type   resnr residue atom   cgnr\n");
 	addToTop("moleculetype","\n[ moleculetype ]\n");
@@ -181,7 +186,23 @@ sub addToTop {
 	my($directive,$stuff) = @_;
 	push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
 }
-
+#looks for file "extras" in template directory
+sub addExtras {
+	print "\nFound extras file. Parsing $inputFolder/extras for additional topology lines.\n";
+	open(PDB,"$inputFolder/extras");
+	my $line = "";
+	my $directive;my $stuff;my @tokens;
+	while($line = <PDB>)
+	{
+		chomp($line);
+	    @tokens = split('<',$line);
+		$directive = $tokens[0];
+		$stuff = $tokens[1];
+		$directive =~ s/^\s+|\s+$//g;
+		$stuff =~ s/^\s+|\s+$//g;
+		addToTop($directive,$stuff."\n");
+	}
+}
 
 #####################
 ## CALCULATE BONDS ##
@@ -1262,7 +1283,7 @@ sub parseInputFolder
 	my ($folderName) = @_;
 	$folderName = $1 if($folderName=~/(.*)\/$/);
 	opendir(my $folder,$folderName);
-	my $bif;my $sif;my $b;my $nb;
+	my $bif;my $sif;my $b;my $nb;my $extras;
 	my $bifexists=0;
 	my $sifexists=0;
 	my $nbexists=0;
@@ -1288,6 +1309,11 @@ sub parseInputFolder
 			$nb = $file;$nb = "$folderName/$nb";
 			print "Found .nb file $nb\n";
 			validateTemplate($nb,"nb");next;}
+		if($file =~ m/^extras$/) {
+			$extrasexists++;
+			$extras = "$folderName/$bif";
+			print "\nFound .bif file $bif";
+			next;}
 	}
 	$bifForSCM = $bif;
 
@@ -1310,6 +1336,9 @@ sub parseInputFolder
 		smog_quit ("Found multiple .nb files in directory $folderName");
 	}elsif($nbexists ==0){
 		smog_quit (" .nb file not found in directory $folderName");
+	}
+	if($extrasexists >1){
+	   smog_quit ("Found multiple extras files in directory $folderName");
 	}
 	
 	setInputFileName($bif,$sif,$b,$nb);
@@ -1573,7 +1602,8 @@ sub appendContacts {
 	}
 	if(exists $interactions->{"gen-pairs"} && $interactions->{"gen-pairs"} == 1) { $genpairs = "yes"; }
 	addToTop("defaults", "  1      $combrule         $genpairs\n");
-	}
+	if($extrasexists) { addExtras(); }^M
+}
 
 ##################
 ## PARSE INPUTS ##
