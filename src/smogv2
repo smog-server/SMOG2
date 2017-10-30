@@ -1602,7 +1602,7 @@ sub appendContacts {
 	}
 	if(exists $interactions->{"gen-pairs"} && $interactions->{"gen-pairs"} == 1) { $genpairs = "yes"; }
 	addToTop("defaults", "  1      $combrule         $genpairs\n");
-	if($extrasexists) { addExtras(); }^M
+	if($extrasexists) { addExtras(); }
 }
 
 ##################
