@@ -95,7 +95,7 @@ if (defined $default){
 	if(!exists $ENV{"SMOG_PATH"}){
         exitSmog("Environmental Variable SMOG_PATH not set\n");
 	}
-	$mapOption = "$ENV{SMOG_PATH}/tools/sbmMap";	
+	$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";	
 }else{
 	if (!defined $mapFile ){
 		exitSmog("No map file was provided. Please chose a map file or use the default map settings: -default.");

@@ -1261,7 +1261,7 @@ sub convertPDBToGroNdx
 sub validateTemplate
 {
 	my ($file,$type) = @_;
-	my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/schemas/$type.xsd");
+	my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/share/schemas/$type.xsd");
 	my $parser = XML::SAX::ParserFactory->parser(Handler => $validator);
 	eval { $parser->parse_uri($file) };
  smog_quit("Failed at validating $file: $@ \nThis is due to an XML formatting issue.  The most common issue is that an element is missing a tagline. For example, something like this may appear in your file,
