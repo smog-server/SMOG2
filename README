@@ -5,15 +5,16 @@
 SMOG 2 is a downloadable software package for 
 generating structure-based models, as provided by the 
 smog-server.org webserver (i.e. SMOG v1). These models 
-may be used to perform simulations using Gromacs, 
-or NAMD.
+may be used to perform simulations using Gromacs, NAMD,
+or AMBER.
 
 SMOG 2 is free software, distributed under the GNU 
 General Public License. See COPYING.
 
 This distribution of SMOG 2 includes two versions of 
 SMOG models, the C-alpha model (Clementi et al JMB 2000)
-and the all-atom model (Whitford et al. Proteins 2009).
+and the all-atom model (Whitford et al. Proteins 2009),
+as well as two definitions of contacts (LJ, Gaussianis).
 The software is written such that you may also design
 your own form of structure-based models without having
 to modify the source code.
@@ -29,7 +30,7 @@ for the users forum at
 https://mailman.rice.edu/mailman/listinfo/smog-users
 
 
-      Jeffrey Noel, Jose Onuchic and Paul Whitford
+      Jeffrey Noel, Jose' Onuchic and Paul Whitford
 
 ########################################################
 
@@ -38,8 +39,8 @@ https://mailman.rice.edu/mailman/listinfo/smog-users
 
 		  CONFIGURING SMOG 2
 
-Before using SMOG 2, you need to configure your settings.
-This is a relatively simple  process.
+Before using SMOG 2, you need to configure your 
+settings file. This is a relatively simple  process.
 
 1) SMOG 2 is written in Perl, and requires the 
 following  modules to be installed (available through 
