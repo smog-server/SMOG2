@@ -176,7 +176,7 @@ for(my $I=1;$I<=$NATOMS-$addnum;$I++){
                 $YT-=$grobox[7];
                 $ZT-=$grobox[8];
 	}
-	while($ZT < 0){
+	while($ZT <= 0){
                 $XT+=$grobox[6];
                 $YT+=$grobox[7];
                 $ZT+=$grobox[8];
@@ -186,7 +186,7 @@ for(my $I=1;$I<=$NATOMS-$addnum;$I++){
                 $YT-=$grobox[4];
                 $ZT-=$grobox[5];
 	}
-	while($YT < 0){
+	while($YT <= 0){
                 $XT+=$grobox[3];
                 $YT+=$grobox[4];
                 $ZT+=$grobox[5];
@@ -196,7 +196,7 @@ for(my $I=1;$I<=$NATOMS-$addnum;$I++){
                 $YT-=$grobox[1];
                 $ZT-=$grobox[2];
 	}
-	while($XT < 0){
+	while($XT <= 0){
                 $XT+=$grobox[0];
                 $YT+=$grobox[1];
                 $ZT+=$grobox[2];
@@ -273,43 +273,10 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 		}
 	}
 
-	$XT=$XTT;
-	$YT=$YTT;
-	$ZT=$ZTT;
-	while($ZT > $grobox[8]){
-                $XT-=$grobox[6];
-                $YT-=$grobox[7];
-                $ZT-=$grobox[8];
-	}
-	while($ZT < 0){
-                $XT+=$grobox[6];
-                $YT+=$grobox[7];
-                $ZT+=$grobox[8];
-	}
-	while($YT > $grobox[4]){
-                $XT-=$grobox[3];
-                $YT-=$grobox[4];
-                $ZT-=$grobox[5];
-	}
-	while($YT < 0){
-                $XT+=$grobox[3];
-                $YT+=$grobox[4];
-                $ZT+=$grobox[5];
-	}
-	while($XT > $grobox[0]){
-                $XT-=$grobox[0];
-                $YT-=$grobox[1];
-                $ZT-=$grobox[2];
-	}
-	while($XT < 0){
-                $XT+=$grobox[0];
-                $YT+=$grobox[1];
-                $ZT+=$grobox[2];
-	}
 
-	$X[$I]=$XT;	
-	$Y[$I]=$YT;	
-	$Z[$I]=$ZT;	
+	$X[$I]=$XTT;	
+	$Y[$I]=$YTT;	
+	$Z[$I]=$ZTT;	
 	printf GROFILE "%5i%-5s%5s%5i%8.3f%8.3f%8.3f\n", $I,$addname, $addname, $I, $X[$I], $Y[$I], $Z[$I];
 
 }
