@@ -65,6 +65,7 @@ my $addcharge = "";
 my $addmass = "";
 my $help;
 my $warnonly=0;
+my @grobox;
 our $noexit=0;
 usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
         'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=s' => \$addmass, 'ionc12=s' => \$addC12, 'ionnm=s' => \$addname, 'ionq=s' => \$addcharge,  'mindist=s' => \$mindist,  'warnonly' => \$warnonly, 
@@ -124,7 +125,41 @@ for(my $I=0;$I<$NATOMS;$I++){
 my $grodim=<GROFILE>;
 chomp($grodim);
 $grodim =~ s/^\s+//g; 
-my @grobox = split(/\s+/,$grodim);
+my @tmpbox = split(/\s+/,$grodim);
+# if we have a rectangular box, then set the additional box vector components to zero;
+
+if($#tmpbox == 2){
+	print "Rectangular box detected\n";
+}elsif($#tmpbox == 8){
+	print "Triclinic  box detected\n";
+}else{
+	smog_quit("Wrong number of box vectors provided: unrecognized dimensions");
+}
+
+for(my $I=0;$I<9;$I++){
+	if(!defined $tmpbox[$I]){
+		$tmpbox[$I]=0;
+	}
+}
+# reorder the indices to be more logical
+$grobox[0] =$tmpbox[0];
+$grobox[5] =$tmpbox[1];
+$grobox[10]=$tmpbox[2];
+$grobox[1] =$tmpbox[3];
+$grobox[2] =$tmpbox[4];
+$grobox[4] =$tmpbox[5];
+$grobox[6] =$tmpbox[6];
+$grobox[8] =$tmpbox[7];
+$grobox[9] =$tmpbox[8];
+
+for (my $i=0;$i<3; $i++){
+         # keep magnitude and normalize vectors 
+         $grobox[$i*4+3]=sqrt($grobox[$i*4]*$grobox[$i*4]+$grobox[$i*4+1]*$grobox[$i*4+1]+$grobox[$i*4+2]*$grobox[$i*4+2]);
+         $grobox[$i*4] /= $grobox[$i*4+3];
+         $grobox[$i*4+1] /= $grobox[$i*4+3];
+         $grobox[$i*4+2] /= $grobox[$i*4+3];
+}
+
 close(GROFILE);
 
 if(-e $outputgro){smog_quit("$outputgro already exists.")};
@@ -137,9 +172,6 @@ for(my $I=1;$I<=$NATOMS-$addnum;$I++){
 	$X[$I]=substr($GRODATA[$I],20,8);
 	$Y[$I]=substr($GRODATA[$I],28,8);
 	$Z[$I]=substr($GRODATA[$I],36,8);
-	if($X[$I]<0 || $X[$I]> $grobox[0] || $Y[$I]<0 || $Y[$I]> $grobox[1] ||$Z[$I]<0 || $Z[$I]> $grobox[2]){
-		smog_quit("Not all atoms are inside the box. Offending atom: $I.");
-	}
 
 }
 print "adding ions to gro file...\n";
@@ -149,10 +181,31 @@ my $ZT;
 for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 	my $mindistt=-1;
 	until($mindistt > $mindist){
-		$XT=$grobox[0]*rand();
-		$YT=$grobox[1]*rand();
-		$ZT=$grobox[2]*rand();
-		$mindistt=($X[1]-$XT)**2+($Y[1]-$YT)**2+($Z[1]-$ZT)**2;
+		my $R1=rand();
+		my $R2=rand();
+		my $R3=rand();
+
+		$XT=$grobox[0]*$grobox[3]*$R1+$grobox[4]*$grobox[7]*$R2+$grobox[8]*$grobox[11]*$R3;
+		$YT=$grobox[1]*$grobox[3]*$R1+$grobox[5]*$grobox[7]*$R2+$grobox[9]*$grobox[11]*$R3;
+		$ZT=$grobox[2]*$grobox[3]*$R1+$grobox[6]*$grobox[7]*$R2+$grobox[10]*$grobox[11]*$R3;
+
+		for(my $i=0;$i<3;$i++){
+                # projection along vector i
+                    my $proj = $XT*$grobox[$i*4]+$YT*$grobox[$i*4+1]+$ZT*$grobox[$i*4+2];
+                    while ($proj > $grobox[$i*4+3]/2.0){
+                        $XT-=$grobox[$i*4]*$grobox[$i*4+3];
+                        $YT-=$grobox[$i*4+1]*$grobox[$i*4+3];
+                        $ZT-=$grobox[$i*4+2]*$grobox[$i*4+3];
+                        $proj = $XT*$grobox[$i*4]+$YT*$grobox[$i*4+1]+$ZT*$grobox[$i*4+2];
+                    }
+                    while ($proj < -$grobox[$i*4+3]/2.0){
+                        $XT+=$grobox[$i*4]*$grobox[$i*4+3];
+                        $YT+=$grobox[$i*4+1]*$grobox[$i*4+3];
+                        $ZT+=$grobox[$i*4+2]*$grobox[$i*4+3];
+                        $proj = $XT*$grobox[$i*4]+$YT*$grobox[$i*4+1]+$ZT*$grobox[$i*4+2];
+                    }
+            }
+	    $mindistt=($X[1]-$XT)**2+($Y[1]-$YT)**2+($Z[1]-$ZT)**2;
 		#check dist with all previous atoms
 		for(my $J=2;$J<$I;$J++){
 			my $dist=($X[$J]-$XT)**2+($Y[$J]-$YT)**2+($Z[$J]-$ZT)**2;
