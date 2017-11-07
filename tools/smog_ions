@@ -143,22 +143,20 @@ for(my $I=0;$I<9;$I++){
 }
 # reorder the indices to be more logical
 $grobox[0] =$tmpbox[0];
-$grobox[5] =$tmpbox[1];
-$grobox[10]=$tmpbox[2];
+$grobox[4] =$tmpbox[1];
+$grobox[8] =$tmpbox[2];
 $grobox[1] =$tmpbox[3];
 $grobox[2] =$tmpbox[4];
-$grobox[4] =$tmpbox[5];
-$grobox[6] =$tmpbox[6];
-$grobox[8] =$tmpbox[7];
-$grobox[9] =$tmpbox[8];
+$grobox[3] =$tmpbox[5];
+$grobox[5] =$tmpbox[6];
+$grobox[6] =$tmpbox[7];
+$grobox[7] =$tmpbox[8];
 
-for (my $i=0;$i<3; $i++){
-         # keep magnitude and normalize vectors 
-         $grobox[$i*4+3]=sqrt($grobox[$i*4]*$grobox[$i*4]+$grobox[$i*4+1]*$grobox[$i*4+1]+$grobox[$i*4+2]*$grobox[$i*4+2]);
-         $grobox[$i*4] /= $grobox[$i*4+3];
-         $grobox[$i*4+1] /= $grobox[$i*4+3];
-         $grobox[$i*4+2] /= $grobox[$i*4+3];
+print "box vectors ";
+for (my $I=0;$I<9;$I++){
+	print "$grobox[$I] ";
 }
+print "\n";
 
 close(GROFILE);
 
@@ -185,26 +183,41 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 		my $R2=rand();
 		my $R3=rand();
 
-		$XT=$grobox[0]*$grobox[3]*$R1+$grobox[4]*$grobox[7]*$R2+$grobox[8]*$grobox[11]*$R3;
-		$YT=$grobox[1]*$grobox[3]*$R1+$grobox[5]*$grobox[7]*$R2+$grobox[9]*$grobox[11]*$R3;
-		$ZT=$grobox[2]*$grobox[3]*$R1+$grobox[6]*$grobox[7]*$R2+$grobox[10]*$grobox[11]*$R3;
+		$XT=$grobox[0]*$R1+$grobox[3]*$R2+$grobox[6]*$R3;
+		$YT=$grobox[1]*$R1+$grobox[4]*$R2+$grobox[7]*$R3;
+		$ZT=$grobox[2]*$R1+$grobox[5]*$R2+$grobox[8]*$R3;
 
-		for(my $i=0;$i<3;$i++){
-                # projection along vector i
-                    my $proj = $XT*$grobox[$i*4]+$YT*$grobox[$i*4+1]+$ZT*$grobox[$i*4+2];
-                    while ($proj > $grobox[$i*4+3]/2.0){
-                        $XT-=$grobox[$i*4]*$grobox[$i*4+3];
-                        $YT-=$grobox[$i*4+1]*$grobox[$i*4+3];
-                        $ZT-=$grobox[$i*4+2]*$grobox[$i*4+3];
-                        $proj = $XT*$grobox[$i*4]+$YT*$grobox[$i*4+1]+$ZT*$grobox[$i*4+2];
-                    }
-                    while ($proj < -$grobox[$i*4+3]/2.0){
-                        $XT+=$grobox[$i*4]*$grobox[$i*4+3];
-                        $YT+=$grobox[$i*4+1]*$grobox[$i*4+3];
-                        $ZT+=$grobox[$i*4+2]*$grobox[$i*4+3];
-                        $proj = $XT*$grobox[$i*4]+$YT*$grobox[$i*4+1]+$ZT*$grobox[$i*4+2];
-                    }
-            }
+		while($ZT > $grobox[8]/2.0){
+                        $XT-=$grobox[6];
+                        $YT-=$grobox[7];
+                        $ZT-=$grobox[8];
+		}
+		while($ZT < -$grobox[8]/2.0){
+                        $XT+=$grobox[6];
+                        $YT+=$grobox[7];
+                        $ZT+=$grobox[8];
+		}
+		while($YT > $grobox[4]/2.0){
+                        $XT-=$grobox[3];
+                        $YT-=$grobox[4];
+                        $ZT-=$grobox[5];
+		}
+		while($YT < -$grobox[4]/2.0){
+                        $XT+=$grobox[3];
+                        $YT+=$grobox[4];
+                        $ZT+=$grobox[5];
+		}
+		while($XT > $grobox[0]/2.0){
+                        $XT-=$grobox[0];
+                        $YT-=$grobox[1];
+                        $ZT-=$grobox[2];
+		}
+		while($XT < -$grobox[0]/2.0){
+                        $XT+=$grobox[0];
+                        $YT+=$grobox[1];
+                        $ZT+=$grobox[2];
+		}
+
 	    $mindistt=($X[1]-$XT)**2+($Y[1]-$YT)**2+($Z[1]-$ZT)**2;
 		#check dist with all previous atoms
 		for(my $J=2;$J<$I;$J++){
