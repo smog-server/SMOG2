@@ -166,13 +166,55 @@ print GROFILE "$groheader\n";
 $NATOMS+=$addnum;
 print GROFILE "$NATOMS\n";
 for(my $I=1;$I<=$NATOMS-$addnum;$I++){
-	print GROFILE "$GRODATA[$I]\n";
-	$X[$I]=substr($GRODATA[$I],20,8);
-	$Y[$I]=substr($GRODATA[$I],28,8);
-	$Z[$I]=substr($GRODATA[$I],36,8);
 
+	my $XT=substr($GRODATA[$I],20,8);
+	my $YT=substr($GRODATA[$I],28,8);
+	my $ZT=substr($GRODATA[$I],36,8);
+
+	while($ZT > $grobox[8]){
+                $XT-=$grobox[6];
+                $YT-=$grobox[7];
+                $ZT-=$grobox[8];
+	}
+	while($ZT < 0){
+                $XT+=$grobox[6];
+                $YT+=$grobox[7];
+                $ZT+=$grobox[8];
+	}
+	while($YT > $grobox[4]){
+                $XT-=$grobox[3];
+                $YT-=$grobox[4];
+                $ZT-=$grobox[5];
+	}
+	while($YT < 0){
+                $XT+=$grobox[3];
+                $YT+=$grobox[4];
+                $ZT+=$grobox[5];
+	}
+	while($XT > $grobox[0]){
+                $XT-=$grobox[0];
+                $YT-=$grobox[1];
+                $ZT-=$grobox[2];
+	}
+	while($XT < 0){
+                $XT+=$grobox[0];
+                $YT+=$grobox[1];
+                $ZT+=$grobox[2];
+	}
+
+	substr($GRODATA[$I],20,8)=sprintf("%8.3f", $XT);
+	substr($GRODATA[$I],28,8)=sprintf("%8.3f", $YT);
+	substr($GRODATA[$I],36,8)=sprintf("%8.3f", $ZT);
+
+	print GROFILE "$GRODATA[$I]\n";
+	$X[$I]=$XT;
+	$Y[$I]=$YT;
+	$Z[$I]=$ZT;
 }
 print "adding ions to gro file...\n";
+my $XTT;
+my $YTT;
+my $ZTT;
 my $XT;
 my $YT;
 my $ZT;
@@ -182,11 +224,17 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 		my $R1=rand();
 		my $R2=rand();
 		my $R3=rand();
+		# generate possible position
+		$XTT=$grobox[0]*$R1+$grobox[3]*$R2+$grobox[6]*$R3;
+		$YTT=$grobox[1]*$R1+$grobox[4]*$R2+$grobox[7]*$R3;
+		$ZTT=$grobox[2]*$R1+$grobox[5]*$R2+$grobox[8]*$R3;
 
-		$XT=$grobox[0]*$R1+$grobox[3]*$R2+$grobox[6]*$R3;
-		$YT=$grobox[1]*$R1+$grobox[4]*$R2+$grobox[7]*$R3;
-		$ZT=$grobox[2]*$R1+$grobox[5]*$R2+$grobox[8]*$R3;
-
+	    	$mindistt=($X[1]-$XTT)**2+($Y[1]-$YTT)**2+($Z[1]-$ZTT)**2;
+		#check dist with all previous atoms
+		for(my $J=2;$J<$I;$J++){
+		$XT=$XTT-$X[$J];
+		$YT=$YTT-$Y[$J];
+		$ZT=$ZTT-$Z[$J];
 		while($ZT > $grobox[8]/2.0){
                         $XT-=$grobox[6];
                         $YT-=$grobox[7];
@@ -218,15 +266,47 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
                         $ZT+=$grobox[2];
 		}
 
-	    $mindistt=($X[1]-$XT)**2+($Y[1]-$YT)**2+($Z[1]-$ZT)**2;
-		#check dist with all previous atoms
-		for(my $J=2;$J<$I;$J++){
 			my $dist=($X[$J]-$XT)**2+($Y[$J]-$YT)**2+($Z[$J]-$ZT)**2;
 			if($mindistt > $dist){
 				$mindistt=$dist;
 			}
 		}
 	}
+
+	$XT=$XTT;
+	$YT=$YTT;
+	$ZT=$ZTT;
+	while($ZT > $grobox[8]){
+                $XT-=$grobox[6];
+                $YT-=$grobox[7];
+                $ZT-=$grobox[8];
+	}
+	while($ZT < 0){
+                $XT+=$grobox[6];
+                $YT+=$grobox[7];
+                $ZT+=$grobox[8];
+	}
+	while($YT > $grobox[4]){
+                $XT-=$grobox[3];
+                $YT-=$grobox[4];
+                $ZT-=$grobox[5];
+	}
+	while($YT < 0){
+                $XT+=$grobox[3];
+                $YT+=$grobox[4];
+                $ZT+=$grobox[5];
+	}
+	while($XT > $grobox[0]){
+                $XT-=$grobox[0];
+                $YT-=$grobox[1];
+                $ZT-=$grobox[2];
+	}
+	while($XT < 0){
+                $XT+=$grobox[0];
+                $YT+=$grobox[1];
+                $ZT+=$grobox[2];
+	}
+
 	$X[$I]=$XT;	
 	$Y[$I]=$YT;	
 	$Z[$I]=$ZT;	
