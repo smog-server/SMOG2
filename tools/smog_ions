@@ -394,6 +394,9 @@ if(!exists $DIRLIST{"atomtypes"}){
 		if($addC12 eq ""){
 			smog_quit("C12 parameter of ion must be provided on command line.");
 		}
+		if($addname eq ""){
+			smog_quit("name of ion must be provided on command line.");
+		}
 		print TOPOUT "$addname $addmass $addcharge A 0.0 $addC12\n";
 	}
 	print TOPOUT "\n";
