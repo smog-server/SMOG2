@@ -295,8 +295,7 @@ open(FILE, "$inputTOP") or die "Can not open $inputTOP\n";
 
 if(-e $outputtop){smog_quit("$outputtop already exists.")}
 open(TOPOUT,">$outputtop") or die "Can\'t open $outputtop for writing.\n";
-
-my $string = "";
+my $added=0;
 while (<FILE>){
 	my $LINE = $_;
 	my $LINEORIG=$LINE;
@@ -351,7 +350,10 @@ while (<FILE>){
 	}
 	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
 		# add a new molecule type
-		print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
+		if($added == 0){
+			print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
+			$added=1;
+		}
 	}
 
 	if($TMP[0] eq "[" and $TMP[1] eq "molecules"){
