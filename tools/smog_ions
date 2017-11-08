@@ -290,25 +290,16 @@ print GROFILE "$grodim\n";
 ##******************* END OF GRO MODIFICATIONS**************************
 
 
-my %supported_directives = ( 'defaults' => '0',
-        'atomtypes' => '1',
-        'moleculetype' => '0',
-        'atoms' => '1',
-        'bonds' => '1',
-        'angles' => '1',
-        'dihedrals' => '1',
-        'pairs' => '1',
-        'exclusions' => '1',
-        'system' => '1',
-        'molecules' => '1',
-        'position_restraints' => '1'
-        );
-
 #read in the top file, with comments stripped
 open(FILE, "$inputTOP") or die "Can not open $inputTOP\n"; 
+
+if(-e $outputtop){smog_quit("$outputtop already exists.")}
+open(TOPOUT,">$outputtop") or die "Can\'t open $outputtop for writing.\n";
+
 my $string = "";
 while (<FILE>){
 	my $LINE = $_;
+	my $LINEORIG=$LINE;
 	chomp($LINE);
 	$LINE =~ s/;.*$//g; 
 	$LINE =~ s/\t/ /g; 
@@ -317,74 +308,15 @@ while (<FILE>){
 	if( $LINE =~ m/[#!\^\$]/ ){
 		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
 	}
-	# remove comments
-	if($LINE ne ""){ 
-	## remove blank lines
-		 $string .= "$LINE\n";
+
+	# check if we hit the atomtypes.  if we do, then add the atomtype.
+	if($LINE eq ""){
+		print TOPOUT "$LINEORIG"; 
+		next;
 	}
-}
-
-# process the top file and check that only supported directives are included.
-my %DIRLIST;
-my @DATA=split(/\[/,$string);
-for (my $I=1;$I<=$#DATA;$I++){
-	my $string1 = $DATA[$I];
-	open my($fh), "<", \$string1 or die ; # reading from the data in $string
-	my $first_line = <$fh>; 
-	$first_line =~  s/^\s//g;
-	close $fh;
-	my @B=split(/ /,$first_line);
-	my $DIR=$B[0];
-	chomp($DIR);
-	$DIR =~ s/\]$//g;
-		
-	if(!exists $supported_directives{$DIR}){
-		smog_quit("Directive \"$DIR \" not supported\n");
-	}else{
-		$DIRLIST{$DIR}=$I;
-	}
-}
-
-# Go through the directives, in order, and write out information for the subsystem
-if(-e $outputtop){smog_quit("$outputtop already exists.")}
-open(TOPOUT,">$outputtop") or die "Can\'t open $outputtop for writing.\n";
-
-if(!exists $DIRLIST{"defaults"}){
-	smog_quit("\"defaults\" does not appear in .top file.\n");
-}else{
-	my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
-	if($#C != 1){
-		my $NN=$#C;
-		smog_quit("Must have one line in the \"defaults\" directive. Found $NN\n");
-	}
-	my @D=split(/ /,$C[1]);
-	if($#D != 2){
-		smog_quit("Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n");
-	}
-	print TOPOUT "[ defaults ]\n";
-	print TOPOUT "$C[1]\n\n";
-}
-
-
-
-# start with atomtypes
-	my $match = 0;
-if(!exists $DIRLIST{"atomtypes"}){
-	smog_quit("\"atomtypes\" does not appear in .top file.\n");
-}else{
-	my @C=split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
-	print TOPOUT "[";
-	print TOPOUT $DATA[$DIRLIST{"atomtypes"}];
-
-# check for atomtype we are adding
-	for(my $II=1;$II<=$#C;$II++){
-		my @D=split(/ /,$C[$II]);
-		if($D[0] eq "$addname"){
-			$match=1;
-		}
-	}
-	if($match == 0){
-		print "Note: since atomtype $addname is not in top file, will add it to atomtypes section.\n";
+	my @TMP=split(/ /,$LINE);
+	if($TMP[0] eq "[" and $TMP[1] eq "atomtypes"){
+		print TOPOUT "$LINEORIG"; 
 		if($addmass eq ""){
 			smog_quit("mass of ion must be provided on command line.");
 		}
@@ -397,102 +329,57 @@ if(!exists $DIRLIST{"atomtypes"}){
 		if($addname eq ""){
 			smog_quit("name of ion must be provided on command line.");
 		}
+	
+		$LINE = <FILE>;
+		$LINEORIG=$LINE;
+		chomp($LINE);
+		$LINE =~ s/\t/ /g; 
+		$LINE =~ s/^\s+|\s+$//g;
+		$LINE =~ s/ +/ /g;
+		until($LINE eq ""){
+			print TOPOUT "$LINEORIG"; 
+			$LINE = <FILE>;
+			if(!defined $LINE){$LINE="";$LINEORIG="";}
+			$LINEORIG=$LINE;
+			chomp($LINE);
+			$LINE =~ s/\t/ /g; 
+			$LINE =~ s/^\s+|\s+$//g;
+			$LINE =~ s/ +/ /g;
+		}
 		print TOPOUT "$addname $addmass $addcharge A 0.0 $addC12\n";
+
 	}
-	print TOPOUT "\n";
+	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
+		# add a new molecule type
+		print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
+	}
+
+	if($TMP[0] eq "[" and $TMP[1] eq "molecules"){
+		print TOPOUT "$LINEORIG"; 
+	
+		$LINE = <FILE>;
+		$LINEORIG=$LINE;
+		chomp($LINE);
+		$LINE =~ s/\t/ /g; 
+		$LINE =~ s/^\s+|\s+$//g;
+		$LINE =~ s/ +/ /g;
+		until($LINE eq ""){
+			print TOPOUT "$LINEORIG"; 
+			$LINE = <FILE>;
+			if(!defined $LINE){$LINE="";$LINEORIG="";}
+			$LINEORIG=$LINE;
+			chomp($LINE);
+			$LINE =~ s/\t/ /g; 
+			$LINE =~ s/^\s+|\s+$//g;
+			$LINE =~ s/ +/ /g;
+		}
+		print TOPOUT "$addname $addnum\n";
+
+	}
+
+	print TOPOUT "$LINEORIG"; 
+	# end of atomtypes continue
 }
-
-# add a new molecule type
-print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
-
-
-#added ion molecule type
-if(!exists $DIRLIST{"moleculetype"}){
-	smog_quit("\"moleculetype\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[";
-	print TOPOUT $DATA[$DIRLIST{"moleculetype"}];
-	print TOPOUT "\n";
-}
-
-# information about the atoms 
-if(!exists $DIRLIST{"atoms"}){
-	smog_quit("\"atoms\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[";
-	print TOPOUT $DATA[$DIRLIST{"atoms"}];
-	print TOPOUT "\n";
-}
-
-
-# information about the bonds 
-if(!exists $DIRLIST{"bonds"}){
-	smog_quit("\"bonds\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[";
-	print TOPOUT $DATA[$DIRLIST{"bonds"}];
-	print TOPOUT "\n";
-}
-
-# information about the angles 
-if(!exists $DIRLIST{"angles"}){
-	smog_quit("\"angles\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[";
-	print TOPOUT $DATA[$DIRLIST{"angles"}];
-	print TOPOUT "\n";
-}
-
-# information about the dihedrals 
-if(!exists $DIRLIST{"dihedrals"}){
-	smog_quit("\"dihedrals\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[";
-	print TOPOUT $DATA[$DIRLIST{"dihedrals"}];
-	print TOPOUT "\n";
-}
-
-# information about the contacts 
-if(!exists $DIRLIST{"pairs"}){
-	smog_quit("\"pairs\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[";
-	print TOPOUT $DATA[$DIRLIST{"pairs"}];
-	print TOPOUT "\n";
-}
-
-# information about the exclusions 
-if(!exists $DIRLIST{"exclusions"}){
-	smog_quit("\"exclusions\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[";
-	print TOPOUT $DATA[$DIRLIST{"exclusions"}];
-	print TOPOUT "\n";
-}
-
-# information about the restraints 
-if(exists $DIRLIST{"position_restraints"} ){
-	smog_quit("position_restraints not supported in the input top file (yet).");
-}
-
-if(!exists $DIRLIST{"system"}){
-	smog_quit("\"system\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[";
-	print TOPOUT $DATA[$DIRLIST{"system"}];
-	print TOPOUT "\n";
-}
-
-if(!exists $DIRLIST{"molecules"}){
-	smog_quit("\"molecules\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[";
-	print TOPOUT $DATA[$DIRLIST{"molecules"}];
-	#add the ions
-	print TOPOUT "$addname $addnum\n";
-	print TOPOUT "\n";
-}
-
 if($warnonly){
 	print "\n\tIons added. Since -warnonly was used, carefully check output.\n\n";
 }else{
