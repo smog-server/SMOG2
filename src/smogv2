@@ -1147,6 +1147,9 @@ sub readAtoms
 		}
 	}
 	print "\nTotal charge of system: $totalcharge\n\n";
+	if($totalcharge-int($totalcharge) > 0.01){
+		smog_quit("Non-integer system charge. This typically means something is wrong with the .bif file.");
+	}
 	unless($endreached){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 
 }
