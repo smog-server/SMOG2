@@ -1107,6 +1107,7 @@ sub readAtoms
 	my $charge = 0; my $mass = 1; my $atomType="none";
 	my $counter=0; my $resCounter=1;my $resNumCurr="null";
 	my $endreached=0;
+	my $totalcharge=0;
 	while($line = <PDB>)
 	{
 		if($line =~ m/^END/) {$endreached=1;last;}
@@ -1136,12 +1137,16 @@ sub readAtoms
 			if(defined $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}){
 				#if charge is defined for a specific atom in a residue, then write it
 				addToTop("atoms",sprintf(" %9.6f\n", $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}));
+				# this residue has a charge on that atom type, then add that value to the total
+				$totalcharge += $residues{$resName}->{"atoms"}->{$atomName}->{"charge"};
 			}else{
 				addToTop("atoms",sprintf("\n"));
+				# since there is not residue-specific charge assigned, use the atomtype value.
+				$totalcharge += $interactions->{"nonbonds"}->{$atomType}->{"charge"};
 			}
 		}
 	}
-
+	print "\nTotal charge of system: $totalcharge\n\n";
 	unless($endreached){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 
 }
