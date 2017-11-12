@@ -238,7 +238,7 @@ if($RIGIDON =~ m/^Y$/){
 		## for now, always use a default generic definitions for rigid groups
 		## format: <RESIDUE NAME> <LIST OF ATOM NAMES IN GROUP>
 		
-		open(MAPFILE,"$ENV{SMOG_PATH}/tools/rigidmap") or die "Can\'t open rigidmap file\n";
+		open(MAPFILE,"$ENV{SMOG_PATH}/share/mapfiles/rigidmap") or die "Can\'t open rigidmap file\n";
 		if(-e "rbodyconfig"){print "rbodyconfig already exists.  Will move to rbodyconfig.bu.\n"; `mv rbodyconfig rbodyconfig.bu`;}
 		if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will move to coordsinrigid.bu.\n"; `mv coordsinrigid coordsinrigid.bu`;}
 		open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";

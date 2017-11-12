@@ -48,7 +48,7 @@ if (( $ERR == 0 )); then
 		echo $smog_exec \"\$\@\" >> $SMOG_PATH/bin/smog2
 		chmod 755 $SMOG_PATH/bin/smog2
 	
-		for tool in adjustPDB  removeH  tablegen optim extract scale-energies ione 
+		for tool in adjustPDB  removeH  tablegen optim extract scale-energies ions 
 		do
 			echo Creating wrapper $SMOG_PATH/bin/smog_$tool
 			echo '#!/bin/bash' > $SMOG_PATH/bin/smog_$tool

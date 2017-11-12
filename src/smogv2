@@ -1107,6 +1107,7 @@ sub readAtoms
 	my $charge = 0; my $mass = 1; my $atomType="none";
 	my $counter=0; my $resCounter=1;my $resNumCurr="null";
 	my $endreached=0;
+	my $totalcharge=0;
 	while($line = <PDB>)
 	{
 		if($line =~ m/^END/) {$endreached=1;last;}
@@ -1136,12 +1137,19 @@ sub readAtoms
 			if(defined $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}){
 				#if charge is defined for a specific atom in a residue, then write it
 				addToTop("atoms",sprintf(" %9.6f\n", $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}));
+				# this residue has a charge on that atom type, then add that value to the total
+				$totalcharge += $residues{$resName}->{"atoms"}->{$atomName}->{"charge"};
 			}else{
 				addToTop("atoms",sprintf("\n"));
+				# since there is not residue-specific charge assigned, use the atomtype value.
+				$totalcharge += $interactions->{"nonbonds"}->{$atomType}->{"charge"};
 			}
 		}
 	}
-
+	print "\nTotal charge of system: $totalcharge\n\n";
+	if($totalcharge-int($totalcharge) > 0.01){
+		smog_quit("Non-integer system charge. This typically means something is wrong with the .bif file.");
+	}
 	unless($endreached){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 
 }
@@ -1261,7 +1269,7 @@ sub convertPDBToGroNdx
 sub validateTemplate
 {
 	my ($file,$type) = @_;
-	my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/schemas/$type.xsd");
+	my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/share/schemas/$type.xsd");
 	my $parser = XML::SAX::ParserFactory->parser(Handler => $validator);
 	eval { $parser->parse_uri($file) };
  smog_quit("Failed at validating $file: $@ \nThis is due to an XML formatting issue.  The most common issue is that an element is missing a tagline. For example, something like this may appear in your file,
@@ -1602,7 +1610,7 @@ sub appendContacts {
 	}
 	if(exists $interactions->{"gen-pairs"} && $interactions->{"gen-pairs"} == 1) { $genpairs = "yes"; }
 	addToTop("defaults", "  1      $combrule         $genpairs\n");
-	if($extrasexists) { addExtras(); }^M
+	if($extrasexists) { addExtras(); }
 }
 
 ##################
