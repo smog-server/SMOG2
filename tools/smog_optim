@@ -6,6 +6,15 @@ print <<EOT;
 *****************************************************************************************
                                         smog_optim
 
+
+
+
+SMOG_OPTIM IS STILL EXPERIMENTAL, THOUGH IT IS PROVIDED, IN CASE YOU WOULD LIKE TO TEST IT.
+
+
+
+
+
        smog_optim is part of the SMOG 2 distribution, available at smog-server.org     
 
          This tool uses a SMOG .top and .gro file to generate OPTIM input files.         

@@ -218,9 +218,17 @@ my $ZTT;
 my $XT;
 my $YT;
 my $ZT;
+my $added=0;
 for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
+	print "adding $added\n";
+	$added++;
 	my $mindistt=-1;
+	my $attempt=0;
 	until($mindistt > $mindist){
+		$attempt++;
+		if($attempt ==1000){
+			smog_quit("Tried 1000 times to add ion number $added. Giving up.");
+		}
 		my $R1=rand();
 		my $R2=rand();
 		my $R3=rand();

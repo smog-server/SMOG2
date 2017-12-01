@@ -105,6 +105,29 @@ if(!defined $ext || $ext ne ".map"){
 	$outputmap .=  ".map";
 }
 
+my $maxbu = 99;
+foreach my $filen($outputgro, $outputtop, $outputmap){
+	my ($ext) = $filen =~ /(\.[^.]+)$/;
+	if($filen ne "" && -e $filen){
+		for(my $bu=1;$bu<=$maxbu;$bu++){
+			my $buname="$filen.bu$bu";
+			if( ! -e $buname){	
+			print "$filen already exists.  Backing up to $buname\n";
+			system("mv $filen $buname");
+			last;
+			}
+			if($bu == $maxbu){
+		 	smog_quit ("Already backed up $maxbu copies of $filen."); 
+			}
+		}
+	}
+}
+
+
+
+
+
+
 if(-e $outputmap){smog_quit("$outputmap already exists.")};
 open(MAPPING,">$outputmap") or die "\nCan\'t open $outputmap. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
 print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
