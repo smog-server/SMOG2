@@ -58,6 +58,25 @@ EOT
   }
 }
 
+sub checkcomment
+{
+	my ($LINE) = @_;
+	my $comment;
+	if($LINE =~ m/(;.*)/){
+		$comment=$1;
+	}else{
+		$comment="";
+	}
+	# remove comments
+	$LINE =~ s/;.*$//g; 
+	$LINE =~ s/\t/ /g; 
+	$LINE =~ s/^\s+|\s+$//g;
+	$LINE =~ s/ +/ /g;
+	if( $LINE =~ m/[#!\^\$]/ ){
+		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
+	}
+	return ($LINE,$comment);
+}
 
 my $inputTOP="smog.top";
 my $inputGRO="smog.gro";
@@ -122,11 +141,6 @@ foreach my $filen($outputgro, $outputtop, $outputmap){
 		}
 	}
 }
-
-
-
-
-
 
 if(-e $outputmap){smog_quit("$outputmap already exists.")};
 open(MAPPING,">$outputmap") or die "\nCan\'t open $outputmap. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
@@ -220,18 +234,12 @@ my $string = "";
 while (<FILE>){
 	my $LINE = $_;
 	chomp($LINE);
-	$LINE =~ s/;.*$//g; 
-	$LINE =~ s/\t/ /g; 
-	$LINE =~ s/^\s+|\s+$//g;
-	$LINE =~ s/ +/ /g;
-	if( $LINE =~ m/[#!\^\$]/ ){
-		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
-	}
-	# remove comments
+
 	if($LINE ne ""){ 
-	## remove blank lines
 		 $string .= "$LINE\n";
 	}
+
+
 }
 
 # process the top file and check that only supported directives are included.
@@ -258,24 +266,33 @@ for (my $I=1;$I<=$#DATA;$I++){
 # Go through the directives, in order, and write out information for the subsystem
 if(-e $outputtop){smog_quit("$outputtop already exists.")}
 open(TOPOUT,">$outputtop") or die "Can\'t open $outputtop for writing.\n";
-
+#copy header
+print TOPOUT "$DATA[0]\n";
 if(!exists $DIRLIST{"defaults"}){
 	smog_quit("\"defaults\" does not appear in .top file.\n");
 }else{
-	my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
-	if($#C != 1){
-		my $NN=$#C;
-		smog_quit("Must have one line in the \"defaults\" directive. Found $NN\n");
-	}
-	my @D=split(/ /,$C[1]);
-	if($#D != 2){
-		smog_quit("Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n");
-	}
 	print TOPOUT "[ defaults ]\n";
-	print TOPOUT "$C[1]\n\n";
+
+	my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
+	for(my $JJ=1;$JJ<=$#C;$JJ++){
+		my ($A, $B)=checkcomment($C[$JJ]);
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			if($#D != 2){
+				smog_quit("Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n");
+			}
+			print TOPOUT "$A";
+			if($B ne ""){
+				print TOPOUT " $B\n";
+			}else{
+				print TOPOUT "\n";
+			}
+		}
+	}
 }
-
-
 
 # start with atomtypes
 if(!exists $DIRLIST{"atomtypes"}){
@@ -295,17 +312,13 @@ if(!exists $DIRLIST{"atomtypes"}){
 if(!exists $DIRLIST{"moleculetype"}){
 	smog_quit("\"moleculetype\" does not appear in .top file.\n");
 }else{
-	my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
-	if($#C != 1){
-		my $NN=$#C;
-		smog_quit("Must have one line in the \"moleculetype\" directive. Found $NN\n");
-	}
-	my @D=split(/ /,$C[1]);
-	if($#D != 1){
-		smog_quit("Improperly formatted moleculetype line. Must provide name and nrexcl value.\n");
-	}
 	print TOPOUT "[ moleculetype ]\n";
-	print TOPOUT "$C[1]\n\n";
+	my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
+
+	for(my $JJ=1;$JJ<=$#C;$JJ++){
+		print TOPOUT "$C[$JJ]\n";
+	}
+	print TOPOUT "\n";
 }
 
 # information about the atoms 
@@ -313,13 +326,28 @@ if(!exists $DIRLIST{"atoms"}){
 	smog_quit("\"atoms\" does not appear in .top file.\n");
 }else{
 	my @C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
-
 	print TOPOUT "[ atoms ]\n";
 
-	for(my $I=0;$I<$KEEPN;$I++){
-		my $JJ=$keepatoms2[$I];
-		my @D=split(/ /,$C[$JJ]);
-		print TOPOUT "$keepatoms{$JJ} $D[1] $D[2] $D[3] $D[4] $keepatoms{$JJ}\n";
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			my $NUM=$D[0];
+			if(exists $keepatoms{$NUM}){
+				print TOPOUT "$keepatoms{$NUM}\t$D[1]\t$D[2]\t$D[3]\t$D[4]\t$keepatoms{$NUM}";
+				for(my $K=6;$K<=$#D;$K++){
+					print TOPOUT "\t$D[$K]";
+				}
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+			}
+		}
 	}
 	print TOPOUT "\n";
 }
@@ -335,18 +363,29 @@ if(!exists $DIRLIST{"bonds"}){
 	}
 
 	print TOPOUT "[ bonds ]\n";
-	for(my $JJ=1;$JJ<=$#C;$JJ++){
-		my @D=split(/ /,$C[$JJ]);
-		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
-			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
-			for(my $J=2;$J<=$#D;$J++){
-				print TOPOUT "$D[$J] ";
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				print TOPOUT "$keepatoms{$D[0]}\t$keepatoms{$D[1]} ";
+				for(my $J=2;$J<=$#D;$J++){
+					print TOPOUT "\t$D[$J]";
+				}
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+
+			}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[0]}}=1;
+			}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[1]}}=1;
 			}
-			print TOPOUT "\n";
-		}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
-			$atoms2restrain{$keepatoms{$D[0]}}=1;
-		}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
-			$atoms2restrain{$keepatoms{$D[1]}}=1;
 		}
 	}
 	print TOPOUT "\n";
@@ -361,18 +400,30 @@ if(!exists $DIRLIST{"angles"}){
 		smog_quit("There must be at least 1 angle listed under the angles directive\n");
 	}
 	print TOPOUT "[ angles ]\n";
-	for(my $JJ=1;$JJ<=$#C;$JJ++){
-		my @D=split(/ /,$C[$JJ]);
-		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} ){
-			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} $keepatoms{$D[2]} ";
-			for(my $J=3;$J<=$#D;$J++){
-				print TOPOUT "$D[$J] ";
-			}
-			print TOPOUT "\n";
-		}elsif(exists $keepatoms{$D[0]} || exists $keepatoms{$D[1]} || exists $keepatoms{$D[2]}){
-			for(my $M=0;$M<3;$M++){
-				if(exists $keepatoms{$D[$M]}){
-					$atoms2restrain{$keepatoms{$D[$M]}}=1;
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} ){
+				print TOPOUT "$keepatoms{$D[0]}\t$keepatoms{$D[1]}\t$keepatoms{$D[2]} ";
+				for(my $J=3;$J<=$#D;$J++){
+					print TOPOUT "\t$D[$J]";
+				}
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+
+			}elsif(exists $keepatoms{$D[0]} || exists $keepatoms{$D[1]} || exists $keepatoms{$D[2]}){
+				for(my $M=0;$M<3;$M++){
+					if(exists $keepatoms{$D[$M]}){
+						$atoms2restrain{$keepatoms{$D[$M]}}=1;
+					}
 				}
 			}
 		}
@@ -391,18 +442,29 @@ if(!exists $DIRLIST{"dihedrals"}){
 	}
 
 	print TOPOUT "[ dihedrals ]\n";
-	for(my $JJ=1;$JJ<=$#C;$JJ++){
-		my @D=split(/ /,$C[$JJ]);
-		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} && exists $keepatoms{$D[3]} ){
-			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} $keepatoms{$D[2]} $keepatoms{$D[3]} ";
-			for(my $J=4;$J<=$#D;$J++){
-				print TOPOUT "$D[$J] ";
-			}
-			print TOPOUT "\n";
-		}elsif(exists $keepatoms{$D[0]} || exists $keepatoms{$D[1]} || exists $keepatoms{$D[2]} || exists $keepatoms{$D[3]}){
-			for(my $M=0;$M<4;$M++){
-				if(exists $keepatoms{$D[$M]}){
-					$atoms2restrain{$keepatoms{$D[$M]}}=1;
+
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} && exists $keepatoms{$D[3]} ){
+				print TOPOUT "$keepatoms{$D[0]}\t$keepatoms{$D[1]}\t$keepatoms{$D[2]}\t$keepatoms{$D[3]}";
+				for(my $J=4;$J<=$#D;$J++){
+					print TOPOUT "\t$D[$J]";
+				}
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+			}elsif(exists $keepatoms{$D[0]} || exists $keepatoms{$D[1]} || exists $keepatoms{$D[2]} || exists $keepatoms{$D[3]}){
+				for(my $M=0;$M<4;$M++){
+					if(exists $keepatoms{$D[$M]}){
+						$atoms2restrain{$keepatoms{$D[$M]}}=1;
+					}
 				}
 			}
 		}
@@ -416,24 +478,34 @@ if(!exists $DIRLIST{"pairs"}){
 }else{
 	print TOPOUT "[ pairs ]\n";
 	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
-	for(my $JJ=1;$JJ<=$#C;$JJ++){
-		my @D=split(/ /,$C[$JJ]);
-		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
-			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]} ";
-			for(my $J=2;$J<=$#D;$J++){
-				print TOPOUT "$D[$J] ";
+
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				print TOPOUT "$keepatoms{$D[0]}\t$keepatoms{$D[1]} ";
+				for(my $J=2;$J<=$#D;$J++){
+					print TOPOUT "\t$D[$J]";
+				}
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+
+			}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[0]}}=1;
+			}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[1]}}=1;
 			}
-			print TOPOUT "\n";
-		}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
-			$atoms2restrain{$keepatoms{$D[0]}}=1;
-		}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
-			$atoms2restrain{$keepatoms{$D[1]}}=1;
 		}
 	}
 	print TOPOUT "\n";
 }
-
-
 
 # information about the exclusions 
 if(!exists $DIRLIST{"exclusions"}){
@@ -445,10 +517,21 @@ if(!exists $DIRLIST{"exclusions"}){
 	}
 
 	print TOPOUT "[ exclusions ]\n";
-	for(my $JJ=1;$JJ<=$#C;$JJ++){
-		my @D=split(/ /,$C[$JJ]);
-		if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
-			print TOPOUT "$keepatoms{$D[0]} $keepatoms{$D[1]}\n";
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				print TOPOUT "$keepatoms{$D[0]}\t$keepatoms{$D[1]} ";
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+			}
 		}
 	}
 	print TOPOUT "\n";
