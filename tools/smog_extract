@@ -88,6 +88,13 @@ my $help;
 my $gen_restraints=0;
 my $warnonly=0;
 our $noexit=0;
+
+my $call="";
+foreach my $filen(@ARGV){
+        $call .=  "$filen ";
+}
+$call .="\n";
+
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
         'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'restraints=s' => \$gen_restraints,  'warnonly' => \$warnonly, 
         '<>' => \&usage)
@@ -267,6 +274,9 @@ for (my $I=1;$I<=$#DATA;$I++){
 if(-e $outputtop){smog_quit("$outputtop already exists.")}
 open(TOPOUT,">$outputtop") or die "Can\'t open $outputtop for writing.\n";
 #copy header
+
+print TOPOUT "; This is a top file generated with smog_extract, using the command:\n;";
+print TOPOUT "   smog_extract $call\n";
 print TOPOUT "$DATA[0]\n";
 if(!exists $DIRLIST{"defaults"}){
 	smog_quit("\"defaults\" does not appear in .top file.\n");
