@@ -72,10 +72,30 @@ my $help;
 my $warnonly=0;
 my @grobox;
 our $noexit=0;
-usage() if (@ARGV < 2 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
+usage() if (@ARGV < 5 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
         'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionc12=f' => \$addC12, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
+
+my $maxbu=10;
+foreach my $filen($outputtop, $outputgro){
+	my ($ext) = $filen =~ /(\.[^.]+)$/;
+	if($filen ne "" && -e $filen){
+		for(my $bu=1;$bu<=$maxbu;$bu++){
+			my $buname="$filen.bu$bu";
+			if( ! -e $buname){	
+			print "$filen already exists.  Backing up to $buname\n";
+			system("mv $filen $buname");
+			last;
+			}
+			if($bu == $maxbu){
+		 	smog_quit ("Already backed up $maxbu copies of $filen."); 
+			}
+		}
+	}
+}
+
+
 
 if($warnonly){
 	$noexit=1;
@@ -102,7 +122,7 @@ if(!defined $ext || $ext ne ".top"){
 print "\n\nUsing $inputTOP and $inputGRO to generate system with ions...\n\n";
 ### make a new gro file 
 
-open(GROFILE,"$inputGRO") or die "Can\'t open GRO file \"$inputGRO\"\n";
+open(GROFILE,"$inputGRO") or smog_quit("Can\'t open GRO file $inputGRO");
 my $groheader=<GROFILE>;
 chomp($groheader);
 
@@ -166,7 +186,7 @@ print "\n";
 close(GROFILE);
 
 if(-e $outputgro){smog_quit("$outputgro already exists.")};
-open(GROFILE,">$outputgro") or die "Can\'t open output GRO file \"$outputgro\"\n";
+open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
 print GROFILE "$groheader\n";
 $NATOMS+=$addnum;
 print GROFILE "$NATOMS\n";
@@ -225,7 +245,7 @@ my $YT;
 my $ZT;
 my $added=0;
 for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
-	print "adding $added\n";
+	print "adding ion $added\n";
 	$added++;
 	my $mindistt=-1;
 	my $attempt=0;
@@ -304,10 +324,10 @@ print GROFILE "$grodim\n";
 
 
 #read in the top file, with comments stripped
-open(FILE, "$inputTOP") or die "Can not open $inputTOP\n"; 
+open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP"); 
 
 if(-e $outputtop){smog_quit("$outputtop already exists.")}
-open(TOPOUT,">$outputtop") or die "Can\'t open $outputtop for writing.\n";
+open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing");
 my $added=0;
 while (<FILE>){
 	my $LINE = $_;
