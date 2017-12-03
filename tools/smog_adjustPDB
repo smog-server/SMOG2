@@ -43,15 +43,16 @@ print <<EOT;
             For questions regarding this script, contact info\@smog-server.org              
 *****************************************************************************************
 
-usage: smog_adjustPDB [-i filename.pdb] [-o smog.pdb] [-default] | [-map filename] [--help|-?]
+usage: smog_adjustPDB .. options ..
 
 Required Input
-	-i [filename.pdb]: Input PDB to adjust to smog2 format
-	-default | -map filename : use the default file name provided by smog2 or specify a map file name
-Optional Input parameters
-	-warnonly : Convert fatal errors to warnings (Caution: Consult manual before using this option)
-	-renumber : Ignore any residue numbering inconsistencies and renumber residues sequentially.
-
+	-i [filename.pdb] : Input PDB to adjust to smog2 format
+	-default | -map filename : use the default file name provided by smog2 or specify a map filename
+Optional Parameters
+	-o [smog.pdb] : output pdb file name
+	-warnonly : convert fatal errors to warnings (Caution: Consult manual before using this option)
+	-renumber : ignore any residue numbering inconsistencies and renumber residues sequentially
+	-help 	  : show options
 EOT
 
   if ( @_ ){
