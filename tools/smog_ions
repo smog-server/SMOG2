@@ -36,13 +36,13 @@ sub usage
 
 usage: smog_ions ... options
 
-   Required Input
+   Required flags
 	-ionnm  <string>   : name of ion to be added to the system
 	-ionn   <integer>  : number of ions to add
 	-ionq   <float>    : charge of ions
 	-ionm   <float>    : mass of ions
 	-ionc12 <float>    : C12 excluded-volume parameter for ions
-   Optional Input/Output parameters
+   Optional settings 
 	-f [smog.top]      : input SMOG forcefield file
 	-g [smog.gro]      : input SMOG configuration file
 	-of [smog.ions.top]: output SMOG forcefield file for smog.ions system
