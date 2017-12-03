@@ -10,8 +10,7 @@ print <<EOT;
 
         This tool uses a SMOG .top and .gro file, along command line arguments to 
 	add ions to a SMOG model. Note, this does not change the underlying model, it 
- 	only adds ions to the system and ensures that the .gro and .top files are 
-	consistent.
+ 	only adds ions to the gro and top files.
 
         For usage information, issue flag -help, or see the SMOG manual.
 
@@ -35,15 +34,21 @@ sub usage
 {
   print <<EOT;
 
-usage: smog_ions  [-f .top file] [-g .gro file] [-of output .top file] [-og output .gro file] -ionnm <ion name> -ionq <ion charge> -ionn <number to add> -ionm <mass of ion> -ionc12 <c12 parameter of ion> -mindist [0.5] [-help|-?]
+usage: smog_ions ... options
 
    Required Input
-	-f [smog.top]: Input SMOG forcefield file
-	-g [smog.gro]: Input SMOG configuration file
+	-ionnm  <string>   : name of ion to be added to the system
+	-ionn   <integer>  : number of ions to add
+	-ionq   <float>    : charge of ions
+	-ionm   <float>    : mass of ions
+	-ionc12 <float>    : C12 excluded-volume parameter for ions
    Optional Input/Output parameters
-	-of [smog.ions.top]: Output SMOG forcefield file for smog.ions system
-	-og [smog.ions.gro]: Output SMOG configuration file for smog.ions system
-                                        that have interactions removed during extraction
+	-f [smog.top]      : input SMOG forcefield file
+	-g [smog.gro]      : input SMOG configuration file
+	-of [smog.ions.top]: output SMOG forcefield file for smog.ions system
+	-og [smog.ions.gro]: output SMOG configuration file for smog.ions system
+	-mindist [0.5]     : the minimium distance (nm) between an added ion and any other atom in the system
+	-help 		   : show options 
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
