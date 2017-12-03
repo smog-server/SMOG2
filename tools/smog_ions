@@ -73,7 +73,7 @@ my $warnonly=0;
 my @grobox;
 our $noexit=0;
 usage() if (@ARGV < 2 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
-        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=s' => \$addmass, 'ionc12=s' => \$addC12, 'ionnm=s' => \$addname, 'ionq=s' => \$addcharge,  'mindist=s' => \$mindist,  'warnonly' => \$warnonly, 
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionc12=f' => \$addC12, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
 
