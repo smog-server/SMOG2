@@ -45,10 +45,9 @@ print <<EOT;
 
 usage: smog_adjustPDB .. options ..
 
-Required Input
+  Options
 	-i [filename.pdb] : Input PDB to adjust to smog2 format
 	-default | -map filename : use the default file name provided by smog2 or specify a map filename
-Optional Parameters
 	-o [smog.pdb] : output pdb file name
 	-warnonly : convert fatal errors to warnings (Caution: Consult manual before using this option)
 	-renumber : ignore any residue numbering inconsistencies and renumber residues sequentially
