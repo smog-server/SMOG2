@@ -38,18 +38,17 @@ sub usage
 {
   print <<EOT;
 
-usage: smog_extract  [-f .top file] [-g .gro file] [-of output .top file] [-og output .gro file] [-om output index mapping file] [-help|-?]
+usage: smog_extract  .. options ..
 
-   Required Input
+   Optional flags 
 	-f [smog.top]: Input SMOG forcefield file
 	-g [smog.gro]: Input SMOG configuration file
 	-n [smog.include]: List of atoms to extract
-   Optional Input/Output parameters
 	-of [extracted.top]: Output SMOG forcefield file for extracted system
 	-og [extracted.gro]: Output SMOG configuration file for extracted system
 	-om [atomindex.map]: Output file with old-to-new atom index mapping
-	-restraints <restraint weight>: Generate restraints with a specific strength for atoms 
-                                        that have interactions removed during extraction
+	-restraints <float>: Generate restraints with a specific strength for atoms 
+                              that have interactions removed during extraction
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
