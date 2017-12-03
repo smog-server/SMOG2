@@ -39,14 +39,15 @@ sub usage
 {
   print <<EOT;
 
-usage: smog_scale-energies  [-f .top file] [-of output .top file] [-help|-?]
+usage: smog_scale-energies  .. options ..
 
-   Optional Input/Output parameters
+   Options
 	-f [smog.top]: Input SMOG forcefield file
 	-n [smog.ndx]: index file of group
         -of [rescaled.top]: Output SMOG forcefield file with rescaled energies
 	-rc [1.0]: rescale inter-group contact weights (default all groups) 
 	-rd [1.0]: rescale intra-group dihedral weights (default all groups)
+	-help    : show options
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
