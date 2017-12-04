@@ -182,6 +182,15 @@ sub parseBif {
 		 		my $T=$atom->{"nbType"};
 		 		smog_quit("Only letters, numbers and _ can appear in nbType definitions. nbType \"$T\" found in residue $res");
 			}
+			unless($atom->{"bType"} =~ /^[a-zA-Z0-9_]+$/){
+		 		my $T=$atom->{"bType"};
+		 		smog_quit("Only letters, numbers and _ can appear in bType definitions. nbType \"$T\" found in residue $res");
+			}
+			unless($atom->{"pairType"} =~ /^[a-zA-Z0-9_]+$/){
+		 		my $T=$atom->{"pairType"};
+		 		smog_quit("Only letters, numbers and _ can appear in pairType definitions. nbType \"$T\" found in residue $res");
+			}
+
 		  	## atom{atomName} => {nbType,bType,index,pairType}
 		      	$atoms{$atom->{"content"}} = {"index"=>$index,"nbType" => $atom->{"nbType"},"bType" => $atom->{"bType"},
 		      	"pairType" => $atom->{"pairType"}, "charge" => $atom->{"charge"}};
