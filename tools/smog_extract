@@ -41,14 +41,14 @@ sub usage
 usage: smog_extract  .. options ..
 
    Optional flags 
-	-f [smog.top]: Input SMOG forcefield file
-	-g [smog.gro]: Input SMOG configuration file
-	-n [smog.include]: List of atoms to extract
-	-of [extracted.top]: Output SMOG forcefield file for extracted system
-	-og [extracted.gro]: Output SMOG configuration file for extracted system
-	-om [atomindex.map]: Output file with old-to-new atom index mapping
-	-restraints <float>: Generate restraints with a specific strength for atoms 
-                              that have interactions removed during extraction
+	-f [smog.top]		: input SMOG forcefield file
+	-g [smog.gro]		: input SMOG configuration file
+	-n [smog.include]	: list of atoms to extract
+	-of [extracted.top]	: output SMOG forcefield file for extracted system
+	-og [extracted.gro]	: output SMOG configuration file for extracted system
+	-om [atomindex.map]	: output file with old-to-new atom index mapping
+	-restraints <float>	: generate restraints with a specific strength for atoms 
+                                	that have interactions removed during extraction
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");

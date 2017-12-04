@@ -46,12 +46,12 @@ print <<EOT;
 usage: smog_adjustPDB .. options ..
 
   Options
-	-i [filename.pdb] : Input PDB to adjust to smog2 format
-	-default | -map filename : use the default file name provided by smog2 or specify a map filename
-	-o [smog.pdb] : output pdb file name
-	-warnonly : convert fatal errors to warnings (Caution: Consult manual before using this option)
-	-renumber : ignore any residue numbering inconsistencies and renumber residues sequentially
-	-help 	  : show options
+	-i [filename.pdb]  	: input PDB to adjust to smog2 format
+	-default | -map filename: use the default file name provided by smog2 or specify a map filename
+	-o [smog.pdb] 	: output pdb file name
+	-warnonly 	: convert fatal errors to warnings (Caution: Consult manual before using this option)
+	-renumber 	: ignore any residue numbering inconsistencies and renumber residues sequentially
+	-help 	  	: show options
 EOT
 
   if ( @_ ){
