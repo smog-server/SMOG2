@@ -20,7 +20,6 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</angle>
-
 </angles>
 
 <!-- DIHEDRALS -->

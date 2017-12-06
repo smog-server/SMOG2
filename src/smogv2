@@ -1396,7 +1396,7 @@ sub usage
 usage: smog2 .. options ..
 
    Options
-	-i [filename.pdb]	: Input PDB to generate Hamiltonian
+	-i [filename.pdb]	: input PDB to generate Hamiltonian
 	-AA			: use default All-atom model
 	-AAgaussian		: use default All-atom model with gaussian contacts
 	-CA			: use default Calpha protein model
