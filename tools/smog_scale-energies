@@ -66,16 +66,9 @@ my $help;
 my $warnonly=0;
 our $noexit=0;
 usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
-        'of=s' => \$outputTOP, 'rc=s' => \$rescaleC, 'rd=s' => \$rescaleD, 'warnonly' => \$warnonly, 
+        'of=s' => \$outputTOP, 'rc=f' => \$rescaleC, 'rd=f' => \$rescaleD, 'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
-
-unless ($rescaleC =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
-        smog_quit("$rescaleC is not a valid value for -rc.  Must be an integer, or decimal.");
-}
-unless ($rescaleD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
-        smog_quit("$rescaleD is not a valid value for -rd.  Must be an integer, or decimal.");
-}
 
 if($rescaleC <= 0){
 	smog_quit("only positive values may be provided with -rc.")
