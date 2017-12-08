@@ -56,7 +56,6 @@ EOT
   }
 }
 
-
 my $inputTOP="smog.top";
 my $indexFile="smog.ndx";
 my $outputTOP="rescaled.top";
@@ -107,6 +106,9 @@ if($warnonly){
 
 ### read in the list of atoms that we want to keep
 my %atomgroup;
+my $Ngrps=0;
+my $modgrp;
+my @grpnms;
 my %groupnames;
 my $groupname;
 print "Reading index file $indexFile\n";
@@ -129,12 +131,16 @@ while(<ATOMLIST>){
 	if($A[0] eq "[" and $A[2] eq "]"){
 		# must be a new group
 		$groupname=$A[1];
+		$grpnms[$Ngrps]=$groupname;
 		if(exists $A[3]){
 			smog_quit("Group name declarations must not have trailing characters.  $A[3] appears after $A[0] $A[1] $A[2]\n;")	
 		}
 		if(exists $groupnames{$groupname}){
 			smog_quit("Group name $groupname declared more than once.");
 		}
+		$groupnames{$groupname}=$Ngrps;
+		$Ngrps++;
+
 		next; # this is a new group, so go to next line.
 	}
 
@@ -150,10 +156,30 @@ while(<ATOMLIST>){
 	}
 }
 
+if($Ngrps==0){
+	smog_quit("no atom groups given in ndx file.");
+
+}elsif($Ngrps>1){
+	print "Select the index of the group you would like to rescale?\n";
+	print "index\t:\tgroup name\n";
+	for(my $I=0;$I<$Ngrps;$I++){
+		print "$I\t:\t$grpnms[$I]\n";
+	}
+	my $tmp=<STDIN>;
+	chomp($tmp);
+	unless($tmp =~ m/^\d+$/){
+		smog_quit("$tmp is an invalid index");
+	}
+	if($tmp <0 or $tmp >=$Ngrps){
+		smog_quit("index must be positive and less than $Ngrps");
+	}
+	$modgrp=$grpnms[$tmp];
+	print "Will modify weights for atom group $modgrp\n";
+}else{
+	$modgrp=$grpnms[0];	
+}
+
 close(ATOMLIST);
-
-### extract the atoms and make a new gro file 
-
 
 my %supported_directives = ( 'defaults' => '0',
         'atomtypes' => '1',
@@ -208,6 +234,8 @@ for (my $I=1;$I<=$#DATA;$I++){
 		
 	if(!exists $supported_directives{$DIR}){
 		smog_quit("Directive \"$DIR \" not supported\n");
+	}elsif(exists $DIRLIST{$DIR}){
+		smog_quit("detected repeated directive $DIR.  Currently, only a single molecule definition is supported by this script.");
 	}else{
 		$DIRLIST{$DIR}=$I;
 	}
@@ -320,7 +348,7 @@ if(!exists $DIRLIST{"dihedrals"}){
 		my @D=split(/ /,$C[$JJ]);
 
 		if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]} && exists $atomgroup{$D[2]} && exists $atomgroup{$D[3]} ){
-			if($D[4] == 1 && $atomgroup{$D[0]} eq $atomgroup{$D[1]} && $atomgroup{$D[1]} eq $atomgroup{$D[2]} && $atomgroup{$D[2]} eq $atomgroup{$D[3]}){
+			if($D[4] == 1 && $atomgroup{$D[0]} eq $modgrp){
 				# rescale dihedral potential
 				$D[6] *= $rescaleD;	
 
@@ -345,7 +373,7 @@ if(!exists $DIRLIST{"pairs"}){
 	for(my $JJ=1;$JJ<=$#C;$JJ++){
 		my @D=split(/ /,$C[$JJ]);
 		if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]}){
-			if($D[2] == 1 && $atomgroup{$D[0]}  ne $atomgroup{$D[1]}){
+			if($D[2] == 1 && $atomgroup{$D[0]} eq $modgrp){
 				# rescale dihedral potential
 				$D[3] *= $rescaleC;	
 				$D[4] *= $rescaleC;	
@@ -359,8 +387,6 @@ if(!exists $DIRLIST{"pairs"}){
 		print TOPOUT "\n";
 	}
 }
-
-
 
 # information about the exclusions 
 if(!exists $DIRLIST{"exclusions"}){
