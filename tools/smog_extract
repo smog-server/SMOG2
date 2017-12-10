@@ -49,6 +49,7 @@ usage: smog_extract  .. options ..
 	-om [atomindex.map]	: output file with old-to-new atom index mapping
 	-restraints <float>	: generate restraints with a specific strength for atoms 
                                 	that have interactions removed during extraction
+	-help			: show options
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
