@@ -114,7 +114,6 @@ unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen
 my %keepatoms;
 my $KEEPN=0;
 my @keepatoms2;
-open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
 
 #check and add file name extensions, if missing
 my ($ext)= $outputgro =~ /(\.[^.]+)$/;
@@ -149,39 +148,110 @@ foreach my $filen($outputgro, $outputtop, $outputmap){
 }
 
 if(-e $outputmap){smog_quit("$outputmap already exists.")};
-open(MAPPING,">$outputmap") or die "\nCan\'t open $outputmap. Use --help for usage guidelines.\n\nExtract Incomplete!\n\n";
+open(MAPPING,">$outputmap") or smog_quit("Can\'t open $outputmap.");
 print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
+
+### read in the list of atoms that we want to keep
+my %atomgroup;
+my $Ngrps=0;
+my $extgrp;
+my @grpnms;
+my %groupnames;
+my $groupname;
+
+
+open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
+print "Reading index file $indexFile\n";
 while(<ATOMLIST>){
 	my $LINE=$_;
 	chomp($LINE);
 	# remove comments first
 	$LINE =~ s/;.*$//g; 
+	# in case we have a group directive w/o spaces
+	$LINE =~ s/\[/\[ /g;
+	$LINE =~ s/\]/ \]/g;
 	$LINE =~ s/^\s+|\s+$//g;
 	$LINE =~ s/\s+|\t+/ /g;
 	my @A=split(/ /,$LINE);
+	if($#A == -1){
+		# blank line
+		next;
+	}
+	if($A[0] eq "[" and $A[2] eq "]"){
+		# must be a new group
+		$groupname=$A[1];
+		$grpnms[$Ngrps]=$groupname;
+		if(exists $A[3]){
+			smog_quit("Group name declarations must not have trailing characters.  $A[3] appears after $A[0] $A[1] $A[2]\n;")	
+		}
+		if(exists $groupnames{$groupname}){
+			smog_quit("Group name $groupname declared more than once.");
+		}
+		$groupnames{$groupname}=$Ngrps;
+		$Ngrps++;
+
+		next; # this is a new group, so go to next line.
+	}
+
 	for(my $I=0;$I<=$#A;$I++){
 		unless($A[$I] =~ m/^\d+$/){
 			smog_quit("Non-numerical value for atom number in index file: $A[$I]");
 		}
-		if(exists $keepatoms{$A[$I]}){
-			smog_quit("Duplicate atom in atomlist: $A[$I]");
+		if(exists $atomgroup{$A[$I]}){
+			smog_quit("Duplicate atom in index file: Atom $A[$I] already defined in group $atomgroup{$A[$I]}");
 		}else{
-			$keepatoms{$A[$I]}=$KEEPN+1;
-			$keepatoms2[$KEEPN]=$A[$I];
-			if($KEEPN > 0 && $keepatoms2[$KEEPN] < $keepatoms2[$KEEPN-1]){
-				smog_quit("Atoms listed in $indexFile are not in ascending order.\n");
-			}
-			$KEEPN++;
-			print MAPPING "$KEEPN $A[$I]\n";
+			$atomgroup{$A[$I]}=$groupname;
 		}
 	}
 }
 
+if($Ngrps==0){
+	smog_quit("no atom groups given in ndx file.");
+
+}elsif($Ngrps>1){
+	print "Select the index of the group you would like to rescale?\n";
+	print "index\t:\tgroup name\n";
+	for(my $I=0;$I<$Ngrps;$I++){
+		print "$I\t:\t$grpnms[$I]\n";
+	}
+	my $tmp=<STDIN>;
+	chomp($tmp);
+	unless($tmp =~ m/^\d+$/){
+		smog_quit("$tmp is an invalid index");
+	}
+	if($tmp <0 or $tmp >=$Ngrps){
+		smog_quit("index must be positive and less than $Ngrps");
+	}
+	$extgrp=$grpnms[$tmp];
+	print "Will extract atom group $extgrp\n";
+}else{
+	$extgrp=$grpnms[0];	
+}
+
 close(ATOMLIST);
+
+my @A;
+my $N=0;
+for my $atom ( sort {$a<=>$b} keys %atomgroup) {
+	if($atomgroup{$atom} == $extgrp){
+		$A[$N]=$atom;
+		$N++;
+	}
+}
+
+for(my $I=0;$I<=$#A;$I++){
+	$keepatoms{$A[$I]}=$KEEPN+1;
+	$keepatoms2[$KEEPN]=$A[$I];
+	if($KEEPN > 0 && $keepatoms2[$KEEPN] < $keepatoms2[$KEEPN-1]){
+		smog_quit("Atoms listed in $indexFile are not in ascending order.\n");
+	}
+	$KEEPN++;
+	print MAPPING "$KEEPN $A[$I]\n";
+}
 
 ### extract the atoms and make a new gro file 
 
-open(GROFILE,"$inputGRO") or die "Can\'t open GRO file \"$inputGRO\"\n";
+open(GROFILE,"$inputGRO") or smog_quit("Can\'t open GRO file $inputGRO");
 my $groheader=<GROFILE>;
 chomp($groheader);
 
@@ -206,7 +276,7 @@ chomp($grodim);
 close(GROFILE);
 
 if(-e $outputgro){smog_quit("$outputgro already exists.")};
-open(GROFILE,">$outputgro") or die "Can\'t open output GRO file \"$outputgro\"\n";
+open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
 print GROFILE "$groheader\n";
 print GROFILE "$KEEPN\n";
 for(my $I=0;$I<$KEEPN;$I++){
@@ -235,7 +305,7 @@ my %supported_directives = ( 'defaults' => '0',
 
 my %atoms2restrain;
 #read in the top file, with comments stripped
-open(FILE, "$inputTOP") or die "Can not open $inputTOP\n"; 
+open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP"); 
 my $string = "";
 while (<FILE>){
 	my $LINE = $_;
@@ -253,7 +323,7 @@ my %DIRLIST;
 my @DATA=split(/\[/,$string);
 for (my $I=1;$I<=$#DATA;$I++){
 	my $string1 = $DATA[$I];
-	open my($fh), "<", \$string1 or die ; # reading from the data in $string
+	open my($fh), "<", \$string1 or smog_quit("internal error 1") ; # reading from the data in $string
 	my $first_line = <$fh>; 
 	$first_line =~  s/^\s//g;
 	close $fh;
@@ -271,7 +341,7 @@ for (my $I=1;$I<=$#DATA;$I++){
 
 # Go through the directives, in order, and write out information for the subsystem
 if(-e $outputtop){smog_quit("$outputtop already exists.")}
-open(TOPOUT,">$outputtop") or die "Can\'t open $outputtop for writing.\n";
+open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing.");
 #copy header
 
 print TOPOUT "; This is a top file generated with smog_extract, using the command:\n;";
