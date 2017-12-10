@@ -43,7 +43,7 @@ usage: smog_scale-energies  .. options ..
 
    Options
 	-f [smog.top]		: input SMOG forcefield file
-	-n [smog.ndx]		: index file of group
+	-n [smog.ndx]		: index file
         -of [rescaled.top]	: output SMOG forcefield file with rescaled energies
 	-rc [1.0]		: rescale inter-group contact weights (default all groups) 
 	-rd [1.0]		: rescale intra-group dihedral weights (default all groups)
