@@ -130,7 +130,7 @@ if(!defined $ext || $ext ne ".map"){
 	$outputmap .=  ".map";
 }
 
-my $maxbu = 99;
+my $maxbu = 10;
 foreach my $filen($outputgro, $outputtop, $outputmap){
 	my ($ext) = $filen =~ /(\.[^.]+)$/;
 	if($filen ne "" && -e $filen){
