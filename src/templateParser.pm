@@ -182,6 +182,15 @@ sub parseBif {
 		 		my $T=$atom->{"nbType"};
 		 		smog_quit("Only letters, numbers and _ can appear in nbType definitions. nbType \"$T\" found in residue $res");
 			}
+			unless($atom->{"bType"} =~ /^[a-zA-Z0-9_]+$/){
+		 		my $T=$atom->{"bType"};
+		 		smog_quit("Only letters, numbers and _ can appear in bType definitions. nbType \"$T\" found in residue $res");
+			}
+			unless($atom->{"pairType"} =~ /^[a-zA-Z0-9_]+$/){
+		 		my $T=$atom->{"pairType"};
+		 		smog_quit("Only letters, numbers and _ can appear in pairType definitions. nbType \"$T\" found in residue $res");
+			}
+
 		  	## atom{atomName} => {nbType,bType,index,pairType}
 		      	$atoms{$atom->{"content"}} = {"index"=>$index,"nbType" => $atom->{"nbType"},"bType" => $atom->{"bType"},
 		      	"pairType" => $atom->{"pairType"}, "charge" => $atom->{"charge"}};
@@ -625,6 +634,14 @@ sub parseBonds {
 	{
 		my $typeA = $inter->{"bType"}->[0];
 		my $typeB = $inter->{"bType"}->[1];
+
+		for (my $tt=0;$tt<2;$tt++){
+			my $T=$inter->{"bType"}->[$tt];
+			unless($T =~ /^[a-zA-Z0-9_]+$|^\*$/){
+	 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in bond definition. bType \"$T\" encountered");
+			}
+		}
+
 		my $func = $inter->{"func"};
 		if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
 	               exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
@@ -649,6 +666,14 @@ sub parseBonds {
 		my $typeB = $inter->{"bType"}->[1];
 		my $typeC = $inter->{"bType"}->[2];
 		my $typeD = $inter->{"bType"}->[3];
+
+		for (my $tt=0;$tt<4;$tt++){
+			my $T=$inter->{"bType"}->[$tt];
+			unless($T =~ /^[a-zA-Z0-9_]+$|^\*$/){
+	 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in dihedral definition. bType \"$T\" encountered");
+			}
+		}
+
 		my $func = $inter->{"func"};
 		my $eG;
 		if(exists $inter->{"energyGroup"})
@@ -686,6 +711,14 @@ sub parseBonds {
 		my $typeB = $inter->{"bType"}->[1];
 		my $typeC = $inter->{"bType"}->[2];
 		my $typeD = $inter->{"bType"}->[3];
+
+		for (my $tt=0;$tt<4;$tt++){
+			my $T=$inter->{"bType"}->[$tt];
+			unless($T =~ /^[a-zA-Z0-9_]+$|^\*$/){
+	 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in improper dihedral definition. bType \"$T\" encountered");
+			}
+		}
+
 		my $func = $inter->{"func"};
 		
 		my $keyString = "$typeA-$typeB-$typeC-$typeD";
@@ -714,6 +747,14 @@ sub parseBonds {
 		my $typeA = $inter->{"bType"}->[0];
 		my $typeB = $inter->{"bType"}->[1];
 		my $typeC = $inter->{"bType"}->[2];
+
+		for (my $tt=0;$tt<3;$tt++){
+			my $T=$inter->{"bType"}->[$tt];
+			unless($T =~ /^[a-zA-Z0-9_]+$|^\*$/){
+	 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in angle definition. bType \"$T\" encountered");
+			}
+		}
+
 		my $func = $inter->{"func"};
 		my $keyString = "$typeA-$typeB-$typeC";
 		## NOTE THE ORDER OF CENTRAL TYPE LISTED IN XML FILE MATTERS ##

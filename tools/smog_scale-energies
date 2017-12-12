@@ -39,14 +39,15 @@ sub usage
 {
   print <<EOT;
 
-usage: smog_scale-energies  [-f .top file] [-of output .top file] [-help|-?]
+usage: smog_scale-energies  .. options ..
 
-   Optional Input/Output parameters
-	-f [smog.top]: Input SMOG forcefield file
-	-n [smog.ndx]: index file of group
-        -of [rescaled.top]: Output SMOG forcefield file with rescaled energies
-	-rc [1.0]: rescale inter-group contact weights (default all groups) 
-	-rd [1.0]: rescale intra-group dihedral weights (default all groups)
+   Options
+	-f [smog.top]		: input SMOG forcefield file
+	-n [smog.ndx]		: index file
+        -of [rescaled.top]	: output SMOG forcefield file with rescaled energies
+	-rc [1.0]		: rescale inter-group contact weights (default all groups) 
+	-rd [1.0]		: rescale intra-group dihedral weights (default all groups)
+	-help    		: show options
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
@@ -54,7 +55,6 @@ EOT
    exit;
   }
 }
-
 
 my $inputTOP="smog.top";
 my $indexFile="smog.ndx";
@@ -65,16 +65,9 @@ my $help;
 my $warnonly=0;
 our $noexit=0;
 usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
-        'of=s' => \$outputTOP, 'rc=s' => \$rescaleC, 'rd=s' => \$rescaleD, 'warnonly' => \$warnonly, 
+        'of=s' => \$outputTOP, 'rc=f' => \$rescaleC, 'rd=f' => \$rescaleD, 'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
-
-unless ($rescaleC =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
-        smog_quit("$rescaleC is not a valid value for -rc.  Must be an integer, or decimal.");
-}
-unless ($rescaleD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
-        smog_quit("$rescaleD is not a valid value for -rd.  Must be an integer, or decimal.");
-}
 
 if($rescaleC <= 0){
 	smog_quit("only positive values may be provided with -rc.")
@@ -85,7 +78,25 @@ if($rescaleD <= 0){
 if($outputTOP !~ m/.top$/){
 	$outputTOP .= ".top";
 }
-if(-e $outputTOP){smog_quit("$outputTOP already exists.")}
+
+my $maxbu=10;
+foreach my $filen($outputTOP){
+	my ($ext) = $filen =~ /(\.[^.]+)$/;
+	if($filen ne "" && -e $filen){
+		for(my $bu=1;$bu<=$maxbu;$bu++){
+			my $buname="$filen.bu$bu";
+			if( ! -e $buname){	
+			print "$filen already exists.  Backing up to $buname\n";
+			system("mv $filen $buname");
+			last;
+			}
+			if($bu == $maxbu){
+		 	smog_quit ("Already backed up $maxbu copies of $filen."); 
+			}
+		}
+	}
+}
+
 if($warnonly){
 	$noexit=1;
 	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
@@ -95,6 +106,9 @@ if($warnonly){
 
 ### read in the list of atoms that we want to keep
 my %atomgroup;
+my $Ngrps=0;
+my $modgrp;
+my @grpnms;
 my %groupnames;
 my $groupname;
 print "Reading index file $indexFile\n";
@@ -117,12 +131,16 @@ while(<ATOMLIST>){
 	if($A[0] eq "[" and $A[2] eq "]"){
 		# must be a new group
 		$groupname=$A[1];
+		$grpnms[$Ngrps]=$groupname;
 		if(exists $A[3]){
-			smog_quit("Group name definitions must not have trailing characters.  $A[3] appears after $A[0] $A[1] $A[2]\n;")	
+			smog_quit("Group name declarations must not have trailing characters.  $A[3] appears after $A[0] $A[1] $A[2]\n;")	
 		}
 		if(exists $groupnames{$groupname}){
 			smog_quit("Group name $groupname declared more than once.");
 		}
+		$groupnames{$groupname}=$Ngrps;
+		$Ngrps++;
+
 		next; # this is a new group, so go to next line.
 	}
 
@@ -138,10 +156,30 @@ while(<ATOMLIST>){
 	}
 }
 
+if($Ngrps==0){
+	smog_quit("no atom groups given in ndx file.");
+
+}elsif($Ngrps>1){
+	print "Select the index of the group you would like to rescale?\n";
+	print "index\t:\tgroup name\n";
+	for(my $I=0;$I<$Ngrps;$I++){
+		print "$I\t:\t$grpnms[$I]\n";
+	}
+	my $tmp=<STDIN>;
+	chomp($tmp);
+	unless($tmp =~ m/^\d+$/){
+		smog_quit("$tmp is an invalid index");
+	}
+	if($tmp <0 or $tmp >=$Ngrps){
+		smog_quit("index must be positive and less than $Ngrps");
+	}
+	$modgrp=$grpnms[$tmp];
+	print "Will modify weights for atom group $modgrp\n";
+}else{
+	$modgrp=$grpnms[0];	
+}
+
 close(ATOMLIST);
-
-### extract the atoms and make a new gro file 
-
 
 my %supported_directives = ( 'defaults' => '0',
         'atomtypes' => '1',
@@ -196,6 +234,8 @@ for (my $I=1;$I<=$#DATA;$I++){
 		
 	if(!exists $supported_directives{$DIR}){
 		smog_quit("Directive \"$DIR \" not supported\n");
+	}elsif(exists $DIRLIST{$DIR}){
+		smog_quit("detected repeated directive $DIR.  Currently, only a single molecule definition is supported by this script.");
 	}else{
 		$DIRLIST{$DIR}=$I;
 	}
@@ -308,7 +348,7 @@ if(!exists $DIRLIST{"dihedrals"}){
 		my @D=split(/ /,$C[$JJ]);
 
 		if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]} && exists $atomgroup{$D[2]} && exists $atomgroup{$D[3]} ){
-			if($D[4] == 1 && $atomgroup{$D[0]} eq $atomgroup{$D[1]} && $atomgroup{$D[1]} eq $atomgroup{$D[2]} && $atomgroup{$D[2]} eq $atomgroup{$D[3]}){
+			if($D[4] == 1 && $atomgroup{$D[0]} eq $modgrp){
 				# rescale dihedral potential
 				$D[6] *= $rescaleD;	
 
@@ -333,7 +373,7 @@ if(!exists $DIRLIST{"pairs"}){
 	for(my $JJ=1;$JJ<=$#C;$JJ++){
 		my @D=split(/ /,$C[$JJ]);
 		if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]}){
-			if($D[2] == 1 && $atomgroup{$D[0]}  ne $atomgroup{$D[1]}){
+			if($D[2] == 1 && $atomgroup{$D[0]} eq $modgrp){
 				# rescale dihedral potential
 				$D[3] *= $rescaleC;	
 				$D[4] *= $rescaleC;	
@@ -347,8 +387,6 @@ if(!exists $DIRLIST{"pairs"}){
 		print TOPOUT "\n";
 	}
 }
-
-
 
 # information about the exclusions 
 if(!exists $DIRLIST{"exclusions"}){

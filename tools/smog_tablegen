@@ -1,32 +1,15 @@
 use strict;
 use warnings;
+use Getopt::Long;
+
 print <<EOT;
 *****************************************************************************************
                                      smog_tablegen                                   
 
      smog_tablegen is part of the SMOG 2 distribution, available at smog-server.org     
 
- This tool will generate a table for native contacts and Debye-Huckel electrostatic 
- interactions, for use with Structure-based Models in Gromacs. 
-
- Native contact Potentials: Gromacs supports a 6-12 potential for native contacts. If you
- are using a 6-12 potential, then there is no need to use a table.  However, if would 
- like to use alternate contact potentials of the form (function contact_1 in SMOG 2):
-	U=A/r^N-B/r^M,
- then you will need to generate force table.
-
- Electrostatics: When using direct Coulomb interactions, then there is no need for a 
- table. If you would like to use a Debye-Huckel potential, to describe screened
- electrostatic interactions, then you should use this script. Parameters for the D-H
- potential are decsribed in Givaty and Levy (2009) J. Mol. Biol., 385, pp 1087-1097.
-
- Parameter descriptions:
-	ion conc. - concentration (Molar) of monovalent ions used for Debye screening.
-	elec. switch dist. - start switching (4th order polynomial) at this distance (nm).
-	elec. truncate dist. - set switching function, such that F goes to zero at this
-		distance (nm).
-
- If you are not including electrostatics, set electrostatic truncate distance to zero.
+  This tool will generate a table for native contacts and Debye-Huckel electrostatic 
+               interactions, for use with Structure-based Models in Gromacs. 
 
  See the SMOG manual for descriptions and usage guidelines for tabulated interactions.
 
@@ -34,11 +17,49 @@ print <<EOT;
 *****************************************************************************************
 EOT
 
+sub usage
+{
+  print <<EOT;
+
+DESCRIPTION:
+ Native contact Potentials: Gromacs supports a 6-12 potential for native contacts. If you
+ are using a 6-12 potential, then there is no need to use a table.  However, if would 
+ like to use alternate contact potentials of the form (function contact_1 in SMOG 2):
+	U=A/r^M-B/r^N,
+ then you will need to generate tabulated potentials and forces.
+
+ Electrostatics: When using direct Coulomb interactions, then there is no need for a 
+ table. If you would like to use a Debye-Huckel potential to describe screened
+ electrostatic interactions, then you should use this script. Parameters for the DH
+ potential are decsribed in Givaty and Levy (2009) J. Mol. Biol., 385, pp 1087-1097.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+usage: smog_tablegen  .. options ..
+
+   Optional flags 
+	-N [6]   		: exponent of attractive non-bonded interaction
+	-M [12]  		: exponent of repulsive non-bonded interaction
+	-ic [0]  		: effective monovalent ion concetration (Molar) for DH interaction
+	-sd [1.0]		: distance (nm) to start switching function for electrostatics
+	-sc [1.5]		: distance (nm) at which switching function enforces elec. interactions go to zero
+	-tl [5]  		: length (nm) of table
+	-table [table.xvg] 	: output table file
+	-help 	  		: show options
+EOT
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit;
+  }
+}
+
 sub tablequit
 {
 	print "\n\nERROR: @_\n\n\t!!!!!TABLE NOT GENERATED!!!!!\n\n";
 	exit;
 }
+
 # Brief description 
 # prefactor is a combination of several terms.
 # the DH potential that we want to use is
@@ -47,33 +68,35 @@ sub tablequit
 # for dilute systems, B(kappa)~1
 # Gromacs automatically multiplies by an 'electric conversion factor,' 
 #   equal to 138.935485. We want to undo that, hence the division by 138.
-if (scalar(@ARGV) != 7 ){
- tablequit("Incorrect number of arguments.\n\nUsage: smog_tablegen <M> <N> <ion conc.> <elec. switch dist.> <elec. truncate dist.> <table length> <output name>");
-}
+
+
+
+my $exponent1=12;
+my $exponent2=6;
+my $conc = 0;
+my $r1=1.0;
+my $rc=1.5;
+my $Rtable=5.0;
+my $outfilename="table.xvg";
+my $help;
+usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'N=i' => \$exponent2, 'M=i' => \$exponent1, 'ic=f' => \$conc, 
+        'sd=f' => \$r1, 'sc=f' => \$rc, 'tl=f' => \$Rtable, 'table=s' => \$outfilename, '<>' => \&usage)
+        or defined $help); 
 
 my $prefactor=33.20/138.935485;
-my $exponent2=$ARGV[0];
-my $exponent1=$ARGV[1];
-unless($exponent1 =~ /^\d+$/ and $exponent2 =~ /^\d+$/){
- tablequit("N and M must be integers");
-}
 
 if($exponent2 >= $exponent1){
  tablequit ("For consistency with smog2, only M < N is supported");
 }
 
 # molar concentration of monovalent ions.
-my $conc=$ARGV[2];
 # kappa is the inverse screening length.  Units of nm^-1.
 my $kappa=3.2*sqrt($conc);
 
 
 # switching function: This ensures that the force and potential go continuously
 # to zero at the cut-off distance (rc), and it starts switching at rc1.
-my $r1=$ARGV[3];
-my $rc=$ARGV[4];
 #what is the length of the table(in nm)?
-my $Rtable=$ARGV[5];
 if($rc <= $r1 && $rc != 0){
  tablequit("switching distance must be shorter than truncated distance");
 }elsif($rc < 0 || $r1 < 0){
@@ -81,8 +104,9 @@ if($rc <= $r1 && $rc != 0){
 }elsif($rc>$Rtable){
  tablequit("table must extend beyond the cutoff distance");
 }
- 
-my $outfilename=$ARGV[6];
+
+print "Parameter used to generate table file $outfilename\n";
+print "\tM=$exponent1\n\tN=$exponent2\n\tmonovalent ion conc.=$conc\n\tkappa=$kappa\n\tbegin switching function=$r1\n\tend switching function=$rc\n\tLength of table=$Rtable\n";
 
 my ($ext)=$outfilename =~ /(\.[^.]+)$/;
 if($outfilename !~ /(\.[^.]+)$/){
@@ -91,7 +115,25 @@ if($outfilename !~ /(\.[^.]+)$/){
         $outfilename = $outfilename . ".xvg";
 }
 
-print "\n\nWill write table to file $outfilename\n\n";
+my $maxbu=10;
+foreach my $filen($outfilename){
+	my ($ext) = $filen =~ /(\.[^.]+)$/;
+	if($filen ne "" && -e $filen){
+		for(my $bu=1;$bu<=$maxbu;$bu++){
+			my $buname="$filen.bu$bu";
+			if( ! -e $buname){	
+			print "$filen already exists.  Backing up to $buname\n";
+			system("mv $filen $buname");
+			last;
+			}
+			if($bu == $maxbu){
+		 	smog_quit ("Already backed up $maxbu copies of $filen."); 
+			}
+		}
+	}
+}
+
+
 
 open(OUTFILE,">$outfilename") or die "Can\'t open $outfilename for writing.\n";
 
@@ -145,13 +187,13 @@ my $VE;my $VpE;
 print OUTFILE<<EOF;
 # Force table for use with structure-based SMOG models
 # Potential of the form U=q_i*q_j*exp(-kappa*r)/r+A/r^N-B/r^M
-# kappa=$kappa
-# N=$exponent1
-# M=$exponent2
+# kappa=$kappa nm^-1
+# N=$exponent2
+# M=$exponent1
 # For electrostatics:
-#    	switching distance=$r1
-#	cutoff distance=$rc
-#	ion concetration=$conc
+#    	switching distance=$r1 nm
+#	cutoff distance=$rc nm
+#	ion concetration=$conc M
 EOF
 
 
@@ -192,6 +234,6 @@ my $R1=-1/$R**$exponent2;
 my $R2=-$exponent2/$R**($exponent2+1);
 my $R3=1/$R**$exponent1;
 my $R4=$exponent1/$R**($exponent1+1);
-print OUTFILE "$R 0.0 0.0 $R1 $R2 $R3 $R4 "
+print OUTFILE "$R 0.0 0.0 $R1 $R2 $R3 $R4\n";
 
-
+print "\nTable file written successfully\n\n";
