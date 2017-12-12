@@ -196,7 +196,13 @@ sub addExtras {
 	{
 		chomp($line);
 	    @tokens = split('<',$line);
+		if(scalar @tokens > 2) {
+			smog_quit("Line in extras file: $inputFolder/extras contains more than one instance of character '<'. Offending line:\n $line");
+		}
 		$directive = $tokens[0];
+		if(!exists $directives{$directive}) {
+			smog_quit("extras file: $inputFolder/extras has a non-valid directive \"$tokens[0]\". Check for typos or add directive to directivesList in src/smogv2.");			
+		}
 		$stuff = $tokens[1];
 		$directive =~ s/^\s+|\s+$//g;
 		$stuff =~ s/^\s+|\s+$//g;
