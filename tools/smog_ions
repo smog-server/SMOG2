@@ -10,8 +10,7 @@ print <<EOT;
 
         This tool uses a SMOG .top and .gro file, along command line arguments to 
 	add ions to a SMOG model. Note, this does not change the underlying model, it 
- 	only adds ions to the system and ensures that the .gro and .top files are 
-	consistent.
+ 	only adds ions to the gro and top files.
 
         For usage information, issue flag -help, or see the SMOG manual.
 
@@ -35,15 +34,21 @@ sub usage
 {
   print <<EOT;
 
-usage: smog_ions  [-f .top file] [-g .gro file] [-of output .top file] [-og output .gro file] -ionnm <ion name> -ionq <ion charge> -ionn <number to add> -ionm <mass of ion> -ionc12 <c12 parameter of ion> -mindist [0.5] [-help|-?]
+usage: smog_ions ... options
 
-   Required Input
-	-f [smog.top]: Input SMOG forcefield file
-	-g [smog.gro]: Input SMOG configuration file
-   Optional Input/Output parameters
-	-of [smog.ions.top]: Output SMOG forcefield file for smog.ions system
-	-og [smog.ions.gro]: Output SMOG configuration file for smog.ions system
-                                        that have interactions removed during extraction
+   Required flags
+	-ionnm  <string>   : name of ion to be added to the system
+	-ionn   <integer>  : number of ions to add
+	-ionq   <float>    : charge of ions
+	-ionm   <float>    : mass of ions
+	-ionc12 <float>    : C12 excluded-volume parameter for ions
+   Optional settings 
+	-f [smog.top]      : input SMOG forcefield file
+	-g [smog.gro]      : input SMOG configuration file
+	-of [smog.ions.top]: output SMOG forcefield file for smog.ions system
+	-og [smog.ions.gro]: output SMOG configuration file for smog.ions system
+	-mindist [0.5]     : the minimium distance (nm) between an added ion and any other atom in the system
+	-help 		   : show options 
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
@@ -67,10 +72,30 @@ my $help;
 my $warnonly=0;
 my @grobox;
 our $noexit=0;
-usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
-        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=s' => \$addmass, 'ionc12=s' => \$addC12, 'ionnm=s' => \$addname, 'ionq=s' => \$addcharge,  'mindist=s' => \$mindist,  'warnonly' => \$warnonly, 
+usage() if (@ARGV < 5 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionc12=f' => \$addC12, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'warnonly' => \$warnonly, 
         '<>' => \&usage)
         or defined $help); 
+
+my $maxbu=10;
+foreach my $filen($outputtop, $outputgro){
+	my ($ext) = $filen =~ /(\.[^.]+)$/;
+	if($filen ne "" && -e $filen){
+		for(my $bu=1;$bu<=$maxbu;$bu++){
+			my $buname="$filen.bu$bu";
+			if( ! -e $buname){	
+			print "$filen already exists.  Backing up to $buname\n";
+			system("mv $filen $buname");
+			last;
+			}
+			if($bu == $maxbu){
+		 	smog_quit ("Already backed up $maxbu copies of $filen."); 
+			}
+		}
+	}
+}
+
+
 
 if($warnonly){
 	$noexit=1;
@@ -97,7 +122,7 @@ if(!defined $ext || $ext ne ".top"){
 print "\n\nUsing $inputTOP and $inputGRO to generate system with ions...\n\n";
 ### make a new gro file 
 
-open(GROFILE,"$inputGRO") or die "Can\'t open GRO file \"$inputGRO\"\n";
+open(GROFILE,"$inputGRO") or smog_quit("Can\'t open GRO file $inputGRO");
 my $groheader=<GROFILE>;
 chomp($groheader);
 
@@ -161,7 +186,7 @@ print "\n";
 close(GROFILE);
 
 if(-e $outputgro){smog_quit("$outputgro already exists.")};
-open(GROFILE,">$outputgro") or die "Can\'t open output GRO file \"$outputgro\"\n";
+open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
 print GROFILE "$groheader\n";
 $NATOMS+=$addnum;
 print GROFILE "$NATOMS\n";
@@ -218,9 +243,17 @@ my $ZTT;
 my $XT;
 my $YT;
 my $ZT;
+my $added=0;
 for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
+	print "adding ion $added\n";
+	$added++;
 	my $mindistt=-1;
+	my $attempt=0;
 	until($mindistt > $mindist){
+		$attempt++;
+		if($attempt ==1000){
+			smog_quit("Tried 1000 times to add ion number $added. Giving up.");
+		}
 		my $R1=rand();
 		my $R2=rand();
 		my $R3=rand();
@@ -291,10 +324,10 @@ print GROFILE "$grodim\n";
 
 
 #read in the top file, with comments stripped
-open(FILE, "$inputTOP") or die "Can not open $inputTOP\n"; 
+open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP"); 
 
 if(-e $outputtop){smog_quit("$outputtop already exists.")}
-open(TOPOUT,">$outputtop") or die "Can\'t open $outputtop for writing.\n";
+open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing");
 my $added=0;
 while (<FILE>){
 	my $LINE = $_;

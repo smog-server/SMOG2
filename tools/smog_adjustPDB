@@ -15,7 +15,7 @@ my @pArr;
 my $loopInd;
 my $prevResTypeRNA;
 my $noexit=0;
-my $outputPDB;
+my $outputPDB="smog.pdb";
 my $inputPDB;
 my $mapFile;
 my $default;
@@ -43,21 +43,22 @@ print <<EOT;
             For questions regarding this script, contact info\@smog-server.org              
 *****************************************************************************************
 
-usage: smog_adjustPDB [-i filename.pdb] [-o smog.pdb] [-default] | [-map filename] [--help|-?]
+usage: smog_adjustPDB .. options ..
 
-Required Input
-	-i [filename.pdb]: Input PDB to adjust to smog2 format
-	-default | -map filename : use the default file name provided by smog2 or specify a map file name
-Optional Input parameters
-	-warnonly : Convert fatal errors to warnings (Caution: Consult manual before using this option)
-	-renumber : Ignore any residue numbering inconsistencies and renumber residues sequentially.
-
+  Options
+	-i <filename>	: input PDB to adjust to smog2 format
+	-default 	: use the default file name provided by smog2 
+	-map <filename>	: specify a user-defined mappint file
+	-o [smog.pdb] 	: output pdb file name
+	-warnonly 	: convert fatal errors to warnings (Caution: Consult manual before using this option)
+	-renumber 	: ignore any residue numbering inconsistencies and renumber residues sequentially
+	-help 	  	: show options
 EOT
 
   if ( @_ ){
    	exitSmog("Command-line argument \"@_\" not recognized.");
   }else{
-   exit;
+   exit
   }
 
 }
@@ -86,7 +87,7 @@ if (defined $renumber){
 if(!defined $inputPDB){
 	exitSmog("No input PDB was specified. Use -i to specify your input pdb file.");
 }else{
-	open(OLDPDB,"$inputPDB") or die "Can't open PDB file $inputPDB.\n";
+	open(OLDPDB,"$inputPDB") or exitSmog("Can't open PDB file $inputPDB.");
 	print "Will reformat the PDB file: $inputPDB\n";	
 }
 
@@ -104,11 +105,30 @@ if (defined $default){
 	}
 }
 
+my $maxbu=10;
+foreach my $filen($outputPDB){
+	my ($ext) = $filen =~ /(\.[^.]+)$/;
+	if($filen ne "" && -e $filen){
+		for(my $bu=1;$bu<=$maxbu;$bu++){
+			my $buname="$filen.bu$bu";
+			if( ! -e $buname){	
+			print "$filen already exists.  Backing up to $buname\n";
+			system("mv $filen $buname");
+			last;
+			}
+			if($bu == $maxbu){
+		 	smog_quit ("Already backed up $maxbu copies of $filen."); 
+			}
+		}
+	}
+}
+
+
 if (!defined $outputPDB){
 	print "\nNo output PDB file name was specified. Will produce a default PDB file name: smog.pdb\n";
-	open(NEWPDB,">smog.pdb") or die "Can't open the output PDB file. \n";
+	open(NEWPDB,">smog.pdb") or exitSmog("Can't open the output PDB file.");
 }else{
-	open(NEWPDB,">$outputPDB") or die "Can't open the output PDB file. \n";
+	open(NEWPDB,">$outputPDB") or exitSmog("Can't open the output PDB file.");
 	print "New file will be written: $outputPDB\n";
 }
 

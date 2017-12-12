@@ -6,6 +6,7 @@
 	<bType>*</bType>
 	<bType>*</bType>
         </bond>
+
 	<bond func="bond_type6(?,200)">
 	<bType>*</bType>
     	<bType>MG</bType>
@@ -19,12 +20,6 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</angle>
-	<angle func="angle_free()">
-	<bType>energyGroup="free"</bType>
-	<bType>energyGroup="free"</bType>
-	<bType>energyGroup="free"</bType>
-	</angle>
-
 </angles>
 
 <!-- DIHEDRALS -->

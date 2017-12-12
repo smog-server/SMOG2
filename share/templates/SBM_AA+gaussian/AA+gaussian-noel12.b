@@ -19,11 +19,6 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</angle>
-	<angle func="angle_free()">
-	<bType>energyGroup="free"</bType>
-	<bType>energyGroup="free"</bType>
-	<bType>energyGroup="free"</bType>
-	</angle>
 
 </angles>
 
