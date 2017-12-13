@@ -1135,14 +1135,17 @@ sub readAtoms
 			#printf $OUTPUT "%6d %10s %6d %6s %6s %6d\n", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum;
 			addToTop("atoms",sprintf("%6d %10s %6d %6s %6s %6d", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum));
 			if(defined $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}){
-				#if charge is defined for a specific atom in a residue, then write it
+				#if charge is defined for an atom in a  specific residue, then write it
 				addToTop("atoms",sprintf(" %9.6f\n", $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}));
-				# this residue has a charge on that atom type, then add that value to the total
+				# this residue has a charge on that atom, add that value to the total
 				$totalcharge += $residues{$resName}->{"atoms"}->{$atomName}->{"charge"};
-			}else{
+			}elsif(defined $interactions->{"nonbonds"}->{$atomType}->{"charge"}){
 				addToTop("atoms",sprintf("\n"));
 				# since there is not residue-specific charge assigned, use the atomtype value.
 				$totalcharge += $interactions->{"nonbonds"}->{$atomType}->{"charge"};
+			}else{
+				# charges are not defined for this atom, assume 0.
+				addToTop("atoms",sprintf("\n"));
 			}
 		}
 	}
