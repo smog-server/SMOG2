@@ -234,7 +234,7 @@ close(ATOMLIST);
 my @A;
 my $N=0;
 for my $atom ( sort {$a<=>$b} keys %atomgroup) {
-	if($atomgroup{$atom} == $extgrp){
+	if($atomgroup{$atom} eq $extgrp){
 		$A[$N]=$atom;
 		$N++;
 	}
