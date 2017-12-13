@@ -306,7 +306,7 @@ my %supported_directives = ( 'defaults' => '0',
         );
 
 my %atoms2restrain;
-#read in the top file, with comments stripped
+#read in the top file
 open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP"); 
 my $string = "";
 while (<FILE>){

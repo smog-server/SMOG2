@@ -30,6 +30,27 @@ sub smog_quit
         }
 }
 
+sub checkcomment
+{
+	my ($LINE) = @_;
+	my $comment;
+	if($LINE =~ m/(;.*)/){
+		$comment=$1;
+	}else{
+		$comment="";
+	}
+	# remove comments
+	$LINE =~ s/;.*$//g; 
+	$LINE =~ s/\t/ /g; 
+	$LINE =~ s/^\s+|\s+$//g;
+	$LINE =~ s/ +/ /g;
+	if( $LINE =~ m/[#!\^\$]/ ){
+		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
+	}
+	return ($LINE,$comment);
+}
+
+
 sub usage
 {
   print <<EOT;
@@ -352,41 +373,36 @@ while (<FILE>){
 	my $LINE = $_;
 	my $LINEORIG=$LINE;
 	chomp($LINE);
-	$LINE =~ s/;.*$//g; 
-	$LINE =~ s/\t/ /g; 
-	$LINE =~ s/^\s+|\s+$//g;
-	$LINE =~ s/ +/ /g;
-	if( $LINE =~ m/[#!\^\$]/ ){
-		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
-	}
+	my ($data,$comment)=checkcomment($LINE);
 
 	# check if we hit the atomtypes.  if we do, then add the atomtype.
-	if($LINE eq ""){
-		print TOPOUT "$LINEORIG"; 
+	if($data eq ""){
+		print TOPOUT "$comment\n"; 
 		next;
 	}
-	my @TMP=split(/ /,$LINE);
+	my @TMP=split(/ /,$data);
 	if($TMP[0] eq "[" and $TMP[1] eq "atomtypes"){
-		print TOPOUT "$LINEORIG"; 
+		print TOPOUT "$data\n"; 
 	
 		$LINE = <FILE>;
 		$LINEORIG=$LINE;
 		chomp($LINE);
-		$LINE =~ s/\t/ /g; 
-		$LINE =~ s/^\s+|\s+$//g;
-		$LINE =~ s/ +/ /g;
-		until($LINE eq ""){
-			print TOPOUT "$LINEORIG"; 
+		($data,$comment)=checkcomment($LINE);
+		until(($data eq "" and $comment eq "") or substr($data,0,1) eq "[" ){
+			$data =~ s/ /\t/g;
+			print TOPOUT "$data$comment\n"; 
 			$LINE = <FILE>;
-			if(!defined $LINE){$LINE="";$LINEORIG="";}
 			$LINEORIG=$LINE;
+			if(!defined $LINE){$data="";$comment="";next;}
 			chomp($LINE);
-			$LINE =~ s/\t/ /g; 
-			$LINE =~ s/^\s+|\s+$//g;
-			$LINE =~ s/ +/ /g;
+			($data,$comment)=checkcomment($LINE);
 		}
-		print TOPOUT "$addname $addmass $addcharge A $addC6 $addC12\n";
+		print TOPOUT "$addname\t$addmass\t$addcharge\tA\t$addC6\t$addC12\n\n";
+		$LINEORIG=$LINE;
 
+	}
+	if(!defined $TMP[0]){
+		$TMP[0]="";
 	}
 	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
 		# add a new molecule type
