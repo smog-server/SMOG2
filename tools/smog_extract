@@ -261,7 +261,7 @@ chomp($TMP);
 $TMP =~ s/\t/ /g; 
 $TMP =~ s/^\s+|\s+$//g;
 $TMP =~ s/ +/ /g;
-my @A=split(/\s+/,$TMP);
+@A=split(/\s+/,$TMP);
 my $NATOMS=$A[0];
 my @GRODATA;
 unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
