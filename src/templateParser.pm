@@ -847,7 +847,7 @@ foreach my $inter(@interHandle)
 }
 
 if($counter !=1){
-	warn("\n\nWARNING: Gromacs does not support simultaneous use of all possible combinations\n\tof function types in a single simulation. If you attempt to use multiple contact\n\tfunctions at once, you should verify everything is behaving as expected.\n\tFor more information, please email us at info\@smog-server.org")
+	smog_quit("Gromacs does not support simultaneous use of all possible combinations\n\tof function types in a single simulation. If you attempt to use multiple contact\n\tfunctions at once, you should verify everything is behaving as expected.\n\tFor more information, please email us at info\@smog-server.org")
 }
 
 ## Obtain default options (ONLY FOR GEN PAIRS) ##
