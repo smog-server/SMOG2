@@ -558,7 +558,7 @@ sub GenerateBondedGeometry {
 
 	my ($connect,$counter,$chid,$chainlength) = @_;
 	## $connect is a list of connected residues ##
-   	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union,$ConnectedAtoms) = GenAnglesDihedrals($connect,$chainlength);
+   	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union,$ConnectedAtoms) = GenAnglesDihedrals($connect,$chainlength,$chid);
 	my %union=%{$union};
 
 	if($chainlength == 0){
@@ -1270,7 +1270,7 @@ sub connWildcardMatchDihes
 
 sub GenAnglesDihedrals
 {
-	my($connect,$chainlength) = @_;
+	my($connect,$chainlength,$chid) = @_;
 	## $connect is a list of connected residues ##
 	my @tempA;my @tempD;
 	my $bonds;my $dihes; my $angles; 
@@ -1315,12 +1315,12 @@ sub GenAnglesDihedrals
 			if(!exists $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}}){
 			my $typeA=$residues{$connect->[0]}->{"residueType"};
 			my $typeB=$residues{$connect->[1]}->{"residueType"};
-			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file.  Issue encountered when connecting residue 0 and 1 (residue index within chain, starting at 0).")
-		}
+			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file.  Issue encountered when connecting residue 0 and 1 in chain $chid (residue index within chain, starting at 0).")
+			}
 		$connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
 	  	$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
 	  	$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
-	 	$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
+	 	$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});		
       		 next;
 		}
         	## $i > 0, create inter residue connection ##
@@ -1329,7 +1329,7 @@ sub GenAnglesDihedrals
 			my $typeA=$residues{$connect->[$i-1]}->{"residueType"};
 			my $typeB=$residues{$connect->[$i]}->{"residueType"};
 			my $ii=$i-1;
-			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $ii and $i (residue index within chain, starting at 0)")
+			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $ii and $i in chain $chid (residue index within chain, starting at 0)")
 		}
 		$connHandle = $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}};
 		$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
@@ -1345,7 +1345,7 @@ sub GenAnglesDihedrals
 			my $typeA=$residues{$connect->[$i]}->{"residueType"};
 			my $typeB=$residues{$connect->[$i+1]}->{"residueType"};
 			my $ii=$i+1;
-			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $i and $ii (residue index within chain, starting at 0)")
+			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $i and $ii in chain $chid (residue index within chain, starting at 0)")
 		}
         	$connHandle = $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}};
     		$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
