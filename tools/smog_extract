@@ -332,8 +332,14 @@ for (my $I=1;$I<=$#DATA;$I++){
 	my @B=split(/ /,$first_line);
 	my $DIR=$B[0];
 	chomp($DIR);
-	$DIR =~ s/\]$//g;
-		
+	if(!defined $B[1]){
+		smog_quit("Format error near directive \"$DIR\"");
+	}
+	chomp($B[1]);
+	if($B[1] ne "]"){
+		smog_quit("Format error near directive \"$DIR\"");
+	}
+	
 	if(!exists $supported_directives{$DIR}){
 		smog_quit("Directive \"$DIR \" not supported\n");
 	}else{
