@@ -210,7 +210,6 @@ sub hascontent
 #adds something to the topfile at the bottom of a directive
 sub addToTop {
 	my($directive,$stuff) = @_;
-	hascontent
 	$linesInDirectivesWithContent[$directives{$directive}]+= hascontent($stuff);
 	push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
 }
