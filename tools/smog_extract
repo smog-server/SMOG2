@@ -234,7 +234,7 @@ close(ATOMLIST);
 my @A;
 my $N=0;
 for my $atom ( sort {$a<=>$b} keys %atomgroup) {
-	if($atomgroup{$atom} == $extgrp){
+	if($atomgroup{$atom} eq $extgrp){
 		$A[$N]=$atom;
 		$N++;
 	}
@@ -261,7 +261,7 @@ chomp($TMP);
 $TMP =~ s/\t/ /g; 
 $TMP =~ s/^\s+|\s+$//g;
 $TMP =~ s/ +/ /g;
-my @A=split(/\s+/,$TMP);
+@A=split(/\s+/,$TMP);
 my $NATOMS=$A[0];
 my @GRODATA;
 unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
@@ -293,6 +293,7 @@ print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted syste
 my %supported_directives = ( 'defaults' => '0',
         'atomtypes' => '1',
         'moleculetype' => '0',
+        'nonbond_params' => '0',
         'atoms' => '1',
         'bonds' => '1',
         'angles' => '1',
@@ -305,7 +306,7 @@ my %supported_directives = ( 'defaults' => '0',
         );
 
 my %atoms2restrain;
-#read in the top file, with comments stripped
+#read in the top file
 open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP"); 
 my $string = "";
 while (<FILE>){
@@ -331,8 +332,14 @@ for (my $I=1;$I<=$#DATA;$I++){
 	my @B=split(/ /,$first_line);
 	my $DIR=$B[0];
 	chomp($DIR);
-	$DIR =~ s/\]$//g;
-		
+	if(!defined $B[1]){
+		smog_quit("Format error near directive \"$DIR\"");
+	}
+	chomp($B[1]);
+	if($B[1] ne "]"){
+		smog_quit("Format error near directive \"$DIR\"");
+	}
+	
 	if(!exists $supported_directives{$DIR}){
 		smog_quit("Directive \"$DIR \" not supported\n");
 	}else{
@@ -378,8 +385,6 @@ if(!exists $DIRLIST{"defaults"}){
 if(!exists $DIRLIST{"atomtypes"}){
 	smog_quit("\"atomtypes\" does not appear in .top file.\n");
 }else{
-	my @indextotype;
-	my $typeindex=0;
 	my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
 	# keep all the atomtypes, even though some may not be used in the new system.	
 	print TOPOUT "[ atomtypes ]\n";
@@ -388,6 +393,19 @@ if(!exists $DIRLIST{"atomtypes"}){
 	}
 	print TOPOUT "\n";
 }
+
+
+# start with nonbond_params
+if(exists $DIRLIST{"nonbond_params"}){
+	my @C= split(/\n/,$DATA[$DIRLIST{"nonbond_params"}]);
+	# keep all the atomtypes, even though some may not be used in the new system.	
+	print TOPOUT "[ nonbond_params ]\n";
+	for(my $II=1;$II<=$#C;$II++){
+		print TOPOUT "$C[$II]\n";
+	}
+	print TOPOUT "\n";
+}
+
 
 if(!exists $DIRLIST{"moleculetype"}){
 	smog_quit("\"moleculetype\" does not appear in .top file.\n");
@@ -619,7 +637,7 @@ if(!exists $DIRLIST{"exclusions"}){
 
 # information about the restraints 
 if(exists $DIRLIST{"position_restraints"} ){
-	smog_quit("position_restraints not supported in the input top file (yet).");
+	smog_quit("position_restraints in input top file not supported (yet).");
 }else{
 	if($gen_restraints != 0){
 		print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";

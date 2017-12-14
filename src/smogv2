@@ -94,6 +94,7 @@ our %directives = ("comments",1,"defaults",2,"atomtypes",3,"nonbond_params",4,"m
 our @directivesList=("comments","defaults","atomtypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
 our @topFileBuffer;
 our @linesInDirectives;
+our @linesInDirectivesWithContent;
 our $inputArguments=join(' ',@ARGV);
 
 
@@ -128,7 +129,7 @@ sub printTop {
 	my $j;
 	my $directive;
 	foreach $directive (@directivesList) { #order of list defines order in top
-		if($linesInDirectives[$directives{$directive}]-1 > 2) { #assumes each section needs more than a heading and summary line to be printed
+		if($linesInDirectivesWithContent[$directives{$directive}] > 1 or $directive eq "comments") { # print if the section has more than a header and comments
 			foreach $i (0 .. scalar @{$topFileBuffer[$directives{$directive}]}-1) { 
 				print $OUTPUT $topFileBuffer[$directives{$directive}][$i][0];
 			}
@@ -142,6 +143,7 @@ sub initializeDirectives {
 	my($inputFolder,$inputPDB) = @_;
 	for (keys %directives) { 
 		$linesInDirectives[$directives{$_}]=0; 
+		$linesInDirectivesWithContent[$directives{$_}]=0; 
 		#need this because we are going to output a top without pairs but want it to not die when it is not initialized
 		push @{$topFileBuffer[$directives{$_}][$linesInDirectives[$directives{$_}]++]}, ""; 
 	}
@@ -180,9 +182,36 @@ sub initializeDirectives {
 	addToTop("molecules","; name            #molec\n");
 	addToTop("molecules","  Macromolecule   1\n");
 }
+
+sub hascontent
+{
+	my ($LINE) = @_;
+	my $comment;
+	if($LINE =~ m/(;.*)/){
+		$comment=$1;
+	}else{
+		$comment="";
+	}
+	# remove comments
+	$LINE =~ s/;.*$//g; 
+	# remove spaces and tabs
+	$LINE =~ s/\s|\t//g;
+	if( $LINE =~ m/[#!\^\$]/ ){
+		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
+	}
+	if($LINE eq ""){
+		return 0;
+	}else{
+		return 1;
+	}
+}
+
+
 #adds something to the topfile at the bottom of a directive
 sub addToTop {
 	my($directive,$stuff) = @_;
+	hascontent
+	$linesInDirectivesWithContent[$directives{$directive}]+= hascontent($stuff);
 	push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
 }
 #looks for file "extras" in template directory
@@ -1140,14 +1169,17 @@ sub readAtoms
 			#printf $OUTPUT "%6d %10s %6d %6s %6s %6d\n", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum;
 			addToTop("atoms",sprintf("%6d %10s %6d %6s %6s %6d", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum));
 			if(defined $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}){
-				#if charge is defined for a specific atom in a residue, then write it
+				#if charge is defined for an atom in a  specific residue, then write it
 				addToTop("atoms",sprintf(" %9.6f\n", $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}));
-				# this residue has a charge on that atom type, then add that value to the total
+				# this residue has a charge on that atom, add that value to the total
 				$totalcharge += $residues{$resName}->{"atoms"}->{$atomName}->{"charge"};
-			}else{
+			}elsif(defined $interactions->{"nonbonds"}->{$atomType}->{"charge"}){
 				addToTop("atoms",sprintf("\n"));
 				# since there is not residue-specific charge assigned, use the atomtype value.
 				$totalcharge += $interactions->{"nonbonds"}->{$atomType}->{"charge"};
+			}else{
+				# charges are not defined for this atom, assume 0.
+				addToTop("atoms",sprintf("\n"));
 			}
 		}
 	}
