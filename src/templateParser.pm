@@ -281,7 +281,8 @@ sub parseBif {
 		      "bonds" => \%bonds,
 		      "energyGroups" => \%energyGroups,
 		      "rigidGroups" => \%rigidGroups,
-		      "atomCount" => $residueHandle->{$res}->{"atomCount"}
+		      "atomCount" => $residueHandle->{$res}->{"atomCount"},
+		      "connect" => $residueHandle->{$res}->{"connect"}
 		      };
 		$residues{$res} = $interRes;
 	  

@@ -709,6 +709,28 @@ sub returnResidueIndexFromIndex
 	return $allAtoms{$idx}->[2];
 }
 
+
+sub checkconnection
+{
+	my ($i,$c0,$c1,$chid)=@_;
+	if(!exists $connections{$residues{$c0}->{"residueType"}}->{$residues{$c1}->{"residueType"}}){
+		my $typeA=$residues{$c0}->{"residueType"};
+		my $typeB=$residues{$c1}->{"residueType"};
+		my $ii=$i-1;
+		if((!defined $residues{$c0}->{"connect"} || $residues{$c0}->{"connect"} eq "yes") && (!defined $residues{$c1}->{"connect"} || $residues{$c1}->{"connect"} eq "yes")){
+			print $c0;
+			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $ii and $i in chain $chid (residue index within chain, starting at 0)")
+		}elsif(defined $residues{$c0}->{"connect"} && $residues{$c0}->{"connect"} ne "no"){
+			my $tmp=$residues{$c0}->{"connect"};
+			smog_quit("residue connect value must be yes, or no.  $tmp found.")
+		}elsif(defined $residues{$c1}->{"connect"} && $residues{$c1}->{"connect"} ne "no"){
+			my $tmp=$residues{$c1}->{"connect"};
+			smog_quit("residue connect value must be yes, or no.  $tmp found.")
+		}
+
+	}
+}
+
 sub appendImpropersBOND
 {
 
@@ -1312,45 +1334,37 @@ sub GenAnglesDihedrals
     		#  but setup leftAtom and leftResidue sizes #
     		if($i == 0) 
 		{
-			if(!exists $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}}){
-			my $typeA=$residues{$connect->[0]}->{"residueType"};
-			my $typeB=$residues{$connect->[1]}->{"residueType"};
-			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file.  Issue encountered when connecting residue 0 and 1 in chain $chid (residue index within chain, starting at 0).")
+			checkconnection($i+1,$connect->[0],$connect->[1],$chid);
+			if(exists $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}}){
+				$connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
+	  			$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
+	  			$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
+	 			$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});		
 			}
-		$connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
-	  	$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
-	  	$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
-	 	$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});		
-      		 next;
+      			next;
 		}
+		checkconnection($i,$connect->[$i-1],$connect->[$i],$chid);
         	## $i > 0, create inter residue connection ##
 		## $i-1 <--> $i
-		if(!exists $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}}){
-			my $typeA=$residues{$connect->[$i-1]}->{"residueType"};
-			my $typeB=$residues{$connect->[$i]}->{"residueType"};
-			my $ii=$i-1;
-			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $ii and $i in chain $chid (residue index within chain, starting at 0)")
+		if(exists $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}}){
+			$connHandle = $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}};
+			$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
+	    		$rightAtom = $bondMapHashRev{"$rightAtom-$i"};
+			push(@AtomsInConnections,$leftAtom);
+			push(@AtomsInConnections,$rightAtom);
+			push(@connectList,$leftAtom);
+			push(@connectList,$rightAtom);
 		}
-		$connHandle = $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}};
-		$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
-	    	$rightAtom = $bondMapHashRev{"$rightAtom-$i"};
-		push(@AtomsInConnections,$leftAtom);
-		push(@AtomsInConnections,$rightAtom);
-		push(@connectList,$leftAtom);
-		push(@connectList,$rightAtom);
     
     		## $i <--> $i+1
         	if($i == $#$connect) {last;}
-		if(!exists $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}}){
-			my $typeA=$residues{$connect->[$i]}->{"residueType"};
-			my $typeB=$residues{$connect->[$i+1]}->{"residueType"};
-			my $ii=$i+1;
-			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $i and $ii in chain $chid (residue index within chain, starting at 0)")
+		checkconnection($i+1,$connect->[$i],$connect->[$i+1],$chid);
+		if(exists $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}}){
+        		$connHandle = $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}};
+    			$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
+    			$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
+    			$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
 		}
-        	$connHandle = $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}};
-    		$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
-    		$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
-    		$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
    	}
   	## Create Inter residue connection ##
   	for($i=0;$i<scalar(@connectList)-1;$i+=2) {
