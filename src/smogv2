@@ -155,15 +155,15 @@ sub initializeDirectives {
 	addToTop("defaults", "\n[ defaults ]\n");
 	addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
 	addToTop("bonds","\n[ bonds ]\n");
-	addToTop("bonds",";     ai       aj     func  r0(nm)          Kb\n");
+	addToTop("bonds",";ai\taj\tfunc\t r0(nm)\t         Kb\n");
 	addToTop("angles","\n[ angles ]\n");
-	addToTop("angles",";      ai      aj       ak   func th0(deg)        Ka\n");
+	addToTop("angles",";ai\taj\tak\tfunc\t th0(deg)        Ka\n");
   	addToTop("dihedrals","\n[ dihedrals ]\n");
-  	addToTop("dihedrals",";     ai       aj       ak       al  func  phi0(deg)        kd         mult\n");
+  	addToTop("dihedrals",";ai\taj\tak\tal\tfunc\t phi0(deg)       Kd              mult\n");
 	addToTop("pairs","\n[ pairs ]\n");
-	addToTop("pairs","; ai aj type A B\n");
+	addToTop("pairs",";ai\taj\ttype\t A               B\n");
 	addToTop("exclusions","\n[ exclusions ]\n");
-	addToTop("exclusions","; ai	aj\n");
+	addToTop("exclusions",";ai	aj\n");
 	addToTop("atomtypes","\n[ atomtypes ] \n");
 	addToTop("atomtypes","; name  mass     charge    ptype c6           c12\n");
 	addToTop("nonbond_params","\n[ nonbond_params ]\n");
@@ -380,7 +380,7 @@ To help locate an output Gro index in the input PDB, the original chain and resi
 	       
 	## Format output <i j function p1 p2 ... pn>
 	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-	$formattedString = sprintf("%9d%9d%6d$paramFormat",$i,$j,$fType,@paramArr);
+	$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
 	$outputString = "$outputString$formattedString\n";
 	}
 }
@@ -516,7 +516,7 @@ sub angleOutput
 		}
  		## Format output <i j k function p1 p2 ... pn>
  		foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-			$formattedString = sprintf("%9d%9d%9d%6d$paramFormat",$i,$j,$k,$fType,@paramArr);
+			$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
 			$outputString = "$outputString$formattedString\n";
 		}
 	}
@@ -688,12 +688,12 @@ sub dihedralOutput
 		 	#foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 
 			if($fType eq 1) {
-				$paramFormat=" %12.9e	%12.9e %u";
+				$paramFormat=" %12.9e %12.9e %u";
 			}elsif($fType == 2){	
 			### CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
 				if($paramArr[0]>180){$paramArr[0]-=180;}else{$paramArr[0]+=180;}
 			}	
-			$formattedString = sprintf("%9d%9d%9d%9d%3d$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
+			$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
 			$outputString = "$outputString$formattedString\n";
 		}
 	}
@@ -880,8 +880,8 @@ sub contactOutput
 			}else{smog_quit("Contact function name $fname is not supported");}
 
  	## Format output <i j function p1 p2 ... pn>
-		 	foreach(@paramArr){$paramFormat="$paramFormat	%12.9e";}
-			$formattedString = sprintf("%d %d %d$paramFormat",$i,$j,$fType,@paramArr);
+		 	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
 			$outputString = "$outputString$formattedString";
 		}
 	}
