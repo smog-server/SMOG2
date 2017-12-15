@@ -184,7 +184,7 @@
 <!--Bound MG ions-->
 		<residue name="BMG" residueType="ion" connect="no">
 			<atoms>
-				<atom bType="B_1" nbType="NB_1" pairType="P_1">BMG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="BMG" bonds="0">BMG</atom>
 			</atoms>
 		</residue>	
 

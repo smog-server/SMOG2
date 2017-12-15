@@ -848,7 +848,7 @@ foreach my $inter(@interHandle)
 }
 
 if($counter !=1){
-	print "NOTE: Multiple contact functions defined in templates.\n\tNot all combinations of contact function types are supported in Gromacs.\n\tIf you attempt to use multiple contact functions at once, you should verify everything is behaving as expected.\n\tFor more information, please email us at info\@smog-server.org\n";
+	print "NOTE: Multiple contact functions defined in templates.\n\tNot all combinations of contact function types are supported in Gromacs.\n\tIf you attempt to use multiple contact functions simultaneously, you should verify everything is behaving as expected.\n";
 }
 
 ## Obtain default options (ONLY FOR GEN PAIRS) ##

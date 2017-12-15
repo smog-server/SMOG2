@@ -15,5 +15,11 @@
 	<pairType>*</pairType>
 </contact>
 
+<contact func="bond_type6(?,200)" contactGroup="c">
+	<pairType>BMG</pairType>
+	<pairType>*</pairType>
+</contact>
+
+
 </nb>
 
