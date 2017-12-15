@@ -545,7 +545,7 @@ sub connectivityCheck
 	}
 
 	my $missing=0;
-	foreach my $atom(keys %union){
+	foreach my $atom(sort {$a <=> $b} keys %union){
 		if(!exists $visitedList{$atom}){
 			$missing++;
 			print "\n!!!Unable to connect the atom at position $atom of chain $chid to the rest of the chain!!!\n";
