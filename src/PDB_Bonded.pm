@@ -1383,7 +1383,9 @@ sub GenAnglesDihedrals
 			my $atomname=$bondMapHash{$I}->[0];
 			my $residue=$bondMapHash{$I}->[1];
 			$residue++;
-        		smog_quit("No bonds found with atom $atomname in residue $residue. Check .bif definitions.");
+			if(defined $residues{$residue}->{"atoms"}->{$atomname}->{"bond"} && $residues{$residue}->{"atoms"}->{$atomname}->{"pairType"} !=0){
+        			smog_quit("No bonds found with atom $atomname in residue $residue. Check .bif definitions.");
+			}
    		}
 	}
 
