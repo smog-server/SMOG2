@@ -526,7 +526,7 @@ sub connectivityCheck
 	my @nextround;
 	my $size =keys %union;
 	if($size == 0){
-		smog_quit("Found 0 atoms in chain $chid.  Perhaps TER appears on consecutive lines, or TER is immediately followed by END.");
+		return(-1,0);
 	}
 
 	$nextround[0]=0;
@@ -560,12 +560,17 @@ sub GenerateBondedGeometry {
 	## $connect is a list of connected residues ##
    	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union,$ConnectedAtoms) = GenAnglesDihedrals($connect,$chainlength,$chid);
 	my %union=%{$union};
+	my @ConnectedAtoms2;
 
 	if($chainlength == 0){
 		smog_quit("Found 0 atoms in chain $chid.  Perhaps TER appears on consecutive lines, or TER is immediately followed by END.");
 	}elsif($chainlength != 1){
 		print "Attempting to connect all atoms in chain $chid to the first atom: ";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);
+		if($connected == -1){
+			# this chain has no bonds, so no need to try and connect things
+		        return(\@ConnectedAtoms2);
+		}
 		if($missed==0 && $connected == $chainlength){
 			print "All $connected atoms connected via covalent bonds \n"; 
 		}else{
@@ -577,7 +582,6 @@ sub GenerateBondedGeometry {
 
 	# convert and save the connected atoms' numbering, so that we can avoid trouble if we include BONDs later
 	my @ConnectedAtoms=@{$ConnectedAtoms};
-	my @ConnectedAtoms2;
 	foreach my $I(@ConnectedAtoms){
 		my $bondStrA = $map->{$I}->[0];
 		my $sizeA=$map->{$I}->[2];
