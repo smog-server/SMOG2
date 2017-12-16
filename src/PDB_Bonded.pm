@@ -381,14 +381,12 @@ sub parsePDBATOMS
 				$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
 				$temp[$putIndex]=[$x,$y,$z,$atomSerial];
 				$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
-				$totalAtoms++;
 			}
-	
-#			if($atomsmatch != $atomsInBif){
-#				smog_quit ("Not all atoms in the bif appear in the PDB. See line $lineNumber");
-#			}
-	
-#			if($i != $atomsInRes){smog_quit ("Total number of atoms of $residue doesn't match with .bif declaration");}
+			if($residues{$residue}->{"atomCount"} == -1){
+				$totalAtoms+=$atomsInRes;
+			}else{
+				$totalAtoms+=$residues{$residue}->{"atomCount"};
+			}
 			## CONCAT RESIDUE ##
 		  	@union = (@union,@temp);@temp=();
 			push(@consecResidues,$residue);

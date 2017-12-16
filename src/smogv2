@@ -754,7 +754,11 @@ sub calculateContacts
 		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 		if(!$normalize){next;}		
 		$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
-		$count+=$contactIntraScale;
+
+		my ($fType,$fname,$directive,$addExclusions,@paramArr) = contactFuncParser($funct);
+		unless($fname eq "bond_type6"){
+			$count+=$contactIntraScale;
+		}
 	}
 
 	## Adjust ratio ##
