@@ -568,6 +568,7 @@ sub GenerateBondedGeometry {
 		print "Attempting to connect all atoms in chain $chid to the first atom: ";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);
 		if($connected == -1){
+			print "Chain $chid has no bonds. No connections possible. May be a listing of ions.\n";
 			# this chain has no bonds, so no need to try and connect things
 		        return(\@ConnectedAtoms2);
 		}
