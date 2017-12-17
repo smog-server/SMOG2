@@ -73,7 +73,7 @@ our $interactionThreshold;
 
 
 my $settings; our $termRatios;
-our $interactions;my %bondTypes;my %nboneTypes;
+our $interactions;my %nboneTypes;
 our %funcTable;our %funcTableRev;
 our %eGTable;our %eGRevTable;
 our @topFileBuffer;our @linesInDirectives;
@@ -120,7 +120,7 @@ sub clearBifMemory {
 	%residueBackup = %{ dclone (\%residues) };
 	undef %residues;undef $functions;
 	undef $contactSettings;undef $termRatios;
-	undef $interactions;undef %bondTypes;
+	undef $interactions;
 	undef %funcTable;undef %funcTableRev;
 	##undef %eGTable; 
 	undef %eGRevTable;
