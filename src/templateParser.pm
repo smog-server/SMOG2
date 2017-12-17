@@ -339,9 +339,7 @@ sub parseSif {
 	my $groupRatios = $settings->{"Groups"}->[0]->{"groupRatios"}->[0];
 	my $residueType; 
 	my $intraRelativeStrength; my $normalize;
-	my $interRelativeStrength;
-	my $totalStrength;my $total;
-	my $totalEnergyGroup;my $totalContactGroup;
+	my $total;
 	
 	## PARSE ENERGY GROUP INFORMATION ##
 	## INFO PLACED IN termRatio HASH
@@ -378,7 +376,7 @@ sub parseSif {
 	}
 	
 	my $CG_NORM=0;
-	my $setflag = 0;$total=0;
+	$total=0;
 	my $numCGs=0;
 	foreach my $egName(keys %{$contactGroups})
 	{
@@ -426,14 +424,6 @@ sub parseSif {
 	$termRatios->{"energyRelative"} = $groupRatios->{"dihedrals"};
 	## Sum of total global scaling ##
 	$termRatios->{"interRelativeTotal"} = $groupRatios->{"contacts"}+$groupRatios->{"dihedrals"};
-	
-	
-	## PARSE TERM STRENGTH INFORMATION ##
-	## Term strengths are copied to a hash with key
-	## as epsilonBonds, epsilonAngles, epsilonPlanar, epsilonNC
-	## according to the all-atom paper
-	my $termStrengths = $settings->{"termStrengths"}->[0];
-	
 	
 	## PARSE CONTACT MAP SETTINGS ##
 	$contactSettings = $data->{"settings"}->[0]->{"Contacts"}->[0];
@@ -827,7 +817,7 @@ foreach my $inter(@interHandle)
 $counter = 0;
 foreach my $inter(@interHandle)
 {
-	my $nbtype;my $pairtype;my $type;
+	my $nbtype;my $type;
  	$nbtype = $inter->{"pairType"};$type = "pairType";
 	my $typeA = $inter->{$type}->[0];
 	my $typeB = $inter->{$type}->[1];
@@ -882,7 +872,6 @@ my %dihedralHandle;
 ## BOND FUNCTIONALS ##
 ######################
 sub createBondFunctionals {
-my $intTypeA; my $intTypeB;
 foreach my $res (keys %residues)
 {
 	$residueHandle = $residues{$res};
@@ -953,7 +942,6 @@ sub getContactFunctionals
 {
 	my($typeA,$typeB) = @_;
 	## WILD CARD MATCHING CONDITIONALS ##
-	my $matchScore = 0; my $saveScore = 0;
 	my $funct=""; my $cG = "";
 	my $assigned=0; 
 	## If contact type is specifically defined ##
