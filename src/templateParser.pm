@@ -73,7 +73,7 @@ our $interactionThreshold;
 
 
 my $settings; our $termRatios;
-our $interactions;my %nboneTypes;
+our $interactions;
 our %funcTable;our %funcTableRev;
 our %eGTable;our %eGRevTable;
 our @topFileBuffer;our @linesInDirectives;
