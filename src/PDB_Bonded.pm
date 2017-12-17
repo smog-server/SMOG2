@@ -98,20 +98,17 @@ sub parsePDBATOMS
 	
 	## INTERNAL VARIABLES ##
 	my $counter = 0;
-	my @temp; my @connResA; my @connResB; my @union;
+	my @temp; my @union;
 	my @tempBond;
 	my @consecResidues;
 	my $x;my $y;my $z;
 	my $residue; my $interiorResidue; my $atom;my $atomSerial;
-	my $atomsInRes; my $lineEnd;
-	my $i; my $putIndex=0; my $strLength;
-	my $resType;
-	my $angH; my $diheH;
-	my $bondStrA;my $bondStrB;my $typeA;my $typeB;
-	my $endFlag=0; my $headFlag=1;my $outLength;
+	my $atomsInRes; 
+	my $i; my $putIndex=0; 
+	my $headFlag=1;my $outLength;
 	$totalAtoms = 0;my $nbType;my $residueType; my $pairType;
-	my $atomCounter=0;my $singleFlag = 1;
-	my $chainNumber = 0;my $linkFlag = 0;
+	my $atomCounter=0;
+	my $chainNumber = 0;
 	my $residueIndex=1;
 	my $interiorPdbResidueIndex=0;
 	my $lineNumber = 0;
@@ -286,7 +283,6 @@ sub parsePDBATOMS
 			$lastresindex=$resindex;
 			my %uniqueAtom;
 			$residueSerial++;
-			my $lastrecord="";
 			for($i=0;$i<$atomsInRes;$i++)
 			{
 					$record = <PDBFILE>;
@@ -375,7 +371,6 @@ sub parsePDBATOMS
 				}
 				$pdbIndex =~ s/^\s+|\s+$//g;
 				if(exists $indexMap{"$chainNumber-$pdbIndex"}){
-					my $chainID=$chainNumber+1;
 					smog_quit("Atom/Residue numbers must be unique within each chain. Offending line:\n$record");
 				}
 				$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
@@ -520,7 +515,7 @@ sub connectivityCheck
 # This will help catch mistakes in .bif files, where a bond may be omitted.
 	my ($unionref,$chid)=@_;
 	my %union=%{$unionref};
-        my %visitedList; my $visitedString;
+        my %visitedList;
 	my @nextround;
 	my $size =keys %union;
 	if($size == 0){
@@ -538,9 +533,7 @@ sub connectivityCheck
     	}
 
 	my $found=0;
-	foreach my $atom(keys %visitedList){
-		$found++;
-	}
+	$found+= scalar keys %visitedList;
 
 	my $missing=0;
 	foreach my $atom(sort {$a <=> $b} keys %union){
@@ -775,7 +768,6 @@ sub connCreateInteractionsSingleBOND
 
     	my($consecResiduesH,$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$bEG,$imp) = @_;
 	my @consecResidues = @{$consecResiduesH};
-	my $residue = $consecResidues[1];
 
     	## AD-HOC BONDS ##
 	my($angH,$diheH,$adjList,$bondStrA,$bondStrB)=createConnection($consecResiduesH,0,$atomA,$atomB);
@@ -876,8 +868,7 @@ sub connCreateInteractionsSingleBOND
 sub appendImpropers
 {
 my($map,$connect,$bondMapHashRev,$tempArr,$union) = @_;
-my %union=%{$union};
-my @connImproper; my $connHandle;
+my $connHandle;
 my %bondMapHashRev=%{$bondMapHashRev};
 #loop through the residues in the chain
 	for(my $resIndA=0;$resIndA<=$#$connect;$resIndA++){
@@ -948,7 +939,6 @@ my %bondMapHashRev=%{$bondMapHashRev};
 	   		## WORK ON INTER-RESIDUAL IMPROPERS ##
 	   		### CHANGE THIS, ONLY HANDLES SINGLE IMPROPERS ###
 	   		$connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}};
-	   		#@connImproper = @{$connHandle->{"improper"}};
 	   		foreach my $ips(@{$connHandle->{"improper"}})
 	   		{
 	  			if(exists $ips->{"atom"}){ 
@@ -958,7 +948,6 @@ my %bondMapHashRev=%{$bondMapHashRev};
 	        	        my $na;my $nb;my $nc;my $nd;
 	  			my $ra;my $rb;my $rc;my $rd;
 	  			my $sizeA; my $sizeB;my $sizeC;my $sizeD;
-	  			my($an,$bn,$cn,$dn) = @{$ips->{"atom"}};
 	  
 	  
 	        		if($a =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $a found.")};
@@ -1231,7 +1220,7 @@ sub connWildcardMatchDihes
 		foreach my $matches(keys %{$diheHandle})
 		{
 			$Nd++;
-			$matchScore = 0;my $saveScore = 0;
+			$matchScore = 0; $saveScore = 0;
 			# this step can be done once, rather than for each call.
 			my ($aM,$bM,$cM,$dM) = split("-",$matches);
 			if($matches eq "*-*-*-*"){
@@ -1297,24 +1286,20 @@ sub GenAnglesDihedrals
 {
 	my($connect,$chainlength,$chid) = @_;
 	## $connect is a list of connected residues ##
-	my @tempA;my @tempD;
-	my $bonds;my $dihes; my $angles; 
+	my $dihes; my $angles; 
 	my $oneFour;
 	my %union; my $connHandle;
-	my $atomA = ""; my $atomB = "";
-	my $i=0;my $j=0;my $mapCounter=0;
+	my $i=0;my $mapCounter=0;
 	my %bondMapHash; ##[AtomName,ResidueIndex,prevSize]##
 	my %bondMapHashRev;
 	my @connectList;
 	my @AtomsInConnections;
 	my $leftAtom;my $rightAtom;
-	my $leftResidue;my $rightResidue;
 	my $prevSize = 0;
 	
 	## Go through list of connected residues ##
 	for($i = 0;$i<=$#$connect;$i++)
 	{ 
-		$j = $i+1;  
   		my $resABonds = $dihedralAdjList{$connect->[$i]};
 		my $resAAtoms = $residues{$connect->[$i]}->{"atoms"};
 		## Atoms to mapCounter renaming ##
@@ -1400,7 +1385,7 @@ sub GenAnglesDihedrals
 
 sub createConnection
 {
-	my($connect,$firstFlag,$atomA,$atomB,$counter) = @_;
+	my($connect,$firstFlag,$atomA,$atomB) = @_;
 	my @tempA; my @tempD;
 	my $dihes; my $angles; my $oneFour;
 	my %union; my $connHandle;
@@ -1472,9 +1457,9 @@ sub parseCONTACT
 {
 	#lets leave this as two filename inputs in case we want to allow two sources of contacts in the future (i.e. user and shadow)
 	my($fileName,$fileName2,$userProvidedMap,$CGenabled) = @_;
-	my $numContacts = 0; my $garbage = 0;
+	my $numContacts = 0; 
 	my $line = "";
-	my $chain1;my $chain2; my $contact1; my $contact2; my $pdbNum1; my $pdbNum2; my $res1; my $res2;
+	my $chain1;my $chain2; my $contact1; my $contact2; my $res1; my $res2;
 	my $dist;
 	my $x1;my $x2;my $y1;my $y2;my $z1;my $z2;
 	my %resContactHash; my $skip = 0; my $COARSECONT;

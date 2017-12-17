@@ -41,7 +41,6 @@ use Data::Dumper;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
-
 ######################
 ## GLOBAL VARIABLES ##
 ######################
