@@ -85,7 +85,7 @@ my $outputtop="extracted.top";
 my $outputgro="extracted.gro";
 my $outputmap="atomindex.map";
 my $help;
-my $gen_restraints=0;
+my $gen_restraints=-1;
 my $warnonly=0;
 our $noexit=0;
 
@@ -107,7 +107,7 @@ if($warnonly){
 	$noexit=0;
 }
 
-unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen_restraints eq 0){
+unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen_restraints eq -1){
 	smog_quit("-restraints given with a non-numerical value: $gen_restraints");
 }
 
@@ -148,7 +148,6 @@ foreach my $filen($outputgro, $outputtop, $outputmap){
 	}
 }
 
-if(-e $outputmap){smog_quit("$outputmap already exists.")};
 open(MAPPING,">$outputmap") or smog_quit("Can\'t open $outputmap.");
 print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
 
@@ -276,7 +275,6 @@ my $grodim=<GROFILE>;
 chomp($grodim);
 close(GROFILE);
 
-if(-e $outputgro){smog_quit("$outputgro already exists.")};
 open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
 print GROFILE "$groheader\n";
 print GROFILE "$KEEPN\n";
@@ -348,7 +346,6 @@ for (my $I=1;$I<=$#DATA;$I++){
 }
 
 # Go through the directives, in order, and write out information for the subsystem
-if(-e $outputtop){smog_quit("$outputtop already exists.")}
 open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing.");
 #copy header
 
