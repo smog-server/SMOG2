@@ -195,7 +195,6 @@ my %supported_directives = ( 'defaults' => '0',
         'position_restraints' => '1'
         );
 
-my %atoms2restrain;
 #read in the top file, with comments stripped
 print "Reading top file $inputTOP\n";
 open(FILE, "$inputTOP") or die "Can not open $inputTOP\n"; 
@@ -268,7 +267,6 @@ if(!exists $DIRLIST{"defaults"}){
 if(!exists $DIRLIST{"atomtypes"}){
 	smog_quit("\"atomtypes\" does not appear in .top file.\n");
 }else{
-	my @indextotype;
 	my $typeindex=0;
 	my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
 	# keep at the atomtypes, even though some may not be used in the new system.	
@@ -337,7 +335,6 @@ if(!exists $DIRLIST{"angles"}){
 if(!exists $DIRLIST{"dihedrals"}){
 	smog_quit("\"dihedrals\" does not appear in .top file.\n");
 }else{
-	my @LAST;
 	my @C= split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
 	if($#C<1){
 		smog_quit("There must be at least 1 dihedral listed under the dihedrals directive\n");

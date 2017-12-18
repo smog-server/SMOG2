@@ -179,7 +179,6 @@ my @GRODATA;
 my @X;
 my @Y;
 my @Z;
-my $tmpp;
 
 unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
 
