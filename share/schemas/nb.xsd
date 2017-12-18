@@ -71,7 +71,6 @@
     <xs:element name="defaults" type="defaultsType"/>
     <xs:element name="nonbond" type="nonbondType" maxOccurs="unbounded"/>
     <xs:element name="contact" type="contactType" maxOccurs="unbounded"/>
-    <xs:element name="pair" type="pairType" maxOccurs="unbounded" minOccurs="0"/>
   </xs:sequence>
 </xs:complexType>
 
