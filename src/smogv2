@@ -94,7 +94,9 @@ our @topFileBuffer;
 our @linesInDirectives;
 our @linesInDirectivesWithContent;
 our $inputArguments=join(' ',@ARGV);
-
+our %Btypespresent;
+our %NBtypespresent;
+our %PAIRtypespresent;
 
 sub checkForModules {
 	my $checkPackage; my $sum=0;
