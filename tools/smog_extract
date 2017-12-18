@@ -530,7 +530,6 @@ if(!exists $DIRLIST{"angles"}){
 if(!exists $DIRLIST{"dihedrals"}){
 	smog_quit("\"dihedrals\" does not appear in .top file.\n");
 }else{
-	my @LAST;
 	my @C= split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
 	if($#C<1){
 		smog_quit("There must be at least 1 dihedral listed under the dihedrals directive\n");
