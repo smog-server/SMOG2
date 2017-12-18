@@ -121,7 +121,7 @@ sub checkForModules {
 ## OUTPUT TOPFILE ##
 ####################
 sub printTop {
-	my($topFile) = @_;
+	my ($topFile) = @_;
 	open($OUTPUT, ">$topFile");
 	my $i;
 	my $directive;
@@ -684,7 +684,7 @@ sub dihedralOutput
 		 	for(my $I=0;$I<=$#paramArr;$I++){$paramFormat="$paramFormat %12.9e";}
 		 	#foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 
-			if($fType eq 1) {
+			if($fType == 1) {
 				$paramFormat=" %12.9e %12.9e %u";
 			}elsif($fType == 2){	
 			### CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
@@ -722,13 +722,13 @@ sub diheFuncParser
 sub calculateContacts
 {
 	my($contactPDL,$inputPDL,$atomTypes,$numCon,$numAtom) = @_;
-	my $atoma; my $atomb;my $fType; my $dist;
+	my $atoma; my $atomb; my $dist;
 	my $pairtypea; my $pairtypeb;
 	my $resTypea; my $resTypeb;
 	my $multFactor = 1;
 	my $c0;  
 	my $epsilon;my $cG;my $funct;
- 	my $totalStrength; my $outputString;
+ 	my $totalStrength; 
 	my $contactIntraScale;
 	my $count;
 
@@ -1208,11 +1208,11 @@ sub convertPDBToGroNdx
 	my $resNumCurr=1;my $resCounter=1;
 	my $boundflag=0;
 	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
- 	open(PDB,$inputPDB); ## INPUT PDB
+ 	open(PDB,"$inputPDB") or smog_quit("can not open $inputPDB"); ## INPUT PDB
 	if(-e "meta.Gro"){
 		smog_quit("meta.Gro is a reserved file name.  It appears to already exist.  Please move and try again\n");
 	}
-	open(GRO,">meta.Gro");
+	open(GRO,">meta.Gro") or smog_quit("can not open meta.Gro for writing");
 	while($line=<PDB>)
 	{
 		
@@ -1276,8 +1276,9 @@ sub convertPDBToGroNdx
 
  ## ADJUST GRO FILE ##
 	close(PDB);
-	close(GRO);open(GROIN,"meta.Gro");
-	open(GRO,">$outputGRO");
+	close(GRO);
+        open(GROIN,"meta.Gro") or smog_quit("can not open meta.Gro for reading");
+	open(GRO,">$outputGRO") or smog_quit("can not open $outputGRO for writing");
 	print GRO "Gro file for a structure based model, generated with SMOG Version $VERSION\n";
 	print GRO $counter,"\n";
 	while(<GROIN>) { print GRO $_;}
