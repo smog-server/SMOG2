@@ -46,7 +46,6 @@ use IPC::Open3;
 ######################
 my $VERSION="2.1beta";
 my $angToNano = 0.1;
-my @diheArr;
 my $OUTPUT;
 my $help;
 my $inputPDB="molecule.pdb"; 
@@ -57,7 +56,7 @@ my $groFile = "";
 my $ContactFile;
 my $shadowFile = "";
 my $ndxFile = "";
-my $mapOpt = "shadow";my $contactOpt = "6 1";
+my $mapOpt = "shadow";
 my $numContacts = 0;
 my $rescaleCD = 1.0; ## rescale all contacts and dihedrals ##
 my $coarseFolder = ""; ## Coarse Grain Folder ##
@@ -125,7 +124,6 @@ sub printTop {
 	my($topFile) = @_;
 	open($OUTPUT, ">$topFile");
 	my $i;
-	my $j;
 	my $directive;
 	foreach $directive (@directivesList) { #order of list defines order in top
 		if($linesInDirectivesWithContent[$directives{$directive}] > 1 or $directive eq "comments") { # print if the section has more than a header and comments
@@ -633,9 +631,9 @@ sub dihedralOutput
  	## If $input contains a + ##
  	my @funcs = split(/\+/,$inputFunc);
 	my $outputString="";
-	my $fType="";my $exportRatio;       
+	my $fType="";       
  	my $formattedString="";
-	my $valueSend;my @paramArr;
+	my @paramArr;
 	my $funci=0; my @fTypei;
 	foreach my $fun(@funcs)
 	{
@@ -727,10 +725,8 @@ sub calculateContacts
 	my $atoma; my $atomb;my $fType; my $dist;
 	my $pairtypea; my $pairtypeb;
 	my $resTypea; my $resTypeb;
-	my $contactInterScale;
- 	my $dihedralInterScale;
 	my $multFactor = 1;
-	my $c0; my $c1; 
+	my $c0;  
 	my $epsilon;my $cG;my $funct;
  	my $totalStrength; my $outputString;
 	my $contactIntraScale;
@@ -900,7 +896,6 @@ sub contactParseNM1
 	##epsilon
 	##r0 is native distance##
 	#
-	my $cN;my $cM; 
 	my $A; my $B;
 	my $N; my $M;
 	$M=$paramArr->[0];
@@ -1292,9 +1287,7 @@ sub convertPDBToGroNdx
 	
  ## CREATE NDX FILE ##
 	open(NDX,">$outputNDX");
-	my $c;my $v;
 	
-	#while(($c,$v) =  each (sort keys %chainHash))
 	foreach my $chain (sort {$a <=> $b} keys %chainHash) 
 	{
 	       print NDX "[ $chain ]\n";
@@ -1302,7 +1295,6 @@ sub convertPDBToGroNdx
 	       print NDX "\n";
 	}
 	close(NDX);
-
 }
 
 sub validateTemplate
