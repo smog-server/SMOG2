@@ -6,7 +6,6 @@
 	<bType>*</bType>
 	<bType>*</bType>
         </bond>
-
 </bonds>
 
 <!-- ANGLES -->

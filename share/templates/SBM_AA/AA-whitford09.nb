@@ -8,7 +8,6 @@
 	<nbType>*</nbType>
 </nonbond>	
 
-
 <!-- CONTACTS -->
 <contact func="contact_1(6,12,?,?)" contactGroup="c">
 	<pairType>*</pairType>
@@ -19,7 +18,6 @@
 	<pairType>BMG</pairType>
 	<pairType>*</pairType>
 </contact>
-
 
 </nb>
 
