@@ -22,17 +22,12 @@
 # setRatios: Adjust ratios of strengths as obtained from .sif
 #####################################################################
 package setRatios;
-#####################
-## COMPILE HEADERS ##
-#####################
 use strict;
 use warnings;
-####################
-## MODULE HEADERS ##
-####################
 use Exporter;
 use PDL;
 use templateParser;
+use smog_quit;
 
 our @ISA = 'Exporter';
 our @EXPORT = qw(setRatios getSetDiheCounts %fTypes);

@@ -41,6 +41,7 @@ use Data::Dumper;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
+use smog_quit;
 ######################
 ## GLOBAL VARIABLES ##
 ######################

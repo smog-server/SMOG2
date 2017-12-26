@@ -31,7 +31,7 @@ use warnings;
 use Exporter;
 use PDL; ## LOAD PDL MODULE
 use Storable qw(dclone);
-
+use smog_quit;
 
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
