@@ -185,12 +185,6 @@ sub initializeDirectives {
 sub hascontent
 {
 	my ($LINE) = @_;
-	my $comment;
-	if($LINE =~ m/(;.*)/){
-		$comment=$1;
-	}else{
-		$comment="";
-	}
 	# remove comments
 	$LINE =~ s/;.*$//g; 
 	# remove spaces and tabs
@@ -204,7 +198,6 @@ sub hascontent
 		return 1;
 	}
 }
-
 
 #adds something to the topfile at the bottom of a directive
 sub addToTop {
