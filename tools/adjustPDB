@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-
+use smog_quit;
 ## VARS: ##
 my %map;
 my $rows;
@@ -19,7 +19,6 @@ my $outputPDB="smog.pdb";
 my $inputPDB;
 my $mapFile;
 my $default;
-my $warnonly;
 my $renumber;
 my $mapOption;
 my $help;
@@ -50,7 +49,7 @@ usage: smog_adjustPDB .. options ..
 	-default 	: use the default file name provided by smog2 
 	-map <filename>	: specify a user-defined mappint file
 	-o [smog.pdb] 	: output pdb file name
-	-warnonly 	: convert fatal errors to warnings (Caution: Consult manual before using this option)
+	-warn [0] 	: convert N fatal errors to warnings (Caution: Consult manual before using this option)
 	-renumber 	: ignore any residue numbering inconsistencies and renumber residues sequentially
 	-help 	  	: show options
 EOT
@@ -73,12 +72,9 @@ sub exitSmog{
 	}
 }
 
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warnonly' => \$warnonly, 'renumber' => \$renumber, '<>' => \&usage) or !defined $inputPDB);
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, '<>' => \&usage) or !defined $inputPDB);
 
-if($warnonly){
-	$noexit=1;	
-	print "\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n";
-}
+warninfo();
 
 if (defined $renumber){
 	print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";
@@ -323,4 +319,5 @@ sub adjustInputFile(){
 }
 
 adjustInputFile();
+warnsummary();
 print "\n\tAdjustment of PDB is complete.\n\n";

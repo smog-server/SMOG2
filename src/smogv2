@@ -1436,7 +1436,7 @@ usage: smog2 .. options ..
 	-c [contacts.txt]	: input contact map file
 	-dname [smog]		: default name to use for all output files
 	-backup [yes]		: back up any pre-existing output files
-	-warn [N]		: convert the first N fatal errors to warnings. Default: N=0. 
+	-warn [0]		: convert the first N fatal errors to warnings.  
 					Convert all errors if N=-1 (Caution: Consult manual 
 					before using this option)
 	-limitbondlength	: if a bond length is outside of the allowable range, set it to limiting value

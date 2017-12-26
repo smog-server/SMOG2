@@ -45,14 +45,15 @@ if (( $ERR == 0 )); then
 		echo $smog_exec \"\$\@\" >> $smog2dir/bin/smog2
 		chmod 755 $smog2dir/bin/smog2
 	
-		for tool in adjustPDB  removeH  tablegen optim extract scale-energies ions 
+		for tool in adjustPDB tablegen optim extract scale-energies ions 
 		do
 			echo Creating wrapper $smog2dir/bin/smog_$tool
 			echo '#!/bin/bash' > $smog2dir/bin/smog_$tool
 			echo "# Wrapper for smog_$tool" >> $smog2dir/bin/smog_$tool
 			echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $smog2dir/bin/smog_$tool
 			echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $smog2dir/bin/smog_$tool
-			echo $perl4smog $smog2dir/tools/smog_$tool \"\$\@\" >> $smog2dir/bin/smog_$tool
+			echo "export SMOG_PATH=$smog2dir" >> $smog2dir/bin/smog_$tool
+			echo $perl4smog $smog2dir/tools/$tool \"\$\@\" >> $smog2dir/bin/smog_$tool
 			chmod 755 $smog2dir/bin/smog_$tool
 		done
 	else
@@ -68,7 +69,7 @@ if (( $ERR == 0 )); then
 			echo $smog_exec \"\$\@\" >> $smog2dir/bin/smog2
 			chmod 755 $smog2dir/bin/smog2
 		fi
-		for tool in adjustPDB  removeH  tablegen optim extract scale-energies ions
+		for tool in adjustPDB tablegen optim extract scale-energies ions
 		do
 			LN=`grep "$perl4smog $smog2dir/tools/smog_$tool" $smog2dir/bin/smog_$tool | wc -l`
 			if (( $LN == 0 )); then
@@ -77,7 +78,8 @@ if (( $ERR == 0 )); then
 				echo "# Wrapper for smog_$tool" >> $smog2dir/bin/smog_$tool
 				echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $smog2dir/bin/smog_$tool
 				echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $smog2dir/bin/smog_$tool
-				echo $perl4smog $smog2dir/tools/smog_$tool \"\$\@\" >> $smog2dir/bin/smog_$tool
+				echo "export SMOG_PATH=$smog2dir" >> $smog2dir/bin/smog_$tool
+				echo $perl4smog $smog2dir/tools/$tool \"\$\@\" >> $smog2dir/bin/smog_$tool
 				chmod 755 $smog2dir/bin/smog_$tool
 			fi
 		done
