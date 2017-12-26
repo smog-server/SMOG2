@@ -65,8 +65,6 @@ my $AAdefault = 0;
 my $CAdefault = 0;
 my $AAGdefault = 0; 
 my $CAGdefault = 0;
-our $maxwarn=0;
-our $warncount=0;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
 our $setContacttoLimit=0;
@@ -1424,7 +1422,7 @@ sub usage
 usage: smog2 .. options ..
 
    Options
-	-i [filename.pdb]	: input PDB to generate Hamiltonian
+	-i [molecule.pdb]	: input PDB to generate Hamiltonian
 	-AA			: use default All-atom model
 	-AAgaussian		: use default All-atom model with gaussian contacts
 	-CA			: use default Calpha protein model
@@ -1674,10 +1672,7 @@ unless ($rescaleCD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
 	smog_quit("$rescaleCD is not a valid value for -rescaleCD.  Must be an integer, or decimal.");
 }
 
-if($maxwarn > 0 || $maxwarn ==-1 ){
-	print "\n\n-warn $maxwarn selected. Errors will be reported as warnings.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
-}
-
+warninfo();
 
 if($coarseFolder ne "" and $inputFolder eq ""){
 	smog_quit("When using a CG model with -tCG, you must also specify the model to be used when calculating the contact map by invoking the option -t. Check -help for usage information. ");
@@ -1883,6 +1878,7 @@ print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n
 	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
 	printCitation();
 
-if ($warncount != 0){ print "\n\n NOTE: There were $warncount warnings. It is recommended that you read all warnings carefully.  \n\n"; }
+warnsummary();
+
 
 ## END ##
