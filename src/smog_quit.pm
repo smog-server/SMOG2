@@ -19,13 +19,12 @@ our @EXPORT = qw($warncount $maxwarn smog_quit warnsummary warninfo);
 sub smog_quit
 {
 	my ($LINE)=@_;
-	if($maxwarn > $warncount || $maxwarn ==-1){
 		$warncount++;
+	if($maxwarn > $warncount || $maxwarn ==-1){
 		warn("\nWARNING $warncount : $LINE\n");
 	}elsif($maxwarn == $warncount && $maxwarn>0){
-		$warncount++;
 		print "\nWARNING $warncount : $LINE\n";
-		warn("\n\nEXCEEDED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
+		warn("\n\nREACHED $maxwarn WARNINGS. QUITTING.\n\n");
 		exit;
 	}else{
 		print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error with the -warn flag.\nHowever, it is not recommended that output obtained with this flag be used for an actual simulation.\n";
