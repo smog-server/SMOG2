@@ -27,7 +27,7 @@ use warnings;
 use Exporter;
 use PDL;
 use templateParser;
-use smog_quit;
+use smog_common;
 
 our @ISA = 'Exporter';
 our @EXPORT = qw(setRatios getSetDiheCounts %fTypes);

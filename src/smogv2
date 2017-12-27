@@ -41,7 +41,7 @@ use Data::Dumper;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
-use smog_quit;
+use smog_common;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
@@ -96,6 +96,8 @@ our $inputArguments=join(' ',@ARGV);
 our %Btypespresent;
 our %NBtypespresent;
 our %PAIRtypespresent;
+
+quit_init();
 
 sub checkForModules {
 	my $checkPackage; my $sum=0;

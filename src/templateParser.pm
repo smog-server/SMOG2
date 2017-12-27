@@ -36,7 +36,7 @@ use XML::Simple qw(:strict);
 use Exporter;
 use String::Util 'trim';
 use Storable qw(dclone);
-use smog_quit;
+use smog_common;
 
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';

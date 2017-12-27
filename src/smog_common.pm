@@ -1,20 +1,25 @@
-package smog_quit;
+package smog_common;
 use strict;
 use Exporter;
-use smog_quit;
 
 #####################
 # Init error vars   #
 #####################
-our $maxwarn=0;
-our $warncount=0;
+our $maxwarn;
+our $warncount;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn smog_quit warnsummary warninfo);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo);
 
 
 #####################
 # Error routiness   #
 # ###################
+
+sub quit_init
+{
+	$maxwarn=0;
+	$warncount=0;
+}
 
 sub smog_quit
 {
