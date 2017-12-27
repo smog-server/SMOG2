@@ -62,6 +62,7 @@ my $addmass = "";
 my $help;
 my @grobox;
 quit_init();
+checkForModules();
 
 usage() if (@ARGV < 5 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
         'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionC12=f' => \$addC12, 'ionC6=f' => \$addC6, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'warn=i' => \$maxwarn, 
@@ -315,8 +316,9 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 
 	$X[$I]=$XTT;	
 	$Y[$I]=$YTT;	
-	$Z[$I]=$ZTT;	
-	printf GROFILE "%5i%-5s%5s%5i%8.3f%8.3f%8.3f\n", $I,$addname, $addname, $I, $X[$I], $Y[$I], $Z[$I];
+	$Z[$I]=$ZTT;
+	my $J = $I % 100000;	
+	printf GROFILE "%5i%-5s%5s%5i%8.3f%8.3f%8.3f\n", $J,$addname, $addname, $J, $X[$I], $Y[$I], $Z[$I];
 
 }
 
