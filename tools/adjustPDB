@@ -168,6 +168,7 @@ sub adjustInputFile(){
 	
 	my $firstresidue=0;
 	my $lastresidue=0;
+	my $lastresName="";
 	## Loops through all PDB rows ##
 	while($k<$rows){
 		
@@ -231,7 +232,13 @@ sub adjustInputFile(){
 				## Obtain atom information ##
 				my $atomName = substr($pArr[$k],12,4);
 				$atomName =~ s/^\s+|\s+$//g;
-				
+				my $resNametmp = substr($pArr[$k],17,4);
+				$resNametmp =~ s/^\s+|\s+$//g;
+				if($loopInd==0){
+					$lastresName=$resNametmp;
+				}elsif($lastresName ne $resNametmp){
+					smog_quit("Atoms within a residue have inconsistent names. See\n$pArr[$k]");
+				}	
 				$residue[$loopInd]->{"atomName"} = $atomName;
 				$residue[$loopInd]->{"atomIndex"} = $atomCount;
 				$residue[$loopInd]->{"x"} = substr($pArr[$k],30,8);   
