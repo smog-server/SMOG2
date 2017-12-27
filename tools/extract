@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use smog_quit;
+use smog_common;
 use List::Util qw(max);
 use Getopt::Long;
 

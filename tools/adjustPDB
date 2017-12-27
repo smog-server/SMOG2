@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use smog_quit;
+use smog_common;
 ## VARS: ##
 my %map;
 my $rows;
@@ -61,6 +61,8 @@ EOT
   }
 
 }
+
+checkForModules();
 
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, '<>' => \&usage) or !defined $inputPDB);
 

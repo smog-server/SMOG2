@@ -26,6 +26,13 @@ then
 	ERR=1
 fi
 
+
+echo '#!/bin/bash' > $smog2dir/bin/header
+echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $smog2dir/bin/header
+echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $smog2dir/bin/header
+echo "export SMOG_PATH=$smog2dir" >> $smog2dir/bin/header
+echo "export perl4smog=$perl4smog" >> $smog2dir/bin/header
+
 if (( $ERR == 0 )); then
 	smog_exec="$perl4smog $smog2dir/src/smogv2"
         export PATH=$PATH:$smog2dir/bin
@@ -36,23 +43,14 @@ if (( $ERR == 0 )); then
 		echo Creating $smog2dir/bin
 		mkdir $smog2dir/bin
 	
-		echo '#!/bin/bash' > $smog2dir/bin/smog2
-		echo "# Wrapper for SMOG V2" >> $smog2dir/bin/smog2
-		echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $smog2dir/bin/smog2
-		echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $smog2dir/bin/smog2
-		echo "export SMOG_PATH=$smog2dir" >> $smog2dir/bin/smog2
-		echo "export perl4smog=$perl4smog" >> $smog2dir/bin/smog2
+		cat $smog2dir/bin/header > $smog2dir/bin/smog2
 		echo $smog_exec \"\$\@\" >> $smog2dir/bin/smog2
 		chmod 755 $smog2dir/bin/smog2
 	
 		for tool in adjustPDB tablegen optim extract scale-energies ions 
 		do
 			echo Creating wrapper $smog2dir/bin/smog_$tool
-			echo '#!/bin/bash' > $smog2dir/bin/smog_$tool
-			echo "# Wrapper for smog_$tool" >> $smog2dir/bin/smog_$tool
-			echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $smog2dir/bin/smog_$tool
-			echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $smog2dir/bin/smog_$tool
-			echo "export SMOG_PATH=$smog2dir" >> $smog2dir/bin/smog_$tool
+			cat $smog2dir/bin/header > $smog2dir/bin/smog_$tool 
 			echo $perl4smog $smog2dir/tools/$tool \"\$\@\" >> $smog2dir/bin/smog_$tool
 			chmod 755 $smog2dir/bin/smog_$tool
 		done
@@ -62,23 +60,16 @@ if (( $ERR == 0 )); then
 		LN=`grep "$smog_exec" $smog2dir/bin/smog2 | wc -l`
 		if (( $LN == 0 )); then
 			echo Something changed in your configuration of SMOG2: Updating $smog2dir/bin/smog2
-			echo '#!/bin/bash' > $smog2dir/bin/smog2
-			echo "# Wrapper for SMOG V2" >> $smog2dir/bin/smog2
-			echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $smog2dir/bin/smog2
-			echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $smog2dir/bin/smog2
+			cat $smog2dir/bin/header > $smog2dir/bin/smog2 
 			echo $smog_exec \"\$\@\" >> $smog2dir/bin/smog2
 			chmod 755 $smog2dir/bin/smog2
 		fi
 		for tool in adjustPDB tablegen optim extract scale-energies ions
 		do
-			LN=`grep "$perl4smog $smog2dir/tools/smog_$tool" $smog2dir/bin/smog_$tool | wc -l`
+			LN=`grep "$perl4smog $smog2dir/tools/$tool" $smog2dir/bin/smog_$tool | wc -l`
 			if (( $LN == 0 )); then
 				echo Something changed in your configuration of SMOG2: Updating wrapper $smog2dir/bin/smog_$tool
-				echo '#!/bin/bash' > $smog2dir/bin/smog_$tool
-				echo "# Wrapper for smog_$tool" >> $smog2dir/bin/smog_$tool
-				echo "export PERLLIB=$smog2dir/src:$PERLLIB" >> $smog2dir/bin/smog_$tool
-				echo "export PERL5LIB=$smog2dir/src:$PERL5LIB" >> $smog2dir/bin/smog_$tool
-				echo "export SMOG_PATH=$smog2dir" >> $smog2dir/bin/smog_$tool
+				cat $smog2dir/bin/header > $smog2dir/bin/smog_$tool 
 				echo $perl4smog $smog2dir/tools/$tool \"\$\@\" >> $smog2dir/bin/smog_$tool
 				chmod 755 $smog2dir/bin/smog_$tool
 			fi
@@ -90,3 +81,5 @@ else
 	echo "There were issues configuring SMOG. Configuration incomplete."
 echo
 fi
+
+rm $smog2dir/bin/header
