@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use Getopt::Long;
-
+use smog_common;
 print <<EOT;
 *****************************************************************************************
                                       smog_ions
@@ -18,38 +18,6 @@ print <<EOT;
 
 *****************************************************************************************
 EOT
-
-sub smog_quit
-{
-        my ($LINE)=@_;
-        if($main::noexit){
-                warn("\nWarning: $LINE\n");
-        }else{
-                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow smog_ions to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
-                exit;
-        }
-}
-
-sub checkcomment
-{
-	my ($LINE) = @_;
-	my $comment;
-	if($LINE =~ m/(;.*)/){
-		$comment=$1;
-	}else{
-		$comment="";
-	}
-	# remove comments
-	$LINE =~ s/;.*$//g; 
-	$LINE =~ s/\t/ /g; 
-	$LINE =~ s/^\s+|\s+$//g;
-	$LINE =~ s/ +/ /g;
-	if( $LINE =~ m/[#!\^\$]/ ){
-		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
-	}
-	return ($LINE,$comment);
-}
-
 
 sub usage
 {
@@ -92,11 +60,11 @@ my $addC6 = 0;
 my $addcharge = "";
 my $addmass = "";
 my $help;
-my $warnonly=0;
 my @grobox;
-our $noexit=0;
+quit_init();
+
 usage() if (@ARGV < 5 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
-        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionC12=f' => \$addC12, 'ionC6=f' => \$addC6, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'warnonly' => \$warnonly, 
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionC12=f' => \$addC12, 'ionC6=f' => \$addC6, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -130,14 +98,11 @@ if($addC12 eq ""){
 if($addname eq ""){
 	smog_quit("name of ion must be provided on command line.");
 }
-
-
-if($warnonly){
-	$noexit=1;
-	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
-}else{
-	$noexit=0;
+if(length($addname) > 5){
+	smog_quit("Ion name $addname too long. Maximum of 5 characters allowed.");
 }
+warninfo();
+
 if($addnum <1){
 	smog_quit("At least one ion must be added.");
 }
@@ -367,7 +332,7 @@ open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP");
 
 if(-e $outputtop){smog_quit("$outputtop already exists.")}
 open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing");
-my $added=0;
+$added=0;
 while (<FILE>){
 	my $LINE = $_;
 	my $LINEORIG=$LINE;
@@ -437,9 +402,6 @@ while (<FILE>){
 	print TOPOUT "$LINEORIG"; 
 	# end of atomtypes continue
 }
-if($warnonly){
-	print "\n\tIons added. Since -warnonly was used, carefully check output.\n\n";
-}else{
-	print "\n\tSUCCESS: Added $addnum $addname ions.\n\n";
-}
+warnsummary();
+print "\n\tSUCCESS: Added $addnum $addname ions.\n\n";
 
