@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use smog_common;
 use List::Util qw(max);
 use Getopt::Long;
 
@@ -23,17 +24,6 @@ print <<EOT;
 *****************************************************************************************
 EOT
 
-sub smog_quit
-{
-        my ($LINE)=@_;
-        if($main::noexit){
-                warn("\nWarning: $LINE\n");
-        }else{
-                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow smog_extract to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
-                exit;
-        }
-}
-
 sub usage
 {
   print <<EOT;
@@ -49,6 +39,7 @@ usage: smog_extract  .. options ..
 	-om [atomindex.map]	: output file with old-to-new atom index mapping
 	-restraints <float>	: generate restraints with a specific strength for atoms 
                                 	that have interactions removed during extraction
+	-warn [0]		: convert the first N errors into warnings
 	-help			: show options
 EOT
   if ( @_ ){
@@ -58,26 +49,6 @@ EOT
   }
 }
 
-sub checkcomment
-{
-	my ($LINE) = @_;
-	my $comment;
-	if($LINE =~ m/(;.*)/){
-		$comment=$1;
-	}else{
-		$comment="";
-	}
-	# remove comments
-	$LINE =~ s/;.*$//g; 
-	$LINE =~ s/\t/ /g; 
-	$LINE =~ s/^\s+|\s+$//g;
-	$LINE =~ s/ +/ /g;
-	if( $LINE =~ m/[#!\^\$]/ ){
-		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
-	}
-	return ($LINE,$comment);
-}
-
 my $inputTOP="smog.top";
 my $inputGRO="smog.gro";
 my $indexFile="smog.ndx";
@@ -85,10 +56,9 @@ my $outputtop="extracted.top";
 my $outputgro="extracted.gro";
 my $outputmap="atomindex.map";
 my $help;
-my $gen_restraints=0;
-my $warnonly=0;
-our $noexit=0;
-
+my $gen_restraints="null";
+quit_init();
+checkForModules();
 my $call="";
 foreach my $filen(@ARGV){
         $call .=  "$filen ";
@@ -96,19 +66,18 @@ foreach my $filen(@ARGV){
 $call .="\n";
 
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
-        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'restraints=s' => \$gen_restraints,  'warnonly' => \$warnonly, 
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'restraints=s' => \$gen_restraints,  'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
 
-if($warnonly){
-	$noexit=1;
-	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
-}else{
-	$noexit=0;
+warninfo();
+
+unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen_restraints eq "null"){
+	smog_quit("-restraints given with a non-numerical value: $gen_restraints");
 }
 
-unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen_restraints eq 0){
-	smog_quit("-restraints given with a non-numerical value: $gen_restraints");
+if($gen_restraints ne "null" && $gen_restraints <0){
+	smog_quit("-restraints called with a negative value");
 }
 
 ### read in the list of atoms that we want to keep
@@ -117,6 +86,7 @@ my $KEEPN=0;
 my @keepatoms2;
 
 #check and add file name extensions, if missing
+
 my ($ext)= $outputgro =~ /(\.[^.]+)$/;
 if(!defined $ext || $ext ne ".gro"){
 	$outputgro .=  ".gro";
@@ -128,6 +98,10 @@ if(!defined $ext || $ext ne ".top"){
 ($ext)= $outputmap =~ /(\.[^.]+)$/;
 if(!defined $ext || $ext ne ".map"){
 	$outputmap .=  ".map";
+}
+($ext)= $indexFile =~ /(\.[^.]+)$/;
+if(!defined $ext || $ext ne ".ndx"){
+	$indexFile .=  ".ndx";
 }
 
 my $maxbu = 10;
@@ -148,7 +122,6 @@ foreach my $filen($outputgro, $outputtop, $outputmap){
 	}
 }
 
-if(-e $outputmap){smog_quit("$outputmap already exists.")};
 open(MAPPING,">$outputmap") or smog_quit("Can\'t open $outputmap.");
 print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
 
@@ -164,10 +137,10 @@ my $groupname;
 open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
 print "Reading index file $indexFile\n";
 while(<ATOMLIST>){
-	my $LINE=$_;
-	chomp($LINE);
+	my $LINEt=$_;
+	chomp($LINEt);
 	# remove comments first
-	$LINE =~ s/;.*$//g; 
+        my ($LINE,$comment)=checkcomment($LINEt);
 	# in case we have a group directive w/o spaces
 	$LINE =~ s/\[/\[ /g;
 	$LINE =~ s/\]/ \]/g;
@@ -224,7 +197,7 @@ if($Ngrps==0){
 		smog_quit("index must be positive and less than $Ngrps");
 	}
 	$extgrp=$grpnms[$tmp];
-	print "Will extract atom group $extgrp\n";
+	print "Will extract atom group $extgrp (index $tmp)\n";
 }else{
 	$extgrp=$grpnms[0];	
 }
@@ -276,7 +249,6 @@ my $grodim=<GROFILE>;
 chomp($grodim);
 close(GROFILE);
 
-if(-e $outputgro){smog_quit("$outputgro already exists.")};
 open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
 print GROFILE "$groheader\n";
 print GROFILE "$KEEPN\n";
@@ -290,9 +262,10 @@ print GROFILE "$grodim\n";
 
 print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted system...\n\n";
 
-my %supported_directives = ( 'defaults' => '0',
+# in supported_directived, a value of 1 means is it required, 0 is not supported
+my %supported_directives = ( 'defaults' => '1',
         'atomtypes' => '1',
-        'moleculetype' => '0',
+        'moleculetype' => '1',
         'nonbond_params' => '0',
         'atoms' => '1',
         'bonds' => '1',
@@ -302,7 +275,7 @@ my %supported_directives = ( 'defaults' => '0',
         'exclusions' => '1',
         'system' => '1',
         'molecules' => '1',
-        'position_restraints' => '1'
+        'position_restraints' => '0'
         );
 
 my %atoms2restrain;
@@ -312,12 +285,9 @@ my $string = "";
 while (<FILE>){
 	my $LINE = $_;
 	chomp($LINE);
-
-	if($LINE ne ""){ 
+	unless($LINE =~ m/^[\s+|\t+]$/){ 
 		 $string .= "$LINE\n";
 	}
-
-
 }
 
 # process the top file and check that only supported directives are included.
@@ -327,9 +297,12 @@ for (my $I=1;$I<=$#DATA;$I++){
 	my $string1 = $DATA[$I];
 	open my($fh), "<", \$string1 or smog_quit("internal error 1") ; # reading from the data in $string
 	my $first_line = <$fh>; 
-	$first_line =~  s/^\s//g;
 	close $fh;
-	my @B=split(/ /,$first_line);
+	my ($line,$comment)=checkcomment($first_line);
+        $line =~ s/\]/ \]/g;
+        $line =~ s/\t+/ /g;
+        $line =~ s/\s+/ /g;
+	my @B=split(/ /,$line);
 	my $DIR=$B[0];
 	chomp($DIR);
 	if(!defined $B[1]){
@@ -339,60 +312,61 @@ for (my $I=1;$I<=$#DATA;$I++){
 	if($B[1] ne "]"){
 		smog_quit("Format error near directive \"$DIR\"");
 	}
-	
 	if(!exists $supported_directives{$DIR}){
-		smog_quit("Directive \"$DIR \" not supported\n");
+		smog_quit("Directive \"$DIR \" not recognized.");
 	}else{
 		$DIRLIST{$DIR}=$I;
 	}
 }
 
+for my $keys(keys %supported_directives){
+	if($supported_directives{$keys} == 1 && !exists $DIRLIST{$keys}){
+		smog_quit("Directive \"$keys\" not found in $inputTOP.");
+	}
+	if($supported_directives{$keys} == 0 && exists $DIRLIST{$keys}){
+		smog_quit("Directive \"$keys\" not supported by smog_extract.");
+	}
+
+}
+
 # Go through the directives, in order, and write out information for the subsystem
-if(-e $outputtop){smog_quit("$outputtop already exists.")}
 open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing.");
 #copy header
 
 print TOPOUT "; This is a top file generated with smog_extract, using the command:\n;";
 print TOPOUT "   smog_extract $call\n";
 print TOPOUT "$DATA[0]\n";
-if(!exists $DIRLIST{"defaults"}){
-	smog_quit("\"defaults\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[ defaults ]\n";
 
-	my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
-	for(my $JJ=1;$JJ<=$#C;$JJ++){
-		my ($A, $B)=checkcomment($C[$JJ]);
-		if($A eq ""){
-			print TOPOUT "$B\n";
-			next;
+print TOPOUT "[ defaults ]\n";
+
+my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
+for(my $JJ=1;$JJ<=$#C;$JJ++){
+	my ($A, $B)=checkcomment($C[$JJ]);
+	if($A eq ""){
+		print TOPOUT "$B\n";
+		next;
+	}else{
+		my @D=split(/ /,$A);
+		if($#D != 2){
+			smog_quit("Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n");
+		}
+		print TOPOUT "$A";
+		if($B ne ""){
+			print TOPOUT " $B\n";
 		}else{
-			my @D=split(/ /,$A);
-			if($#D != 2){
-				smog_quit("Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n");
-			}
-			print TOPOUT "$A";
-			if($B ne ""){
-				print TOPOUT " $B\n";
-			}else{
-				print TOPOUT "\n";
-			}
+			print TOPOUT "\n";
 		}
 	}
 }
 
 # start with atomtypes
-if(!exists $DIRLIST{"atomtypes"}){
-	smog_quit("\"atomtypes\" does not appear in .top file.\n");
-}else{
-	my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
-	# keep all the atomtypes, even though some may not be used in the new system.	
-	print TOPOUT "[ atomtypes ]\n";
-	for(my $II=1;$II<=$#C;$II++){
-		print TOPOUT "$C[$II]\n";
-	}
-	print TOPOUT "\n";
+@C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
+# keep all the atomtypes, even though some may not be used in the new system.	
+print TOPOUT "[ atomtypes ]\n";
+for(my $II=1;$II<=$#C;$II++){
+	print TOPOUT "$C[$II]\n";
 }
+print TOPOUT "\n";
 
 
 # start with nonbond_params
@@ -407,54 +381,44 @@ if(exists $DIRLIST{"nonbond_params"}){
 }
 
 
-if(!exists $DIRLIST{"moleculetype"}){
-	smog_quit("\"moleculetype\" does not appear in .top file.\n");
-}else{
-	print TOPOUT "[ moleculetype ]\n";
-	my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
+print TOPOUT "[ moleculetype ]\n";
+@C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
 
-	for(my $JJ=1;$JJ<=$#C;$JJ++){
-		print TOPOUT "$C[$JJ]\n";
-	}
-	print TOPOUT "\n";
+for(my $JJ=1;$JJ<=$#C;$JJ++){
+	print TOPOUT "$C[$JJ]\n";
 }
+print TOPOUT "\n";
 
 # information about the atoms 
-if(!exists $DIRLIST{"atoms"}){
-	smog_quit("\"atoms\" does not appear in .top file.\n");
-}else{
-	my @C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
-	print TOPOUT "[ atoms ]\n";
+@C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
+print TOPOUT "[ atoms ]\n";
 
-	for(my $I=1;$I<=$#C;$I++){
-		my ($A, $B)=checkcomment($C[$I]);
-		if($A eq ""){
-			print TOPOUT "$B\n";
-			next;
-		}else{
-			my @D=split(/ /,$A);
-			my $NUM=$D[0];
-			if(exists $keepatoms{$NUM}){
-				print TOPOUT "$keepatoms{$NUM}\t$D[1]\t$D[2]\t$D[3]\t$D[4]\t$keepatoms{$NUM}";
-				for(my $K=6;$K<=$#D;$K++){
-					print TOPOUT "\t$D[$K]";
-				}
-				if($B ne ""){
-					print TOPOUT "\t$B\n";
-				}else{
-					print TOPOUT "\n";
-				}
+for(my $I=1;$I<=$#C;$I++){
+	my ($A, $B)=checkcomment($C[$I]);
+	if($A eq ""){
+		print TOPOUT "$B\n";
+		next;
+	}else{
+		my @D=split(/ /,$A);
+		my $NUM=$D[0];
+		if(exists $keepatoms{$NUM}){
+			print TOPOUT "$keepatoms{$NUM}\t$D[1]\t$D[2]\t$D[3]\t$D[4]\t$keepatoms{$NUM}";
+			for(my $K=6;$K<=$#D;$K++){
+				print TOPOUT "\t$D[$K]";
+			}
+			if($B ne ""){
+				print TOPOUT "\t$B\n";
+			}else{
+				print TOPOUT "\n";
 			}
 		}
 	}
-	print TOPOUT "\n";
 }
+print TOPOUT "\n";
 
 
 # information about the bonds 
-if(!exists $DIRLIST{"bonds"}){
-	smog_quit("\"bonds\" does not appear in .top file.\n");
-}else{
+if(exists $DIRLIST{"bonds"}){
 	my @C= split(/\n/,$DATA[$DIRLIST{"bonds"}]);
 	if($#C<1){
 		smog_quit("There must be at least 1 bond listed under the bonds directive\n");
@@ -490,9 +454,7 @@ if(!exists $DIRLIST{"bonds"}){
 }
 
 # information about the angles 
-if(!exists $DIRLIST{"angles"}){
-	smog_quit("\"angles\" does not appear in .top file.\n");
-}else{
+if(exists $DIRLIST{"angles"}){
 	my @C= split(/\n/,$DATA[$DIRLIST{"angles"}]);
 	if($#C<1){
 		smog_quit("There must be at least 1 angle listed under the angles directive\n");
@@ -530,10 +492,7 @@ if(!exists $DIRLIST{"angles"}){
 }
 
 # information about the dihedrals 
-if(!exists $DIRLIST{"dihedrals"}){
-	smog_quit("\"dihedrals\" does not appear in .top file.\n");
-}else{
-	my @LAST;
+if(exists $DIRLIST{"dihedrals"}){
 	my @C= split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
 	if($#C<1){
 		smog_quit("There must be at least 1 dihedral listed under the dihedrals directive\n");
@@ -571,9 +530,7 @@ if(!exists $DIRLIST{"dihedrals"}){
 }
 
 # information about the contacts 
-if(!exists $DIRLIST{"pairs"}){
-	smog_quit("\"pairs\" does not appear in .top file.\n");
-}else{
+if(exists $DIRLIST{"pairs"}){
 	print TOPOUT "[ pairs ]\n";
 	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
 
@@ -606,9 +563,7 @@ if(!exists $DIRLIST{"pairs"}){
 }
 
 # information about the exclusions 
-if(!exists $DIRLIST{"exclusions"}){
-	smog_quit("\"exclusions\" does not appear in .top file.\n");
-}else{
+if(exists $DIRLIST{"exclusions"}){
 	my @C= split(/\n/,$DATA[$DIRLIST{"exclusions"}]);
 	if($#C<1){
 		smog_quit("There must be at least 1 bond listed under the bonds directive\n");
@@ -636,46 +591,32 @@ if(!exists $DIRLIST{"exclusions"}){
 }
 
 # information about the restraints 
-if(exists $DIRLIST{"position_restraints"} ){
-	smog_quit("position_restraints in input top file not supported (yet).");
-}else{
-	if($gen_restraints != 0){
-		print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
-		print MAPPING "\nThe following atoms are restrained (old and new numbering)\n";
-		print TOPOUT "[ position_restraints ]\n";
-		foreach my $res(sort {$a<=>$b} keys %atoms2restrain){
-			print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";
-			print MAPPING "$res $keepatoms2[$res-1]\n";
-		}
+if($gen_restraints ne "null"){
+	print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
+	print MAPPING "\nThe following atoms are restrained (old and new numbering)\n";
+	print TOPOUT "[ position_restraints ]\n";
+	foreach my $res(sort {$a<=>$b} keys %atoms2restrain){
+		print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";
+		print MAPPING "$res $keepatoms2[$res-1]\n";
 	}
-	print TOPOUT "\n";
 }
+print TOPOUT "\n";
 
-if(!exists $DIRLIST{"system"}){
-	smog_quit("\"system\" does not appear in .top file.\n");
-}else{
-	my @C= split(/\n/,$DATA[$DIRLIST{"system"}]);
-	print TOPOUT "[ system ]\n";
-	for(my $II=1;$II<=$#C;$II++){
-		print TOPOUT "$C[$II]\n";
-	}
-	print TOPOUT "\n";
+@C= split(/\n/,$DATA[$DIRLIST{"system"}]);
+print TOPOUT "[ system ]\n";
+for(my $II=1;$II<=$#C;$II++){
+	print TOPOUT "$C[$II]\n";
 }
+print TOPOUT "\n";
 
-if(!exists $DIRLIST{"molecules"}){
-	smog_quit("\"molecules\" does not appear in .top file.\n");
-}else{
-	my @C= split(/\n/,$DATA[$DIRLIST{"molecules"}]);
-	print TOPOUT "[ molecules ]\n";
-	for(my $II=1;$II<=$#C;$II++){
-		print TOPOUT "$C[$II]\n";
-	}
-	print TOPOUT "\n";
+@C= split(/\n/,$DATA[$DIRLIST{"molecules"}]);
+print TOPOUT "[ molecules ]\n";
+for(my $II=1;$II<=$#C;$II++){
+	print TOPOUT "$C[$II]\n";
 }
+print TOPOUT "\n";
 
-if($warnonly){
-	print "\n\tExtracted $KEEPN-atom subsystem. Since -warnonly was used, carefully check output.\n\n";
-}else{
-	print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
-}
+warnsummary();
+
+print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
 

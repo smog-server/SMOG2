@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use List::Util qw(max);
 use Getopt::Long;
+use smog_common;
 
 print <<EOT;
 ********************************************************************************************
@@ -23,17 +24,6 @@ print <<EOT;
 
 ********************************************************************************************
 EOT
-
-sub smog_quit
-{
-        my ($LINE)=@_;
-        if($main::noexit){
-                warn("\nWarning: $LINE\n");
-        }else{
-                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow smog_scale-energies to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
-                exit;
-        }
-}
 
 sub usage
 {
@@ -62,10 +52,10 @@ my $outputTOP="rescaled.top";
 my $rescaleC=1.0;
 my $rescaleD=1.0;
 my $help;
-my $warnonly=0;
+quit_init();
 our $noexit=0;
 usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
-        'of=s' => \$outputTOP, 'rc=f' => \$rescaleC, 'rd=f' => \$rescaleD, 'warnonly' => \$warnonly, 
+        'of=s' => \$outputTOP, 'rc=f' => \$rescaleC, 'rd=f' => \$rescaleD, 'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -77,6 +67,12 @@ if($rescaleD <= 0){
 }
 if($outputTOP !~ m/.top$/){
 	$outputTOP .= ".top";
+}
+if($inputTOP !~ m/.top$/){
+	$inputTOP .= ".top";
+}
+if($indexFile !~ m/.ndx$/){
+	$indexFile .= ".ndx";
 }
 
 my $maxbu=10;
@@ -97,12 +93,7 @@ foreach my $filen($outputTOP){
 	}
 }
 
-if($warnonly){
-	$noexit=1;
-	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
-}else{
-	$noexit=0;
-}
+warninfo();
 
 ### read in the list of atoms that we want to keep
 my %atomgroup;
@@ -168,10 +159,10 @@ if($Ngrps==0){
 	my $tmp=<STDIN>;
 	chomp($tmp);
 	unless($tmp =~ m/^\d+$/){
-		smog_quit("$tmp is an invalid index");
+		smog_quit("$tmp is an invalid selection");
 	}
 	if($tmp <0 or $tmp >=$Ngrps){
-		smog_quit("index must be positive and less than $Ngrps");
+		smog_quit("selection must be positive and less than or $Ngrps");
 	}
 	$modgrp=$grpnms[$tmp];
 	print "Will modify weights for atom group $modgrp\n";
@@ -195,7 +186,6 @@ my %supported_directives = ( 'defaults' => '0',
         'position_restraints' => '1'
         );
 
-my %atoms2restrain;
 #read in the top file, with comments stripped
 print "Reading top file $inputTOP\n";
 open(FILE, "$inputTOP") or die "Can not open $inputTOP\n"; 
@@ -217,7 +207,7 @@ while (<FILE>){
 	}
 }
 
-print "\nUsing $inputTOP and $indexFile to generate $outputTOP. Contacts will be rescaled by $rescaleC and dihedrals by $rescaleD...\n";
+print "\nUsing $inputTOP and $indexFile to generate $outputTOP. Contacts will be rescaled by $rescaleC and dihedrals by $rescaleD\n";
 # process the top file and check that only supported directives are included.
 my %DIRLIST;
 my @DATA=split(/\[/,$string);
@@ -268,7 +258,6 @@ if(!exists $DIRLIST{"defaults"}){
 if(!exists $DIRLIST{"atomtypes"}){
 	smog_quit("\"atomtypes\" does not appear in .top file.\n");
 }else{
-	my @indextotype;
 	my $typeindex=0;
 	my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
 	# keep at the atomtypes, even though some may not be used in the new system.	
@@ -337,7 +326,6 @@ if(!exists $DIRLIST{"angles"}){
 if(!exists $DIRLIST{"dihedrals"}){
 	smog_quit("\"dihedrals\" does not appear in .top file.\n");
 }else{
-	my @LAST;
 	my @C= split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
 	if($#C<1){
 		smog_quit("There must be at least 1 dihedral listed under the dihedrals directive\n");
@@ -348,7 +336,7 @@ if(!exists $DIRLIST{"dihedrals"}){
 		my @D=split(/ /,$C[$JJ]);
 
 		if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]} && exists $atomgroup{$D[2]} && exists $atomgroup{$D[3]} ){
-			if($D[4] == 1 && $atomgroup{$D[0]} eq $modgrp){
+			if($D[4] == 1 && $atomgroup{$D[0]} eq $modgrp  && $atomgroup{$D[1]} eq $modgrp && $atomgroup{$D[2]} eq $modgrp && $atomgroup{$D[3]} eq $modgrp){
 				# rescale dihedral potential
 				$D[6] *= $rescaleD;	
 
@@ -373,8 +361,7 @@ if(!exists $DIRLIST{"pairs"}){
 	for(my $JJ=1;$JJ<=$#C;$JJ++){
 		my @D=split(/ /,$C[$JJ]);
 		if(exists $atomgroup{$D[0]} && exists $atomgroup{$D[1]}){
-			if($D[2] == 1 && $atomgroup{$D[0]} eq $modgrp){
-				# rescale dihedral potential
+			if($D[2] == 1 && $atomgroup{$D[0]} eq $modgrp && $atomgroup{$D[1]} eq $modgrp){
 				$D[3] *= $rescaleC;	
 				$D[4] *= $rescaleC;	
 			}
@@ -428,9 +415,7 @@ if(!exists $DIRLIST{"molecules"}){
 	print TOPOUT "[$DATA[$TMP]\n";
 }
 
-if($warnonly){
-	print "\n\trescaled interactions. Since -warnonly was used, carefully check output.\n\n";
-}else{
-	print "\n\tSUCCESS: Interactions rescaled.\n\n";
-}
+warnsummary();
+
+print "\n\tSUCCESS: Interactions rescaled.\n\n";
 

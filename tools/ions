@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use Getopt::Long;
-
+use smog_common;
 print <<EOT;
 *****************************************************************************************
                                       smog_ions
@@ -18,38 +18,6 @@ print <<EOT;
 
 *****************************************************************************************
 EOT
-
-sub smog_quit
-{
-        my ($LINE)=@_;
-        if($main::noexit){
-                warn("\nWarning: $LINE\n");
-        }else{
-                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow smog_ions to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
-                exit;
-        }
-}
-
-sub checkcomment
-{
-	my ($LINE) = @_;
-	my $comment;
-	if($LINE =~ m/(;.*)/){
-		$comment=$1;
-	}else{
-		$comment="";
-	}
-	# remove comments
-	$LINE =~ s/;.*$//g; 
-	$LINE =~ s/\t/ /g; 
-	$LINE =~ s/^\s+|\s+$//g;
-	$LINE =~ s/ +/ /g;
-	if( $LINE =~ m/[#!\^\$]/ ){
-		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
-	}
-	return ($LINE,$comment);
-}
-
 
 sub usage
 {
@@ -70,6 +38,7 @@ usage: smog_ions ... options
 	-og [smog.ions.gro]: output SMOG configuration file for smog.ions system
 	-mindist [0.5]     : the minimium distance (nm) between an added ion and any other atom in the system
 	-ionC6 [0.0]	   : C6 parameter for added ions
+	-warn [0]	   : convert first N errors into warnings
 	-help 		   : show options 
 EOT
   if ( @_ ){
@@ -92,11 +61,12 @@ my $addC6 = 0;
 my $addcharge = "";
 my $addmass = "";
 my $help;
-my $warnonly=0;
 my @grobox;
-our $noexit=0;
+quit_init();
+checkForModules();
+
 usage() if (@ARGV < 5 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
-        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionC12=f' => \$addC12, 'ionC6=f' => \$addC6, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'warnonly' => \$warnonly, 
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionC12=f' => \$addC12, 'ionC6=f' => \$addC6, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -130,14 +100,11 @@ if($addC12 eq ""){
 if($addname eq ""){
 	smog_quit("name of ion must be provided on command line.");
 }
-
-
-if($warnonly){
-	$noexit=1;
-	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
-}else{
-	$noexit=0;
+if(length($addname) > 5){
+	smog_quit("Ion name $addname too long. Maximum of 5 characters allowed.");
 }
+warninfo();
+
 if($addnum <1){
 	smog_quit("At least one ion must be added.");
 }
@@ -179,7 +146,6 @@ my @GRODATA;
 my @X;
 my @Y;
 my @Z;
-my $tmpp;
 
 unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
 
@@ -351,8 +317,9 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 
 	$X[$I]=$XTT;	
 	$Y[$I]=$YTT;	
-	$Z[$I]=$ZTT;	
-	printf GROFILE "%5i%-5s%5s%5i%8.3f%8.3f%8.3f\n", $I,$addname, $addname, $I, $X[$I], $Y[$I], $Z[$I];
+	$Z[$I]=$ZTT;
+	my $J = $I % 100000;	
+	printf GROFILE "%5i%-5s%5s%5i%8.3f%8.3f%8.3f\n", $J,$addname, $addname, $J, $X[$I], $Y[$I], $Z[$I];
 
 }
 
@@ -368,7 +335,7 @@ open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP");
 
 if(-e $outputtop){smog_quit("$outputtop already exists.")}
 open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing");
-my $added=0;
+$added=0;
 while (<FILE>){
 	my $LINE = $_;
 	my $LINEORIG=$LINE;
@@ -438,9 +405,6 @@ while (<FILE>){
 	print TOPOUT "$LINEORIG"; 
 	# end of atomtypes continue
 }
-if($warnonly){
-	print "\n\tIons added. Since -warnonly was used, carefully check output.\n\n";
-}else{
-	print "\n\tSUCCESS: Added $addnum $addname ions.\n\n";
-}
+warnsummary();
+print "\n\tSUCCESS: Added $addnum $addname ions.\n\n";
 

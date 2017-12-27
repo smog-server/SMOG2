@@ -24,7 +24,6 @@
 #####################################################################
 package templateParser;
 
-
 #####################
 ## COMPILE HEADERS ##
 #####################
@@ -37,11 +36,12 @@ use XML::Simple qw(:strict);
 use Exporter;
 use String::Util 'trim';
 use Storable qw(dclone);
+use smog_common;
 
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives smog_quit);
+qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -73,7 +73,7 @@ our $interactionThreshold;
 
 
 my $settings; our $termRatios;
-our $interactions;my %bondTypes;my %nboneTypes;
+our $interactions;
 our %funcTable;our %funcTableRev;
 our %eGTable;our %eGRevTable;
 our @topFileBuffer;our @linesInDirectives;
@@ -94,22 +94,11 @@ our $bif = "bif.xml";
 our $sif = "sif.xml";
 our $bondxml = "b.xml";
 our $nbondxml = "nb.xml";
-	
-#####################
-# Error call        #
-# ##################
 
-sub smog_quit
-{
-	my ($LINE)=@_;
-	if($main::maxwarn > $main::warncount || $main::maxwarn ==-1){
-		$main::warncount++;
-		warn("\nWARNING $main::warncount : $LINE\n");
-	}else{
-		print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error with the -warn flag.\nHowever, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
-		exit;
-	}
-}
+our %Btypespresent;
+our %NBtypespresent;
+our %PAIRtypespresent;
+	
 
 
 ###########################
@@ -120,7 +109,7 @@ sub clearBifMemory {
 	%residueBackup = %{ dclone (\%residues) };
 	undef %residues;undef $functions;
 	undef $contactSettings;undef $termRatios;
-	undef $interactions;undef %bondTypes;
+	undef $interactions;
 	undef %funcTable;undef %funcTableRev;
 	##undef %eGTable; 
 	undef %eGRevTable;
@@ -142,6 +131,48 @@ sub setInputFileName {
 	$bondxml = $c;
 	$nbondxml = $d;
 }
+
+
+sub checkBONDnames
+{
+	my @LIST=@_;
+	foreach my $name(@LIST){
+		unless($name =~ /^[a-zA-Z0-9_]+$|^\*$/){
+			smog_quit("Only letters, numbers and _, or a solitary *, can appear in bond/angle/dihedral definitions. bType \"$name\" encountered");
+		}
+		if($name ne "*"  && !defined $Btypespresent{$name}){	
+			smog_quit("bType $name appears in .b file, but doesn't appear anywhere in .bif.  Likely a typo in your .b file.")
+		}
+	}
+}
+
+sub checkNONBONDnames
+{
+	my @LIST=@_;
+	foreach my $name(@LIST){
+		unless($name =~ /^[a-zA-Z0-9_]+$|^\*$/){
+			smog_quit("Only letters, numbers and _, or a solitary *, can appear in nobonded definitions. nbType \"$name\" encountered");
+		}
+		if($name ne "*"  && !defined $NBtypespresent{$name}){	
+			smog_quit("nbType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.")
+		}
+	}
+}
+
+sub checkPAIRnames
+{
+	my @LIST=@_;
+	foreach my $name(@LIST){
+		unless($name =~ /^[a-zA-Z0-9_]+$|^\*$/){
+			smog_quit("Only letters, numbers and _, or a solitary *, can appear in contact definitions. pairType \"$name\" encountered");
+		}
+		if($name ne "*"  && !defined $PAIRtypespresent{$name}){	
+			smog_quit("nbType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.")
+		}
+	}
+}
+
+
 
 ####################
 ## PARSE BIF FILE ##
@@ -191,11 +222,13 @@ sub parseBif {
 		 		smog_quit("Only letters, numbers and _ can appear in pairType definitions. nbType \"$T\" found in residue $res");
 			}
 
-		  	## atom{atomName} => {nbType,bType,index,pairType}
+			$NBtypespresent{$atom->{"nbType"}}=1;
+			$Btypespresent{$atom->{"bType"}}=1;
+			$PAIRtypespresent{$atom->{"pairType"}}=1;
+
 		      	$atoms{$atom->{"content"}} = {"index"=>$index,"nbType" => $atom->{"nbType"},"bType" => $atom->{"bType"},
 		      	"pairType" => $atom->{"pairType"}, "charge" => $atom->{"charge"}};
 		      
-		      	## Save the different (non)bond type declaration to accomade wild-card character
 		      	$index++;
 		}
 		undef %seen;
@@ -281,7 +314,8 @@ sub parseBif {
 		      "bonds" => \%bonds,
 		      "energyGroups" => \%energyGroups,
 		      "rigidGroups" => \%rigidGroups,
-		      "atomCount" => $residueHandle->{$res}->{"atomCount"}
+		      "atomCount" => $residueHandle->{$res}->{"atomCount"},
+		      "connect" => $residueHandle->{$res}->{"connect"}
 		      };
 		$residues{$res} = $interRes;
 	  
@@ -338,9 +372,7 @@ sub parseSif {
 	my $groupRatios = $settings->{"Groups"}->[0]->{"groupRatios"}->[0];
 	my $residueType; 
 	my $intraRelativeStrength; my $normalize;
-	my $interRelativeStrength;
-	my $totalStrength;my $total;
-	my $totalEnergyGroup;my $totalContactGroup;
+	my $total;
 	
 	## PARSE ENERGY GROUP INFORMATION ##
 	## INFO PLACED IN termRatio HASH
@@ -377,7 +409,7 @@ sub parseSif {
 	}
 	
 	my $CG_NORM=0;
-	my $setflag = 0;$total=0;
+	$total=0;
 	my $numCGs=0;
 	foreach my $egName(keys %{$contactGroups})
 	{
@@ -425,14 +457,6 @@ sub parseSif {
 	$termRatios->{"energyRelative"} = $groupRatios->{"dihedrals"};
 	## Sum of total global scaling ##
 	$termRatios->{"interRelativeTotal"} = $groupRatios->{"contacts"}+$groupRatios->{"dihedrals"};
-	
-	
-	## PARSE TERM STRENGTH INFORMATION ##
-	## Term strengths are copied to a hash with key
-	## as epsilonBonds, epsilonAngles, epsilonPlanar, epsilonNC
-	## according to the all-atom paper
-	my $termStrengths = $settings->{"termStrengths"}->[0];
-	
 	
 	## PARSE CONTACT MAP SETTINGS ##
 	$contactSettings = $data->{"settings"}->[0]->{"Contacts"}->[0];
@@ -634,13 +658,7 @@ sub parseBonds {
 	{
 		my $typeA = $inter->{"bType"}->[0];
 		my $typeB = $inter->{"bType"}->[1];
-
-		for (my $tt=0;$tt<2;$tt++){
-			my $T=$inter->{"bType"}->[$tt];
-			unless($T =~ /^[a-zA-Z0-9_]+$|^\*$/){
-	 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in bond definition. bType \"$T\" encountered");
-			}
-		}
+		checkBONDnames($typeA, $typeB);
 
 		my $func = $inter->{"func"};
 		if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
@@ -667,12 +685,7 @@ sub parseBonds {
 		my $typeC = $inter->{"bType"}->[2];
 		my $typeD = $inter->{"bType"}->[3];
 
-		for (my $tt=0;$tt<4;$tt++){
-			my $T=$inter->{"bType"}->[$tt];
-			unless($T =~ /^[a-zA-Z0-9_]+$|^\*$/){
-	 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in dihedral definition. bType \"$T\" encountered");
-			}
-		}
+		checkBONDnames($typeA, $typeB, $typeC, $typeD);
 
 		my $func = $inter->{"func"};
 		my $eG;
@@ -712,12 +725,7 @@ sub parseBonds {
 		my $typeC = $inter->{"bType"}->[2];
 		my $typeD = $inter->{"bType"}->[3];
 
-		for (my $tt=0;$tt<4;$tt++){
-			my $T=$inter->{"bType"}->[$tt];
-			unless($T =~ /^[a-zA-Z0-9_]+$|^\*$/){
-	 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in improper dihedral definition. bType \"$T\" encountered");
-			}
-		}
+		checkBONDnames($typeA, $typeB, $typeC, $typeD);
 
 		my $func = $inter->{"func"};
 		
@@ -748,12 +756,7 @@ sub parseBonds {
 		my $typeB = $inter->{"bType"}->[1];
 		my $typeC = $inter->{"bType"}->[2];
 
-		for (my $tt=0;$tt<3;$tt++){
-			my $T=$inter->{"bType"}->[$tt];
-			unless($T =~ /^[a-zA-Z0-9_]+$|^\*$/){
-	 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in angle definition. bType \"$T\" encountered");
-			}
-		}
+		checkBONDnames($typeA, $typeB, $typeC);
 
 		my $func = $inter->{"func"};
 		my $keyString = "$typeA-$typeB-$typeC";
@@ -781,6 +784,7 @@ my $counter = 0;
 foreach my $inter(@interHandle)
 {
 	my $typeA = $inter->{"nbType"}->[0];
+	checkNONBONDnames($typeA);
 	if($inter->{"mass"} <=0){
 		my $M=$inter->{"mass"};
 		smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
@@ -797,39 +801,17 @@ foreach my $inter(@interHandle)
 }
 
 
-## Loop over pairs, save in $interaction{pairs}{typeA}{typeB} = func info.
-## NOTE type can be pairType or nbType ##
-$counter = 0;
-## Pairs can also be not defined ##
-if(exists $data->{"pair"}){@interHandle = @{$data->{"pair"}};}
-else{@interHandle = ();}
-foreach my $inter(@interHandle)
-{
-	my $nbtype;my $pairtype;my $type;
- 	$nbtype = $inter->{"nbType"};$type = "nbType";
- 	if(!defined($nbtype)) {$pairtype = $inter->{"pairType"};$type="pairType";}
-	my $typeA = $inter->{$type}->[0];
-	my $typeB = $inter->{$type}->[1];
-	my $func = $inter->{"func"}->[0]->{"func"};
-	if(exists $interactions->{"pairs"}->{$type}->{$typeA}->{$typeB}){
-		smog_quit ("pairs parameters defined multiple times for types $typeA-$typeB. Check .nb file.");
-	}
-	$interactions->{"pairs"}->{$type}->{$typeA}->{$typeB} = $func;
-	$interactions->{"pairs"}->{$type}->{$typeB}->{$typeA} = $func;
-	$funcTable{"pairs"}->{$type}->{$func} = $counter;
-	$funcTableRev{"pairs"}->{$type}->{$counter} = $func;
-	$counter++;
-}
 
 @interHandle = @{$data->{"contact"}};
 ## Loop over contacts, save in $interaction{contacts}{typeA}{typeB} = func info.
 $counter = 0;
 foreach my $inter(@interHandle)
 {
-	my $nbtype;my $pairtype;my $type;
+	my $nbtype;my $type;
  	$nbtype = $inter->{"pairType"};$type = "pairType";
 	my $typeA = $inter->{$type}->[0];
 	my $typeB = $inter->{$type}->[1];
+	checkPAIRnames($typeA,$typeB);
 	my $func = $inter->{"func"};
  	my $cG = $inter->{"contactGroup"};
 	if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
@@ -847,7 +829,7 @@ foreach my $inter(@interHandle)
 }
 
 if($counter !=1){
-	warn("\n\nWARNING: Gromacs does not support simultaneous use of all possible combinations\n\tof function types in a single simulation. If you attempt to use multiple contact\n\tfunctions at once, you should verify everything is behaving as expected.\n\tFor more information, please email us at info\@smog-server.org")
+	print "NOTE: Multiple contact functions defined in templates.\n\tNot all combinations of contact function types are supported in Gromacs.\n\tIf you attempt to use multiple contact functions simultaneously, you should verify everything is behaving as expected.\n";
 }
 
 ## Obtain default options (ONLY FOR GEN PAIRS) ##
@@ -881,7 +863,6 @@ my %dihedralHandle;
 ## BOND FUNCTIONALS ##
 ######################
 sub createBondFunctionals {
-my $intTypeA; my $intTypeB;
 foreach my $res (keys %residues)
 {
 	$residueHandle = $residues{$res};
@@ -952,7 +933,6 @@ sub getContactFunctionals
 {
 	my($typeA,$typeB) = @_;
 	## WILD CARD MATCHING CONDITIONALS ##
-	my $matchScore = 0; my $saveScore = 0;
 	my $funct=""; my $cG = "";
 	my $assigned=0; 
 	## If contact type is specifically defined ##

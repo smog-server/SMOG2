@@ -31,7 +31,7 @@ use warnings;
 use Exporter;
 use PDL; ## LOAD PDL MODULE
 use Storable qw(dclone);
-
+use smog_common;
 
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
@@ -98,20 +98,17 @@ sub parsePDBATOMS
 	
 	## INTERNAL VARIABLES ##
 	my $counter = 0;
-	my @temp; my @connResA; my @connResB; my @union;
+	my @temp; my @union;
 	my @tempBond;
 	my @consecResidues;
 	my $x;my $y;my $z;
 	my $residue; my $interiorResidue; my $atom;my $atomSerial;
-	my $atomsInRes; my $lineEnd;
-	my $i; my $putIndex=0; my $strLength;
-	my $resType;
-	my $angH; my $diheH;
-	my $bondStrA;my $bondStrB;my $typeA;my $typeB;
-	my $endFlag=0; my $headFlag=1;my $outLength;
+	my $atomsInRes; 
+	my $i; my $putIndex=0; 
+	my $headFlag=1;my $outLength;
 	$totalAtoms = 0;my $nbType;my $residueType; my $pairType;
-	my $atomCounter=0;my $singleFlag = 1;
-	my $chainNumber = 0;my $linkFlag = 0;
+	my $atomCounter=0;
+	my $chainNumber = 0;
 	my $residueIndex=1;
 	my $interiorPdbResidueIndex=0;
 	my $lineNumber = 0;
@@ -286,7 +283,6 @@ sub parsePDBATOMS
 			$lastresindex=$resindex;
 			my %uniqueAtom;
 			$residueSerial++;
-			my $lastrecord="";
 			for($i=0;$i<$atomsInRes;$i++)
 			{
 					$record = <PDBFILE>;
@@ -375,20 +371,17 @@ sub parsePDBATOMS
 				}
 				$pdbIndex =~ s/^\s+|\s+$//g;
 				if(exists $indexMap{"$chainNumber-$pdbIndex"}){
-					my $chainID=$chainNumber+1;
 					smog_quit("Atom/Residue numbers must be unique within each chain. Offending line:\n$record");
 				}
 				$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
 				$temp[$putIndex]=[$x,$y,$z,$atomSerial];
 				$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
-				$totalAtoms++;
 			}
-	
-#			if($atomsmatch != $atomsInBif){
-#				smog_quit ("Not all atoms in the bif appear in the PDB. See line $lineNumber");
-#			}
-	
-#			if($i != $atomsInRes){smog_quit ("Total number of atoms of $residue doesn't match with .bif declaration");}
+			if($residues{$residue}->{"atomCount"} == -1){
+				$totalAtoms+=$atomsInRes;
+			}else{
+				$totalAtoms+=$residues{$residue}->{"atomCount"};
+			}
 			## CONCAT RESIDUE ##
 		  	@union = (@union,@temp);@temp=();
 			push(@consecResidues,$residue);
@@ -522,11 +515,11 @@ sub connectivityCheck
 # This will help catch mistakes in .bif files, where a bond may be omitted.
 	my ($unionref,$chid)=@_;
 	my %union=%{$unionref};
-        my %visitedList; my $visitedString;
+        my %visitedList;
 	my @nextround;
 	my $size =keys %union;
 	if($size == 0){
-		smog_quit("Found 0 atoms in chain $chid.  Perhaps TER appears on consecutive lines, or TER is immediately followed by END.");
+		return(-1,0);
 	}
 
 	$nextround[0]=0;
@@ -540,12 +533,10 @@ sub connectivityCheck
     	}
 
 	my $found=0;
-	foreach my $atom(keys %visitedList){
-		$found++;
-	}
+	$found+= scalar keys %visitedList;
 
 	my $missing=0;
-	foreach my $atom(keys %union){
+	foreach my $atom(sort {$a <=> $b} keys %union){
 		if(!exists $visitedList{$atom}){
 			$missing++;
 			print "\n!!!Unable to connect the atom at position $atom of chain $chid to the rest of the chain!!!\n";
@@ -560,12 +551,18 @@ sub GenerateBondedGeometry {
 	## $connect is a list of connected residues ##
    	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union,$ConnectedAtoms) = GenAnglesDihedrals($connect,$chainlength,$chid);
 	my %union=%{$union};
+	my @ConnectedAtoms2;
 
 	if($chainlength == 0){
 		smog_quit("Found 0 atoms in chain $chid.  Perhaps TER appears on consecutive lines, or TER is immediately followed by END.");
 	}elsif($chainlength != 1){
 		print "Attempting to connect all atoms in chain $chid to the first atom: ";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);
+		if($connected == -1){
+			print "Chain $chid has no bonds. No connections possible. May be a listing of ions.\n";
+			# this chain has no bonds, so no need to try and connect things
+		        return(\@ConnectedAtoms2);
+		}
 		if($missed==0 && $connected == $chainlength){
 			print "All $connected atoms connected via covalent bonds \n"; 
 		}else{
@@ -577,7 +574,6 @@ sub GenerateBondedGeometry {
 
 	# convert and save the connected atoms' numbering, so that we can avoid trouble if we include BONDs later
 	my @ConnectedAtoms=@{$ConnectedAtoms};
-	my @ConnectedAtoms2;
 	foreach my $I(@ConnectedAtoms){
 		my $bondStrA = $map->{$I}->[0];
 		my $sizeA=$map->{$I}->[2];
@@ -709,6 +705,28 @@ sub returnResidueIndexFromIndex
 	return $allAtoms{$idx}->[2];
 }
 
+
+sub checkconnection
+{
+	my ($i,$c0,$c1,$chid)=@_;
+	if(!exists $connections{$residues{$c0}->{"residueType"}}->{$residues{$c1}->{"residueType"}}){
+		my $typeA=$residues{$c0}->{"residueType"};
+		my $typeB=$residues{$c1}->{"residueType"};
+		my $ii=$i+1;
+		if((!defined $residues{$c0}->{"connect"} || $residues{$c0}->{"connect"} eq "yes") && (!defined $residues{$c1}->{"connect"} || $residues{$c1}->{"connect"} eq "yes")){
+			print $c0;
+			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $i and $ii in chain $chid (residue index within chain, starting at 0)")
+		}elsif(defined $residues{$c0}->{"connect"} && $residues{$c0}->{"connect"} ne "no"){
+			my $tmp=$residues{$c0}->{"connect"};
+			smog_quit("residue connect value must be yes, or no.  $tmp found.")
+		}elsif(defined $residues{$c1}->{"connect"} && $residues{$c1}->{"connect"} ne "no"){
+			my $tmp=$residues{$c1}->{"connect"};
+			smog_quit("residue connect value must be yes, or no.  $tmp found.")
+		}
+
+	}
+}
+
 sub appendImpropersBOND
 {
 
@@ -750,7 +768,6 @@ sub connCreateInteractionsSingleBOND
 
     	my($consecResiduesH,$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$bEG,$imp) = @_;
 	my @consecResidues = @{$consecResiduesH};
-	my $residue = $consecResidues[1];
 
     	## AD-HOC BONDS ##
 	my($angH,$diheH,$adjList,$bondStrA,$bondStrB)=createConnection($consecResiduesH,0,$atomA,$atomB);
@@ -851,8 +868,7 @@ sub connCreateInteractionsSingleBOND
 sub appendImpropers
 {
 my($map,$connect,$bondMapHashRev,$tempArr,$union) = @_;
-my %union=%{$union};
-my @connImproper; my $connHandle;
+my $connHandle;
 my %bondMapHashRev=%{$bondMapHashRev};
 #loop through the residues in the chain
 	for(my $resIndA=0;$resIndA<=$#$connect;$resIndA++){
@@ -923,7 +939,6 @@ my %bondMapHashRev=%{$bondMapHashRev};
 	   		## WORK ON INTER-RESIDUAL IMPROPERS ##
 	   		### CHANGE THIS, ONLY HANDLES SINGLE IMPROPERS ###
 	   		$connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}};
-	   		#@connImproper = @{$connHandle->{"improper"}};
 	   		foreach my $ips(@{$connHandle->{"improper"}})
 	   		{
 	  			if(exists $ips->{"atom"}){ 
@@ -933,7 +948,6 @@ my %bondMapHashRev=%{$bondMapHashRev};
 	        	        my $na;my $nb;my $nc;my $nd;
 	  			my $ra;my $rb;my $rc;my $rd;
 	  			my $sizeA; my $sizeB;my $sizeC;my $sizeD;
-	  			my($an,$bn,$cn,$dn) = @{$ips->{"atom"}};
 	  
 	  
 	        		if($a =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $a found.")};
@@ -1206,7 +1220,7 @@ sub connWildcardMatchDihes
 		foreach my $matches(keys %{$diheHandle})
 		{
 			$Nd++;
-			$matchScore = 0;my $saveScore = 0;
+			$matchScore = 0; $saveScore = 0;
 			# this step can be done once, rather than for each call.
 			my ($aM,$bM,$cM,$dM) = split("-",$matches);
 			if($matches eq "*-*-*-*"){
@@ -1272,24 +1286,20 @@ sub GenAnglesDihedrals
 {
 	my($connect,$chainlength,$chid) = @_;
 	## $connect is a list of connected residues ##
-	my @tempA;my @tempD;
-	my $bonds;my $dihes; my $angles; 
+	my $dihes; my $angles; 
 	my $oneFour;
 	my %union; my $connHandle;
-	my $atomA = ""; my $atomB = "";
-	my $i=0;my $j=0;my $mapCounter=0;
+	my $i=0;my $mapCounter=0;
 	my %bondMapHash; ##[AtomName,ResidueIndex,prevSize]##
 	my %bondMapHashRev;
 	my @connectList;
 	my @AtomsInConnections;
 	my $leftAtom;my $rightAtom;
-	my $leftResidue;my $rightResidue;
 	my $prevSize = 0;
 	
 	## Go through list of connected residues ##
 	for($i = 0;$i<=$#$connect;$i++)
 	{ 
-		$j = $i+1;  
   		my $resABonds = $dihedralAdjList{$connect->[$i]};
 		my $resAAtoms = $residues{$connect->[$i]}->{"atoms"};
 		## Atoms to mapCounter renaming ##
@@ -1312,45 +1322,37 @@ sub GenAnglesDihedrals
     		#  but setup leftAtom and leftResidue sizes #
     		if($i == 0) 
 		{
-			if(!exists $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}}){
-			my $typeA=$residues{$connect->[0]}->{"residueType"};
-			my $typeB=$residues{$connect->[1]}->{"residueType"};
-			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file.  Issue encountered when connecting residue 0 and 1 in chain $chid (residue index within chain, starting at 0).")
+			checkconnection($i+1,$connect->[0],$connect->[1],$chid);
+			if(exists $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}}){
+				$connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
+	  			$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
+	  			$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
+	 			$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});		
 			}
-		$connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
-	  	$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
-	  	$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
-	 	$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});		
-      		 next;
+      			next;
 		}
+		checkconnection($i,$connect->[$i-1],$connect->[$i],$chid);
         	## $i > 0, create inter residue connection ##
 		## $i-1 <--> $i
-		if(!exists $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}}){
-			my $typeA=$residues{$connect->[$i-1]}->{"residueType"};
-			my $typeB=$residues{$connect->[$i]}->{"residueType"};
-			my $ii=$i-1;
-			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $ii and $i in chain $chid (residue index within chain, starting at 0)")
+		if(exists $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}}){
+			$connHandle = $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}};
+			$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
+	    		$rightAtom = $bondMapHashRev{"$rightAtom-$i"};
+			push(@AtomsInConnections,$leftAtom);
+			push(@AtomsInConnections,$rightAtom);
+			push(@connectList,$leftAtom);
+			push(@connectList,$rightAtom);
 		}
-		$connHandle = $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}};
-		$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
-	    	$rightAtom = $bondMapHashRev{"$rightAtom-$i"};
-		push(@AtomsInConnections,$leftAtom);
-		push(@AtomsInConnections,$rightAtom);
-		push(@connectList,$leftAtom);
-		push(@connectList,$rightAtom);
     
     		## $i <--> $i+1
         	if($i == $#$connect) {last;}
-		if(!exists $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}}){
-			my $typeA=$residues{$connect->[$i]}->{"residueType"};
-			my $typeB=$residues{$connect->[$i+1]}->{"residueType"};
-			my $ii=$i+1;
-			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $i and $ii in chain $chid (residue index within chain, starting at 0)")
+		checkconnection($i+1,$connect->[$i],$connect->[$i+1],$chid);
+		if(exists $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}}){
+        		$connHandle = $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}};
+    			$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
+    			$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
+    			$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
 		}
-        	$connHandle = $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}};
-    		$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
-    		$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
-    		$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
    	}
   	## Create Inter residue connection ##
   	for($i=0;$i<scalar(@connectList)-1;$i+=2) {
@@ -1369,7 +1371,9 @@ sub GenAnglesDihedrals
 			my $atomname=$bondMapHash{$I}->[0];
 			my $residue=$bondMapHash{$I}->[1];
 			$residue++;
-        		smog_quit("No bonds found with atom $atomname in residue $residue. Check .bif definitions.");
+			if(defined $residues{$residue}->{"atoms"}->{$atomname}->{"bond"} && $residues{$residue}->{"atoms"}->{$atomname}->{"pairType"} !=0){
+        			smog_quit("No bonds found with atom $atomname in residue $residue. Check .bif definitions.");
+			}
    		}
 	}
 
@@ -1381,7 +1385,7 @@ sub GenAnglesDihedrals
 
 sub createConnection
 {
-	my($connect,$firstFlag,$atomA,$atomB,$counter) = @_;
+	my($connect,$firstFlag,$atomA,$atomB) = @_;
 	my @tempA; my @tempD;
 	my $dihes; my $angles; my $oneFour;
 	my %union; my $connHandle;
@@ -1453,9 +1457,9 @@ sub parseCONTACT
 {
 	#lets leave this as two filename inputs in case we want to allow two sources of contacts in the future (i.e. user and shadow)
 	my($fileName,$fileName2,$userProvidedMap,$CGenabled) = @_;
-	my $numContacts = 0; my $garbage = 0;
+	my $numContacts = 0; 
 	my $line = "";
-	my $chain1;my $chain2; my $contact1; my $contact2; my $pdbNum1; my $pdbNum2; my $res1; my $res2;
+	my $chain1;my $chain2; my $contact1; my $contact2; my $res1; my $res2;
 	my $dist;
 	my $x1;my $x2;my $y1;my $y2;my $z1;my $z2;
 	my %resContactHash; my $skip = 0; my $COARSECONT;

@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-
+use smog_common;
 ## VARS: ##
 my %map;
 my $rows;
@@ -15,11 +15,10 @@ my @pArr;
 my $loopInd;
 my $prevResTypeRNA;
 my $noexit=0;
-my $outputPDB="smog.pdb";
+my $outputPDB="adjusted.pdb";
 my $inputPDB;
 my $mapFile;
 my $default;
-my $warnonly;
 my $renumber;
 my $mapOption;
 my $help;
@@ -46,60 +45,49 @@ print <<EOT;
 usage: smog_adjustPDB .. options ..
 
   Options
-	-i <filename>	: input PDB to adjust to smog2 format
-	-default 	: use the default file name provided by smog2 
-	-map <filename>	: specify a user-defined mappint file
-	-o [smog.pdb] 	: output pdb file name
-	-warnonly 	: convert fatal errors to warnings (Caution: Consult manual before using this option)
-	-renumber 	: ignore any residue numbering inconsistencies and renumber residues sequentially
-	-help 	  	: show options
+	-i <filename>		: input PDB to adjust to smog2 format
+	-default 		: use the default file name provided by smog2 
+	-map <filename>		: specify a user-defined mappint file
+	-o [adjusted.pdb] 	: output pdb file name
+	-warn [0] 		: convert first N errors to warnings 
+	-renumber 		: ignore any residue numbering inconsistencies and renumber residues sequentially
+	-help 	  		: show options
 EOT
 
   if ( @_ ){
-   	exitSmog("Command-line argument \"@_\" not recognized.");
+   	smog_quit("Command-line argument \"@_\" not recognized.");
   }else{
    exit
   }
 
 }
 
-sub exitSmog{
-	my @msg = @_;
-	if (!$noexit){
-		print "\n\nERROR: @msg\n\n\tReformatting incomplete...\n\n";
-		exit;
-	}else{
-		print "\n\nWARNING: @msg\n\n\tReformatting incomplete...\n\n";
-	}
-}
+checkForModules();
 
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warnonly' => \$warnonly, 'renumber' => \$renumber, '<>' => \&usage) or !defined $inputPDB);
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, '<>' => \&usage) or !defined $inputPDB);
 
-if($warnonly){
-	$noexit=1;	
-	print "\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n";
-}
+warninfo();
 
 if (defined $renumber){
 	print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";
 }
 
 if(!defined $inputPDB){
-	exitSmog("No input PDB was specified. Use -i to specify your input pdb file.");
+	smog_quit("No input PDB was specified. Use -i to specify your input pdb file.");
 }else{
-	open(OLDPDB,"$inputPDB") or exitSmog("Can't open PDB file $inputPDB.");
+	open(OLDPDB,"$inputPDB") or smog_quit("Can't open PDB file $inputPDB.");
 	print "Will reformat the PDB file: $inputPDB\n";	
 }
 
 if (defined $default){
 	print "\n-default selected. Will use the default map file provided for terminal residue names.\n";
 	if(!exists $ENV{"SMOG_PATH"}){
-        exitSmog("Environmental Variable SMOG_PATH not set\n");
+        smog_quit("Environmental Variable SMOG_PATH not set\n");
 	}
 	$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";	
 }else{
 	if (!defined $mapFile ){
-		exitSmog("No map file was provided. Please chose a map file or use the default map settings: -default.");
+		smog_quit("No map file was provided. Please chose a map file or use the default map settings: -default.");
 	}else{
 		$mapOption = $mapFile;
 	}
@@ -124,17 +112,12 @@ foreach my $filen($outputPDB){
 }
 
 
-if (!defined $outputPDB){
-	print "\nNo output PDB file name was specified. Will produce a default PDB file name: smog.pdb\n";
-	open(NEWPDB,">smog.pdb") or exitSmog("Can't open the output PDB file.");
-}else{
-	open(NEWPDB,">$outputPDB") or exitSmog("Can't open the output PDB file.");
-	print "New file will be written: $outputPDB\n";
-}
+open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
+print "New file will be written: $outputPDB\n";
 
 ## CACHE MAP ##
 #Note: Map files has to be in format <residue> <head_name> <tail_name>
-open(MAP,$mapOption) || exitSmog("Cannot open Map file\n");
+open(MAP,$mapOption) || smog_quit("Cannot open Map file\n");
 print "Mapping file $mapOption will be used.\n";
 
 while(my $line = <MAP>)
@@ -146,7 +129,7 @@ while(my $line = <MAP>)
   #map-->residue-->{head|tail} 
   if($#entries != 2){
    my $count=$#entries+1;
-   exitSmog("Looking for 3 fields in $mapOption, but found $count.\n
+   smog_quit("Looking for 3 fields in $mapOption, but found $count.\n
    				Offending line: $line");
   }
   $map{$entries[0]}{"head"} = $entries[1];
@@ -185,6 +168,7 @@ sub adjustInputFile(){
 	
 	my $firstresidue=0;
 	my $lastresidue=0;
+	my $lastresName="";
 	## Loops through all PDB rows ##
 	while($k<$rows){
 		
@@ -208,7 +192,7 @@ sub adjustInputFile(){
 
 		## Exit if there's a BOND line in PDB: ##
 		elsif($pArr[$k] =~ /^BOND/){
-			exitSmog("Issue at line $k: BOND lines in the input PDB file are not supported by adjustPDB in this Smog version.");
+			smog_quit("Issue at line $k: BOND lines in the input PDB file are not supported by adjustPDB in this Smog version.");
 		}
 
 		elsif ($pArr[$k] =~ /^COMMENT/){
@@ -226,17 +210,17 @@ sub adjustInputFile(){
 			my $newResNum = $resNum;
 			if($resNum =~ /^\d+$/ && $lastresidue =~ /^\d+$/){
 				if($resNum-$lastresidue > 1 && $firstresidue !=1 && !$renumber){
-					exitSmog("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum.");
+					smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum.");
 				}
 			}elsif(!$renumber){
-				exitSmog("Non-integer residue ID found: $resNum.");
+				smog_quit("Non-integer residue ID found: $resNum.");
 			}
 	
 			$resName = substr($pArr[$k],17,4);
 			$resName =~ s/^\s+|\s+$//g;
 			my $altLoc = substr($pArr[$k],16,1);
 			if ($altLoc ne " "){
-				exitSmog("Issue at line $k: Alternate location indicators are not supported by SMOG.");
+				smog_quit("Issue at line $k: Alternate location indicators are not supported by SMOG.");
 			}
 			
 			$chainName = substr($pArr[$k],21,1);
@@ -248,7 +232,13 @@ sub adjustInputFile(){
 				## Obtain atom information ##
 				my $atomName = substr($pArr[$k],12,4);
 				$atomName =~ s/^\s+|\s+$//g;
-				
+				my $resNametmp = substr($pArr[$k],17,4);
+				$resNametmp =~ s/^\s+|\s+$//g;
+				if($loopInd==0){
+					$lastresName=$resNametmp;
+				}elsif($lastresName ne $resNametmp){
+					smog_quit("Atoms within a residue have inconsistent names. See\n$pArr[$k]");
+				}	
 				$residue[$loopInd]->{"atomName"} = $atomName;
 				$residue[$loopInd]->{"atomIndex"} = $atomCount;
 				$residue[$loopInd]->{"x"} = substr($pArr[$k],30,8);   
@@ -275,13 +265,13 @@ sub adjustInputFile(){
 
 			## Adjust Tail\Head names ##
 			if ($isHead){
-				if(!exists $map{$resName}{"head"}){exitSmog("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
+				if(!exists $map{$resName}{"head"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 				my $newResName = $map{$resName}{"head"};
 				$resName = $newResName;
 			}
 			if ($isTail){
 				if (not($prevResTypeRNA)){	#check that it's not an amino-accilated tRNA
-				if(!exists $map{$resName}{"tail"}){exitSmog("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
+				if(!exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 					my $newResName = $map{$resName}{"tail"};
 					$resName = 	$newResName;
 				}
@@ -315,7 +305,7 @@ sub adjustInputFile(){
 		
 		## If the line is niether ATOM, BOND, COMMENT, TER or END - exit. ##
 		else{
-			exitSmog("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM, HETATM, TER, BOND, COMMENT, END");
+			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM, HETATM, TER, BOND, COMMENT, END");
 		}
 	}
 	
@@ -323,4 +313,5 @@ sub adjustInputFile(){
 }
 
 adjustInputFile();
+warnsummary();
 print "\n\tAdjustment of PDB is complete.\n\n";

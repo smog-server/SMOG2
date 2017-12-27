@@ -41,13 +41,12 @@ use Data::Dumper;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
-
+use smog_common;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
 my $VERSION="2.1beta";
 my $angToNano = 0.1;
-my @diheArr;
 my $OUTPUT;
 my $help;
 my $inputPDB="molecule.pdb"; 
@@ -58,7 +57,7 @@ my $groFile = "";
 my $ContactFile;
 my $shadowFile = "";
 my $ndxFile = "";
-my $mapOpt = "shadow";my $contactOpt = "6 1";
+my $mapOpt = "shadow";
 my $numContacts = 0;
 my $rescaleCD = 1.0; ## rescale all contacts and dihedrals ##
 my $coarseFolder = ""; ## Coarse Grain Folder ##
@@ -66,8 +65,6 @@ my $AAdefault = 0;
 my $CAdefault = 0;
 my $AAGdefault = 0; 
 my $CAGdefault = 0;
-our $maxwarn=0;
-our $warncount=0;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
 our $setContacttoLimit=0;
@@ -96,37 +93,21 @@ our @topFileBuffer;
 our @linesInDirectives;
 our @linesInDirectivesWithContent;
 our $inputArguments=join(' ',@ARGV);
+our %Btypespresent;
+our %NBtypespresent;
+our %PAIRtypespresent;
 
+quit_init();
 
-sub checkForModules {
-	my $checkPackage; my $sum=0;
-	$checkPackage=`echo \$perl4smog | wc | awk '{print \$3}'`;
-	if($checkPackage < 2) { print "\nSMOG 2 failed to launch.\n\nEnvironment variable perl4smog not set, maybe you need to edit the configure.smog2 script and run it with \"source configure.smog2\"\n"; $sum++;}else{
-		$checkPackage=`\$perl4smog -e "use XML::Simple" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { print "Perl module XML::Simple not installed!\n"; $sum++;}
-		$checkPackage=`\$perl4smog -e "use XML::Validator::Schema" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { print "Perl module XML::Validator::Schema not installed!\n"; $sum++;}
-		$checkPackage=`\$perl4smog -e "use Exporter" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { print "Perl module Exporter not installed!\n"; $sum++;}
-		$checkPackage=`\$perl4smog -e "use String::Util" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { print "Perl module String::Util not installed!\n"; $sum++;}
-		$checkPackage=`\$perl4smog -e "use PDL" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { print "Perl Data Language not installed!\n"; $sum++;}
-	}
-	$checkPackage=`which java | wc -l | awk '{print \$1}'`;
-	if($checkPackage < 1) { print "Java might not be installed. This package assumes Java 1.7 or greater is in the path as 'java'.\n"; $sum++;}
-	if($sum > 0) { print "Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG 2 manual.\n"; exit(1); }
-}
-
+checkForModules();
 
 ####################
 ## OUTPUT TOPFILE ##
 ####################
 sub printTop {
-	my($topFile) = @_;
+	my ($topFile) = @_;
 	open($OUTPUT, ">$topFile");
 	my $i;
-	my $j;
 	my $directive;
 	foreach $directive (@directivesList) { #order of list defines order in top
 		if($linesInDirectivesWithContent[$directives{$directive}] > 1 or $directive eq "comments") { # print if the section has more than a header and comments
@@ -155,15 +136,15 @@ sub initializeDirectives {
 	addToTop("defaults", "\n[ defaults ]\n");
 	addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
 	addToTop("bonds","\n[ bonds ]\n");
-	addToTop("bonds",";     ai       aj     func  r0(nm)          Kb\n");
+	addToTop("bonds",";ai\taj\tfunc\t r0(nm)\t         Kb\n");
 	addToTop("angles","\n[ angles ]\n");
-	addToTop("angles",";      ai      aj       ak   func th0(deg)        Ka\n");
+	addToTop("angles",";ai\taj\tak\tfunc\t th0(deg)        Ka\n");
   	addToTop("dihedrals","\n[ dihedrals ]\n");
-  	addToTop("dihedrals",";     ai       aj       ak       al  func  phi0(deg)        kd         mult\n");
+  	addToTop("dihedrals",";ai\taj\tak\tal\tfunc\t phi0(deg)       Kd              mult\n");
 	addToTop("pairs","\n[ pairs ]\n");
-	addToTop("pairs","; ai aj type A B\n");
+	addToTop("pairs",";ai\taj\ttype\t A               B\n");
 	addToTop("exclusions","\n[ exclusions ]\n");
-	addToTop("exclusions","; ai	aj\n");
+	addToTop("exclusions",";ai	aj\n");
 	addToTop("atomtypes","\n[ atomtypes ] \n");
 	addToTop("atomtypes","; name  mass     charge    ptype c6           c12\n");
 	addToTop("nonbond_params","\n[ nonbond_params ]\n");
@@ -183,34 +164,11 @@ sub initializeDirectives {
 	addToTop("molecules","  Macromolecule   1\n");
 }
 
-sub hascontent
-{
-	my ($LINE) = @_;
-	my $comment;
-	if($LINE =~ m/(;.*)/){
-		$comment=$1;
-	}else{
-		$comment="";
-	}
-	# remove comments
-	$LINE =~ s/;.*$//g; 
-	# remove spaces and tabs
-	$LINE =~ s/\s|\t//g;
-	if( $LINE =~ m/[#!\^\$]/ ){
-		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
-	}
-	if($LINE eq ""){
-		return 0;
-	}else{
-		return 1;
-	}
-}
 
 
 #adds something to the topfile at the bottom of a directive
 sub addToTop {
 	my($directive,$stuff) = @_;
-	hascontent
 	$linesInDirectivesWithContent[$directives{$directive}]+= hascontent($stuff);
 	push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
 }
@@ -381,7 +339,7 @@ To help locate an output Gro index in the input PDB, the original chain and resi
 	       
 	## Format output <i j function p1 p2 ... pn>
 	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-	$formattedString = sprintf("%9d%9d%6d$paramFormat",$i,$j,$fType,@paramArr);
+	$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
 	$outputString = "$outputString$formattedString\n";
 	}
 }
@@ -517,7 +475,7 @@ sub angleOutput
 		}
  		## Format output <i j k function p1 p2 ... pn>
  		foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-			$formattedString = sprintf("%9d%9d%9d%6d$paramFormat",$i,$j,$k,$fType,@paramArr);
+			$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
 			$outputString = "$outputString$formattedString\n";
 		}
 	}
@@ -635,9 +593,9 @@ sub dihedralOutput
  	## If $input contains a + ##
  	my @funcs = split(/\+/,$inputFunc);
 	my $outputString="";
-	my $fType="";my $exportRatio;       
+	my $fType="";       
  	my $formattedString="";
-	my $valueSend;my @paramArr;
+	my @paramArr;
 	my $funci=0; my @fTypei;
 	foreach my $fun(@funcs)
 	{
@@ -688,13 +646,13 @@ sub dihedralOutput
 		 	for(my $I=0;$I<=$#paramArr;$I++){$paramFormat="$paramFormat %12.9e";}
 		 	#foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 
-			if($fType eq 1) {
-				$paramFormat=" %12.9e	%12.9e %u";
+			if($fType == 1) {
+				$paramFormat=" %12.9e %12.9e %u";
 			}elsif($fType == 2){	
 			### CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
 				if($paramArr[0]>180){$paramArr[0]-=180;}else{$paramArr[0]+=180;}
 			}	
-			$formattedString = sprintf("%9d%9d%9d%9d%3d$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
+			$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
 			$outputString = "$outputString$formattedString\n";
 		}
 	}
@@ -726,15 +684,13 @@ sub diheFuncParser
 sub calculateContacts
 {
 	my($contactPDL,$inputPDL,$atomTypes,$numCon,$numAtom) = @_;
-	my $atoma; my $atomb;my $fType; my $dist;
+	my $atoma; my $atomb; my $dist;
 	my $pairtypea; my $pairtypeb;
 	my $resTypea; my $resTypeb;
-	my $contactInterScale;
- 	my $dihedralInterScale;
 	my $multFactor = 1;
-	my $c0; my $c1; 
+	my $c0;  
 	my $epsilon;my $cG;my $funct;
- 	my $totalStrength; my $outputString;
+ 	my $totalStrength; 
 	my $contactIntraScale;
 	my $count;
 
@@ -755,7 +711,11 @@ sub calculateContacts
 		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 		if(!$normalize){next;}		
 		$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
-		$count+=$contactIntraScale;
+
+		my ($fType,$fname,$directive,$addExclusions,@paramArr) = contactFuncParser($funct);
+		unless($fname eq "bond_type6"){
+			$count+=$contactIntraScale;
+		}
 	}
 
 	## Adjust ratio ##
@@ -881,8 +841,8 @@ sub contactOutput
 			}else{smog_quit("Contact function name $fname is not supported");}
 
  	## Format output <i j function p1 p2 ... pn>
-		 	foreach(@paramArr){$paramFormat="$paramFormat	%12.9e";}
-			$formattedString = sprintf("%d %d %d$paramFormat",$i,$j,$fType,@paramArr);
+		 	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
 			$outputString = "$outputString$formattedString";
 		}
 	}
@@ -898,7 +858,6 @@ sub contactParseNM1
 	##epsilon
 	##r0 is native distance##
 	#
-	my $cN;my $cM; 
 	my $A; my $B;
 	my $N; my $M;
 	$M=$paramArr->[0];
@@ -1211,11 +1170,11 @@ sub convertPDBToGroNdx
 	my $resNumCurr=1;my $resCounter=1;
 	my $boundflag=0;
 	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
- 	open(PDB,$inputPDB); ## INPUT PDB
+ 	open(PDB,"$inputPDB") or smog_quit("can not open $inputPDB"); ## INPUT PDB
 	if(-e "meta.Gro"){
 		smog_quit("meta.Gro is a reserved file name.  It appears to already exist.  Please move and try again\n");
 	}
-	open(GRO,">meta.Gro");
+	open(GRO,">meta.Gro") or smog_quit("can not open meta.Gro for writing");
 	while($line=<PDB>)
 	{
 		
@@ -1279,8 +1238,9 @@ sub convertPDBToGroNdx
 
  ## ADJUST GRO FILE ##
 	close(PDB);
-	close(GRO);open(GROIN,"meta.Gro");
-	open(GRO,">$outputGRO");
+	close(GRO);
+        open(GROIN,"meta.Gro") or smog_quit("can not open meta.Gro for reading");
+	open(GRO,">$outputGRO") or smog_quit("can not open $outputGRO for writing");
 	print GRO "Gro file for a structure based model, generated with SMOG Version $VERSION\n";
 	print GRO $counter,"\n";
 	while(<GROIN>) { print GRO $_;}
@@ -1290,9 +1250,7 @@ sub convertPDBToGroNdx
 	
  ## CREATE NDX FILE ##
 	open(NDX,">$outputNDX");
-	my $c;my $v;
 	
-	#while(($c,$v) =  each (sort keys %chainHash))
 	foreach my $chain (sort {$a <=> $b} keys %chainHash) 
 	{
 	       print NDX "[ $chain ]\n";
@@ -1300,7 +1258,6 @@ sub convertPDBToGroNdx
 	       print NDX "\n";
 	}
 	close(NDX);
-
 }
 
 sub validateTemplate
@@ -1433,7 +1390,7 @@ sub usage
 usage: smog2 .. options ..
 
    Options
-	-i [filename.pdb]	: input PDB to generate Hamiltonian
+	-i [molecule.pdb]	: input PDB to generate Hamiltonian
 	-AA			: use default All-atom model
 	-AAgaussian		: use default All-atom model with gaussian contacts
 	-CA			: use default Calpha protein model
@@ -1447,7 +1404,7 @@ usage: smog2 .. options ..
 	-c [contacts.txt]	: input contact map file
 	-dname [smog]		: default name to use for all output files
 	-backup [yes]		: back up any pre-existing output files
-	-warn [N]		: convert the first N fatal errors to warnings. Default: N=0. 
+	-warn [0]		: convert the first N fatal errors to warnings.  
 					Convert all errors if N=-1 (Caution: Consult manual 
 					before using this option)
 	-limitbondlength	: if a bond length is outside of the allowable range, set it to limiting value
@@ -1683,10 +1640,7 @@ unless ($rescaleCD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
 	smog_quit("$rescaleCD is not a valid value for -rescaleCD.  Must be an integer, or decimal.");
 }
 
-if($maxwarn > 0 || $maxwarn ==-1 ){
-	print "\n\n-warn $maxwarn selected. Errors will be reported as warnings.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
-}
-
+warninfo();
 
 if($coarseFolder ne "" and $inputFolder eq ""){
 	smog_quit("When using a CG model with -tCG, you must also specify the model to be used when calculating the contact map by invoking the option -t. Check -help for usage information. ");
@@ -1892,6 +1846,7 @@ print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n
 	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
 	printCitation();
 
-if ($warncount != 0){ print "\n\n NOTE: There were $warncount warnings. It is recommended that you read all warnings carefully.  \n\n"; }
+warnsummary();
+
 
 ## END ##

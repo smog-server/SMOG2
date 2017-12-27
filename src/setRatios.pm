@@ -22,17 +22,12 @@
 # setRatios: Adjust ratios of strengths as obtained from .sif
 #####################################################################
 package setRatios;
-#####################
-## COMPILE HEADERS ##
-#####################
 use strict;
 use warnings;
-####################
-## MODULE HEADERS ##
-####################
 use Exporter;
 use PDL;
 use templateParser;
+use smog_common;
 
 our @ISA = 'Exporter';
 our @EXPORT = qw(setRatios getSetDiheCounts %fTypes);
@@ -40,11 +35,10 @@ my %uniqueBonds;
 
 sub DiheCountsHelper
 {
-	my($diheArr,$inputPDL,$countsIndex,$counts) = @_;
+	my($diheArr,$inputPDL) = @_;
 	my @countsIndex;
 	my @counts;
 	my $size = $diheArr->dim(1);
-	my @tempArr;
 	## Count number of dihedrals passing through a bond ##
 	my $tindex=0;
 	$counts[0]=1;
@@ -113,11 +107,10 @@ sub getSetDiheCounts
 sub setRatios	
 {
 	my($diheFunctHandle,$inputPDL,$atomNum,$atomTypes,$rescaleCD) = @_;
-	my $energyGroupSum; my $scaleFactor;my %residueRatio;
+	my %residueRatio;
 	my $sum; my $diheStrengthTotal;
 	undef %uniqueBonds;
 	my %rescalePDL;
-	my $rescalePDL1=\%rescalePDL;
 	foreach my $chain(keys %{$diheFunctHandle})
 	{
 		adjustFactorsHelper1($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomNum,$atomTypes,\%residueRatio,\$sum,\%rescalePDL,$chain);
@@ -133,8 +126,8 @@ sub setRatios
 sub adjustFactorsHelper1
 {
 	my($diheArr,$inputPDL,$totalAtoms,$atomTypes,$residueRatio,$sum,$rescalePDL,$chain) = @_;
-	my $totalStrength;my $normalize;
-	my $contactTotal;my $relativeRatio;
+	my $normalize;
+	my $relativeRatio;
  	my $size = $diheArr->dim(1);
 	my @tempArr;
  	for(my $i=0;$i<$size;$i++)
@@ -208,13 +201,11 @@ sub adjustFactorsHelper1
 sub adjustFactorsHelper2
 {
 	my($diheArr,$inputPDL,$totalAtoms,$atomTypes,$diheStrengthTotal,$sum,$rescalePDL,$chain,$rescaleCD) = @_;
-	my $totalStrength;my $normalize;
-	my $contactTotal;my $diheRelative;
+	my $totalStrength;
+	my $contactTotal;
  	my $size = $diheArr->dim(1);
-	my $totalDihedral;
-
-
 	my $diheLeftOver = 0;
+
         ## epsilonC+epsilonD ##
 	$totalStrength = $termRatios->{"interRelativeTotal"};
 	## epsilonC ##			

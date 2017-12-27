@@ -6,11 +6,6 @@
 	<bType>*</bType>
 	<bType>*</bType>
         </bond>
-
-	<bond func="bond_type6(?,200)">
-	<bType>*</bType>
-    	<bType>MG</bType>
-        </bond>
 </bonds>
 
 <!-- ANGLES -->
