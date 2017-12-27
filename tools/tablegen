@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Getopt::Long;
+use smog_common;
 
 print <<EOT;
 *****************************************************************************************
@@ -19,7 +20,7 @@ EOT
 
 sub usage
 {
-  print <<EOT;
+	print <<EOT;
 
 DESCRIPTION:
  Native contact Potentials: Gromacs supports a 6-12 potential for native contacts. If you
@@ -47,17 +48,11 @@ usage: smog_tablegen  .. options ..
 	-table [table.xvg] 	: output table file
 	-help 	  		: show options
 EOT
-  if ( @_ ){
-   smog_quit("Command-line argument \"@_\" not recognized.");
-  }else{
-   exit;
-  }
-}
-
-sub tablequit
-{
-	print "\n\nERROR: @_\n\n\t!!!!!TABLE NOT GENERATED!!!!!\n\n";
-	exit;
+	if ( @_ ){
+ 		smog_quit("Command-line argument \"@_\" not recognized.");
+	}else{
+ 		exit;
+	}
 }
 
 # Brief description 
@@ -79,6 +74,7 @@ my $rc=1.5;
 my $Rtable=5.0;
 my $outfilename="table.xvg";
 my $help;
+quit_init();
 usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'N=i' => \$exponent2, 'M=i' => \$exponent1, 'ic=f' => \$conc, 
         'sd=f' => \$r1, 'sc=f' => \$rc, 'tl=f' => \$Rtable, 'table=s' => \$outfilename, '<>' => \&usage)
         or defined $help); 
@@ -86,7 +82,7 @@ usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'N=i' => \$exponent2, '
 my $prefactor=33.20/138.935485;
 
 if($exponent2 >= $exponent1){
- tablequit ("For consistency with smog2, only M < N is supported");
+	smog_quit ("For consistency with smog2, only M < N is supported");
 }
 
 # molar concentration of monovalent ions.
@@ -98,11 +94,11 @@ my $kappa=3.2*sqrt($conc);
 # to zero at the cut-off distance (rc), and it starts switching at rc1.
 #what is the length of the table(in nm)?
 if($rc <= $r1 && $rc != 0){
- tablequit("switching distance must be shorter than truncated distance");
+	smog_quit("switching distance must be shorter than truncated distance");
 }elsif($rc < 0 || $r1 < 0){
- tablequit("switching distance and truncated distance must be greater than, or equal to, zero");
+	smog_quit("switching distance and truncated distance must be greater than, or equal to, zero");
 }elsif($rc>$Rtable){
- tablequit("table must extend beyond the cutoff distance");
+	smog_quit("table must extend beyond the cutoff distance");
 }
 
 print "Parameter used to generate table file $outfilename\n";
@@ -142,16 +138,16 @@ my $DR=0.002;
 
 sub V
 {
- my ($kappa, $R)=@_;
- my $F=exp(-$kappa*$R)/$R;
- return $F;
+	my ($kappa, $R)=@_;
+	my $F=exp(-$kappa*$R)/$R;
+	return $F;
 }
 
 sub Vprime
 {
- my ($kappa, $R)=@_;
- my $F=-$kappa*exp(-$kappa*$R)/$R-exp(-$kappa*$R)/($R*$R);
- return $F;
+	my ($kappa, $R)=@_;
+	my $F=-$kappa*exp(-$kappa*$R)/$R-exp(-$kappa*$R)/($R*$R);
+	return $F;
 }
 
 
@@ -165,19 +161,19 @@ my $T;
 my $A;
 my $B;
 if($rc >0){
- $M=V($kappa,$rc);
- $M=-$M;
- $N=($rc-$r1)**2;
- $O=($rc-$r1)**3;
- $R=Vprime($kappa,$rc);
- $R=-$R;
- $S=2*($rc-$r1);
- $T=3*($rc-$r1)**2;
- $A=(($M/$O)-($R/$T))/(($N/$O)-($S/$T));
- $B=$R/$T-$A*$S/$T;
+	$M=V($kappa,$rc);
+	$M=-$M;
+	$N=($rc-$r1)**2;
+	$O=($rc-$r1)**3;
+	$R=Vprime($kappa,$rc);
+	$R=-$R;
+	$S=2*($rc-$r1);
+	$T=3*($rc-$r1)**2;
+	$A=(($M/$O)-($R/$T))/(($N/$O)-($S/$T));
+	$B=$R/$T-$A*$S/$T;
 }else{
- $A=1;
- $B=1;
+	$A=1;
+	$B=1;
 }
 # generate the table file. 
 
@@ -200,32 +196,31 @@ EOF
 #first few lines have numbers too big for gromacs to read
 #will give segfaults if we don't zero them out
 for(my $i=0; $i<8;$i++){
-$R=$i*$DR;
-print OUTFILE "$R 0 0 0.0 0.0 0.0 0.0\n";
+	$R=$i*$DR;
+	print OUTFILE "$R 0 0 0.0 0.0 0.0 0.0\n";
 }
 
 for(my $i=8; $i<$Ntable;$i++){
-$R=$i*$DR;
-
- my $R1=-1/$R**$exponent2;
- my $R2=-$exponent2/$R**($exponent2+1);
- my $R3=1/$R**$exponent1;
- my $R4=$exponent1/$R**($exponent1+1);
- if( $R < $r1 && $rc !=0){
-  $VE=V($kappa, $R);
-  $VE=$prefactor*$VE;
-  $VpE=Vprime($kappa, $R);
-  $VpE=-$prefactor*$VpE;
- print OUTFILE "$R $VE $VpE $R1 $R2 $R3 $R4\n";
- }elsif($R >= $r1 && $R<=$rc){
-  $VE=V($kappa, $R)+$A*($R-$r1)**2+$B*($R-$r1)**3;
-  $VE=$prefactor*$VE;
-  $VpE=Vprime($kappa, $R)+$A*2*($R-$r1)+$B*3*($R-$r1)**2;
-  $VpE=-$prefactor*$VpE;
-   print OUTFILE "$R $VE $VpE $R1 $R2 $R3 $R4\n";
- }else{
-  print OUTFILE "$R 0.0 0.0 $R1 $R2 $R3 $R4\n"
- }
+	$R=$i*$DR;
+	my $R1=-1/$R**$exponent2;
+	my $R2=-$exponent2/$R**($exponent2+1);
+	my $R3=1/$R**$exponent1;
+	my $R4=$exponent1/$R**($exponent1+1);
+	if( $R < $r1 && $rc !=0){
+		$VE=V($kappa, $R);
+		$VE=$prefactor*$VE;
+		$VpE=Vprime($kappa, $R);
+		$VpE=-$prefactor*$VpE;
+		print OUTFILE "$R $VE $VpE $R1 $R2 $R3 $R4\n";
+	}elsif($R >= $r1 && $R<=$rc){
+		$VE=V($kappa, $R)+$A*($R-$r1)**2+$B*($R-$r1)**3;
+		$VE=$prefactor*$VE;
+		$VpE=Vprime($kappa, $R)+$A*2*($R-$r1)+$B*3*($R-$r1)**2;
+		$VpE=-$prefactor*$VpE;
+		print OUTFILE "$R $VE $VpE $R1 $R2 $R3 $R4\n";
+	}else{
+		print OUTFILE "$R 0.0 0.0 $R1 $R2 $R3 $R4\n"
+	}
 }
 #last line can't have a newline!
 $R=$Ntable*$DR;
