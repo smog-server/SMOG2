@@ -8,7 +8,7 @@ use Exporter;
 our $maxwarn;
 our $warncount;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent);
 
 
 #####################
@@ -53,6 +53,11 @@ sub warnsummary
 	}
 }
 
+################
+# module check
+################
+
+
 sub checkForModules {
 	my $checkPackage; my $sum=0;
 	$checkPackage=`echo \$perl4smog | wc | awk '{print \$3}'`;
@@ -73,6 +78,44 @@ sub checkForModules {
 	if($sum > 0) { print "Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG 2 manual.\n"; exit(1); }
 }
 
+##################
+# PARSING TOOL
+##################
+sub checkcomment
+{
+	my ($LINE) = @_;
+	my $comment;
+	if($LINE =~ m/(;.*)/){
+		$comment=$1;
+	}else{
+		$comment="";
+	}
+	# remove comments
+	$LINE =~ s/;.*$//g; 
+	$LINE =~ s/\t/ /g; 
+	$LINE =~ s/^\s+|\s+$//g;
+	$LINE =~ s/ +/ /g;
+	if( $LINE =~ m/[#!\^\$]/ ){
+		smog_quit("Special characters not recognized\n  Offending line: $LINE\n");
+	}
+	return ($LINE,$comment);
+}
 
+sub hascontent
+{
+	my ($LINE) = @_;
+	# remove comments
+	$LINE =~ s/;.*$//g; 
+	# remove spaces and tabs
+	$LINE =~ s/\s|\t//g;
+	if( $LINE =~ m/[#!\^\$]/ ){
+		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
+	}
+	if($LINE eq ""){
+		return 0;
+	}else{
+		return 1;
+	}
+}
 
 1;
