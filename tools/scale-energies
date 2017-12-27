@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use List::Util qw(max);
 use Getopt::Long;
+use smog_common;
 
 print <<EOT;
 ********************************************************************************************
@@ -23,42 +24,6 @@ print <<EOT;
 
 ********************************************************************************************
 EOT
-
-sub smog_quit
-{
-        my ($LINE)=@_;
-        if($main::noexit){
-                warn("\nWarning: $LINE\n");
-        }else{
-                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow smog_scale-energies to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
-                exit;
-        }
-}
-
-sub hascontent
-{
-	my ($LINE) = @_;
-	my $comment;
-	if($LINE =~ m/(;.*)/){
-		$comment=$1;
-	}else{
-		$comment="";
-	}
-	# remove comments
-	$LINE =~ s/;.*$//g; 
-	# remove spaces and tabs
-	$LINE =~ s/\s|\t//g;
-	if( $LINE =~ m/[#!\^\$]/ ){
-		smog_quit("Special characters not recognized in .top file\n  Offending line: $LINE\n");
-	}
-	if($LINE eq ""){
-		return 0;
-	}else{
-		return 1;
-	}
-}
-
-
 
 sub usage
 {
@@ -87,10 +52,10 @@ my $outputTOP="rescaled.top";
 my $rescaleC=1.0;
 my $rescaleD=1.0;
 my $help;
-my $warnonly=0;
+quit_init();
 our $noexit=0;
 usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
-        'of=s' => \$outputTOP, 'rc=f' => \$rescaleC, 'rd=f' => \$rescaleD, 'warnonly' => \$warnonly, 
+        'of=s' => \$outputTOP, 'rc=f' => \$rescaleC, 'rd=f' => \$rescaleD, 'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -102,6 +67,12 @@ if($rescaleD <= 0){
 }
 if($outputTOP !~ m/.top$/){
 	$outputTOP .= ".top";
+}
+if($inputTOP !~ m/.top$/){
+	$inputTOP .= ".top";
+}
+if($indexFile !~ m/.ndx$/){
+	$indexFile .= ".ndx";
 }
 
 my $maxbu=10;
@@ -122,12 +93,7 @@ foreach my $filen($outputTOP){
 	}
 }
 
-if($warnonly){
-	$noexit=1;
-	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
-}else{
-	$noexit=0;
-}
+warninfo();
 
 ### read in the list of atoms that we want to keep
 my %atomgroup;
@@ -449,9 +415,7 @@ if(!exists $DIRLIST{"molecules"}){
 	print TOPOUT "[$DATA[$TMP]\n";
 }
 
-if($warnonly){
-	print "\n\trescaled interactions. Since -warnonly was used, carefully check output.\n\n";
-}else{
-	print "\n\tSUCCESS: Interactions rescaled.\n\n";
-}
+warnsummary();
+
+print "\n\tSUCCESS: Interactions rescaled.\n\n";
 

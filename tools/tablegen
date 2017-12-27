@@ -75,6 +75,8 @@ my $Rtable=5.0;
 my $outfilename="table.xvg";
 my $help;
 quit_init();
+checkForModules();
+
 usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'N=i' => \$exponent2, 'M=i' => \$exponent1, 'ic=f' => \$conc, 
         'sd=f' => \$r1, 'sc=f' => \$rc, 'tl=f' => \$Rtable, 'table=s' => \$outfilename, '<>' => \&usage)
         or defined $help); 
