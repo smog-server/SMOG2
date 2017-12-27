@@ -38,6 +38,7 @@ usage: smog_ions ... options
 	-og [smog.ions.gro]: output SMOG configuration file for smog.ions system
 	-mindist [0.5]     : the minimium distance (nm) between an added ion and any other atom in the system
 	-ionC6 [0.0]	   : C6 parameter for added ions
+	-warn [0]	   : convert first N errors into warnings
 	-help 		   : show options 
 EOT
   if ( @_ ){

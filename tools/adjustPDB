@@ -49,7 +49,7 @@ usage: smog_adjustPDB .. options ..
 	-default 		: use the default file name provided by smog2 
 	-map <filename>		: specify a user-defined mappint file
 	-o [adjusted.pdb] 	: output pdb file name
-	-warn [0] 		: convert N fatal errors to warnings (Caution: Consult manual before using this option)
+	-warn [0] 		: convert first N errors to warnings 
 	-renumber 		: ignore any residue numbering inconsistencies and renumber residues sequentially
 	-help 	  		: show options
 EOT

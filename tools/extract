@@ -39,6 +39,7 @@ usage: smog_extract  .. options ..
 	-om [atomindex.map]	: output file with old-to-new atom index mapping
 	-restraints <float>	: generate restraints with a specific strength for atoms 
                                 	that have interactions removed during extraction
+	-warn [0]		: convert the first N errors into warnings
 	-help			: show options
 EOT
   if ( @_ ){
@@ -617,9 +618,5 @@ print TOPOUT "\n";
 
 warnsummary();
 
-if($maxwarn>0){
-	print "\n\tExtracted $KEEPN-atom subsystem. Since -warnonly was used, carefully check output.\n\n";
-}else{
-	print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
-}
+print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
 
