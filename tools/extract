@@ -85,6 +85,7 @@ my $KEEPN=0;
 my @keepatoms2;
 
 #check and add file name extensions, if missing
+
 my ($ext)= $outputgro =~ /(\.[^.]+)$/;
 if(!defined $ext || $ext ne ".gro"){
 	$outputgro .=  ".gro";
@@ -96,6 +97,10 @@ if(!defined $ext || $ext ne ".top"){
 ($ext)= $outputmap =~ /(\.[^.]+)$/;
 if(!defined $ext || $ext ne ".map"){
 	$outputmap .=  ".map";
+}
+($ext)= $indexFile =~ /(\.[^.]+)$/;
+if(!defined $ext || $ext ne ".ndx"){
+	$indexFile .=  ".ndx";
 }
 
 my $maxbu = 10;
