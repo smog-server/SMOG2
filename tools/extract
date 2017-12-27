@@ -24,17 +24,6 @@ print <<EOT;
 *****************************************************************************************
 EOT
 
-sub smog_quit
-{
-        my ($LINE)=@_;
-        if($main::noexit){
-                warn("\nWarning: $LINE\n");
-        }else{
-                print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error by providing the flag -warnonly.\n      This will allow smog_extract to proceed as far as possible before exiting.\n      However, it is not recommended that top files generated with this flag be used for an actual simulation.\n";
-                exit;
-        }
-}
-
 sub usage
 {
   print <<EOT;
@@ -59,26 +48,6 @@ EOT
   }
 }
 
-sub checkcomment
-{
-	my ($LINE) = @_;
-	my $comment;
-	if($LINE =~ m/(;.*)/){
-		$comment=$1;
-	}else{
-		$comment="";
-	}
-	# remove comments
-	$LINE =~ s/;.*$//g; 
-	$LINE =~ s/\t/ /g; 
-	$LINE =~ s/^\s+|\s+$//g;
-	$LINE =~ s/ +/ /g;
-	if( $LINE =~ m/[#!\^\$]/ ){
-		smog_quit("Special characters not recognized\n  Offending line: $LINE\n");
-	}
-	return ($LINE,$comment);
-}
-
 my $inputTOP="smog.top";
 my $inputGRO="smog.gro";
 my $indexFile="smog.ndx";
@@ -86,10 +55,9 @@ my $outputtop="extracted.top";
 my $outputgro="extracted.gro";
 my $outputmap="atomindex.map";
 my $help;
-my $gen_restraints=-1;
-my $warnonly=0;
-our $noexit=0;
-
+my $gen_restraints="null";
+quit_init();
+checkForModules();
 my $call="";
 foreach my $filen(@ARGV){
         $call .=  "$filen ";
@@ -97,19 +65,18 @@ foreach my $filen(@ARGV){
 $call .="\n";
 
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
-        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'restraints=s' => \$gen_restraints,  'warnonly' => \$warnonly, 
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'restraints=s' => \$gen_restraints,  'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
 
-if($warnonly){
-	$noexit=1;
-	print "\n\n-warnonly selected.  Will not intentionally exit when an error is encountered.\nThis can lead to program instability, which may still result in a crash.\nBe cautious, ignoring errors can lead to unpredictable results. \n ONLY use this option if you are sure the error is harmless.\n\n";
-}else{
-	$noexit=0;
+warninfo();
+
+unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen_restraints eq "null"){
+	smog_quit("-restraints given with a non-numerical value: $gen_restraints");
 }
 
-unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen_restraints eq -1){
-	smog_quit("-restraints given with a non-numerical value: $gen_restraints");
+if($gen_restraints ne "null" && $gen_restraints <0){
+	smog_quit("-restraints called with a negative value");
 }
 
 ### read in the list of atoms that we want to keep
@@ -164,10 +131,10 @@ my $groupname;
 open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
 print "Reading index file $indexFile\n";
 while(<ATOMLIST>){
-	my $LINE=$_;
-	chomp($LINE);
+	my $LINEt=$_;
+	chomp($LINEt);
 	# remove comments first
-        my ($LINE,$comment)=checkcomment($LINE);
+        my ($LINE,$comment)=checkcomment($LINEt);
 	# in case we have a group directive w/o spaces
 	$LINE =~ s/\[/\[ /g;
 	$LINE =~ s/\]/ \]/g;
@@ -224,7 +191,7 @@ if($Ngrps==0){
 		smog_quit("index must be positive and less than $Ngrps");
 	}
 	$extgrp=$grpnms[$tmp];
-	print "Will extract atom group $extgrp\n";
+	print "Will extract atom group $extgrp (index $tmp)\n";
 }else{
 	$extgrp=$grpnms[0];	
 }
@@ -387,7 +354,7 @@ for(my $JJ=1;$JJ<=$#C;$JJ++){
 }
 
 # start with atomtypes
-my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
+@C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
 # keep all the atomtypes, even though some may not be used in the new system.	
 print TOPOUT "[ atomtypes ]\n";
 for(my $II=1;$II<=$#C;$II++){
@@ -409,7 +376,7 @@ if(exists $DIRLIST{"nonbond_params"}){
 
 
 print TOPOUT "[ moleculetype ]\n";
-my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
+@C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
 
 for(my $JJ=1;$JJ<=$#C;$JJ++){
 	print TOPOUT "$C[$JJ]\n";
@@ -417,7 +384,7 @@ for(my $JJ=1;$JJ<=$#C;$JJ++){
 print TOPOUT "\n";
 
 # information about the atoms 
-my @C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
+@C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
 print TOPOUT "[ atoms ]\n";
 
 for(my $I=1;$I<=$#C;$I++){
@@ -618,7 +585,7 @@ if(exists $DIRLIST{"exclusions"}){
 }
 
 # information about the restraints 
-if($gen_restraints != 0){
+if($gen_restraints ne "null"){
 	print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
 	print MAPPING "\nThe following atoms are restrained (old and new numbering)\n";
 	print TOPOUT "[ position_restraints ]\n";
@@ -629,21 +596,23 @@ if($gen_restraints != 0){
 }
 print TOPOUT "\n";
 
-my @C= split(/\n/,$DATA[$DIRLIST{"system"}]);
+@C= split(/\n/,$DATA[$DIRLIST{"system"}]);
 print TOPOUT "[ system ]\n";
 for(my $II=1;$II<=$#C;$II++){
 	print TOPOUT "$C[$II]\n";
 }
 print TOPOUT "\n";
 
-my @C= split(/\n/,$DATA[$DIRLIST{"molecules"}]);
+@C= split(/\n/,$DATA[$DIRLIST{"molecules"}]);
 print TOPOUT "[ molecules ]\n";
 for(my $II=1;$II<=$#C;$II++){
 	print TOPOUT "$C[$II]\n";
 }
 print TOPOUT "\n";
 
-if($warnonly){
+warnsummary();
+
+if($maxwarn>0){
 	print "\n\tExtracted $KEEPN-atom subsystem. Since -warnonly was used, carefully check output.\n\n";
 }else{
 	print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
