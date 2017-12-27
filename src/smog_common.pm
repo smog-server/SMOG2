@@ -8,7 +8,7 @@ use Exporter;
 our $maxwarn;
 our $warncount;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules);
 
 
 #####################
@@ -52,6 +52,27 @@ sub warnsummary
 		print "\n\n NOTE: There were $warncount warnings. It is recommended that you read all warnings carefully.\n\n"; 
 	}
 }
+
+sub checkForModules {
+	my $checkPackage; my $sum=0;
+	$checkPackage=`echo \$perl4smog | wc | awk '{print \$3}'`;
+	if($checkPackage < 2) { print "\nSMOG 2 failed to launch.\n\nEnvironment variable perl4smog not set, maybe you need to edit the configure.smog2 script and run it with \"source configure.smog2\"\n"; $sum++;}else{
+		$checkPackage=`\$perl4smog -e "use XML::Simple" 2>&1 | wc -l | awk '{print \$1}'`;
+		if($checkPackage > 0) { print "Perl module XML::Simple not installed!\n"; $sum++;}
+		$checkPackage=`\$perl4smog -e "use XML::Validator::Schema" 2>&1 | wc -l | awk '{print \$1}'`;
+		if($checkPackage > 0) { print "Perl module XML::Validator::Schema not installed!\n"; $sum++;}
+		$checkPackage=`\$perl4smog -e "use Exporter" 2>&1 | wc -l | awk '{print \$1}'`;
+		if($checkPackage > 0) { print "Perl module Exporter not installed!\n"; $sum++;}
+		$checkPackage=`\$perl4smog -e "use String::Util" 2>&1 | wc -l | awk '{print \$1}'`;
+		if($checkPackage > 0) { print "Perl module String::Util not installed!\n"; $sum++;}
+		$checkPackage=`\$perl4smog -e "use PDL" 2>&1 | wc -l | awk '{print \$1}'`;
+		if($checkPackage > 0) { print "Perl Data Language not installed!\n"; $sum++;}
+	}
+	$checkPackage=`which java | wc -l | awk '{print \$1}'`;
+	if($checkPackage < 1) { print "Java might not be installed. This package assumes Java 1.7 or greater is in the path as 'java'.\n"; $sum++;}
+	if($sum > 0) { print "Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG 2 manual.\n"; exit(1); }
+}
+
 
 
 1;
