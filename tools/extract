@@ -4,6 +4,9 @@ use smog_common;
 use List::Util qw(max);
 use Getopt::Long;
 
+our @ISA = 'Exporter';
+our @EXPORT = qw(%supported_directives);
+
 print <<EOT;
 *****************************************************************************************
                                       smog_extract
@@ -57,6 +60,22 @@ my $outputgro="extracted.gro";
 my $outputmap="atomindex.map";
 my $help;
 my $gen_restraints="null";
+# in supported_directives, a value of 1 means is it required, 0 is not supported
+our %supported_directives = ( 'defaults' => '1',
+        'atomtypes' => '1',
+        'moleculetype' => '1',
+        'nonbond_params' => '0',
+        'atoms' => '1',
+        'bonds' => '1',
+        'angles' => '1',
+        'dihedrals' => '1',
+        'pairs' => '1',
+        'exclusions' => '1',
+        'system' => '1',
+        'molecules' => '1',
+        'position_restraints' => '0'
+        );
+
 quit_init();
 checkForModules();
 my $call="";
@@ -262,72 +281,14 @@ print GROFILE "$grodim\n";
 
 print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted system...\n\n";
 
-# in supported_directived, a value of 1 means is it required, 0 is not supported
-my %supported_directives = ( 'defaults' => '1',
-        'atomtypes' => '1',
-        'moleculetype' => '1',
-        'nonbond_params' => '0',
-        'atoms' => '1',
-        'bonds' => '1',
-        'angles' => '1',
-        'dihedrals' => '1',
-        'pairs' => '1',
-        'exclusions' => '1',
-        'system' => '1',
-        'molecules' => '1',
-        'position_restraints' => '0'
-        );
-
 my %atoms2restrain;
 #read in the top file
-open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP"); 
-my $string = "";
-while (<FILE>){
-	my $LINE = $_;
-	chomp($LINE);
-	unless($LINE =~ m/^[\s+|\t+]$/){ 
-		 $string .= "$LINE\n";
-	}
-}
+my $string=loadfile($inputTOP);
 
-# process the top file and check that only supported directives are included.
-my %DIRLIST;
-my @DATA=split(/\[/,$string);
-for (my $I=1;$I<=$#DATA;$I++){
-	my $string1 = $DATA[$I];
-	open my($fh), "<", \$string1 or smog_quit("internal error 1") ; # reading from the data in $string
-	my $first_line = <$fh>; 
-	close $fh;
-	my ($line,$comment)=checkcomment($first_line);
-        $line =~ s/\]/ \]/g;
-        $line =~ s/\t+/ /g;
-        $line =~ s/\s+/ /g;
-	my @B=split(/ /,$line);
-	my $DIR=$B[0];
-	chomp($DIR);
-	if(!defined $B[1]){
-		smog_quit("Format error near directive \"$DIR\"");
-	}
-	chomp($B[1]);
-	if($B[1] ne "]"){
-		smog_quit("Format error near directive \"$DIR\"");
-	}
-	if(!exists $supported_directives{$DIR}){
-		smog_quit("Directive \"$DIR \" not recognized.");
-	}else{
-		$DIRLIST{$DIR}=$I;
-	}
-}
+my ($DATA,$DIRLIST)=checkdirectives($string);
+my %DIRLIST=%{$DIRLIST};
+my @DATA=@{$DATA};
 
-for my $keys(keys %supported_directives){
-	if($supported_directives{$keys} == 1 && !exists $DIRLIST{$keys}){
-		smog_quit("Directive \"$keys\" not found in $inputTOP.");
-	}
-	if($supported_directives{$keys} == 0 && exists $DIRLIST{$keys}){
-		smog_quit("Directive \"$keys\" not supported by smog_extract.");
-	}
-
-}
 
 # Go through the directives, in order, and write out information for the subsystem
 open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing.");
