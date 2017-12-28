@@ -15,6 +15,10 @@ print <<EOT;
 	This is a common task when using SMOG models, and we provide this script as a 
 	convenience. 
 
+	In this script, a dihedral is rescaled if all four atoms are within the designated
+	index group.  Similarly, a contact weight is rescaled if the atoms are in the two
+	designated groups.
+
         For usage information, issue flag -help, or see the SMOG manual.
 
         For questions regarding this script, contact info\@smog-server.org
