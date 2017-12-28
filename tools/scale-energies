@@ -4,6 +4,21 @@ use List::Util qw(max);
 use Getopt::Long;
 use smog_common;
 
+
+our $Ngrps=0;
+our @grpnms;
+my $groupD;
+my $groupC1;
+my $groupC2;
+my $inputTOP="smog.top";
+my $indexFile="smog.ndx";
+my $outputTOP="rescaled.top";
+my $rescaleC=1.0;
+my $rescaleD=1.0;
+my $help;
+quit_init();
+
+
 print <<EOT;
 ********************************************************************************************
                                       smog_scale-energies
@@ -46,14 +61,27 @@ EOT
   }
 }
 
-my $inputTOP="smog.top";
-my $indexFile="smog.ndx";
-my $outputTOP="rescaled.top";
-my $rescaleC=1.0;
-my $rescaleD=1.0;
-my $help;
-quit_init();
-our $noexit=0;
+sub listgroups
+{
+	print "index\t:\tgroup name\n";
+	for(my $I=0;$I<$Ngrps;$I++){
+		print "$I\t:\t$grpnms[$I]\n";
+	}
+}
+
+sub selectgroup
+{
+	my $tmp=<STDIN>;
+	chomp($tmp);
+	unless($tmp =~ m/^\d+$/){
+		smog_quit("$tmp is an invalid selection");
+	}
+	if($tmp <0 or $tmp >=$Ngrps){
+		smog_quit("selection must be positive and less than or $Ngrps");
+	}
+	return $tmp;
+}
+
 usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
         'of=s' => \$outputTOP, 'rc=f' => \$rescaleC, 'rd=f' => \$rescaleD, 'warn=i' => \$maxwarn, 
         '<>' => \&usage)
@@ -75,6 +103,12 @@ if($indexFile !~ m/.ndx$/){
 	$indexFile .= ".ndx";
 }
 
+if($rescaleD == 1.0 && $rescaleC == 1.0){
+	print "\n\n-rc and -rd given values of 1.  There is nothing to do, besides quit.\n\nNo .top file generated.\n\n";
+	exit;
+}
+
+
 my $maxbu=10;
 foreach my $filen($outputTOP){
 	my ($ext) = $filen =~ /(\.[^.]+)$/;
@@ -95,11 +129,9 @@ foreach my $filen($outputTOP){
 
 warninfo();
 
-### read in the list of atoms that we want to keep
+### read in the index file
 my %atomgroup;
-my $Ngrps=0;
 my $modgrp;
-my @grpnms;
 my %groupnames;
 my $groupname;
 print "Reading index file $indexFile\n";
@@ -131,7 +163,6 @@ while(<ATOMLIST>){
 		}
 		$groupnames{$groupname}=$Ngrps;
 		$Ngrps++;
-
 		next; # this is a new group, so go to next line.
 	}
 
@@ -146,31 +177,35 @@ while(<ATOMLIST>){
 		}
 	}
 }
+close(ATOMLIST);
 
+
+## find out what groups we want to rescale
 if($Ngrps==0){
 	smog_quit("no atom groups given in ndx file.");
+}elsif($Ngrps>0){
+	# if we have groups, then select which ones are used for C and D rescaling
 
-}elsif($Ngrps>1){
-	print "Select the index of the group you would like to rescale?\n";
-	print "index\t:\tgroup name\n";
-	for(my $I=0;$I<$Ngrps;$I++){
-		print "$I\t:\t$grpnms[$I]\n";
+	if($rescaleD != 1.0){
+		listgroups();
+		print "Select the index of the group for dihedral rescaling?\n";
+		$groupD=selectgroup();
+		$groupD=$grpnms[$groupD];
+		print "\nWill modify weights of dihedrals for atom group $groupD.\n\n";
 	}
-	my $tmp=<STDIN>;
-	chomp($tmp);
-	unless($tmp =~ m/^\d+$/){
-		smog_quit("$tmp is an invalid selection");
+	if($rescaleC != 1.0){
+		listgroups();
+		print "Select the index of the first group you contact rescaling?\n";
+		$groupC1=selectgroup();
+		print "Select the index of the second group you contact rescaling?\n";
+		$groupC2=selectgroup();
+		$groupC1=$grpnms[$groupC1];
+		$groupC2=$grpnms[$groupC2];
+		print "\nWill modify weights of contacts between atom groups $groupC1 and $groupC2.\n\n";
 	}
-	if($tmp <0 or $tmp >=$Ngrps){
-		smog_quit("selection must be positive and less than or $Ngrps");
-	}
-	$modgrp=$grpnms[$tmp];
-	print "Will modify weights for atom group $modgrp\n";
-}else{
-	$modgrp=$grpnms[0];	
+
 }
 
-close(ATOMLIST);
 
 my %supported_directives = ( 'defaults' => '0',
         'atomtypes' => '1',
