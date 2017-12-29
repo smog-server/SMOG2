@@ -7661,8 +7661,8 @@
 </residues>
 <!-- CONNECTIONS -->
 
-	<!-- NUCLEIC/NUCLEIC -->
 	<connections>
+		<!-- NUCLEIC/NUCLEIC -->
 		<connection name="nucleic-nucleic" residueType1="nucleic" residueType2="nucleic">
 			<bond energyGroup="bb_n" >
 				<atom>O3*</atom>
@@ -7676,7 +7676,6 @@
 				<atom>C</atom>
 				<atom>N</atom>
 			</bond>
-
 
                 	<improper>
                         	<atom>O</atom>
