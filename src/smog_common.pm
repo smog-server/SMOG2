@@ -30,7 +30,7 @@ sub smog_quit
 	}elsif($maxwarn == $warncount && $maxwarn>0){
 		print "\nWARNING $warncount : $LINE\n";
 		warn("\n\nFATAL: REACHED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
-		exit;
+		exit(1);
 	}else{
 		print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error with the -warn flag.\nHowever, it is not recommended that output obtained with this flag be used for an actual simulation.\n";
 		exit(1);
@@ -75,7 +75,7 @@ sub checkForModules {
 	}
 	$checkPackage=`which java | wc -l | awk '{print \$1}'`;
 	if($checkPackage < 1) { print "Java might not be installed. This package assumes Java 1.7 or greater is in the path as 'java'.\n"; $sum++;}
-	if($sum > 0) { print "Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG 2 manual.\n"; exit(1); }
+	if($sum > 0) { smog_quit("Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG 2 manual."); }
 }
 
 ##################
