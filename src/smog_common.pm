@@ -95,7 +95,10 @@ sub checkcomment
 	$LINE =~ s/\t/ /g; 
 	$LINE =~ s/^\s+|\s+$//g;
 	$LINE =~ s/ +/ /g;
-	if( $LINE =~ m/[#!\^\$]/ ){
+	if( $LINE =~ m/^#/ ){
+		smog_quit("preprocessing directive \"#\" found in .top file");
+	}
+	if( $LINE =~ m/[!\^\$]/ ){
 		smog_quit("Special characters not recognized\n  Offending line: $LINE\n");
 	}
 	return ($LINE,$comment);
