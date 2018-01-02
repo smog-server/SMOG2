@@ -44,7 +44,7 @@ EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
   }else{
-   exit;
+   exit(1);
   }
 }
 
@@ -407,4 +407,4 @@ while (<FILE>){
 }
 warnsummary();
 print "\n\tSUCCESS: Added $addnum $addname ions.\n\n";
-
+exit(0);

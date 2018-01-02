@@ -78,7 +78,7 @@ EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
   }else{
-   exit;
+   exit(1);
   }
 }
 
@@ -125,8 +125,7 @@ if($indexFile !~ m/.ndx$/){
 }
 
 if($rescaleD == 1.0 && $rescaleC == 1.0){
-	print "\n\n-rc and -rd given values of 1.  There is nothing to do, besides quit.\n\nNo .top file generated.\n\n";
-	exit;
+	smog_quit("\n\n-rc and -rd given values of 1.  There is nothing to do, besides quit.\n\nNo .top file generated.");
 }
 
 warninfo();
@@ -345,4 +344,4 @@ foreach my $DIR("exclusions","system","molecules")
 warnsummary();
 
 print "\n\tSUCCESS: Interactions rescaled.\n\n";
-
+exit(0);

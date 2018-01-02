@@ -48,7 +48,7 @@ EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
   }else{
-   exit;
+   exit(1);
   }
 }
 
@@ -303,7 +303,7 @@ print TOPOUT "[ defaults ]\n";
 my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
 for(my $JJ=1;$JJ<=$#C;$JJ++){
 	my ($A, $B)=checkcomment($C[$JJ]);
-	if($A ~= m/^#/){
+	if($A =~ m/^#/){
 		print "will copy preprocessor line directly to new top.\n\t $A\n";
 		print TOPOUT "$C[$JJ]\n";
 		next;
@@ -361,7 +361,7 @@ print TOPOUT "[ atoms ]\n";
 
 for(my $I=1;$I<=$#C;$I++){
 	my ($A, $B)=checkcomment($C[$I]);
-	if($A ~= m/^#/){
+	if($A =~ m/^#/){
 		print "will copy preprocessor line directly to new top.\n\t $A\n";
 		print TOPOUT "$C[$I]\n";
 		next;
@@ -399,7 +399,7 @@ if(exists $DIRLIST{"bonds"}){
 	print TOPOUT "[ bonds ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
-		if($A ~= m/^#/){
+		if($A =~ m/^#/){
 			print "will copy preprocessor line directly to new top.\n\t $A\n";
 			print TOPOUT "$C[$I]\n";
 			next;
@@ -440,7 +440,7 @@ if(exists $DIRLIST{"angles"}){
 	print TOPOUT "[ angles ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
-		if($A ~= m/^#/){
+		if($A =~ m/^#/){
 			print "will copy preprocessor line directly to new top.\n\t $A\n";
 			print TOPOUT "$C[$I]\n";
 			next;
@@ -486,7 +486,7 @@ if(exists $DIRLIST{"dihedrals"}){
 
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
-		if($A ~= m/^#/){
+		if($A =~ m/^#/){
 			print "will copy preprocessor line directly to new top.\n\t $A\n";
 			print TOPOUT "$C[$I]\n";
 			next;
@@ -526,7 +526,7 @@ if(exists $DIRLIST{"pairs"}){
 
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
-		if($A ~= m/^#/){
+		if($A =~ m/^#/){
 			print "will copy preprocessor line directly to new top.\n\t $A\n";
 			print TOPOUT "$C[$I]\n";
 			next;
@@ -568,7 +568,7 @@ if(exists $DIRLIST{"exclusions"}){
 	print TOPOUT "[ exclusions ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
-		if($A ~= m/^#/){
+		if($A =~ m/^#/){
 			print "will copy preprocessor line directly to new top.\n\t $A\n";
 			print TOPOUT "$C[$I]\n";
 			next;
@@ -621,4 +621,4 @@ print TOPOUT "\n";
 warnsummary();
 
 print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
-
+exit(0);

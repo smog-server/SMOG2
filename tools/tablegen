@@ -51,7 +51,7 @@ EOT
 	if ( @_ ){
  		smog_quit("Command-line argument \"@_\" not recognized.");
 	}else{
- 		exit;
+ 		exit(1);
 	}
 }
 
@@ -234,3 +234,4 @@ my $R4=$exponent1/$R**($exponent1+1);
 print OUTFILE "$R 0.0 0.0 $R1 $R2 $R3 $R4\n";
 
 print "\nTable file written successfully\n\n";
+exit(0);
