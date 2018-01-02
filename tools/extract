@@ -64,7 +64,7 @@ my $gen_restraints="null";
 our %supported_directives = ( 'defaults' => '1',
         'atomtypes' => '1',
         'moleculetype' => '1',
-        'nonbond_params' => '0',
+        'nonbond_params' => '1',
         'atoms' => '1',
         'bonds' => '1',
         'angles' => '1',
