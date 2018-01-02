@@ -1847,6 +1847,6 @@ print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n
 	printCitation();
 
 warnsummary();
-return 0;
+exit(0);
 
 ## END ##
