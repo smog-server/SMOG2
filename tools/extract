@@ -303,6 +303,11 @@ print TOPOUT "[ defaults ]\n";
 my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
 for(my $JJ=1;$JJ<=$#C;$JJ++){
 	my ($A, $B)=checkcomment($C[$JJ]);
+	if($A ~= m/^#/){
+		print "will copy preprocessor line directly to new top.\n\t $A\n";
+		print TOPOUT "$C[$JJ]\n";
+		next;
+	}
 	if($A eq ""){
 		print TOPOUT "$B\n";
 		next;
@@ -356,6 +361,12 @@ print TOPOUT "[ atoms ]\n";
 
 for(my $I=1;$I<=$#C;$I++){
 	my ($A, $B)=checkcomment($C[$I]);
+	if($A ~= m/^#/){
+		print "will copy preprocessor line directly to new top.\n\t $A\n";
+		print TOPOUT "$C[$I]\n";
+		next;
+	}
+
 	if($A eq ""){
 		print TOPOUT "$B\n";
 		next;
@@ -388,6 +399,12 @@ if(exists $DIRLIST{"bonds"}){
 	print TOPOUT "[ bonds ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
+		if($A ~= m/^#/){
+			print "will copy preprocessor line directly to new top.\n\t $A\n";
+			print TOPOUT "$C[$I]\n";
+			next;
+		}
+
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;
@@ -423,6 +440,12 @@ if(exists $DIRLIST{"angles"}){
 	print TOPOUT "[ angles ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
+		if($A ~= m/^#/){
+			print "will copy preprocessor line directly to new top.\n\t $A\n";
+			print TOPOUT "$C[$I]\n";
+			next;
+		}
+
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;
@@ -463,6 +486,12 @@ if(exists $DIRLIST{"dihedrals"}){
 
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
+		if($A ~= m/^#/){
+			print "will copy preprocessor line directly to new top.\n\t $A\n";
+			print TOPOUT "$C[$I]\n";
+			next;
+		}
+
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;
@@ -497,6 +526,12 @@ if(exists $DIRLIST{"pairs"}){
 
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
+		if($A ~= m/^#/){
+			print "will copy preprocessor line directly to new top.\n\t $A\n";
+			print TOPOUT "$C[$I]\n";
+			next;
+		}
+
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;
@@ -533,6 +568,12 @@ if(exists $DIRLIST{"exclusions"}){
 	print TOPOUT "[ exclusions ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
+		if($A ~= m/^#/){
+			print "will copy preprocessor line directly to new top.\n\t $A\n";
+			print TOPOUT "$C[$I]\n";
+			next;
+		}
+
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;

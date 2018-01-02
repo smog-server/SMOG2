@@ -1416,7 +1416,7 @@ EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
   }else{
-   exit;
+   exit(0);
   }
 }
 
@@ -1847,6 +1847,6 @@ print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n
 	printCitation();
 
 warnsummary();
-
+return 0;
 
 ## END ##
