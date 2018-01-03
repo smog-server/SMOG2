@@ -315,6 +315,8 @@ for(my $JJ=1;$JJ<=$#C;$JJ++){
 		}
 	}
 }
+my $types=gettypes(\@DATA,\%DIRLIST,\%keepatoms);
+my %typesinsystem=%{$types};
 
 # start with atomtypes
 @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
@@ -323,7 +325,14 @@ print TOPOUT "[ atomtypes ]\n";
 for(my $II=1;$II<=$#C;$II++){
 	my ($A, $B)=checkcomment($C[$II]);
 	if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
-	print TOPOUT "$C[$II]\n";
+	if($A eq ""){
+		print TOPOUT "$C[$II]\n";
+	}else{
+		my @D=split(/\s+/,$A);
+		if(exists $typesinsystem{$D[1]}){
+			print TOPOUT "$C[$II]\n";
+		}
+	}
 }
 print TOPOUT "\n";
 
@@ -336,7 +345,15 @@ if(exists $DIRLIST{"nonbond_params"}){
 	for(my $II=1;$II<=$#C;$II++){
 		my ($A, $B)=checkcomment($C[$II]);
 		if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
-		print TOPOUT "$C[$II]\n";
+		print "$A\n";
+		if($A eq ""){
+			print TOPOUT "$C[$II]\n";
+		}else{
+			my @D=split(/\s+/,$A);
+			if(exists $typesinsystem{$D[1]} && exists $typesinsystem{$D[2]}){
+				print TOPOUT "$C[$II]\n";
+			}
+		}
 	}
 	print TOPOUT "\n";
 }
@@ -596,3 +613,25 @@ warnsummary();
 
 print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
 exit(0);
+
+
+sub gettypes
+{
+	my ($DATA,$DIRLIST,$keepatoms)=@_;
+	my @DATA=@{$DATA};
+	my %DIRLIST=%{$DIRLIST};
+	my %keepatoms=%{$keepatoms};
+	my %types;
+	my @C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
+	
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if($A =~ m/^#/ || $A eq ""){next;};
+		my @D=split(/ /,$A);
+		my $NUM=$D[0];
+		if(exists $keepatoms{$NUM}){
+			$types{$D[1]}=1;
+		}
+	}
+	return \%types;
+}
