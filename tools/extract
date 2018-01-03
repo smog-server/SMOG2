@@ -202,7 +202,7 @@ if($Ngrps==0){
 	smog_quit("no atom groups given in ndx file.");
 
 }elsif($Ngrps>1){
-	print "Select the index of the group you would like to rescale?\n";
+	print "Select the index of the group you would like to extract?\n";
 	print "index\t:\tgroup name\n";
 	for(my $I=0;$I<$Ngrps;$I++){
 		print "$I\t:\t$grpnms[$I]\n";
@@ -224,23 +224,15 @@ if($Ngrps==0){
 close(ATOMLIST);
 
 my @A;
-my $N=0;
 for my $atom ( sort {$a<=>$b} keys %atomgroup) {
 	if($atomgroup{$atom} eq $extgrp){
-		$A[$N]=$atom;
-		$N++;
+		$KEEPN++;
+		$keepatoms2[$KEEPN-1]=$atom;
+		$keepatoms{$atom}=$KEEPN;
+		print MAPPING "$KEEPN $atom\n";
 	}
 }
 
-for(my $I=0;$I<=$#A;$I++){
-	$keepatoms{$A[$I]}=$KEEPN+1;
-	$keepatoms2[$KEEPN]=$A[$I];
-	if($KEEPN > 0 && $keepatoms2[$KEEPN] < $keepatoms2[$KEEPN-1]){
-		smog_quit("Atoms listed in $indexFile are not in ascending order.\n");
-	}
-	$KEEPN++;
-	print MAPPING "$KEEPN $A[$I]\n";
-}
 
 ### extract the atoms and make a new gro file 
 
@@ -362,7 +354,7 @@ print TOPOUT "[ atoms ]\n";
 for(my $I=1;$I<=$#C;$I++){
 	my ($A, $B)=checkcomment($C[$I]);
 	if($A =~ m/^#/){
-		print "will copy preprocessor line directly to new top.\n\t $A\n";
+		print "\nwill copy preprocessor line directly to new top.\n\t $A\n";
 		print TOPOUT "$C[$I]\n";
 		next;
 	}
@@ -617,7 +609,8 @@ for(my $II=1;$II<=$#C;$II++){
 	print TOPOUT "$C[$II]\n";
 }
 print TOPOUT "\n";
-
+close(MAPPING);
+close(TOPOUT);
 warnsummary();
 
 print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
