@@ -329,7 +329,7 @@ for(my $II=1;$II<=$#C;$II++){
 		print TOPOUT "$C[$II]\n";
 	}else{
 		my @D=split(/\s+/,$A);
-		if(exists $typesinsystem{$D[1]}){
+		if(exists $typesinsystem{$D[0]}){
 			print TOPOUT "$C[$II]\n";
 		}
 	}
@@ -350,7 +350,7 @@ if(exists $DIRLIST{"nonbond_params"}){
 			print TOPOUT "$C[$II]\n";
 		}else{
 			my @D=split(/\s+/,$A);
-			if(exists $typesinsystem{$D[1]} && exists $typesinsystem{$D[2]}){
+			if(exists $typesinsystem{$D[0]} && exists $typesinsystem{$D[1]}){
 				print TOPOUT "$C[$II]\n";
 			}
 		}
