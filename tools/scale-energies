@@ -269,6 +269,7 @@ if($rescaleD == 1.0){
 
 	for(my $JJ=1;$JJ<=$#C;$JJ++){
 		my ($A, $B)=checkcomment($C[$JJ]);
+		if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;
@@ -306,6 +307,7 @@ if($rescaleC == 1.0){
 
 	for(my $JJ=1;$JJ<=$#C;$JJ++){
 		my ($A, $B)=checkcomment($C[$JJ]);
+		if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;

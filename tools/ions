@@ -341,11 +341,7 @@ while (<FILE>){
 	my $LINEORIG=$LINE;
 	chomp($LINE);
 	my ($data,$comment)=checkcomment($LINE);
-	if($data =~ m/^#/){
-		print "will copy preprocessor line directly to new top.\n\t $A\n";
-		print TOPOUT "$LINE\n";
-		next;
-	}
+	if(checkforinclude($LINE,$data,*TOPOUT)){next;};
 
 	# check if we hit the atomtypes.  if we do, then add the atomtype.
 	if($data eq ""){
@@ -360,11 +356,7 @@ while (<FILE>){
 		$LINEORIG=$LINE;
 		chomp($LINE);
 		($data,$comment)=checkcomment($LINE);
-		if($data =~ m/^#/){
-			print "will copy preprocessor line directly to new top.\n\t $A\n";
-			print TOPOUT "$LINE\n";
-			next;
-		}
+		if(checkforinclude($LINE,$data,*TOPOUT)){next;};
 
 		until(($data eq "" and $comment eq "") or substr($data,0,1) eq "[" ){
 			$data =~ s/ /\t/g;
@@ -374,11 +366,7 @@ while (<FILE>){
 			if(!defined $LINE){$data="";$comment="";next;}
 			chomp($LINE);
 			($data,$comment)=checkcomment($LINE);
-			if($data =~ m/^#/){
-				print "will copy preprocessor line directly to new top.\n\t $A\n";
-				print TOPOUT "$LINE\n";
-				next;
-			}
+			if(checkforinclude($LINE,$data,*TOPOUT)){next;};
 		}
 		print TOPOUT "$addname\t$addmass\t$addcharge\tA\t$addC6\t$addC12\n\n";
 		$LINEORIG=$LINE;

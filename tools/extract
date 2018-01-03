@@ -250,6 +250,9 @@ my $NATOMS=$A[0];
 my @GRODATA;
 unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
 
+print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted system...\n\n";
+
+print "Processing gro file\n";
 for(my $I=0;$I<$NATOMS;$I++){
 	# store gro data
 	my $LINE=<GROFILE>;
@@ -271,17 +274,17 @@ for(my $I=0;$I<$KEEPN;$I++){
 }
 print GROFILE "$grodim\n";
 
-print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted system...\n\n";
 
 my %atoms2restrain;
 #read in the top file
+print "Reading in top file\n";
 my $string=loadfile($inputTOP);
 
 my ($DATA,$DIRLIST)=checkdirectives($string);
 my %DIRLIST=%{$DIRLIST};
 my @DATA=@{$DATA};
 
-
+print "Writing new top file\n";
 # Go through the directives, in order, and write out information for the subsystem
 open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing.");
 #copy header
@@ -295,11 +298,7 @@ print TOPOUT "[ defaults ]\n";
 my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
 for(my $JJ=1;$JJ<=$#C;$JJ++){
 	my ($A, $B)=checkcomment($C[$JJ]);
-	if($A =~ m/^#/){
-		print "will copy preprocessor line directly to new top.\n\t $A\n";
-		print TOPOUT "$C[$JJ]\n";
-		next;
-	}
+	if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
 	if($A eq ""){
 		print TOPOUT "$B\n";
 		next;
@@ -322,6 +321,8 @@ for(my $JJ=1;$JJ<=$#C;$JJ++){
 # keep all the atomtypes, even though some may not be used in the new system.	
 print TOPOUT "[ atomtypes ]\n";
 for(my $II=1;$II<=$#C;$II++){
+	my ($A, $B)=checkcomment($C[$II]);
+	if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
 	print TOPOUT "$C[$II]\n";
 }
 print TOPOUT "\n";
@@ -333,6 +334,8 @@ if(exists $DIRLIST{"nonbond_params"}){
 	# keep all the atomtypes, even though some may not be used in the new system.	
 	print TOPOUT "[ nonbond_params ]\n";
 	for(my $II=1;$II<=$#C;$II++){
+		my ($A, $B)=checkcomment($C[$II]);
+		if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
 		print TOPOUT "$C[$II]\n";
 	}
 	print TOPOUT "\n";
@@ -343,6 +346,8 @@ print TOPOUT "[ moleculetype ]\n";
 @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
 
 for(my $JJ=1;$JJ<=$#C;$JJ++){
+	my ($A, $B)=checkcomment($C[$JJ]);
+	if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
 	print TOPOUT "$C[$JJ]\n";
 }
 print TOPOUT "\n";
@@ -353,11 +358,7 @@ print TOPOUT "[ atoms ]\n";
 
 for(my $I=1;$I<=$#C;$I++){
 	my ($A, $B)=checkcomment($C[$I]);
-	if($A =~ m/^#/){
-		print "\nwill copy preprocessor line directly to new top.\n\t $A\n";
-		print TOPOUT "$C[$I]\n";
-		next;
-	}
+	if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
 
 	if($A eq ""){
 		print TOPOUT "$B\n";
@@ -391,11 +392,7 @@ if(exists $DIRLIST{"bonds"}){
 	print TOPOUT "[ bonds ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
-		if($A =~ m/^#/){
-			print "will copy preprocessor line directly to new top.\n\t $A\n";
-			print TOPOUT "$C[$I]\n";
-			next;
-		}
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
 
 		if($A eq ""){
 			print TOPOUT "$B\n";
@@ -432,11 +429,7 @@ if(exists $DIRLIST{"angles"}){
 	print TOPOUT "[ angles ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
-		if($A =~ m/^#/){
-			print "will copy preprocessor line directly to new top.\n\t $A\n";
-			print TOPOUT "$C[$I]\n";
-			next;
-		}
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
 
 		if($A eq ""){
 			print TOPOUT "$B\n";
@@ -478,11 +471,7 @@ if(exists $DIRLIST{"dihedrals"}){
 
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
-		if($A =~ m/^#/){
-			print "will copy preprocessor line directly to new top.\n\t $A\n";
-			print TOPOUT "$C[$I]\n";
-			next;
-		}
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
 
 		if($A eq ""){
 			print TOPOUT "$B\n";
@@ -518,11 +507,7 @@ if(exists $DIRLIST{"pairs"}){
 
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
-		if($A =~ m/^#/){
-			print "will copy preprocessor line directly to new top.\n\t $A\n";
-			print TOPOUT "$C[$I]\n";
-			next;
-		}
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
 
 		if($A eq ""){
 			print TOPOUT "$B\n";
@@ -560,11 +545,7 @@ if(exists $DIRLIST{"exclusions"}){
 	print TOPOUT "[ exclusions ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
-		if($A =~ m/^#/){
-			print "will copy preprocessor line directly to new top.\n\t $A\n";
-			print TOPOUT "$C[$I]\n";
-			next;
-		}
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
 
 		if($A eq ""){
 			print TOPOUT "$B\n";

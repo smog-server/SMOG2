@@ -8,7 +8,7 @@ use Exporter;
 our $maxwarn;
 our $warncount;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude);
 our %supported_directives;
 
 #####################
@@ -96,9 +96,8 @@ sub checkcomment
 	$LINE =~ s/^\s+|\s+$//g;
 	$LINE =~ s/ +/ /g;
 	if( $LINE =~ m/^#/ ){
-		smog_quit("preprocessing directive \"#\" found in .top file");
-	}
-	if( $LINE =~ m/[!\^\$]/ ){
+		print "preprocessing line found in .top file\n";
+	}elsif( $LINE =~ m/[#!\^\$]/ ){
 		smog_quit("Special characters not recognized\n  Offending line: $LINE\n");
 	}
 	return ($LINE,$comment);
@@ -140,7 +139,8 @@ sub loadfile
 
 sub checkdirectives
 {
-my ($string) = @_;
+	print "Preparing top data\n";
+	my ($string) = @_;
 # split the top file and check that only supported directives are included.
 	my %DIRLIST;
 	my @DATA=split(/\n\s+\[|\n\[|^\s+\[|^\[/,$string);
@@ -181,6 +181,17 @@ my ($string) = @_;
 	}
 
 	return (\@DATA,\%DIRLIST);
+}
+
+sub checkforinclude
+{
+	my ($line,$data,$handle)=@_;
+	if($data =~ m/^#/){
+		print "will copy preprocessor line directly to new top.\n$line\n\n";
+		print $handle "$line\n";
+		return 1;
+	}
+	return 0;
 }
 
 1;
