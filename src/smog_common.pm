@@ -141,9 +141,9 @@ sub loadfile
 sub checkdirectives
 {
 my ($string) = @_;
-# process the top file and check that only supported directives are included.
+# split the top file and check that only supported directives are included.
 	my %DIRLIST;
-	my @DATA=split(/\[/,$string);
+	my @DATA=split(/\n\s+\[|\n\[|^\s+\[|^\[/,$string);
 	for (my $I=1;$I<=$#DATA;$I++){
 		my $string1 = $DATA[$I];
 		open my($fh), "<", \$string1 or smog_quit("internal error 1") ; # reading from the data in $string
