@@ -320,7 +320,6 @@ my %typesinsystem=%{$types};
 
 # start with atomtypes
 @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
-# keep all the atomtypes, even though some may not be used in the new system.	
 print TOPOUT "[ atomtypes ]\n";
 for(my $II=1;$II<=$#C;$II++){
 	my ($A, $B)=checkcomment($C[$II]);
@@ -340,7 +339,6 @@ print TOPOUT "\n";
 # start with nonbond_params
 if(exists $DIRLIST{"nonbond_params"}){
 	@C= split(/\n/,$DATA[$DIRLIST{"nonbond_params"}]);
-	# keep all the atomtypes, even though some may not be used in the new system.	
 	print TOPOUT "[ nonbond_params ]\n";
 	for(my $II=1;$II<=$#C;$II++){
 		my ($A, $B)=checkcomment($C[$II]);
