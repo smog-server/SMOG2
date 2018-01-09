@@ -152,14 +152,16 @@ foreach my $filen($outputTOP){
 
 
 ### read in the index file
-my %atomgroup;
+my $atomgroup;
 my $modgrp;
 my $groupname;
+my $groupnames;
+my $grpnms;
 print "Reading index file $indexFile\n";
 
-my ($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
+($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
 
-my @grpnms=@{$grpnms};
+@grpnms=@{$grpnms};
 my %groupnames=%{$groupnames};
 my %atomgroup=%{$atomgroup};
 
@@ -186,7 +188,6 @@ if($Ngrps==0){
 		$groupC2=$grpnms[$groupC2];
 		print "\nWill modify weights of contacts between atom groups $groupC1 and $groupC2.\n\n";
 	}
-
 }
 
 print "\nUsing $inputTOP and $indexFile to generate $outputTOP. Contacts will be rescaled by $rescaleC and dihedrals by $rescaleD\n";
