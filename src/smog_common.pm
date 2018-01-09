@@ -8,7 +8,7 @@ use Exporter;
 our $maxwarn;
 our $warncount;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile);
 our %supported_directives;
 
 #####################
@@ -192,6 +192,62 @@ sub checkforinclude
 		return 1;
 	}
 	return 0;
+}
+
+sub readindexfile
+{
+	my ($indexFile)=@_;
+	my $groupname;
+	my @grpnms;
+	my %groupnames;
+	my $Ngrps;
+	my %atomgroup;
+	open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
+	print "Reading index file $indexFile\n";
+	while(<ATOMLIST>){
+		my $LINEt=$_;
+		chomp($LINEt);
+		# remove comments first
+	        my ($LINE,$comment)=checkcomment($LINEt);
+		# in case we have a group directive w/o spaces
+		$LINE =~ s/\[/\[ /g;
+		$LINE =~ s/\]/ \]/g;
+		$LINE =~ s/^\s+|\s+$//g;
+		$LINE =~ s/\s+|\t+/ /g;
+		my @A=split(/\s+/,$LINE);
+		if($#A == -1){
+			# blank line
+			next;
+		}
+		if($A[0] eq "[" and $A[2] eq "]"){
+			# must be a new group
+			$groupname=$A[1];
+			$grpnms[$Ngrps]=$groupname;
+			if(exists $A[3]){
+				smog_quit("Group name declarations must not have trailing characters.  $A[3] appears after $A[0] $A[1] $A[2]\n;")	
+			}
+			if(exists $groupnames{$groupname}){
+				smog_quit("Group name $groupname declared more than once.");
+			}
+			$groupnames{$groupname}=$Ngrps;
+			$Ngrps++;
+	
+			next; # this is a new group, so go to next line.
+		}
+	
+		for(my $I=0;$I<=$#A;$I++){
+			unless($A[$I] =~ m/^\d+$/){
+				smog_quit("Non-numerical value for atom number in index file: $A[$I]");
+			}
+			if(exists $atomgroup{$groupname}{$A[$I]}){
+				smog_quit("Duplicate atom $A[$I] in group $groupname");
+			}else{
+				$atomgroup{$groupname}{$A[$I]}=1;
+			}
+		}
+	}
+	close(ATOMLIST);
+	return ($Ngrps,\@grpnms,\%groupnames,\%atomgroup);
 }
 
 1;
