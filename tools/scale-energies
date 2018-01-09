@@ -125,7 +125,7 @@ if($indexFile !~ m/.ndx$/){
 }
 
 if($rescaleD == 1.0 && $rescaleC == 1.0){
-	smog_quit("\n\n-rc and -rd given values of 1.  There is nothing to do, besides quit.\n\nNo .top file generated.");
+	smog_quit("-rc and -rd given values of 1.  There is nothing to do, besides quit.\n\nNo .top file generated.");
 }
 
 warninfo();
@@ -154,53 +154,14 @@ foreach my $filen($outputTOP){
 ### read in the index file
 my %atomgroup;
 my $modgrp;
-my %groupnames;
 my $groupname;
 print "Reading index file $indexFile\n";
-open(ATOMLIST,"$indexFile") or die "\nCan\'t open $indexFile. Use --help for usage guidelines.\n\nRescaling Incomplete!\n\n";
-while(<ATOMLIST>){
-	my $LINE=$_;
-	chomp($LINE);
-	# remove comments first
-	$LINE =~ s/;.*$//g; 
-	# in case we have a group directive w/o spaces
-	$LINE =~ s/\[/\[ /g;
-	$LINE =~ s/\]/ \]/g;
-	$LINE =~ s/^\s+|\s+$//g;
-	$LINE =~ s/\s+|\t+/ /g;
-	my @A=split(/ /,$LINE);
-	if($#A == -1){
-		# blank line
-		next;
-	}
-	if($A[0] eq "[" and $A[2] eq "]"){
-		# must be a new group
-		$groupname=$A[1];
-		$grpnms[$Ngrps]=$groupname;
-		if(exists $A[3]){
-			smog_quit("Group name declarations must not have trailing characters.  $A[3] appears after $A[0] $A[1] $A[2]\n;")	
-		}
-		if(exists $groupnames{$groupname}){
-			smog_quit("Group name $groupname declared more than once.");
-		}
-		$groupnames{$groupname}=$Ngrps;
-		$Ngrps++;
-		next; # this is a new group, so go to next line.
-	}
 
-	for(my $I=0;$I<=$#A;$I++){
-		unless($A[$I] =~ m/^\d+$/){
-			smog_quit("Non-numerical value for atom number in index file: $A[$I]");
-		}
-		if(exists $atomgroup{$A[$I]}){
-			smog_quit("Duplicate atom in index file: Atom $A[$I] already defined in group $atomgroup{$A[$I]}");
-		}else{
-			$atomgroup{$A[$I]}=$groupname;
-		}
-	}
-}
-close(ATOMLIST);
+my ($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
 
+my @grpnms=@{$grpnms};
+my %groupnames=%{$groupnames};
+my %atomgroup=%{$atomgroup};
 
 ## find out what groups we want to rescale
 if($Ngrps==0){
@@ -277,7 +238,7 @@ if($rescaleD == 1.0){
 			my @D=split(/ /,$A);
 			my $rescale=0;
 			for (my $K=0;$K<4;$K++){
-				if($D[4] == 1 && exists $atomgroup{$D[$K]} &&  $atomgroup{$D[$K]} eq $groupD){
+				if($D[4] == 1 && exists $atomgroup{$groupD}{$D[$K]}){
 					$rescale++;
 				}
 			}
@@ -314,10 +275,10 @@ if($rescaleC == 1.0){
 		}else{
 			my @D=split(/ /,$A);
 			my $rescale=0;
-			if(exists $atomgroup{$D[0]} &&  $atomgroup{$D[0]} eq $groupC1  && exists $atomgroup{$D[1]} &&  $atomgroup{$D[1]} eq $groupC2 ){
+			if(exists $atomgroup{$groupC1}{$D[0]} && exists $atomgroup{$groupC2}{$D[1]} ){
 				$rescale++;
 			}
-			if(exists $atomgroup{$D[1]} &&  $atomgroup{$D[1]} eq $groupC1  && exists $atomgroup{$D[0]} &&  $atomgroup{$D[0]} eq $groupC2 ){
+			if(exists $atomgroup{$groupC1}{$D[1]} && exists $atomgroup{$groupC2}{$D[0]} ){
 				$rescale++;
 			}
 
