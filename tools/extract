@@ -145,58 +145,15 @@ open(MAPPING,">$outputmap") or smog_quit("Can\'t open $outputmap.");
 print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
 
 ### read in the list of atoms that we want to keep
-my %atomgroup;
-my $Ngrps=0;
-my $extgrp;
-my @grpnms;
-my %groupnames;
 my $groupname;
+my $extgrp;
 
+my ($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
 
-open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
-print "Reading index file $indexFile\n";
-while(<ATOMLIST>){
-	my $LINEt=$_;
-	chomp($LINEt);
-	# remove comments first
-        my ($LINE,$comment)=checkcomment($LINEt);
-	# in case we have a group directive w/o spaces
-	$LINE =~ s/\[/\[ /g;
-	$LINE =~ s/\]/ \]/g;
-	$LINE =~ s/^\s+|\s+$//g;
-	$LINE =~ s/\s+|\t+/ /g;
-	my @A=split(/ /,$LINE);
-	if($#A == -1){
-		# blank line
-		next;
-	}
-	if($A[0] eq "[" and $A[2] eq "]"){
-		# must be a new group
-		$groupname=$A[1];
-		$grpnms[$Ngrps]=$groupname;
-		if(exists $A[3]){
-			smog_quit("Group name declarations must not have trailing characters.  $A[3] appears after $A[0] $A[1] $A[2]\n;")	
-		}
-		if(exists $groupnames{$groupname}){
-			smog_quit("Group name $groupname declared more than once.");
-		}
-		$groupnames{$groupname}=$Ngrps;
-		$Ngrps++;
+my @grpnms=@{$grpnms};
+my %groupnames=%{$groupnames};
+my %atomgroup=%{$atomgroup};
 
-		next; # this is a new group, so go to next line.
-	}
-
-	for(my $I=0;$I<=$#A;$I++){
-		unless($A[$I] =~ m/^\d+$/){
-			smog_quit("Non-numerical value for atom number in index file: $A[$I]");
-		}
-		if(exists $atomgroup{$A[$I]}){
-			smog_quit("Duplicate atom in index file: Atom $A[$I] already defined in group $atomgroup{$A[$I]}");
-		}else{
-			$atomgroup{$A[$I]}=$groupname;
-		}
-	}
-}
 
 if($Ngrps==0){
 	smog_quit("no atom groups given in ndx file.");
@@ -221,16 +178,13 @@ if($Ngrps==0){
 	$extgrp=$grpnms[0];	
 }
 
-close(ATOMLIST);
 
 my @A;
-for my $atom ( sort {$a<=>$b} keys %atomgroup) {
-	if($atomgroup{$atom} eq $extgrp){
-		$KEEPN++;
-		$keepatoms2[$KEEPN-1]=$atom;
-		$keepatoms{$atom}=$KEEPN;
-		print MAPPING "$KEEPN $atom\n";
-	}
+for my $atom ( sort {$a<=>$b} keys %{$atomgroup{$extgrp}} ) {
+	$KEEPN++;
+	$keepatoms2[$KEEPN-1]=$atom;
+	$keepatoms{$atom}=$KEEPN;
+	print MAPPING "$KEEPN $atom\n";
 }
 
 
