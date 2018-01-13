@@ -273,7 +273,7 @@ sub parseBif {
 		}
 		undef %seenIMP;
 		## CREATE BOND HASH ##
-		my %bonds; my %energyGroups; my %rigidGroups;
+		my %bonds; my %energyGroups; 
 		my @bondHandle;
 		# Obtain handle to loop through bonds
 		if(exists $residueHandle->{$res}->{"bonds"})
@@ -294,11 +294,6 @@ sub parseBif {
 				$energyGroups{"$atomB-$atomA"} = $bond->{"energyGroup"};
 			}
 			
-			## If bond is rigid dihedral
-			else{
-				$rigidGroups{"$atomA-$atomB"} = $bond->{"rigidGroup"};
-				$rigidGroups{"$atomB-$atomA"} = $bond->{"rigidGroup"};
-			}
 		}
 		
 		##atomCount !exists == -1, else atomCount
@@ -313,7 +308,6 @@ sub parseBif {
 		      "impropers" => \@impropers,
 		      "bonds" => \%bonds,
 		      "energyGroups" => \%energyGroups,
-		      "rigidGroups" => \%rigidGroups,
 		      "atomCount" => $residueHandle->{$res}->{"atomCount"},
 		      "connect" => $residueHandle->{$res}->{"connect"}
 		      };
@@ -623,8 +617,6 @@ sub getEnergyGroup
 		$atoma =~ s/\?//;$atomb =~ s/\?//;
 		if(exists $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"})
 			{return $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"};}
-		elsif(exists $residues{$residueIn}->{"rigidGroups"}->{"$atoma-$atomb"})
-			{return $residues{$residueIn}->{"rigidGroups"}->{"$atoma-$atomb"};}
 		else{smog_quit("A specified energy group for $residuea:$atoma, $residueb:$atomb doesn't exists");}
 	}
  	## If Bond is between two residues ##
@@ -701,9 +693,9 @@ sub parseBonds {
 		my $func = $inter->{"func"};
 		my $eG;
 		if(exists $inter->{"energyGroup"})
-			{$eG = $inter->{"energyGroup"};}
-		else
-			{$eG = $inter->{"rigidGroup"};}
+		{	
+			$eG = $inter->{"energyGroup"};
+		}
 		
 		my $keyString = "$typeA-$typeB-$typeC-$typeD";
 		if(exists $interactions->{"dihedrals"}->{$eG}->{$keyString}){
