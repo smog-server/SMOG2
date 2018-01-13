@@ -5,6 +5,7 @@
 <functions>
 	<function name="bond_harmonic" directive="bonds"/>
     	<function name="bond_type6" directive="bonds"/>
+	<function name="bond_free" directive="bonds"/>
 	<function name="angle_harmonic" directive="angles"/>
 	<function name="angle_free" directive="angles"/>
 	<function name="dihedral_cosine" directive="dihedrals"/>

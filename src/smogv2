@@ -1278,21 +1278,25 @@ sub parseInputFolder
 			$bifexists++;
 			$bif = $file;$bif = "$folderName/$bif";
 			print "Found .bif file $bif\n";
+			print "Validating XML format of $bif\n";
 			validateTemplate($bif,"bif");next;}
 		if($file =~ m/\.sif$/){
 			$sifexists++;
 			$sif = $file;$sif = "$folderName/$sif";
 			print "Found .sif file $sif\n";
+			print "Validating XML format of $sif\n";
 			validateTemplate($sif,"sif");next;}
 		if($file =~ m/\.b$/){
 			$bexists++;
 			$b = $file;$b = "$folderName/$b";
 			print "Found .b file $b\n";
+			print "Validating XML format of $b\n";
 			validateTemplate($b,"b");next;}
 		if($file =~ m/\.nb$/){
 			$nbexists++;
 			$nb = $file;$nb = "$folderName/$nb";
 			print "Found .nb file $nb\n";
+			print "Validating XML format of $nb\n";
 			validateTemplate($nb,"nb");next;}
 		if($file =~ m/^extras$/) {
 			$extrasexists++;
