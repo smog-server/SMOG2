@@ -103,17 +103,38 @@ sub selectgroup
 	return $tmp;
 }
 
+sub dorescaleC
+{
+	my ($atomgroup,$groupC1,$groupC2,$A,$B) = @_;
+	my %atomgroup = %{$atomgroup};
+	if(exists $atomgroup{$groupC1}{$A} && exists $atomgroup{$groupC2}{$B} ){
+		return 1;
+	}
+	if(exists $atomgroup{$groupC1}{$B} && exists $atomgroup{$groupC2}{$A} ){
+		return 1;
+	}
+
+	return 0;
+}
+
+
+
 usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
         'of=s' => \$outputTOP, 'rc=f' => \$rescaleC, 'rd=f' => \$rescaleD, 'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
 
-if($rescaleC <= 0){
-	smog_quit("only positive values may be provided with -rc.")
+if($rescaleC < 0){
+	smog_quit("negative may not be provided with -rc.")
+}elsif($rescaleC == 0){
+	print "-rc 0 given.  Rather than rescale contacts, the contacts (and associated exclusions) will be removed.\n";
 }
-if($rescaleD <= 0){
-	smog_quit("only positive values may be provided with -rd.")
+if($rescaleD < 0){
+	smog_quit("negative may not be provided with -rd.")
+}elsif($rescaleD == 0){
+	print "-rd 0 given.  Rather than rescale dihedrals, the dihedrals will be removed.\n";
 }
+
 if($outputTOP !~ m/.top$/){
 	$outputTOP .= ".top";
 }
@@ -190,7 +211,14 @@ if($Ngrps==0){
 	}
 }
 
-print "\nUsing $inputTOP and $indexFile to generate $outputTOP. Contacts will be rescaled by $rescaleC and dihedrals by $rescaleD\n";
+print "\nUsing $inputTOP and $indexFile to generate $outputTOP. ";
+if($rescaleC != 1.0){
+	print "Contacts will be rescaled by $rescaleC. ";
+}
+if($rescaleD != 1.0){
+	print "Dihedrals will be rescaled by $rescaleD.";
+}
+print "\n\n";
 
 print "Reading top file $inputTOP\n";
 
@@ -245,6 +273,9 @@ if($rescaleD == 1.0){
 			}
 
 			if($rescale == 4){
+				if($rescaleD ==0){
+					next;
+				}
 				$D[6] *= $rescaleD;	
 				for(my $J=0;$J<=$#D;$J++){
 					print TOPOUT "$D[$J]\t";
@@ -275,15 +306,13 @@ if($rescaleC == 1.0){
 			next;
 		}else{
 			my @D=split(/ /,$A);
-			my $rescale=0;
-			if(exists $atomgroup{$groupC1}{$D[0]} && exists $atomgroup{$groupC2}{$D[1]} ){
-				$rescale++;
-			}
-			if(exists $atomgroup{$groupC1}{$D[1]} && exists $atomgroup{$groupC2}{$D[0]} ){
-				$rescale++;
-			}
+			my $rescale=dorescaleC(\%atomgroup,$groupC1,$groupC2,$D[0],$D[1]);
 
-			if($rescale >0){
+			if($rescale==1){
+				if($rescaleC == 0){
+					#remove the contact
+					next;
+				}
 				$D[3] *= $rescaleC;	
 				$D[4] *= $rescaleC;	
 				for(my $J=0;$J<=$#D;$J++){
@@ -297,7 +326,38 @@ if($rescaleC == 1.0){
 	}
 }
 
-foreach my $DIR("exclusions","system","molecules")
+
+if($rescaleC !=0){
+	if(exists $DIRLIST{"exclusions"}){
+		print TOPOUT "[";
+		print TOPOUT  $DATA[$DIRLIST{"exclusions"}];
+        }
+}else{
+	print TOPOUT "[ exclusions ]\n";
+	my @C=split(/\n/,$DATA[$DIRLIST{"exclusions"}]);
+
+	for(my $JJ=1;$JJ<=$#C;$JJ++){
+		my ($A, $B)=checkcomment($C[$JJ]);
+		if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			my $rescale=dorescaleC(\%atomgroup,$groupC1,$groupC2,$D[0],$D[1]);
+
+			if($rescale==1 && $rescaleC == 0){
+				next;
+			}else{
+				print TOPOUT "$C[$JJ]\n";
+			}
+		}
+	}
+}
+
+
+
+foreach my $DIR("system","molecules")
 {
 	if(exists $DIRLIST{"$DIR"}){
 		print TOPOUT "[";
