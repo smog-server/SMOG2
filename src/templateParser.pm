@@ -691,6 +691,9 @@ sub parseBonds {
 		checkBONDnames($typeA, $typeB, $typeC, $typeD);
 
 		my $func = $inter->{"func"};
+		if($func =~ m/^dihedral_free/){
+			smog_quit("Free dihedral type found in .b file. It can be tricky to use this option. Please make sure to use the manual carefully before implementing free dihedrals within a template.");
+		}
 		my $eG;
 		if(exists $inter->{"energyGroup"})
 		{	
