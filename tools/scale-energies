@@ -71,8 +71,8 @@ usage: smog_scale-energies  .. options ..
 	-f [smog.top]		: input SMOG forcefield file
 	-n [smog.ndx]		: index file
         -of [rescaled.top]	: output SMOG forcefield file with rescaled energies
-	-rc [1.0]		: rescale contact weights by factor 
-	-rd [1.0]		: rescale dihedral weights by factor
+	-rc [1.0]		: rescale contact weights by factor (0 means interactions will be removed) 
+	-rd [1.0]		: rescale dihedral weights by factor (0 means interactions will be removed)
 	-help    		: show supported options
 EOT
   if ( @_ ){
