@@ -1251,28 +1251,28 @@ sub checkenergygroups
 	my $string="Since there is no reason to partially define interactions, this is probably a mistake.";
 	foreach my $II (sort keys %{$interactions->{"dihedrals"}}){
 		if(! exists $EGinBif{$II}){
-			smog_quit("energyGroup $II defined in .b file, but is not used in .bif file. $string")
+			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string")
 		}
 		if(! exists $EGinSif{$II}){
-			smog_quit("energyGroup $II defined in .b file, but is not used in .sif file. $string")
+			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .sif file. $string")
 		}
 	}
 
 	foreach my $II (sort keys %EGinBif){
 		if(! exists $$interactions->{"dihedrals"}->{$II}){
-			smog_quit("energyGroup $II defined in .bif file, but is not used in .b file. $string")
+			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .b file. $string")
 		}
 		if(! exists $EGinSif{$II}){
-			smog_quit("energyGroup $II defined in .bif file, but is not used in .sif file. $string")
+			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .sif file. $string")
 		}
 	}
 
 	foreach my $II (sort keys %EGinSif){
 		if(! exists $$interactions->{"dihedrals"}->{$II}){
-			smog_quit("energyGroup $II defined in .sif file, but is not used in .b file. $string")
+			smog_quit("energyGroup \"$II\" defined in .sif file, but is not used in .b file. $string")
 		}
 		if(! exists $EGinBif{$II}){
-			smog_quit("energyGroup $II defined in .sif file, but is not used in .bif file. $string")
+			smog_quit("energyGroup \"$II\: defined in .sif file, but is not used in .bif file. $string")
 		}
 	}
 }

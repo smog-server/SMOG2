@@ -96,7 +96,6 @@ our $inputArguments=join(' ',@ARGV);
 our %Btypespresent;
 our %NBtypespresent;
 our %PAIRtypespresent;
-our %EGinBif;
 quit_init();
 
 checkForModules();
