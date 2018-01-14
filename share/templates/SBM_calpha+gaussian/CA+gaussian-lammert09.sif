@@ -6,7 +6,6 @@
 	<function name="bond_harmonic" directive="bonds"/>
 	<function name="angle_harmonic" directive="angles"/>
 	<function name="dihedral_cosine" directive="dihedrals"/>
-    <function name="contact_1" directive="pairs" exclusions="1"/>
 	<function name="contact_gaussian" directive="pairs" exclusions="1"/>
 </functions>
 <!-- HAMILTONIAN SETTINGS -->
