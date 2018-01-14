@@ -331,6 +331,9 @@ sub parseBif {
 			smog_quit ("Duplicate assignment of connections between residueTypes $resA and $resB");
 		}
 		$connections{$resA}->{$resB}=$conHandle->{$connname};
+		foreach my $II(@{$conHandle->{$connname}->{"bond"}}){
+			$EGinBif{$II->{"energyGroup"}}=1;
+		} 
 	}
 }
 
@@ -1259,7 +1262,7 @@ sub checkenergygroups
 	}
 
 	foreach my $II (sort keys %EGinBif){
-		if(! exists $$interactions->{"dihedrals"}->{$II}){
+		if(! exists $interactions->{"dihedrals"}->{$II}){
 			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .b file. $string")
 		}
 		if(! exists $EGinSif{$II}){
@@ -1268,7 +1271,7 @@ sub checkenergygroups
 	}
 
 	foreach my $II (sort keys %EGinSif){
-		if(! exists $$interactions->{"dihedrals"}->{$II}){
+		if(! exists $interactions->{"dihedrals"}->{$II}){
 			smog_quit("energyGroup \"$II\" defined in .sif file, but is not used in .b file. $string")
 		}
 		if(! exists $EGinBif{$II}){
