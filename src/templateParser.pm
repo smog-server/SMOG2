@@ -1278,6 +1278,10 @@ sub checkenergygroups
 			smog_quit("energyGroup \"$II\: defined in .sif file, but is not used in .bif file. $string")
 		}
 	}
+
+# clear the hashes, in case we need them later.
+	undef %EGinBif;
+	undef %EGinSif;
 }
 
 1;
