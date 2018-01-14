@@ -41,7 +41,7 @@ use smog_common;
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent);
+qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -98,7 +98,8 @@ our $nbondxml = "nb.xml";
 our %Btypespresent;
 our %NBtypespresent;
 our %PAIRtypespresent;
-	
+our %EGinBif;	
+our %EGinSif;	
 
 
 ###########################
@@ -288,12 +289,10 @@ sub parseBif {
 			}
 			$bonds{"$atomA-$atomB"} = $bond;
 			
-			## If bond is a flexible dihedral
-			if(exists $bond->{"energyGroup"}){
-				$energyGroups{"$atomA-$atomB"} = $bond->{"energyGroup"};
-				$energyGroups{"$atomB-$atomA"} = $bond->{"energyGroup"};
-			}
-			
+			$energyGroups{"$atomA-$atomB"} = $bond->{"energyGroup"};
+			$energyGroups{"$atomB-$atomA"} = $bond->{"energyGroup"};
+			# log what energyGroups have been used in .bif
+			$EGinBif{$bond->{"energyGroup"}}=1;	
 		}
 		
 		##atomCount !exists == -1, else atomCount
@@ -382,6 +381,7 @@ sub parseSif {
 	my $EG_NORM=0;
 	foreach my $egName(keys %{$energyGroups})
 	{
+		$EGinSif{$egName}=1;
 		$residueType = $energyGroups->{$egName}->{"residueType"};
 		$intraRelativeStrength = $energyGroups->{$egName}->{"intraRelativeStrength"};
 		$normalize = $energyGroups->{$egName}->{"normalize"};
@@ -691,9 +691,6 @@ sub parseBonds {
 		checkBONDnames($typeA, $typeB, $typeC, $typeD);
 
 		my $func = $inter->{"func"};
-		if($func =~ m/^dihedral_free/){
-			smog_quit("Free dihedral type found in .b file. It can be tricky to use this option. Please make sure to use the manual carefully before implementing free dihedrals within a template.");
-		}
 		my $eG;
 		if(exists $inter->{"energyGroup"})
 		{	
@@ -717,7 +714,8 @@ sub parseBonds {
 		$eGRevTable{$eG} = $counter;
 		$counter++;
 	}
-	
+
+		
 	## Obtain improper handle
 	@interHandle = @{$data->{"impropers"}->[0]->{"improper"}};
 	
@@ -1246,6 +1244,37 @@ sub createDihedralAngleFunctionals {
 		$angleFunctionals{$res} = {"angles"=>\@allAngles,"functions"=>\@allAnglesFunct};
 	}
 
+}
+
+sub checkenergygroups
+{
+	my $string="Since there is no reason to partially define interactions, this is probably a mistake.";
+	foreach my $II (sort keys %{$interactions->{"dihedrals"}}){
+		if(! exists $EGinBif{$II}){
+			smog_quit("energyGroup $II defined in .b file, but is not used in .bif file. $string")
+		}
+		if(! exists $EGinSif{$II}){
+			smog_quit("energyGroup $II defined in .b file, but is not used in .sif file. $string")
+		}
+	}
+
+	foreach my $II (sort keys %EGinBif){
+		if(! exists $$interactions->{"dihedrals"}->{$II}){
+			smog_quit("energyGroup $II defined in .bif file, but is not used in .b file. $string")
+		}
+		if(! exists $EGinSif{$II}){
+			smog_quit("energyGroup $II defined in .bif file, but is not used in .sif file. $string")
+		}
+	}
+
+	foreach my $II (sort keys %EGinSif){
+		if(! exists $$interactions->{"dihedrals"}->{$II}){
+			smog_quit("energyGroup $II defined in .sif file, but is not used in .b file. $string")
+		}
+		if(! exists $EGinBif{$II}){
+			smog_quit("energyGroup $II defined in .sif file, but is not used in .bif file. $string")
+		}
+	}
 }
 
 1;
