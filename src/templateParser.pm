@@ -1251,7 +1251,7 @@ sub createDihedralAngleFunctionals {
 
 sub checkenergygroups
 {
-	my $string="Since there is no reason to partially define interactions, this is probably a mistake.";
+	my $string="Since dihedrals energy groups must be defined in the .bif (residue->bonds), .sif (energyGroup) and .b (bonds) files, in order for the interaction to be applied, this partial declaration of an energy group is probably unintentional.";
 	foreach my $II (sort keys %{$interactions->{"dihedrals"}}){
 		if(! exists $EGinBif{$II}){
 			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string")

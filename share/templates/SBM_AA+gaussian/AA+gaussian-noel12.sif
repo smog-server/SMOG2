@@ -6,12 +6,8 @@
 	<function name="bond_harmonic" directive="bonds"/>
     	<function name="bond_type6" directive="bonds"/>
 	<function name="angle_harmonic" directive="angles"/>
-	<function name="angle_free" directive="angles"/>
 	<function name="dihedral_cosine" directive="dihedrals"/>
 	<function name="dihedral_harmonic" directive="dihedrals"/>
-	<function name="dihedral_free" directive="dihedrals"/>
-    	<function name="contact_1" directive="pairs" exclusions="1"/>
-    	<function name="contact_2" directive="pairs" exclusions="1"/>
     	<function name="contact_gaussian" directive="pairs" exclusions="1"/>
 </functions>
 
@@ -25,8 +21,6 @@
 	<energyGroup name="sc_n" residueType="nucleic" intraRelativeStrength="1.0" normalize="1"/>
 	<!-- Not-Normalized -->
 	<energyGroup name="pr_n" residueType="nucleic" normalize="0"/>
-	<energyGroup name="ip_n" residueType="nucleic" normalize="0"/>
-	<energyGroup name="r_n"  residueType="nucleic" normalize="0"/>
 
 	<!-- AMINO ENERGY GROUPS --> 
 	<!-- Normalized -->
@@ -34,9 +28,7 @@
 	<energyGroup name="sc_a" residueType="amino" intraRelativeStrength="0.5" normalize="1"/>
 	<!-- Not-Normalized -->
 	<energyGroup name="pr_a" residueType="amino" normalize="0"/>
-	<energyGroup name="ip_a" residueType="amino" normalize="0"/>
 	<energyGroup name="r_a"  residueType="amino" normalize="0"/>
-	<energyGroup name="free"  residueType="amino" normalize="0"/>
 
     	<!-- LIGAND ENERGY GROUP -->
     	<energyGroup residueType="ligand" name="lig" normalize="0"/>

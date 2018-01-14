@@ -39,18 +39,6 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="dihedral_harmonic(?,10)" energyGroup="r_n">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
-	<dihedral func="dihedral_free()" energyGroup="free">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</dihedral>
 
 	<!-- AMINO DIHEDRALS -->
 	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="bb_a">

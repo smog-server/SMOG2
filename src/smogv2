@@ -1508,7 +1508,7 @@ sub parseTemplatesAndPDB
 	parseNonBonds();
     	print "\nDone parsing templates.\n";
 
-    	print "\nCross-checking energy group usage for consistency.\n";
+    	print "\nCross-checking energy group definitions for consistency.\n";
 	checkenergygroups();
 
 	## Find Bonds ##
