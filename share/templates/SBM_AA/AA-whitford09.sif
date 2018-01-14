@@ -26,8 +26,6 @@
 	<energyGroup name="sc_n" residueType="nucleic" intraRelativeStrength="1" normalize="1"/>
 	<!-- Not-Normalized -->
 	<energyGroup name="pr_n" residueType="nucleic" normalize="0"/>
-	<energyGroup name="ip_n" residueType="nucleic" normalize="0"/>
-	<energyGroup name="r_n"  residueType="nucleic" normalize="0"/>
 
 	<!-- AMINO ENERGY GROUPS --> 
 	<!-- Normalized -->
@@ -35,9 +33,7 @@
 	<energyGroup name="sc_a" residueType="amino" intraRelativeStrength="0.5" normalize="1"/>
 	<!-- Not-Normalized -->
 	<energyGroup name="pr_a" residueType="amino" normalize="0"/>
-	<energyGroup name="ip_a" residueType="amino" normalize="0"/>
 	<energyGroup name="r_a"  residueType="amino" normalize="0"/>
-	<energyGroup name="free"  residueType="amino" normalize="0"/>
 
     	<!-- LIGAND ENERGY GROUP -->
     	<energyGroup residueType="ligand" name="lig" normalize="0"/>
