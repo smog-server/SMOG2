@@ -27,12 +27,9 @@
 <Contacts method="shadow" contactDistance="6" shadowRadius="1" shadowRadiusBonded="0.5">
 </Contacts>
 
-
 <bondsThreshold shortBond="0.08" longBond="0.5"/>
 <anglesThreshold smallAngles="30" largeAngles="150"/>
 <contactsThreshold shortContacts="0.2"/> 
-<distanceThreshold tooShortDistance="0.1"/> 
-
 
 </settings>
 </sif>

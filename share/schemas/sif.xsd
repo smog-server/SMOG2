@@ -97,7 +97,7 @@
 
 <!-- distanceThreshold -->
 <xs:complexType name="distanceThresholdType">
-    <xs:attribute name="tooShortDistance" type="xs:decimal" use="required"/>
+    <xs:attribute name="tooShortDistance" type="xs:decimal" use="optional"/>
 </xs:complexType>
 
 <!-- SETTINGS TYPE -->
@@ -105,9 +105,9 @@
     <xs:sequence>
     <xs:element name="Groups" type="groupsType"/>
     <xs:element name="Contacts" type="contactsType"/>
-    <xs:element name="bondsThreshold" type="bondsThresholdType"/>
-    <xs:element name="anglesThreshold" type="anglesThresholdType"/>
-    <xs:element name="contactsThreshold" type="contactsThresholdType"/>
+    <xs:element name="bondsThreshold" type="bondsThresholdType" minOccurs="0" maxOccurs="1"/>
+    <xs:element name="anglesThreshold" type="anglesThresholdType" minOccurs="0" maxOccurs="1"/>
+    <xs:element name="contactsThreshold" type="contactsThresholdType" minOccurs="0" maxOccurs="1"/>
     <xs:element name="distanceThreshold" type="distanceThresholdType" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
 </xs:complexType>

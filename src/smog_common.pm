@@ -8,7 +8,7 @@ use Exporter;
 our $maxwarn;
 our $warncount;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile);
 our %supported_directives;
 
 #####################
@@ -25,15 +25,15 @@ sub smog_quit
 {
 	my ($LINE)=@_;
 		$warncount++;
-	if($maxwarn > $warncount || $maxwarn ==-1){
-		warn("\nWARNING $warncount : $LINE\n");
-	}elsif($maxwarn == $warncount && $maxwarn>0){
-		print "\nWARNING $warncount : $LINE\n";
-		warn("\n\nFATAL: REACHED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
-		exit;
+	if($maxwarn >= $warncount || $maxwarn ==-1){
+		warn("\nWARNING $warncount : $LINE\n\n");
+	}elsif($maxwarn < $warncount && $maxwarn>0){
+		print "\nWARNING $warncount : $LINE\n\n";
+		warn("\n\nFATAL: EXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
+		exit(1);
 	}else{
 		print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error with the -warn flag.\nHowever, it is not recommended that output obtained with this flag be used for an actual simulation.\n";
-		exit;
+		exit(1);
 	}
 }
 
@@ -75,7 +75,7 @@ sub checkForModules {
 	}
 	$checkPackage=`which java | wc -l | awk '{print \$1}'`;
 	if($checkPackage < 1) { print "Java might not be installed. This package assumes Java 1.7 or greater is in the path as 'java'.\n"; $sum++;}
-	if($sum > 0) { print "Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG 2 manual.\n"; exit(1); }
+	if($sum > 0) { smog_quit("Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG 2 manual."); }
 }
 
 ##################
@@ -95,7 +95,9 @@ sub checkcomment
 	$LINE =~ s/\t/ /g; 
 	$LINE =~ s/^\s+|\s+$//g;
 	$LINE =~ s/ +/ /g;
-	if( $LINE =~ m/[#!\^\$]/ ){
+	if( $LINE =~ m/^#/ ){
+		print "preprocessing line found in .top file\n";
+	}elsif( $LINE =~ m/[#!\^\$]/ ){
 		smog_quit("Special characters not recognized\n  Offending line: $LINE\n");
 	}
 	return ($LINE,$comment);
@@ -137,10 +139,11 @@ sub loadfile
 
 sub checkdirectives
 {
-my ($string) = @_;
-# process the top file and check that only supported directives are included.
+	print "Preparing top data\n";
+	my ($string) = @_;
+# split the top file and check that only supported directives are included.
 	my %DIRLIST;
-	my @DATA=split(/\[/,$string);
+	my @DATA=split(/\n\s+\[|\n\[|^\s+\[|^\[/,$string);
 	for (my $I=1;$I<=$#DATA;$I++){
 		my $string1 = $DATA[$I];
 		open my($fh), "<", \$string1 or smog_quit("internal error 1") ; # reading from the data in $string
@@ -178,6 +181,73 @@ my ($string) = @_;
 	}
 
 	return (\@DATA,\%DIRLIST);
+}
+
+sub checkforinclude
+{
+	my ($line,$data,$handle)=@_;
+	if($data =~ m/^#/){
+		print "will copy preprocessor line directly to new top.\n$line\n\n";
+		print $handle "$line\n";
+		return 1;
+	}
+	return 0;
+}
+
+sub readindexfile
+{
+	my ($indexFile)=@_;
+	my $groupname;
+	my @grpnms;
+	my %groupnames;
+	my $Ngrps;
+	my %atomgroup;
+	open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
+	print "Reading index file $indexFile\n";
+	while(<ATOMLIST>){
+		my $LINEt=$_;
+		chomp($LINEt);
+		# remove comments first
+	        my ($LINE,$comment)=checkcomment($LINEt);
+		# in case we have a group directive w/o spaces
+		$LINE =~ s/\[/\[ /g;
+		$LINE =~ s/\]/ \]/g;
+		$LINE =~ s/^\s+|\s+$//g;
+		$LINE =~ s/\s+|\t+/ /g;
+		my @A=split(/\s+/,$LINE);
+		if($#A == -1){
+			# blank line
+			next;
+		}
+		if($A[0] eq "[" and $A[2] eq "]"){
+			# must be a new group
+			$groupname=$A[1];
+			$grpnms[$Ngrps]=$groupname;
+			if(exists $A[3]){
+				smog_quit("Group name declarations must not have trailing characters.  $A[3] appears after $A[0] $A[1] $A[2]\n;")	
+			}
+			if(exists $groupnames{$groupname}){
+				smog_quit("Group name $groupname declared more than once.");
+			}
+			$groupnames{$groupname}=$Ngrps;
+			$Ngrps++;
+	
+			next; # this is a new group, so go to next line.
+		}
+	
+		for(my $I=0;$I<=$#A;$I++){
+			unless($A[$I] =~ m/^\d+$/){
+				smog_quit("Non-numerical value for atom number in index file: $A[$I]");
+			}
+			if(exists $atomgroup{$groupname}{$A[$I]}){
+				smog_quit("Duplicate atom $A[$I] in group $groupname");
+			}else{
+				$atomgroup{$groupname}{$A[$I]}=1;
+			}
+		}
+	}
+	close(ATOMLIST);
+	return ($Ngrps,\@grpnms,\%groupnames,\%atomgroup);
 }
 
 1;

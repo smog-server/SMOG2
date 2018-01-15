@@ -48,7 +48,7 @@ EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
   }else{
-   exit;
+   exit(1);
   }
 }
 
@@ -60,11 +60,11 @@ my $outputgro="extracted.gro";
 my $outputmap="atomindex.map";
 my $help;
 my $gen_restraints="null";
-# in supported_directives, a value of 1 means is it required, 0 is not supported
+# in supported_directives, a value of 1 means is it required, 0 is not supported. >1 means optional
 our %supported_directives = ( 'defaults' => '1',
         'atomtypes' => '1',
         'moleculetype' => '1',
-        'nonbond_params' => '0',
+        'nonbond_params' => '2',
         'atoms' => '1',
         'bonds' => '1',
         'angles' => '1',
@@ -145,64 +145,21 @@ open(MAPPING,">$outputmap") or smog_quit("Can\'t open $outputmap.");
 print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
 
 ### read in the list of atoms that we want to keep
-my %atomgroup;
-my $Ngrps=0;
-my $extgrp;
-my @grpnms;
-my %groupnames;
 my $groupname;
+my $extgrp;
 
+my ($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
 
-open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
-print "Reading index file $indexFile\n";
-while(<ATOMLIST>){
-	my $LINEt=$_;
-	chomp($LINEt);
-	# remove comments first
-        my ($LINE,$comment)=checkcomment($LINEt);
-	# in case we have a group directive w/o spaces
-	$LINE =~ s/\[/\[ /g;
-	$LINE =~ s/\]/ \]/g;
-	$LINE =~ s/^\s+|\s+$//g;
-	$LINE =~ s/\s+|\t+/ /g;
-	my @A=split(/ /,$LINE);
-	if($#A == -1){
-		# blank line
-		next;
-	}
-	if($A[0] eq "[" and $A[2] eq "]"){
-		# must be a new group
-		$groupname=$A[1];
-		$grpnms[$Ngrps]=$groupname;
-		if(exists $A[3]){
-			smog_quit("Group name declarations must not have trailing characters.  $A[3] appears after $A[0] $A[1] $A[2]\n;")	
-		}
-		if(exists $groupnames{$groupname}){
-			smog_quit("Group name $groupname declared more than once.");
-		}
-		$groupnames{$groupname}=$Ngrps;
-		$Ngrps++;
+my @grpnms=@{$grpnms};
+my %groupnames=%{$groupnames};
+my %atomgroup=%{$atomgroup};
 
-		next; # this is a new group, so go to next line.
-	}
-
-	for(my $I=0;$I<=$#A;$I++){
-		unless($A[$I] =~ m/^\d+$/){
-			smog_quit("Non-numerical value for atom number in index file: $A[$I]");
-		}
-		if(exists $atomgroup{$A[$I]}){
-			smog_quit("Duplicate atom in index file: Atom $A[$I] already defined in group $atomgroup{$A[$I]}");
-		}else{
-			$atomgroup{$A[$I]}=$groupname;
-		}
-	}
-}
 
 if($Ngrps==0){
 	smog_quit("no atom groups given in ndx file.");
 
 }elsif($Ngrps>1){
-	print "Select the index of the group you would like to rescale?\n";
+	print "Select the index of the group you would like to extract?\n";
 	print "index\t:\tgroup name\n";
 	for(my $I=0;$I<$Ngrps;$I++){
 		print "$I\t:\t$grpnms[$I]\n";
@@ -221,26 +178,15 @@ if($Ngrps==0){
 	$extgrp=$grpnms[0];	
 }
 
-close(ATOMLIST);
 
 my @A;
-my $N=0;
-for my $atom ( sort {$a<=>$b} keys %atomgroup) {
-	if($atomgroup{$atom} eq $extgrp){
-		$A[$N]=$atom;
-		$N++;
-	}
+for my $atom ( sort {$a<=>$b} keys %{$atomgroup{$extgrp}} ) {
+	$KEEPN++;
+	$keepatoms2[$KEEPN-1]=$atom;
+	$keepatoms{$atom}=$KEEPN;
+	print MAPPING "$KEEPN $atom\n";
 }
 
-for(my $I=0;$I<=$#A;$I++){
-	$keepatoms{$A[$I]}=$KEEPN+1;
-	$keepatoms2[$KEEPN]=$A[$I];
-	if($KEEPN > 0 && $keepatoms2[$KEEPN] < $keepatoms2[$KEEPN-1]){
-		smog_quit("Atoms listed in $indexFile are not in ascending order.\n");
-	}
-	$KEEPN++;
-	print MAPPING "$KEEPN $A[$I]\n";
-}
 
 ### extract the atoms and make a new gro file 
 
@@ -258,6 +204,9 @@ my $NATOMS=$A[0];
 my @GRODATA;
 unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
 
+print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted system...\n\n";
+
+print "Processing gro file\n";
 for(my $I=0;$I<$NATOMS;$I++){
 	# store gro data
 	my $LINE=<GROFILE>;
@@ -279,17 +228,17 @@ for(my $I=0;$I<$KEEPN;$I++){
 }
 print GROFILE "$grodim\n";
 
-print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted system...\n\n";
 
 my %atoms2restrain;
 #read in the top file
+print "Reading in top file\n";
 my $string=loadfile($inputTOP);
 
 my ($DATA,$DIRLIST)=checkdirectives($string);
 my %DIRLIST=%{$DIRLIST};
 my @DATA=@{$DATA};
 
-
+print "Writing new top file\n";
 # Go through the directives, in order, and write out information for the subsystem
 open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing.");
 #copy header
@@ -303,6 +252,7 @@ print TOPOUT "[ defaults ]\n";
 my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
 for(my $JJ=1;$JJ<=$#C;$JJ++){
 	my ($A, $B)=checkcomment($C[$JJ]);
+	if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
 	if($A eq ""){
 		print TOPOUT "$B\n";
 		next;
@@ -319,24 +269,43 @@ for(my $JJ=1;$JJ<=$#C;$JJ++){
 		}
 	}
 }
+my $types=gettypes(\@DATA,\%DIRLIST,\%keepatoms);
+my %typesinsystem=%{$types};
 
 # start with atomtypes
 @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
-# keep all the atomtypes, even though some may not be used in the new system.	
 print TOPOUT "[ atomtypes ]\n";
 for(my $II=1;$II<=$#C;$II++){
-	print TOPOUT "$C[$II]\n";
+	my ($A, $B)=checkcomment($C[$II]);
+	if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
+	if($A eq ""){
+		print TOPOUT "$C[$II]\n";
+	}else{
+		my @D=split(/\s+/,$A);
+		if(exists $typesinsystem{$D[0]}){
+			print TOPOUT "$C[$II]\n";
+		}
+	}
 }
 print TOPOUT "\n";
 
 
 # start with nonbond_params
 if(exists $DIRLIST{"nonbond_params"}){
-	my @C= split(/\n/,$DATA[$DIRLIST{"nonbond_params"}]);
-	# keep all the atomtypes, even though some may not be used in the new system.	
+	@C= split(/\n/,$DATA[$DIRLIST{"nonbond_params"}]);
 	print TOPOUT "[ nonbond_params ]\n";
 	for(my $II=1;$II<=$#C;$II++){
-		print TOPOUT "$C[$II]\n";
+		my ($A, $B)=checkcomment($C[$II]);
+		if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
+		print "$A\n";
+		if($A eq ""){
+			print TOPOUT "$C[$II]\n";
+		}else{
+			my @D=split(/\s+/,$A);
+			if(exists $typesinsystem{$D[0]} && exists $typesinsystem{$D[1]}){
+				print TOPOUT "$C[$II]\n";
+			}
+		}
 	}
 	print TOPOUT "\n";
 }
@@ -346,6 +315,8 @@ print TOPOUT "[ moleculetype ]\n";
 @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
 
 for(my $JJ=1;$JJ<=$#C;$JJ++){
+	my ($A, $B)=checkcomment($C[$JJ]);
+	if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
 	print TOPOUT "$C[$JJ]\n";
 }
 print TOPOUT "\n";
@@ -356,6 +327,8 @@ print TOPOUT "[ atoms ]\n";
 
 for(my $I=1;$I<=$#C;$I++){
 	my ($A, $B)=checkcomment($C[$I]);
+	if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
 	if($A eq ""){
 		print TOPOUT "$B\n";
 		next;
@@ -388,6 +361,8 @@ if(exists $DIRLIST{"bonds"}){
 	print TOPOUT "[ bonds ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;
@@ -423,6 +398,8 @@ if(exists $DIRLIST{"angles"}){
 	print TOPOUT "[ angles ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;
@@ -463,6 +440,8 @@ if(exists $DIRLIST{"dihedrals"}){
 
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;
@@ -497,6 +476,8 @@ if(exists $DIRLIST{"pairs"}){
 
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;
@@ -533,6 +514,8 @@ if(exists $DIRLIST{"exclusions"}){
 	print TOPOUT "[ exclusions ]\n";
 	for(my $I=1;$I<=$#C;$I++){
 		my ($A, $B)=checkcomment($C[$I]);
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
 		if($A eq ""){
 			print TOPOUT "$B\n";
 			next;
@@ -576,8 +559,31 @@ for(my $II=1;$II<=$#C;$II++){
 	print TOPOUT "$C[$II]\n";
 }
 print TOPOUT "\n";
-
+close(MAPPING);
+close(TOPOUT);
 warnsummary();
 
 print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
+exit(0);
 
+
+sub gettypes
+{
+	my ($DATA,$DIRLIST,$keepatoms)=@_;
+	my @DATA=@{$DATA};
+	my %DIRLIST=%{$DIRLIST};
+	my %keepatoms=%{$keepatoms};
+	my %types;
+	my @C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
+	
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if($A =~ m/^#/ || $A eq ""){next;};
+		my @D=split(/ /,$A);
+		my $NUM=$D[0];
+		if(exists $keepatoms{$NUM}){
+			$types{$D[1]}=1;
+		}
+	}
+	return \%types;
+}

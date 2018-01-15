@@ -41,7 +41,7 @@ use smog_common;
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent);
+qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -98,7 +98,8 @@ our $nbondxml = "nb.xml";
 our %Btypespresent;
 our %NBtypespresent;
 our %PAIRtypespresent;
-	
+our %EGinBif;	
+our %EGinSif;	
 
 
 ###########################
@@ -273,7 +274,7 @@ sub parseBif {
 		}
 		undef %seenIMP;
 		## CREATE BOND HASH ##
-		my %bonds; my %energyGroups; my %rigidGroups;
+		my %bonds; my %energyGroups; 
 		my @bondHandle;
 		# Obtain handle to loop through bonds
 		if(exists $residueHandle->{$res}->{"bonds"})
@@ -288,17 +289,10 @@ sub parseBif {
 			}
 			$bonds{"$atomA-$atomB"} = $bond;
 			
-			## If bond is a flexible dihedral
-			if(exists $bond->{"energyGroup"}){
-				$energyGroups{"$atomA-$atomB"} = $bond->{"energyGroup"};
-				$energyGroups{"$atomB-$atomA"} = $bond->{"energyGroup"};
-			}
-			
-			## If bond is rigid dihedral
-			else{
-				$rigidGroups{"$atomA-$atomB"} = $bond->{"rigidGroup"};
-				$rigidGroups{"$atomB-$atomA"} = $bond->{"rigidGroup"};
-			}
+			$energyGroups{"$atomA-$atomB"} = $bond->{"energyGroup"};
+			$energyGroups{"$atomB-$atomA"} = $bond->{"energyGroup"};
+			# log what energyGroups have been used in .bif
+			$EGinBif{$bond->{"energyGroup"}}=1;	
 		}
 		
 		##atomCount !exists == -1, else atomCount
@@ -313,7 +307,6 @@ sub parseBif {
 		      "impropers" => \@impropers,
 		      "bonds" => \%bonds,
 		      "energyGroups" => \%energyGroups,
-		      "rigidGroups" => \%rigidGroups,
 		      "atomCount" => $residueHandle->{$res}->{"atomCount"},
 		      "connect" => $residueHandle->{$res}->{"connect"}
 		      };
@@ -338,6 +331,9 @@ sub parseBif {
 			smog_quit ("Duplicate assignment of connections between residueTypes $resA and $resB");
 		}
 		$connections{$resA}->{$resB}=$conHandle->{$connname};
+		foreach my $II(@{$conHandle->{$connname}->{"bond"}}){
+			$EGinBif{$II->{"energyGroup"}}=1;
+		} 
 	}
 }
 
@@ -388,6 +384,7 @@ sub parseSif {
 	my $EG_NORM=0;
 	foreach my $egName(keys %{$energyGroups})
 	{
+		$EGinSif{$egName}=1;
 		$residueType = $energyGroups->{$egName}->{"residueType"};
 		$intraRelativeStrength = $energyGroups->{$egName}->{"intraRelativeStrength"};
 		$normalize = $energyGroups->{$egName}->{"normalize"};
@@ -529,11 +526,17 @@ sub parseSif {
 	$interactionThreshold->{"angles"}={"smallAngles"=>$anglesThreshold->{"smallAngles"},"largeAngles"=>$anglesThreshold->{"largeAngles"}};
 	$interactionThreshold->{"contacts"}={"shortContacts"=>$contactsThreshold->{"shortContacts"}};
 	$interactionThreshold->{"distance"}={"tooShortDistance"=>$distanceThreshold->{"tooShortDistance"}};
-}
 
-## [bonds] ai aj fType r0 Kb
-## [dihedrals] ai aj ak al fType phi0 Kd mult
-## [angles] ai aj ak fType th0 Ka
+
+# depricated options.  We have left them in the schemas so that the error that would be thrown when using an old template will not be cryptic.  However, the entries are optional 
+	if( $interactionThreshold->{"distance"}->{"tooShortDistance"} )
+	{
+		smog_quit("tooShortDistance found in .sif file. The use of tooShortDistance has been replaced with bondsThreshold. Please remove tooShortDistance from your .sif");
+	} 
+
+
+
+}
 
 sub funcToInt
 {
@@ -612,8 +615,6 @@ sub getEnergyGroup
 		$atoma =~ s/\?//;$atomb =~ s/\?//;
 		if(exists $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"})
 			{return $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"};}
-		elsif(exists $residues{$residueIn}->{"rigidGroups"}->{"$atoma-$atomb"})
-			{return $residues{$residueIn}->{"rigidGroups"}->{"$atoma-$atomb"};}
 		else{smog_quit("A specified energy group for $residuea:$atoma, $residueb:$atomb doesn't exists");}
 	}
  	## If Bond is between two residues ##
@@ -690,9 +691,9 @@ sub parseBonds {
 		my $func = $inter->{"func"};
 		my $eG;
 		if(exists $inter->{"energyGroup"})
-			{$eG = $inter->{"energyGroup"};}
-		else
-			{$eG = $inter->{"rigidGroup"};}
+		{	
+			$eG = $inter->{"energyGroup"};
+		}
 		
 		my $keyString = "$typeA-$typeB-$typeC-$typeD";
 		if(exists $interactions->{"dihedrals"}->{$eG}->{$keyString}){
@@ -711,7 +712,8 @@ sub parseBonds {
 		$eGRevTable{$eG} = $counter;
 		$counter++;
 	}
-	
+
+		
 	## Obtain improper handle
 	@interHandle = @{$data->{"impropers"}->[0]->{"improper"}};
 	
@@ -1240,6 +1242,41 @@ sub createDihedralAngleFunctionals {
 		$angleFunctionals{$res} = {"angles"=>\@allAngles,"functions"=>\@allAnglesFunct};
 	}
 
+}
+
+sub checkenergygroups
+{
+	my $string="Since dihedrals energy groups must be defined in the .bif (residue->bonds), .sif (energyGroup) and .b (bonds) files, in order for the interaction to be applied, this partial declaration of an energy group is probably unintentional.";
+	foreach my $II (sort keys %{$interactions->{"dihedrals"}}){
+		if(! exists $EGinBif{$II}){
+			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string")
+		}
+		if(! exists $EGinSif{$II}){
+			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .sif file. $string")
+		}
+	}
+
+	foreach my $II (sort keys %EGinBif){
+		if(! exists $interactions->{"dihedrals"}->{$II}){
+			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .b file. $string")
+		}
+		if(! exists $EGinSif{$II}){
+			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .sif file. $string")
+		}
+	}
+
+	foreach my $II (sort keys %EGinSif){
+		if(! exists $interactions->{"dihedrals"}->{$II}){
+			smog_quit("energyGroup \"$II\" defined in .sif file, but is not used in .b file. $string")
+		}
+		if(! exists $EGinBif{$II}){
+			smog_quit("energyGroup \"$II\: defined in .sif file, but is not used in .bif file. $string")
+		}
+	}
+
+# clear the hashes, in case we need them later.
+	undef %EGinBif;
+	undef %EGinSif;
 }
 
 1;
