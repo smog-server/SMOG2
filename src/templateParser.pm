@@ -528,8 +528,7 @@ sub parseSif {
 	$interactionThreshold->{"distance"}={"tooShortDistance"=>$distanceThreshold->{"tooShortDistance"}};
 
 
-# depricated options.  We have left them in the schemas so that the error that would be thrown when using an old template will not be cryptic.  However, the entries are optional, and they flag 
-#
+# depricated options.  We have left them in the schemas so that the error that would be thrown when using an old template will not be cryptic.  However, the entries are optional 
 	if( $interactionThreshold->{"distance"}->{"tooShortDistance"} )
 	{
 		smog_quit("tooShortDistance found in .sif file. The use of tooShortDistance has been replaced with bondsThreshold. Please remove tooShortDistance from your .sif");
@@ -538,10 +537,6 @@ sub parseSif {
 
 
 }
-
-## [bonds] ai aj fType r0 Kb
-## [dihedrals] ai aj ak al fType phi0 Kd mult
-## [angles] ai aj ak fType th0 Ka
 
 sub funcToInt
 {

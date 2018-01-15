@@ -506,7 +506,7 @@ sub printOrderedDihedrals
 }
 
 ##
-# Setup the calculate of bond angles of all combined residues,
+# Setup the calculation of dihedral angles of all combined residues,
 sub CalculateDihedrals
 {
 	my($diheFunctHandle,$whichPDL,$diheCache) = @_;
@@ -1017,7 +1017,6 @@ sub contactFuncParser
 	my($contactFunc) = @_;
 	my $fType;my @paramArr;my $directive;my $addExclusions;
 	my $funcName = ""; my $params = "";
- 	#($contactFunc =~ m/(.*)\((.*)\)/);
  	($contactFunc =~ /^([^(]+)\((.*)\)$/);
  	$funcName = $1;
 	$params = $2;
@@ -1025,7 +1024,6 @@ sub contactFuncParser
 	if($directive ne "pairs" && $directive ne "bonds"){smog_quit ("$funcName is a contact type function and should only go into pairs or bonds directives");}
  	@paramArr = split(",",$params); ## Parse all parameters
  	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
-	#if($funcName eq "bond_type6") { print @paramArr;}
 	return ($fType,$funcName,$directive,$addExclusions,@paramArr);
 }
 
