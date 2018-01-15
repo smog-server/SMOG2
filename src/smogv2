@@ -65,6 +65,8 @@ my $AAdefault = 0;
 my $CAdefault = 0;
 my $AAGdefault = 0; 
 my $CAGdefault = 0;
+our %freebonds;
+our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
 our $setContacttoLimit=0;
@@ -222,8 +224,6 @@ sub printOrderedBonds
 }
 
 
-##
-# calculate bond angle of a specific residue  PDL
 sub calculateBondsHelper1
 {
 	my($bondHash,$inputPDL,$bondCache) = @_;
@@ -239,7 +239,12 @@ sub calculateBondsHelper1
 	       my @indexList2 = slice($inputPDL,"3:3,$atomTwo,:")->flat()->list();
 	       for(my $i=0;$i<scalar(@bondList);$i++)
 	       {
-	 		push @{$bondCache}, {'i' => $indexList1[$i],'j' => $indexList2[$i], 'v' => bondOutput($bondFunc->[$bondIndex],$indexList1[$i],$indexList2[$i],$bondList[$i])};
+			my $I1=$indexList1[$i];
+			my $I2=$indexList2[$i];
+			my $val=bondOutput($bondFunc->[$bondIndex],$I1,$I2,$bondList[$i]);
+			if(!$val){next;}
+			# i,j are meta data
+	 		push @{$bondCache}, {'i' => $I1,'j' => $I2, 'v' => $val};
 		}
 	       	$bondIndex++;
 	
@@ -284,7 +289,9 @@ sub calculateBondsHelper2
 		my $output = sclr(sqrt(inner($outer,$outer))*$angToNano);
 		$atomOne = sclr(slice($inputPDL,"3:3,$atomOne,:"));
 		$atomTwo = sclr(slice($inputPDL,"3:3,$atomTwo,:"));
-		push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output)};
+		my $val=bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output);
+		if(!$val){next;}
+		push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => $val};
 	}
 }
 
@@ -313,36 +320,39 @@ sub bondOutput
 			if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## native option used
 	        
 	        ## Check bonds threshold ##
-	        if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
-	        || $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
-			my $DIST=int($paramArr[0]*100)/100.0;
-			if($setBondtoLimit){
-				print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.\n\n");
-				print "-limitbondlength is being used, will set length to ";
-			 	if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
-			  		$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
-			  		print "$paramArr[0] nm\n\n";
-			 	}elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
-			  		$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
-			  		print "$paramArr[0] nm\n\n";
-			 	}
-			}else{
-				smog_quit("Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.
+	        	if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
+	        	|| $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
+				my $DIST=int($paramArr[0]*100)/100.0;
+				if($setBondtoLimit){
+					print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.\n\n");
+					print "-limitbondlength is being used, will set length to ";
+		 			if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
+		  				$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
+		  				print "$paramArr[0] nm\n\n";
+		 			}elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
+		  				$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
+		  				print "$paramArr[0] nm\n\n";
+		 			}
+				}else{
+					smog_quit("Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.
 To help locate an output Gro index in the input PDB, the original chain and residue number for each Gro index is shown:\n
  GroIndex  PDB_Chain#  PDB_Residue#  
 ----------------------------
 ".$i."\t ".($allAtoms{$i}[4]+1)."\t ".$allAtoms{$i}[2]." 
 ".$j."\t ".($allAtoms{$j}[4]+1)."\t ".$allAtoms{$j}[2]);
-			}
-	        }
+				}
+	        	}	
 	       
 	## Format output <i j function p1 p2 ... pn>
-	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-	$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
-	$outputString = "$outputString$formattedString\n";
+			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
+			$outputString = "$outputString$formattedString\n";
+		}else{
+			$freebonds{"$i-$j"}=1;
+			$freebonds{"$j-$i"}=1;
+		}
 	}
-}
-return $outputString;
+	return $outputString;
 }
 
 ##
@@ -421,6 +431,7 @@ sub CalculateAnglesHelper
 		if($atomi1 > $atomi3) { my $temp = $atomi1; $atomi1 = $atomi3; $atomi3 = $temp; }
 		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos);
 		if(!$val) {next;}
+			# i,j,k are meta data
 	 	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => $val};
 	}
 }
@@ -441,29 +452,30 @@ sub angleOutput
 	my $formattedString="";
 	foreach my $fun(@funcs)
 	{
-	my $paramFormat="";
-	($fType,@paramArr) = angleFuncParser($fun);
-	if($fType != 0){
-		if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## non-native option used
+		my $paramFormat="";
+		($fType,@paramArr) = angleFuncParser($fun);
+		if($fType != 0 && !exists $freebonds{"$i-$j"} && !exists $freebonds{"$j-$i"} && !exists $freebonds{"$k-$j"} && !exists $freebonds{"$j-$k"}){
+			if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## non-native option used
 	
-		## Check angles threshold ##
-	 	if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
-			my $THETA=int($paramArr[0]*100)/100.0;
-			print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.\n");
-		}
-	 	if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
-			my $THETA=int($paramArr[0]*100)/100.0;
-			print("\n\nWARNING: ANGLE between atoms $i $j $k greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.\n");
-		}
+			## Check angles threshold ##
+	 		if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
+				my $THETA=int($paramArr[0]*100)/100.0;
+				print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.\n");
+			}
+	 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
+				my $THETA=int($paramArr[0]*100)/100.0;
+				print("\n\nWARNING: ANGLE between atoms $i $j $k greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.\n");
+			}
  		## Format output <i j k function p1 p2 ... pn>
- 		foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+ 			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 			$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
 			$outputString = "$outputString$formattedString\n";
+		}else{
+			$freeangles{"$i-$j-$k"}=1;
+			$freeangles{"$k-$j-$i"}=1;
 		}
 	}
-	if($fType != 0){
-		return $outputString; 
-	}
+	return $outputString; 
 }
 
 ##
@@ -557,6 +569,7 @@ sub CalculateDihedralsHelper
 			{
 				my $val = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG);
 				if(!$val) {next;}
+				# i,j,k,l are meta data
 				push @{$diheCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'l' => $atomi4, 'v' => $val};
 			}
 			## Improper dihedral
@@ -585,7 +598,7 @@ sub dihedralOutput
 		# since this is only used here, we may remove the call and sub in the code
 		($fType,@paramArr) = diheFuncParser($fun);
 	
-	 	if($fType !=0){
+	 	if($fType !=0 && !exists $freeangles{"$ai-$aj-$ak"} && !exists $freeangles{"$ak-$aj-$ai"} && !exists $freeangles{"$aj-$ak-$al"} && !exists $freeangles{"$al-$ak-$aj"}  ){
 			# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
 			if($paramArr[0] =~ /\?/){
 		         # replace ? with native angles
