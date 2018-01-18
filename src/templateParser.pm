@@ -168,7 +168,7 @@ sub checkPAIRnames
 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in contact definitions. pairType \"$name\" encountered");
 		}
 		if($name ne "*"  && !defined $PAIRtypespresent{$name}){	
-			smog_quit("nbType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.")
+			smog_quit("pairType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.")
 		}
 	}
 }
