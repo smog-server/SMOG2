@@ -173,6 +173,41 @@ sub checkPAIRnames
 	}
 }
 
+sub checkenergygroups
+{
+	my $string="Since dihedrals energy groups must be defined in the .bif (residue->bonds), .sif (energyGroup) and .b (bonds) files, in order for the interaction to be applied, this partial declaration of an energy group is probably unintentional.";
+	foreach my $II (sort keys %{$interactions->{"dihedrals"}}){
+		if(! exists $EGinBif{$II}){
+			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string")
+		}
+		if(! exists $EGinSif{$II}){
+			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .sif file. $string")
+		}
+	}
+
+	foreach my $II (sort keys %EGinBif){
+		if(! exists $interactions->{"dihedrals"}->{$II}){
+			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .b file. $string")
+		}
+		if(! exists $EGinSif{$II}){
+			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .sif file. $string")
+		}
+	}
+
+	foreach my $II (sort keys %EGinSif){
+		if(! exists $interactions->{"dihedrals"}->{$II}){
+			smog_quit("energyGroup \"$II\" defined in .sif file, but is not used in .b file. $string")
+		}
+		if(! exists $EGinBif{$II}){
+			smog_quit("energyGroup \"$II\: defined in .sif file, but is not used in .bif file. $string")
+		}
+	}
+
+# clear the hashes, in case we need them later.
+	undef %EGinBif;
+	undef %EGinSif;
+}
+
 
 
 ####################
@@ -1244,39 +1279,5 @@ sub createDihedralAngleFunctionals {
 
 }
 
-sub checkenergygroups
-{
-	my $string="Since dihedrals energy groups must be defined in the .bif (residue->bonds), .sif (energyGroup) and .b (bonds) files, in order for the interaction to be applied, this partial declaration of an energy group is probably unintentional.";
-	foreach my $II (sort keys %{$interactions->{"dihedrals"}}){
-		if(! exists $EGinBif{$II}){
-			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string")
-		}
-		if(! exists $EGinSif{$II}){
-			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .sif file. $string")
-		}
-	}
-
-	foreach my $II (sort keys %EGinBif){
-		if(! exists $interactions->{"dihedrals"}->{$II}){
-			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .b file. $string")
-		}
-		if(! exists $EGinSif{$II}){
-			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .sif file. $string")
-		}
-	}
-
-	foreach my $II (sort keys %EGinSif){
-		if(! exists $interactions->{"dihedrals"}->{$II}){
-			smog_quit("energyGroup \"$II\" defined in .sif file, but is not used in .b file. $string")
-		}
-		if(! exists $EGinBif{$II}){
-			smog_quit("energyGroup \"$II\: defined in .sif file, but is not used in .bif file. $string")
-		}
-	}
-
-# clear the hashes, in case we need them later.
-	undef %EGinBif;
-	undef %EGinSif;
-}
 
 1;
