@@ -1481,7 +1481,7 @@ sub parseCONTACT
 		{
 			($chain1,$contact1,$chain2,$contact2) = split(/\s+/,$line);
 			if(whatAmI($chain1) !=1 || whatAmI($contact1) !=1 ||whatAmI($chain2) !=1 ||whatAmI($contact2) !=1 ){
-				smog_quit("non-integer value given for chain, or atom, in contact file.")
+				smog_quit("non-integer value given for chain, or atom, in contact file.\n LINE: $line");
 			}
 			if($CGenabled == 1) {
 				#if we are coarse graining then we need to map AA to residue contacts
