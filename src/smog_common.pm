@@ -23,9 +23,9 @@ sub quit_init
 
 sub smog_quit
 {
-	my ($LINE)=@_;
+	my ($LINE,$warn)=@_;
 		$warncount++;
-	if($maxwarn >= $warncount || $maxwarn ==-1){
+	if($maxwarn >= $warncount || $maxwarn ==-1 || defined $warn){
 		warn("\nWARNING $warncount : $LINE\n\n");
 	}elsif($maxwarn < $warncount && $maxwarn>0){
 		print "\nWARNING $warncount : $LINE\n\n";

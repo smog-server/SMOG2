@@ -691,6 +691,7 @@ sub calculateContacts
 
 
 	## Sum all initial contact strengths ##	
+	my %conttypeseen;
 	for(my $i=0;$i<$numCon;$i++)
 	{
 		my $normalize;
@@ -701,7 +702,7 @@ sub calculateContacts
 		$resTypea = $atomTypes->{$atoma}->[1];
 		$resTypeb = $atomTypes->{$atomb}->[1];
 		($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
-		
+		$conttypeseen{$funct}=1;
 		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");}
 		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 		if(!$normalize){next;}		
@@ -712,7 +713,9 @@ sub calculateContacts
 			$count+=$contactIntraScale;
 		}
 	}
-
+	if(scalar keys %conttypeseen >1){
+		smog_quit("More than one type of contact being used at the same time. Not all combinations of contacts are supported by Gromacs.",1);
+ 	}
 	## Adjust ratio ##
 	for(my $i=0;$i<$numCon;$i++){
 		my $contactLeftOver;my $diheTotal; my $normalize;
@@ -1598,7 +1601,7 @@ sub appendContacts {
 	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
-	print "Completing final details...";
+	print "Completing final details...\n";
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
 	#print defaults
