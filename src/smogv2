@@ -1064,13 +1064,16 @@ sub calculateAtomTypes
 	{
 		$nbtype = $uniqueHandle->{$atoms}->[0];
   		if(!$uniqueHandle->{$atoms}->[0])
-        {
-          smog_quit("Atom $atoms has no nbType");
-        }
-		my $tmptype=$nbtype;
-		foreach my $name(keys %{$interactions->{"nonbonds"}}){
-                        if($nbtype =~ /\Q$name\E/) {$tmptype=$name; last; }# exact match found
-                        if($name =~ /\Q*\E/) { $tmptype=$name; }# not exact match.  maybe use it, but keep looking
+        	{
+          		smog_quit("Atom $atoms has no nbType");
+        	}
+		my $tmptype;
+		if(exists $interactions->{"nonbonds"}->{$nbtype}){
+			$tmptype=$nbtype;
+		}elsif(exists $interactions->{"nonbonds"}->{"*"}){
+			$tmptype="*";
+		}else{
+			smog_quit("No matching nb parameters found for nbtype $nbtype");
 		}
 		if(exists $obtained{$nbtype}){next;}
 		$c6 = $interactions->{"nonbonds"}->{$tmptype}->{"c6"};
@@ -1078,9 +1081,6 @@ sub calculateAtomTypes
 		$ptype = $interactions->{"nonbonds"}->{$tmptype}->{"ptype"};
 		$mass = $interactions->{"nonbonds"}->{$tmptype}->{"mass"};
 		$charge = $interactions->{"nonbonds"}->{$tmptype}->{"charge"};
-
-		if(!$c6 || !$c12 || !$ptype || !$mass || !$charge)
-		{smog_quit("Nonbond params not set for nbType $tmptype");}
 		
 		$formattedString = sprintf(" %-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
 		addToTop("atomtypes",$formattedString."\n");
@@ -1126,17 +1126,14 @@ sub readAtoms
 			addToTop("atoms",sprintf("%6d %10s %6d %6s %6s %6d", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum));
 			if(defined $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}){
 				#if charge is defined for an atom in a  specific residue, then write it
-				addToTop("atoms",sprintf(" %9.6f\n", $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}));
+				addToTop("atoms",sprintf(" %9.6f", $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}));
 				# this residue has a charge on that atom, add that value to the total
 				$totalcharge += $residues{$resName}->{"atoms"}->{$atomName}->{"charge"};
 			}elsif(defined $interactions->{"nonbonds"}->{$atomType}->{"charge"}){
-				addToTop("atoms",sprintf("\n"));
 				# since there is not residue-specific charge assigned, use the atomtype value.
 				$totalcharge += $interactions->{"nonbonds"}->{$atomType}->{"charge"};
-			}else{
-				# charges are not defined for this atom, assume 0.
-				addToTop("atoms",sprintf("\n"));
 			}
+			addToTop("atoms",sprintf("\n"));
 		}
 	}
 	print "\nTotal charge of system: $totalcharge\n\n";
@@ -1528,7 +1525,9 @@ sub parseTemplatesAndPDB
 	checkNONBONDnames();
 	checkBONDnames();
 	checkPAIRnames();
+	checkREScharges();
 
+	print "\nPre-processing templates.\n";
 	## Find Bonds ##
 	createBondFunctionals();
 	## Find Angles ##

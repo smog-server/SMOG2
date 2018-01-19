@@ -41,7 +41,7 @@ use smog_common;
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames);
+qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -135,6 +135,48 @@ sub setInputFileName {
 }
 
 
+sub round
+{
+	my ($val)=@_;
+	my $round;
+	if($val<0){
+   		$round=int(abs($val)+0.5);
+		$round=$round*(-1);
+	}else{
+		$round=int($val+0.5);
+ 	}
+	return $round;	
+}
+sub checkREScharges
+{
+	foreach my $res(keys %residues){
+		my $charge=0;
+		foreach my $at(keys %{$residues{$res}->{"atoms"}}){
+			my $atomType = $residues{$res}->{"atoms"}->{$at}->{"nbType"};
+			if(defined $residues{$res}->{"atoms"}->{$at}->{"charge"}){
+				# explicit charge on specific atoms takes priority
+				$charge+=$residues{$res}->{"atoms"}->{$at}->{"charge"};
+			}elsif(exists $interactions->{"nonbonds"}->{$atomType}){
+				# charge added based on nbType
+				$charge+=$interactions->{"nonbonds"}->{$atomType}->{"charge"};
+			}
+		}
+		if(defined $residues{$res}->{"totalcharge"}){
+			my $tc=$residues{$res}->{"totalcharge"};
+			# check that total charge is the value expected
+			if(abs($charge-$tc)>0.001){
+				smog_quit("Residue $res has total charge of $charge, but totalcharge defined in .bif is $tc")
+			}
+		}else{
+			# check that charge is integer
+			if(abs($charge - round($charge)) >0.001){
+				my $t=round($charge);
+				smog_quit("Residue defined in .bif, $res, has non-integer total charge of $charge")
+			}
+		}
+	}
+}
+
 sub checkBONDnames
 {
 	foreach my $name(keys %bondtypesused){
@@ -142,7 +184,7 @@ sub checkBONDnames
 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in bond/angle/dihedral definitions. bType \"$name\" encountered");
 		}
 		if($name ne "*"  && !defined $Btypespresent{$name}){	
-			smog_quit("bType $name appears in .b file, but doesn't appear anywhere in .bif.  Likely a typo in your .b file.")
+			smog_quit("bType $name appears in .b file, but doesn't appear anywhere in .bif.  Likely a typo in your .b file.",1)
 		}
 	}
 }
@@ -154,7 +196,7 @@ sub checkNONBONDnames
 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in nobonded definitions. nbType \"$name\" encountered");
 		}
 		if($name ne "*"  && !defined $NBtypespresent{$name}){	
-			smog_quit("nbType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.")
+			smog_quit("nbType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.",1)
 		}
 	}
 }
@@ -166,7 +208,7 @@ sub checkPAIRnames
 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in contact definitions. pairType \"$name\" encountered");
 		}
 		if($name ne "*"  && !defined $PAIRtypespresent{$name}){	
-			smog_quit("pairType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.")
+			smog_quit("pairType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.",1)
 		}
 	}
 }
@@ -176,28 +218,28 @@ sub checkenergygroups
 	my $string="Since dihedrals energy groups must be defined in the .bif (residue->bonds), .sif (energyGroup) and .b (bonds) files, in order for the interaction to be applied, this partial declaration of an energy group is probably unintentional.";
 	foreach my $II (sort keys %{$interactions->{"dihedrals"}}){
 		if(! exists $EGinBif{$II}){
-			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string")
+			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string",1)
 		}
 		if(! exists $EGinSif{$II}){
-			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .sif file. $string")
+			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .sif file. $string",1)
 		}
 	}
 
 	foreach my $II (sort keys %EGinBif){
 		if(! exists $interactions->{"dihedrals"}->{$II}){
-			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .b file. $string")
+			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .b file. $string",1)
 		}
 		if(! exists $EGinSif{$II}){
-			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .sif file. $string")
+			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .sif file. $string",1)
 		}
 	}
 
 	foreach my $II (sort keys %EGinSif){
 		if(! exists $interactions->{"dihedrals"}->{$II}){
-			smog_quit("energyGroup \"$II\" defined in .sif file, but is not used in .b file. $string")
+			smog_quit("energyGroup \"$II\" defined in .sif file, but is not used in .b file. $string",1)
 		}
 		if(! exists $EGinBif{$II}){
-			smog_quit("energyGroup \"$II\: defined in .sif file, but is not used in .bif file. $string")
+			smog_quit("energyGroup \"$II\: defined in .sif file, but is not used in .bif file. $string",1)
 		}
 	}
 
@@ -231,7 +273,6 @@ sub parseBif {
 	## Loop through residues
 	foreach my $res ( keys %{$residueHandle} )
 	{
-		#if (exists $residues{}) {smog_quit("Error in .bif. Duplicate declaration of residue $res.");}
 		## CREATE ATOM HASH ##
 		my %atoms; my $index = 0;
 		# Obtain handle to loop through atoms
@@ -333,6 +374,7 @@ sub parseBif {
 		{
 			$residueHandle->{$res}->{"atomCount"}=-1;
 		}
+
 		## Create residue hash containing all data
 		my $interRes = {
 		      "residueType" => $residueHandle->{$res}->{residueType},
@@ -341,6 +383,7 @@ sub parseBif {
 		      "bonds" => \%bonds,
 		      "energyGroups" => \%energyGroups,
 		      "atomCount" => $residueHandle->{$res}->{"atomCount"},
+		      "totalcharge" => $residueHandle->{$res}->{"totalcharge"},
 		      "connect" => $residueHandle->{$res}->{"connect"}
 		      };
 		$residues{$res} = $interRes;
@@ -825,7 +868,6 @@ my $counter = 0;
 foreach my $inter(@interHandle)
 {
 	my $typeA = $inter->{"nbType"}->[0];
-	#checkNONBONDnames($typeA);
 	if($inter->{"mass"} <=0){
 		my $M=$inter->{"mass"};
 		smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
