@@ -98,6 +98,7 @@ our $inputArguments=join(' ',@ARGV);
 our %Btypespresent;
 our %NBtypespresent;
 our %PAIRtypespresent;
+our %pairtypesused;
 quit_init();
 
 checkForModules();
@@ -1512,18 +1513,21 @@ sub parseTemplatesAndPDB
     	## PARSE TEMPLATES ##
     	#####################
 	initializeDirectives($inputFolder,$inputPDB);
+	## parse .nb file  ##
+	parseNonBonds();
+	## parse .b file   ##
+	parseBonds();
 	## parse .bif File ##
 	parseBif();
 	## parse .sif File ##
 	parseSif();
-	## parse .b file   ##
-	parseBonds();
-	## parse .nb file  ##
-	parseNonBonds();
     	print "\nDone parsing templates.\n";
 
-    	print "\nCross-checking energy group definitions for consistency.\n";
+    	print "\nCross-checking template definitions for consistency.\n";
 	checkenergygroups();
+	checkNONBONDnames();
+	checkBONDnames();
+	checkPAIRnames();
 
 	## Find Bonds ##
 	createBondFunctionals();

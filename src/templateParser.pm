@@ -41,7 +41,7 @@ use smog_common;
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups);
+qw(getEnergyGroup $energyGroups $interactionThreshold $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -100,7 +100,8 @@ our %NBtypespresent;
 our %PAIRtypespresent;
 our %EGinBif;	
 our %EGinSif;	
-
+our %pairtypesused;
+our %bondtypesused;
 
 ###########################
 ## CLEAR VARIABLE MEMORY ##
@@ -136,8 +137,7 @@ sub setInputFileName {
 
 sub checkBONDnames
 {
-	my @LIST=@_;
-	foreach my $name(@LIST){
+	foreach my $name(keys %bondtypesused){
 		unless($name =~ /^[a-zA-Z0-9_]+$|^\*$/){
 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in bond/angle/dihedral definitions. bType \"$name\" encountered");
 		}
@@ -149,8 +149,7 @@ sub checkBONDnames
 
 sub checkNONBONDnames
 {
-	my @LIST=@_;
-	foreach my $name(@LIST){
+	foreach my $name(keys %{$interactions->{"nonbonds"}}){
 		unless($name =~ /^[a-zA-Z0-9_]+$|^\*$/){
 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in nobonded definitions. nbType \"$name\" encountered");
 		}
@@ -162,8 +161,7 @@ sub checkNONBONDnames
 
 sub checkPAIRnames
 {
-	my @LIST=@_;
-	foreach my $name(@LIST){
+	foreach my $name(keys %pairtypesused){
 		unless($name =~ /^[a-zA-Z0-9_]+$|^\*$/){
 			smog_quit("Only letters, numbers and _, or a solitary *, can appear in contact definitions. pairType \"$name\" encountered");
 		}
@@ -694,8 +692,8 @@ sub parseBonds {
 	{
 		my $typeA = $inter->{"bType"}->[0];
 		my $typeB = $inter->{"bType"}->[1];
-		checkBONDnames($typeA, $typeB);
-
+ 		$bondtypesused{$typeA}=1;
+ 		$bondtypesused{$typeB}=1;
 		my $func = $inter->{"func"};
 		if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
 	               exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
@@ -721,7 +719,9 @@ sub parseBonds {
 		my $typeC = $inter->{"bType"}->[2];
 		my $typeD = $inter->{"bType"}->[3];
 
-		checkBONDnames($typeA, $typeB, $typeC, $typeD);
+		foreach my $name($typeA, $typeB, $typeC, $typeD){
+ 			$bondtypesused{$name}=1;
+		}
 
 		my $func = $inter->{"func"};
 		my $eG;
@@ -762,7 +762,9 @@ sub parseBonds {
 		my $typeC = $inter->{"bType"}->[2];
 		my $typeD = $inter->{"bType"}->[3];
 
-		checkBONDnames($typeA, $typeB, $typeC, $typeD);
+		foreach my $name($typeA, $typeB, $typeC, $typeD){
+ 			$bondtypesused{$name}=1;
+		}
 
 		my $func = $inter->{"func"};
 		
@@ -793,7 +795,9 @@ sub parseBonds {
 		my $typeB = $inter->{"bType"}->[1];
 		my $typeC = $inter->{"bType"}->[2];
 
-		checkBONDnames($typeA, $typeB, $typeC);
+		foreach my $name($typeA, $typeB, $typeC){
+ 			$bondtypesused{$name}=1;
+		}
 
 		my $func = $inter->{"func"};
 		my $keyString = "$typeA-$typeB-$typeC";
@@ -821,7 +825,7 @@ my $counter = 0;
 foreach my $inter(@interHandle)
 {
 	my $typeA = $inter->{"nbType"}->[0];
-	checkNONBONDnames($typeA);
+	#checkNONBONDnames($typeA);
 	if($inter->{"mass"} <=0){
 		my $M=$inter->{"mass"};
 		smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
@@ -848,7 +852,8 @@ foreach my $inter(@interHandle)
  	$nbtype = $inter->{"pairType"};$type = "pairType";
 	my $typeA = $inter->{$type}->[0];
 	my $typeB = $inter->{$type}->[1];
-	checkPAIRnames($typeA,$typeB);
+ 	$pairtypesused{$typeA}=1;
+ 	$pairtypesused{$typeB}=1;
 	my $func = $inter->{"func"};
  	my $cG = $inter->{"contactGroup"};
 	if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
