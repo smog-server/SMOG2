@@ -148,13 +148,13 @@ sub initializeDirectives {
 	addToTop("exclusions","\n[ exclusions ]\n");
 	addToTop("exclusions",";ai	aj\n");
 	addToTop("atomtypes","\n[ atomtypes ] \n");
-	addToTop("atomtypes","; name  mass     charge    ptype c6           c12\n");
+	addToTop("atomtypes","; name  mass     charge    ptype c6            c12\n");
 	addToTop("nonbond_params","\n[ nonbond_params ]\n");
-	addToTop("nonbond_params",";ai     aj    func    c6      c12\n");
+	addToTop("nonbond_params",";ai     aj    func    c6       c12\n");
 	addToTop("position_restraints","\n[ position_restraints ]\n");
 	addToTop("position_restraints",";ai    func    kx    ky   kz\n");
 	addToTop("atoms","\n[ atoms ]\n");
-	addToTop("atoms",";  nr        type   resnr residue atom   cgnr\n");
+	addToTop("atoms",";  nr        type   resnr residue atom   cgnr   charge\n");
 	addToTop("moleculetype","\n[ moleculetype ]\n");
 	addToTop("moleculetype","; name            nrexcl\n");
 	addToTop("moleculetype","  Macromolecule   3\n");
@@ -1536,7 +1536,7 @@ sub parseTemplatesAndPDB
 	###############
     	## PARSE PDB ##
     	###############
-	print "\nReading .pdb\n\n";
+	print "\nReading $inputPDB.pdb\n\n";
 	parsePDBATOMS($inputPDB,$allowCG);
 	catPDL();
 }
