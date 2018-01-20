@@ -461,7 +461,7 @@ sub angleOutput
 			## Check angles threshold ##
 	 		if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
 				my $THETA=int($paramArr[0]*100)/100.0;
-				print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.\n");
+				print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilites.\n");
 			}
 	 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
 				my $THETA=int($paramArr[0]*100)/100.0;
