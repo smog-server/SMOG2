@@ -1480,6 +1480,9 @@ sub parseCONTACT
 		while($line = <CONTFILE>)
 		{
 			($chain1,$contact1,$chain2,$contact2) = split(/\s+/,$line);
+			if(whatAmI($chain1) !=1 || whatAmI($contact1) !=1 ||whatAmI($chain2) !=1 ||whatAmI($contact2) !=1 ){
+				smog_quit("non-integer value given for chain, or atom, in contact file.\n LINE: $line");
+			}
 			if($CGenabled == 1) {
 				#if we are coarse graining then we need to map AA to residue contacts
 				#first see which residues they belong
@@ -1526,7 +1529,14 @@ sub parseCONTACT
 		## User contact map should be in format below and use input PDB numbering ##
 		## chain1 atom1 chain2 atom2 ##
 		while($line = <CONTFILE1>) {
+			my ($data,$comment)=checkcomment($line);
+			if($data eq ""){next;}
+			my @A = split(/\s+/,$data);
+			if($#A < 4 || $#A>5){smog_quit("incorrect number of entries in contact file.  See line: $line");}
 			my ($chain1,$pdbNum1,$chain2,$pdbNum2,$dist) = split(/\s+/,$line);
+			if(whatAmI($chain1) !=1 || whatAmI($pdbNum1) !=1 ||whatAmI($chain2) !=1 ||whatAmI($pdbNum2) !=1 ){
+				smog_quit("non-integer value given for chain, or atom, in contact file.")
+			}
 			$chain1--;$chain2--; #moving to zero based numbering
 			if(!exists $indexMap{"$chain1-$pdbNum1"}) { 
 				$chain1++;

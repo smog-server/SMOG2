@@ -98,6 +98,7 @@ our $inputArguments=join(' ',@ARGV);
 our %Btypespresent;
 our %NBtypespresent;
 our %PAIRtypespresent;
+our %pairtypesused;
 quit_init();
 
 checkForModules();
@@ -147,13 +148,13 @@ sub initializeDirectives {
 	addToTop("exclusions","\n[ exclusions ]\n");
 	addToTop("exclusions",";ai	aj\n");
 	addToTop("atomtypes","\n[ atomtypes ] \n");
-	addToTop("atomtypes","; name  mass     charge    ptype c6           c12\n");
+	addToTop("atomtypes","; name  mass     charge    ptype c6            c12\n");
 	addToTop("nonbond_params","\n[ nonbond_params ]\n");
-	addToTop("nonbond_params",";ai     aj    func    c6      c12\n");
+	addToTop("nonbond_params",";ai     aj    func    c6       c12\n");
 	addToTop("position_restraints","\n[ position_restraints ]\n");
 	addToTop("position_restraints",";ai    func    kx    ky   kz\n");
 	addToTop("atoms","\n[ atoms ]\n");
-	addToTop("atoms",";  nr        type   resnr residue atom   cgnr\n");
+	addToTop("atoms",";  nr        type   resnr residue atom   cgnr   charge\n");
 	addToTop("moleculetype","\n[ moleculetype ]\n");
 	addToTop("moleculetype","; name            nrexcl\n");
 	addToTop("moleculetype","  Macromolecule   3\n");
@@ -460,7 +461,7 @@ sub angleOutput
 			## Check angles threshold ##
 	 		if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
 				my $THETA=int($paramArr[0]*100)/100.0;
-				print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.\n");
+				print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilites.\n");
 			}
 	 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
 				my $THETA=int($paramArr[0]*100)/100.0;
@@ -691,6 +692,7 @@ sub calculateContacts
 
 
 	## Sum all initial contact strengths ##	
+	my %conttypeseen;
 	for(my $i=0;$i<$numCon;$i++)
 	{
 		my $normalize;
@@ -701,7 +703,7 @@ sub calculateContacts
 		$resTypea = $atomTypes->{$atoma}->[1];
 		$resTypeb = $atomTypes->{$atomb}->[1];
 		($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
-		
+		$conttypeseen{$funct}=1;
 		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");}
 		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 		if(!$normalize){next;}		
@@ -712,7 +714,9 @@ sub calculateContacts
 			$count+=$contactIntraScale;
 		}
 	}
-
+	if(scalar keys %conttypeseen >1){
+		smog_quit("More than one type of contact being used at the same time. Not all combinations of contacts are supported by Gromacs.",1);
+ 	}
 	## Adjust ratio ##
 	for(my $i=0;$i<$numCon;$i++){
 		my $contactLeftOver;my $diheTotal; my $normalize;
@@ -1060,13 +1064,16 @@ sub calculateAtomTypes
 	{
 		$nbtype = $uniqueHandle->{$atoms}->[0];
   		if(!$uniqueHandle->{$atoms}->[0])
-        {
-          smog_quit("Atom $atoms has no nbType");
-        }
-		my $tmptype=$nbtype;
-		foreach my $name(keys %{$interactions->{"nonbonds"}}){
-                        if($nbtype =~ /\Q$name\E/) {$tmptype=$name; last; }# exact match found
-                        if($name =~ /\Q*\E/) { $tmptype=$name; }# not exact match.  maybe use it, but keep looking
+        	{
+          		smog_quit("Atom $atoms has no nbType");
+        	}
+		my $tmptype;
+		if(exists $interactions->{"nonbonds"}->{$nbtype}){
+			$tmptype=$nbtype;
+		}elsif(exists $interactions->{"nonbonds"}->{"*"}){
+			$tmptype="*";
+		}else{
+			smog_quit("No matching nb parameters found for nbtype $nbtype");
 		}
 		if(exists $obtained{$nbtype}){next;}
 		$c6 = $interactions->{"nonbonds"}->{$tmptype}->{"c6"};
@@ -1074,9 +1081,6 @@ sub calculateAtomTypes
 		$ptype = $interactions->{"nonbonds"}->{$tmptype}->{"ptype"};
 		$mass = $interactions->{"nonbonds"}->{$tmptype}->{"mass"};
 		$charge = $interactions->{"nonbonds"}->{$tmptype}->{"charge"};
-
-		if(!$c6 || !$c12 || !$ptype || !$mass || !$charge)
-		{smog_quit("Nonbond params not set for nbType $tmptype");}
 		
 		$formattedString = sprintf(" %-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
 		addToTop("atomtypes",$formattedString."\n");
@@ -1122,17 +1126,14 @@ sub readAtoms
 			addToTop("atoms",sprintf("%6d %10s %6d %6s %6s %6d", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum));
 			if(defined $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}){
 				#if charge is defined for an atom in a  specific residue, then write it
-				addToTop("atoms",sprintf(" %9.6f\n", $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}));
+				addToTop("atoms",sprintf(" %9.6f", $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}));
 				# this residue has a charge on that atom, add that value to the total
 				$totalcharge += $residues{$resName}->{"atoms"}->{$atomName}->{"charge"};
 			}elsif(defined $interactions->{"nonbonds"}->{$atomType}->{"charge"}){
-				addToTop("atoms",sprintf("\n"));
 				# since there is not residue-specific charge assigned, use the atomtype value.
 				$totalcharge += $interactions->{"nonbonds"}->{$atomType}->{"charge"};
-			}else{
-				# charges are not defined for this atom, assume 0.
-				addToTop("atoms",sprintf("\n"));
 			}
+			addToTop("atoms",sprintf("\n"));
 		}
 	}
 	print "\nTotal charge of system: $totalcharge\n\n";
@@ -1509,19 +1510,24 @@ sub parseTemplatesAndPDB
     	## PARSE TEMPLATES ##
     	#####################
 	initializeDirectives($inputFolder,$inputPDB);
+	## parse .nb file  ##
+	parseNonBonds();
+	## parse .b file   ##
+	parseBonds();
 	## parse .bif File ##
 	parseBif();
 	## parse .sif File ##
 	parseSif();
-	## parse .b file   ##
-	parseBonds();
-	## parse .nb file  ##
-	parseNonBonds();
     	print "\nDone parsing templates.\n";
 
-    	print "\nCross-checking energy group definitions for consistency.\n";
+    	print "\nCross-checking template definitions for consistency.\n";
 	checkenergygroups();
+	checkNONBONDnames();
+	checkBONDnames();
+	checkPAIRnames();
+	checkREScharges();
 
+	print "\nPre-processing templates.\n";
 	## Find Bonds ##
 	createBondFunctionals();
 	## Find Angles ##
@@ -1529,7 +1535,7 @@ sub parseTemplatesAndPDB
 	###############
     	## PARSE PDB ##
     	###############
-	print "\nReading .pdb\n\n";
+	print "\nReading $inputPDB.pdb\n\n";
 	parsePDBATOMS($inputPDB,$allowCG);
 	catPDL();
 }
@@ -1598,7 +1604,7 @@ sub appendContacts {
 	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
-	print "Completing final details...";
+	print "Completing final details...\n";
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
 	#print defaults
