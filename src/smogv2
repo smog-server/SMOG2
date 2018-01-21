@@ -1520,12 +1520,15 @@ sub parseTemplatesAndPDB
 	parseSif();
     	print "\nDone parsing templates.\n";
 
-    	print "\nCross-checking template definitions for consistency.\n";
-	checkenergygroups();
-	checkNONBONDnames();
-	checkBONDnames();
-	checkPAIRnames();
-	checkREScharges();
+    	print "\nChecking template definitions for consistency.\n";
+	my $checkmessage=checkenergygroups();
+	$checkmessage.=checkNONBONDnames();
+	$checkmessage.=checkBONDnames();
+	$checkmessage.=checkPAIRnames();
+	$checkmessage.=checkREScharges();
+	if($checkmessage ne ""){
+		smog_quit("Cross-comparison of templates failed. See messages below:\n\n$checkmessage");
+	}
 
 	print "\nPre-processing templates.\n";
 	## Find Bonds ##

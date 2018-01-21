@@ -149,6 +149,7 @@ sub round
 }
 sub checkREScharges
 {
+	my $string="";
 	foreach my $res(keys %residues){
 		my $charge=0;
 		foreach my $at(keys %{$residues{$res}->{"atoms"}}){
@@ -165,87 +166,101 @@ sub checkREScharges
 			my $tc=$residues{$res}->{"totalcharge"};
 			# check that total charge is the value expected
 			if(abs($charge-$tc)>0.001){
-				smog_quit("Residue $res has total charge of $charge, but totalcharge defined in .bif is $tc")
+				$charge=int($charge*10**8)/10**8;
+				$string .= "Residue $res has total charge of $charge, but \"totalcharge\" defined in .bif is $tc\n";
 			}
 		}else{
 			# check that charge is integer
 			if(abs($charge - round($charge)) >0.001){
 				my $t=round($charge);
-				smog_quit("Residue defined in .bif, $res, has non-integer total charge of $charge")
+				$string .="Residue defined in .bif, $res, has non-integer total charge of $charge\n";
 			}
 		}
 	}
+	return $string;
 }
 
 sub checkBONDnames
 {
+	my $string="";
 	foreach my $name(keys %bondtypesused){
 		unless($name =~ /^[a-zA-Z0-9_]+$|^\*$/){
-			smog_quit("Only letters, numbers and _, or a solitary *, can appear in bond/angle/dihedral definitions. bType \"$name\" encountered");
+			$string .="Only letters, numbers and _, or a solitary *, can appear in bond/angle/dihedral definitions. bType \"$name\" encountered\n";
 		}
 		if($name ne "*"  && !defined $Btypespresent{$name}){	
-			smog_quit("bType $name appears in .b file, but doesn't appear anywhere in .bif.  Likely a typo in your .b file.",1)
+			$string .="bType $name appears in .b file, but doesn't appear anywhere in .bif.  Likely a typo in your .b file.\n";
 		}
 	}
+	return $string;
 }
 
 sub checkNONBONDnames
 {
+	my $string="";
 	foreach my $name(keys %{$interactions->{"nonbonds"}}){
 		unless($name =~ /^[a-zA-Z0-9_]+$|^\*$/){
-			smog_quit("Only letters, numbers and _, or a solitary *, can appear in nobonded definitions. nbType \"$name\" encountered");
+			$string .="Only letters, numbers and _, or a solitary *, can appear in nobonded definitions. nbType \"$name\" encountered\n";
 		}
 		if($name ne "*"  && !defined $NBtypespresent{$name}){	
-			smog_quit("nbType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.",1)
+			$string .="nbType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.\n";
 		}
 	}
+	return $string;
 }
 
 sub checkPAIRnames
 {
+	my $string="";
 	foreach my $name(keys %pairtypesused){
 		unless($name =~ /^[a-zA-Z0-9_]+$|^\*$/){
-			smog_quit("Only letters, numbers and _, or a solitary *, can appear in contact definitions. pairType \"$name\" encountered");
+			$string.="Only letters, numbers and _, or a solitary *, can appear in contact definitions. pairType \"$name\" encountered\n";
 		}
 		if($name ne "*"  && !defined $PAIRtypespresent{$name}){	
-			smog_quit("pairType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.",1)
+			$string .="pairType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.\n";
 		}
 	}
 }
 
 sub checkenergygroups
 {
-	my $string="Since dihedrals energy groups must be defined in the .bif (residue->bonds), .sif (energyGroup) and .b (bonds) files, in order for the interaction to be applied, this partial declaration of an energy group is probably unintentional.";
+	my $messagestring="";
+	my $string="It appears that dihedrals energy groups are only partially defined. Since dihedrals energy groups must be defined in the .bif (residue->bonds), .sif (energyGroup) and .b (bonds) files, in order for the interaction to be applied, a partial declaration is probably unintentional.  Specific issues listed below:\n\n";
 	foreach my $II (sort keys %{$interactions->{"dihedrals"}}){
 		if(! exists $EGinBif{$II}){
-			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string",1)
+			$messagestring .="energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string\n";
 		}
 		if(! exists $EGinSif{$II}){
-			smog_quit("energyGroup \"$II\" defined in .b file, but is not used in .sif file. $string",1)
+			$messagestring .="energyGroup \"$II\" defined in .b file, but is not used in .sif file. $string\n";
 		}
 	}
 
 	foreach my $II (sort keys %EGinBif){
 		if(! exists $interactions->{"dihedrals"}->{$II}){
-			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .b file. $string",1)
+			$messagestring .="energyGroup \"$II\" defined in .bif file, but is not used in .b file. $string\n";
 		}
 		if(! exists $EGinSif{$II}){
-			smog_quit("energyGroup \"$II\" defined in .bif file, but is not used in .sif file. $string",1)
+			$messagestring .="energyGroup \"$II\" defined in .bif file, but is not used in .sif file. $string\n";
 		}
 	}
 
 	foreach my $II (sort keys %EGinSif){
 		if(! exists $interactions->{"dihedrals"}->{$II}){
-			smog_quit("energyGroup \"$II\" defined in .sif file, but is not used in .b file. $string",1)
+			$messagestring .="energyGroup \"$II\" defined in .sif file, but is not used in .b file. $string\n";
 		}
 		if(! exists $EGinBif{$II}){
-			smog_quit("energyGroup \"$II\: defined in .sif file, but is not used in .bif file. $string",1)
+			$messagestring .="energyGroup \"$II\" defined in .sif file, but is not used in .bif file. $string\n";
 		}
 	}
 
 # clear the hashes, in case we need them later.
 	undef %EGinBif;
 	undef %EGinSif;
+	if($messagestring ne ""){
+		$string.=$messagestring;
+	}else{
+		$string="";
+	}
+	return $string;
 }
 
 
