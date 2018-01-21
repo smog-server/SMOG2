@@ -46,6 +46,15 @@ fi
 
 if (( $ERR == 0 )); then
 
+for link in SBM_AA  SBM_AA+gaussian  SBM_calpha  SBM_calpha+gaussian
+do
+	if [ ! -e  $link ]
+	then 
+		echo Symbolic link to share/templates/$link being created
+		ln -s share/templates/$link $link	
+	fi
+done
+
 cat > $smog2dir/header <<EOS
 #!/bin/bash
 export PERLLIB=$smog2dir/src:$PERLLIB 
