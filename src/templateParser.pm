@@ -224,7 +224,7 @@ sub checkPAIRnames
 sub checkenergygroups
 {
 	my $messagestring="";
-	my $string="It appears that dihedrals energy groups are only partially defined. Since dihedrals energy groups must be defined in the .bif (residue->bonds), .sif (energyGroup) and .b (bonds) files, in order for the interaction to be applied, a partial declaration is probably unintentional.  Specific issues listed below:\n";
+	my $string="It appears that dihedrals energy groups are only partially defined. Since dihedrals energy groups must be defined in the .bif (residue->bonds), .sif (energyGroup) and .b (bonds) files, in order for the interaction to be applied, a partial declaration is probably unintentional.  Specific issues listed below:\n\n";
 	foreach my $II (sort keys %{$interactions->{"dihedrals"}}){
 		if(! exists $EGinBif{$II}){
 			$messagestring .="energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string\n";
