@@ -1526,7 +1526,7 @@ sub parseTemplatesAndPDB
 	$checkmessage.=checkBONDnames();
 	$checkmessage.=checkPAIRnames();
 	$checkmessage.=checkREScharges();
-	if($checkmessage ne " "){
+	if($checkmessage ne ""){
 		smog_quit("Cross-comparison of templates failed. See messages below:\n\n$checkmessage");
 	}
 
