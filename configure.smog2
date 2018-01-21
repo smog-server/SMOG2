@@ -5,7 +5,18 @@
 smog2dir=""
 perl4smog=""
 
-
+force=1
+if [ ! -z "$1" ]  
+then
+	if [ "$1" != "force" ]
+	then
+		echo Argument "$1" not recognized
+	else
+		# force recreation of scripts
+		force=0
+		echo Will force regeneration of scripts
+	fi
+fi
 ## don't change anything below this line
 ERR=0
 if [ "$smog2dir" == "" ]
@@ -28,6 +39,7 @@ fi
 
 
 if (( $ERR == 0 )); then
+
 cat > $smog2dir/header <<EOS
 #!/bin/bash
 export PERLLIB=$smog2dir/src:$PERLLIB 
@@ -61,8 +73,9 @@ EOS
 		# if the directories exist, see if we need to update anything.
 
 		LN=`grep "$smog_exec" $smog2dir/bin/smog2 | wc -l`
-		if (( $LN == 0 )); then
-			echo Something changed in your configuration of SMOG2: Updating $smog2dir/bin/smog2
+		LN=$[$LN*$force]
+		if (( $LN == 0)); then
+			echo Updating $smog2dir/bin/smog2
 			cat $smog2dir/header > $smog2dir/bin/smog2 
 			echo $smog_exec \"\$\@\" >> $smog2dir/bin/smog2
 			chmod 755 $smog2dir/bin/smog2
@@ -70,8 +83,9 @@ EOS
 		for tool in adjustPDB tablegen optim extract scale-energies ions
 		do
 			LN=`grep "$perl4smog $smog2dir/tools/$tool" $smog2dir/bin/smog_$tool | wc -l`
+			LN=$[$LN*$force]
 			if (( $LN == 0 )); then
-				echo Something changed in your configuration of SMOG2: Updating wrapper $smog2dir/bin/smog_$tool
+				echo Updating wrapper $smog2dir/bin/smog_$tool
 				cat $smog2dir/header > $smog2dir/bin/smog_$tool 
 				echo $perl4smog $smog2dir/tools/$tool \"\$\@\" >> $smog2dir/bin/smog_$tool
 				chmod 755 $smog2dir/bin/smog_$tool
