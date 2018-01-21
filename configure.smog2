@@ -5,6 +5,7 @@
 smog2dir=""
 perl4smog=""
 
+## don't change anything below this line
 force=1
 if [ ! -z "$1" ]  
 then
@@ -17,7 +18,12 @@ then
 		echo Will force regeneration of scripts
 	fi
 fi
-## don't change anything below this line
+
+if [ ! -z "$2" ]  
+then
+	echo Only one argument accepted by configure.smog2.  Remaining flags will be ignored
+fi
+
 ERR=0
 if [ "$smog2dir" == "" ]
 then
