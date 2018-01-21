@@ -174,7 +174,8 @@ sub addToTop {
 	$linesInDirectivesWithContent[$directives{$directive}]+= hascontent($stuff);
 	push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
 }
-#looks for file "extras" in template directory
+
+#read file "extras" in template directory
 sub addExtras {
 	print "\nFound extras file. Parsing $inputFolder/extras for additional topology lines.\n";
 	open(PDB,"$inputFolder/extras");
@@ -183,16 +184,16 @@ sub addExtras {
 	while($line = <PDB>)
 	{
 		chomp($line);
-	    @tokens = split('<',$line);
+	    	@tokens = split('<',$line);
 		if(scalar @tokens > 2) {
 			smog_quit("Line in extras file: $inputFolder/extras contains more than one instance of character '<'. Offending line:\n $line");
 		}
 		$directive = $tokens[0];
+		$directive =~ s/^\s+|\s+$//g;
 		if(!exists $directives{$directive}) {
-			smog_quit("extras file: $inputFolder/extras has a non-valid directive \"$tokens[0]\". Check for typos or add directive to directivesList in src/smogv2.");			
+			smog_quit("extras file: $inputFolder/extras has a non-valid directive \"$directive\". Check for typos or add directive to directivesList in src/smogv2.");			
 		}
 		$stuff = $tokens[1];
-		$directive =~ s/^\s+|\s+$//g;
 		$stuff =~ s/^\s+|\s+$//g;
 		addToTop($directive,$stuff."\n");
 	}
@@ -1311,8 +1312,8 @@ sub parseInputFolder
 			validateTemplate($nb,"nb");next;}
 		if($file =~ m/^extras$/) {
 			$extrasexists++;
-			$extras = "$folderName/$bif";
-			print "\nFound .bif file $bif";
+			$extras = "$folderName/extras";
+			print "Found extras file $folderName/extras\n";
 			next;}
 	}
 	$bifForSCM = $bif;
@@ -1336,9 +1337,6 @@ sub parseInputFolder
 		smog_quit ("Found multiple .nb files in directory $folderName");
 	}elsif($nbexists ==0){
 		smog_quit (" .nb file not found in directory $folderName");
-	}
-	if($extrasexists >1){
-	   smog_quit ("Found multiple extras files in directory $folderName");
 	}
 	
 	setInputFileName($bif,$sif,$b,$nb);
