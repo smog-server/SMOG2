@@ -45,7 +45,7 @@ use smog_common;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
-my $VERSION="2.1beta";
+my $VERSION="2.2beta";
 my $angToNano = 0.1;
 my $OUTPUT;
 my $help;

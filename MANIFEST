@@ -32,9 +32,7 @@ share/schemas/b.xsd
 share/schemas/nb.xsd
 share/schemas/sif.xsd
 share/schemas/bif.xsd
-SBM_AA
 README
-SBM_calpha
 src/PDB_Bonded.pm
 src/smog_common.pm
 src/mathFunctions.pm

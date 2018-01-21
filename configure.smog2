@@ -65,7 +65,7 @@ EOS
 
 
 	smog_exec="$perl4smog $smog2dir/src/smogv2"
-        export PATH=$PATH:$smog2dir/bin
+        export PATH=$smog2dir/bin:$PATH
 	
 	if [ ! -d $smog2dir/bin ]
 	then
