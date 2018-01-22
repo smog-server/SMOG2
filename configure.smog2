@@ -48,10 +48,10 @@ if (( $ERR == 0 )); then
 
 for link in SBM_AA  SBM_AA+gaussian  SBM_calpha  SBM_calpha+gaussian
 do
-	if [ ! -e  $link ]
+	if [ ! -e  $smog2dir/$link ]
 	then 
 		echo Symbolic link to share/templates/$link being created
-		ln -s share/templates/$link $link	
+		ln -s $smog2dir/share/templates/$link $smog2dir/$link	
 	fi
 done
 
