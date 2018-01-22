@@ -2,7 +2,7 @@
 
 if [ -d distro ]
 then
-	echo directory distro  exist. quitting
+	echo directory distro exists. quitting
 else
 
 	mkdir distro
