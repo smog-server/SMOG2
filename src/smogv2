@@ -1361,8 +1361,9 @@ print <<EOT;
               Thank you for using the Structure-based Model (SMOG) software
 
     This package is the product of contributions from a number of people, including:
-                      Jeffrey Noel, Mariana Levi, Mohit Raghunathan,
-                         Ryan Hayes, Jose Onuchic & Paul Whitford
+                Jeffrey Noel, Mariana Levi, Mohit Raghunathan, Joyce Yang           
+                       Prasad Bandarkar, Udayan Mohanty, Ailun Wang        
+                         Ryan Hayes, Jose Onuchic & Paul Whitford         
 
                      Copyright (c) 2015, The SMOG development team at
                         Rice University and Northeastern University
