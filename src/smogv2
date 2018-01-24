@@ -72,6 +72,7 @@ our $setBondtoLimit=0;
 our $setContacttoLimit=0;
 our $extrasexists=0; #this is set to 1 if extras file is in the template directory
 our %funtypechecked;
+my $printversion;
 my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
 ## this is the array that defines how function names are converted to gromacs function types
 our %fTypes = (	'bond_harmonic' => '1',
@@ -1345,35 +1346,6 @@ sub parseInputFolder
 	
 }
 
-sub printdashed
-{
-	my ($headw)=@_;
-	for(my $I=0;$I<$headw;$I++){
-  		print "*";
-	}
-	print "\n";
-}
-
-sub printcenter
-{
-	my ($headw,$text)=@_;
-	my @textarray=split(/\n/,,$text);
-
-	foreach my $line(@textarray)
-	{
-        	$line =~ s/^\s+|\s+$//g;
-		my $L=length($line);
-		my $pad=int(($headw-$L)/2);
-		if($pad < 0)
-		{
-			print "$line\n";
-		}else{
-			my $string=(" " x ($pad));
-			print "$string$line\n";
-		}		
-
-	}
-}
 
 sub header
 {
@@ -1665,11 +1637,15 @@ usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
 	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warn=i' => \$maxwarn, 
          'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
-         'rescaleCD=s' => \$rescaleCD, '<>' => \&usage)
+         'rescaleCD=s' => \$rescaleCD, '<>' => \&usage, 'v' => \$printversion)
           or defined $help 
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $coarseFolder));
 
+if($printversion){
+	print "Version $VERSION\n";
+	exit;
+}
 
 unless ($rescaleCD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
 	smog_quit("$rescaleCD is not a valid value for -rescaleCD.  Must be an integer, or decimal.");
