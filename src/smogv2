@@ -1345,43 +1345,66 @@ sub parseInputFolder
 	
 }
 
+sub printdashed
+{
+	my ($headw)=@_;
+	for(my $I=0;$I<$headw;$I++){
+  		print "*";
+	}
+	print "\n";
+}
+
+sub printcenter
+{
+	my ($headw,$text)=@_;
+	my @textarray=split(/\n/,,$text);
+
+	foreach my $line(@textarray)
+	{
+        	$line =~ s/^\s+|\s+$//g;
+		my $L=length($line);
+		my $pad=int(($headw-$L)/2);
+		if($pad < 0)
+		{
+			print "$line\n";
+		}else{
+			my $string=(" " x ($pad));
+			print "$string$line\n";
+		}		
+
+	}
+}
+
 sub header
 {
-my $header="******* ******* ******* ******* ******* SMOG v$VERSION ******* ******* ******* ******* *******";
-my $headw=length($header);
-  print "\n";
-for(my $I=0;$I<$headw;$I++){
-  print "*";
-}
-  print "\n";
-  print "$header";
+	my $header="******* ******* ******* ******* ******* SMOG v$VERSION ******* ******* ******* ******* *******";
+	my $headw=length($header);
+	printdashed($headw);
+	print "\n$header\n";
 
-print <<EOT;
+	my $tmpstring = <<"EOT";
 
-              Thank you for using the Structure-based Model (SMOG) software
+Thank you for using the Structure-based Model (SMOG) software
 
-    This package is the product of contributions from a number of people, including:
-                Jeffrey Noel, Mariana Levi, Mohit Raghunathan, Joyce Yang           
-                       Prasad Bandarkar, Udayan Mohanty, Ailun Wang        
-                         Ryan Hayes, Jose Onuchic & Paul Whitford         
+This package is the product of contributions from a number of people, including:
+Jeffrey Noel, Mariana Levi, Mohit Raghunathan, Joyce Yang           
+Prasad Bandarkar, Udayan Mohanty, Ailun Wang        
+Ryan Hayes, Jose Onuchic & Paul Whitford         
 
-                     Copyright (c) 2015, The SMOG development team at
-                        Rice University and Northeastern University
+Copyright (c) 2015, The SMOG development team at
+Rice University and Northeastern University
 
-              SMOG v$VERSION & Shadow are available at http://smog-server.org
+SMOG v$VERSION & Shadow are available at http://smog-server.org
 
-         You can direct questions to info\@smog-server.org, or the smog-users forum, 
-         which can be found at https://mailman.rice.edu/mailman/listinfo/smog-users
+You can direct questions to info\@smog-server.org, or the smog-users forum, 
+which can be found at https://mailman.rice.edu/mailman/listinfo/smog-users
 
 EOT
 
- for(my $I=0;$I<$headw;$I++){
-   print "*";
- }
- print "\n";
+	printcenter($headw,$tmpstring);
+	printdashed($headw);
 
 }
-
 sub usage
 {
   print <<EOT;
