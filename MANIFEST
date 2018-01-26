@@ -3,7 +3,6 @@ tools/ions
 tools/scale-energies
 tools/SCM.jar
 tools/extract
-tools/optim
 tools/adjustPDB
 tools/tablegen
 share/templates/SBM_AA+gaussian/AA+gaussian-noel12.b

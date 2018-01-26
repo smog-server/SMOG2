@@ -8,7 +8,8 @@ our @ISA = 'Exporter';
 our @EXPORT = qw(%supported_directives);
 
 print <<EOT;
-*****************************************************************************************
+********************************************************************************************
+
                                       smog_extract
 
       	smog_extract is part of the SMOG 2 distribution, available at smog-server.org
@@ -18,13 +19,14 @@ print <<EOT;
 	allows one to generate a SMOG model for a large system, and then simulate the 
 	subset of atoms using identical interactions. In addition, the module will 
 	optionally generate atomic restraints for any atom that has interactions 
-	removed	during the truncation step.
+	removed during the truncation step.
 
         For usage information, issue flag -help, or see the SMOG manual.
 
         For questions regarding this script, contact info\@smog-server.org
 
-*****************************************************************************************
+********************************************************************************************
+
 EOT
 
 sub usage

@@ -26,10 +26,8 @@ my $help;
 ## MODULE HEADERS ##
 use Getopt::Long;
 
-sub usage
-{
-print <<EOT;
-*****************************************************************************************
+	my $tmpstring = <<"EOT";
+
                                       smog_adjustPDB                                   
 
     smog_adjustPDB is part of the SMOG 2 distribution, available at smog-server.org     
@@ -40,8 +38,17 @@ print <<EOT;
                        See the SMOG manual for usage guidelines.
 
             For questions regarding this script, contact info\@smog-server.org              
-*****************************************************************************************
+EOT
 
+my $wide=88;
+printdashed($wide);
+printcenter($wide,$tmpstring);
+printdashed($wide);
+
+sub usage
+{
+
+print <<EOS;
 usage: smog_adjustPDB .. options ..
 
   Options
@@ -52,7 +59,7 @@ usage: smog_adjustPDB .. options ..
 	-warn [0] 		: convert first N errors to warnings 
 	-renumber 		: ignore any residue numbering inconsistencies and renumber residues sequentially
 	-help 	  		: show options
-EOT
+EOS
 
   if ( @_ ){
    	smog_quit("Command-line argument \"@_\" not recognized.");
