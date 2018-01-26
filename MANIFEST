@@ -39,7 +39,6 @@ src/check.pl
 src/smogv2
 src/templateParser.pm
 src/setRatios.pm
-configure.smog2
 examples/gromacs4/all-atom/smog.gro
 examples/gromacs4/all-atom/mdout.mdp
 examples/gromacs4/all-atom/state.cpt
