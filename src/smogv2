@@ -3,7 +3,8 @@
 #
 #                          Structure-based Model (SMOG) software
 #    This package is the product of contributions from a number of people, including:
-#                      Jeffrey Noel, Mariana Levi, Mohit Raghunathan,
+#                 Jeffrey Noel, Mariana Levi, Mohit Raghunathan, Joyce Yang           
+#                       Prasad Bandarkar, Udayan Mohanty, Ailun Wang
 #                 Heiko Lammert, Ryan Hayes, Jose Onuchic & Paul Whitford
 #
 #                     Copyright (c) 2015, The SMOG development team at
@@ -45,7 +46,7 @@ use smog_common;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
-my $VERSION="2.1beta";
+my $VERSION="2.2beta";
 my $angToNano = 0.1;
 my $OUTPUT;
 my $help;
@@ -72,6 +73,7 @@ our $setBondtoLimit=0;
 our $setContacttoLimit=0;
 our $extrasexists=0; #this is set to 1 if extras file is in the template directory
 our %funtypechecked;
+my $printversion;
 my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
 ## this is the array that defines how function names are converted to gromacs function types
 our %fTypes = (	'bond_harmonic' => '1',
@@ -174,7 +176,8 @@ sub addToTop {
 	$linesInDirectivesWithContent[$directives{$directive}]+= hascontent($stuff);
 	push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
 }
-#looks for file "extras" in template directory
+
+#read file "extras" in template directory
 sub addExtras {
 	print "\nFound extras file. Parsing $inputFolder/extras for additional topology lines.\n";
 	open(PDB,"$inputFolder/extras");
@@ -183,16 +186,18 @@ sub addExtras {
 	while($line = <PDB>)
 	{
 		chomp($line);
-	    @tokens = split('<',$line);
+		my ($A,$B)=checkcomment($line);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+	    	@tokens = split('<',$line);
 		if(scalar @tokens > 2) {
 			smog_quit("Line in extras file: $inputFolder/extras contains more than one instance of character '<'. Offending line:\n $line");
 		}
 		$directive = $tokens[0];
+		$directive =~ s/^\s+|\s+$//g;
 		if(!exists $directives{$directive}) {
-			smog_quit("extras file: $inputFolder/extras has a non-valid directive \"$tokens[0]\". Check for typos or add directive to directivesList in src/smogv2.");			
+			smog_quit("extras file: $inputFolder/extras has a non-valid directive \"$directive\". Check for typos or add directive to directivesList in src/smogv2.");			
 		}
 		$stuff = $tokens[1];
-		$directive =~ s/^\s+|\s+$//g;
 		$stuff =~ s/^\s+|\s+$//g;
 		addToTop($directive,$stuff."\n");
 	}
@@ -1311,8 +1316,8 @@ sub parseInputFolder
 			validateTemplate($nb,"nb");next;}
 		if($file =~ m/^extras$/) {
 			$extrasexists++;
-			$extras = "$folderName/$bif";
-			print "\nFound .bif file $bif";
+			$extras = "$folderName/extras";
+			print "Found extras file $folderName/extras\n";
 			next;}
 	}
 	$bifForSCM = $bif;
@@ -1337,50 +1342,42 @@ sub parseInputFolder
 	}elsif($nbexists ==0){
 		smog_quit (" .nb file not found in directory $folderName");
 	}
-	if($extrasexists >1){
-	   smog_quit ("Found multiple extras files in directory $folderName");
-	}
 	
 	setInputFileName($bif,$sif,$b,$nb);
 	
 }
 
+
 sub header
 {
-my $header="******* ******* ******* ******* ******* SMOG v$VERSION ******* ******* ******* ******* *******";
-my $headw=length($header);
-  print "\n";
-for(my $I=0;$I<$headw;$I++){
-  print "*";
-}
-  print "\n";
-  print "$header";
+	my $header="******* ******* ******* ******* ******* SMOG v$VERSION ******* ******* ******* ******* *******";
+	my $headw=length($header);
+	printdashed($headw);
+	print "\n$header\n";
 
-print <<EOT;
+	my $tmpstring = <<"EOT";
 
-              Thank you for using the Structure-based Model (SMOG) software
+Thank you for using the Structure-based Model (SMOG) software
 
-    This package is the product of contributions from a number of people, including:
-                      Jeffrey Noel, Mariana Levi, Mohit Raghunathan,
-                         Ryan Hayes, Jose Onuchic & Paul Whitford
+This package is the product of contributions from a number of people, including:
+Jeffrey Noel, Mariana Levi, Mohit Raghunathan, Joyce Yang           
+Prasad Bandarkar, Udayan Mohanty, Ailun Wang        
+Ryan Hayes, Jose Onuchic & Paul Whitford         
 
-                     Copyright (c) 2015, The SMOG development team at
-                        Rice University and Northeastern University
+Copyright (c) 2015, The SMOG development team at
+Rice University and Northeastern University
 
-              SMOG v$VERSION & Shadow are available at http://smog-server.org
+SMOG v$VERSION & Shadow are available at http://smog-server.org
 
-         You can direct questions to info\@smog-server.org, or the smog-users forum, 
-         which can be found at https://mailman.rice.edu/mailman/listinfo/smog-users
+You can direct questions to info\@smog-server.org, or the smog-users forum, 
+which can be found at https://mailman.rice.edu/mailman/listinfo/smog-users
 
 EOT
 
- for(my $I=0;$I<$headw;$I++){
-   print "*";
- }
- print "\n";
+	printcenter($headw,$tmpstring);
+	printdashed($headw);
 
 }
-
 sub usage
 {
   print <<EOT;
@@ -1538,7 +1535,7 @@ sub parseTemplatesAndPDB
 	###############
     	## PARSE PDB ##
     	###############
-	print "\nReading $inputPDB.pdb\n\n";
+	print "\nReading $inputPDB\n\n";
 	parsePDBATOMS($inputPDB,$allowCG);
 	catPDL();
 }
@@ -1641,11 +1638,15 @@ usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=
 	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
 	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warn=i' => \$maxwarn, 
          'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
-         'rescaleCD=s' => \$rescaleCD, '<>' => \&usage)
+         'rescaleCD=s' => \$rescaleCD, '<>' => \&usage, 'v' => \$printversion)
           or defined $help 
           or !defined $inputPDB 
           or (!defined $inputFolder  && !defined $coarseFolder));
 
+if($printversion){
+	print "Version $VERSION\n";
+	exit;
+}
 
 unless ($rescaleCD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
 	smog_quit("$rescaleCD is not a valid value for -rescaleCD.  Must be an integer, or decimal.");

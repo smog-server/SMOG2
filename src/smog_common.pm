@@ -8,7 +8,7 @@ use Exporter;
 our $maxwarn;
 our $warncount;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter);
 our %supported_directives;
 
 #####################
@@ -249,5 +249,36 @@ sub readindexfile
 	close(ATOMLIST);
 	return ($Ngrps,\@grpnms,\%groupnames,\%atomgroup);
 }
+
+sub printdashed
+{
+	my ($headw)=@_;
+	for(my $I=0;$I<$headw;$I++){
+  		print "*";
+	}
+	print "\n";
+}
+
+sub printcenter
+{
+	my ($headw,$text)=@_;
+	my @textarray=split(/\n/,$text);
+
+	foreach my $line(@textarray)
+	{
+        	$line =~ s/^\s+|\s+$//g;
+		my $L=length($line);
+		my $pad=int(($headw-$L)/2);
+		if($pad < 0)
+		{
+			print "$line\n";
+		}else{
+			my $string=(" " x ($pad));
+			print "$string$line\n";
+		}		
+
+	}
+}
+
 
 1;

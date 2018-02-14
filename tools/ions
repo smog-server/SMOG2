@@ -2,8 +2,9 @@ use strict;
 use warnings;
 use Getopt::Long;
 use smog_common;
-print <<EOT;
-*****************************************************************************************
+
+my $tmpstring = <<EOT;
+
                                       smog_ions
 
       	smog_ions is part of the SMOG 2 distribution, available at smog-server.org
@@ -16,8 +17,12 @@ print <<EOT;
 
         For questions regarding this script, contact info\@smog-server.org
 
-*****************************************************************************************
 EOT
+my $wide=88;
+printdashed($wide);
+printcenter($wide,$tmpstring);
+printdashed($wide);
+
 
 sub usage
 {

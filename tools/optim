@@ -2,17 +2,11 @@ use strict;
 use warnings;
 use List::Util qw(max);
 
-print <<EOT;
-*****************************************************************************************
+my $tmpstring = <<EOT;
                                         smog_optim
 
 
-
-
 SMOG_OPTIM IS STILL EXPERIMENTAL, THOUGH IT IS PROVIDED, IN CASE YOU WOULD LIKE TO TEST IT.
-
-
-
 
 
        smog_optim is part of the SMOG 2 distribution, available at smog-server.org     
@@ -24,8 +18,12 @@ SMOG_OPTIM IS STILL EXPERIMENTAL, THOUGH IT IS PROVIDED, IN CASE YOU WOULD LIKE 
 
             For questions regarding this script, contact info\@smog-server.org
 
-*****************************************************************************************
 EOT
+my $wide=88;
+printdashed($wide);
+printcenter($wide,$tmpstring);
+printdashed($wide);
+
 
 my $GROFILE;
 my $TOPFILE;
