@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use List::Util qw(max);
-
+use smog_common;
 my $tmpstring = <<EOT;
                                         smog_optim
 
@@ -118,8 +118,6 @@ if($SBMINPON =~ m/^Y$/){
 print "\nWhat is the name of input .gro file\n";
 $GROFILE=<STDIN>;
 $GROFILE =~ s/^\s+|\s+$//g;
-my ($ext)=$GROFILE =~ /(\.[^.]+)$/;
-
 my ($ext)=$GROFILE =~ /(\.[^.]+)$/;
 
 until(defined $ext && $ext eq ".gro"){
