@@ -180,10 +180,10 @@ sub addToTop {
 #read file "extras" in template directory
 sub addExtras {
 	print "\nFound extras file. Parsing $inputFolder/extras for additional topology lines.\n";
-	open(PDB,"$inputFolder/extras");
+	open(EXTRA,"$inputFolder/extras");
 	my $line = "";
 	my $directive;my $stuff;my @tokens;
-	while($line = <PDB>)
+	while($line = <EXTRA>)
 	{
 		chomp($line);
 		my ($A,$B)=checkcomment($line);
@@ -1419,19 +1419,21 @@ sub setContactParams
 {
 	my $method = $contactSettings->{"method"};
 	my $params = "";
+	my $proteinDelta = 3;
+	if(exists $contactSettings->{"proteinDelta"}) { $proteinDelta = $contactSettings->{"proteinDelta"}}
 	if($method =~ m/shadow/)
 	{
 		my $radius = $contactSettings->{"shadowRadius"};
 		my $radiusBonded = $contactSettings->{"shadowRadiusBonded"};
 		my $dist = $contactSettings->{"contactDistance"};
-		$params="-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --smog2output --showProgress";
+		$params="-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM -pd $proteinDelta --smog2output --showProgress";
 	}
 	elsif($method =~ m/cutoff/) 
 	{
 		my $dist = $contactSettings->{"contactDistance"};
 		my $radius = 0.0;
 		my $radiusBonded = 0.0;
-		$params="-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM --smog2output --showProgress";
+		$params="-m shadow -c $dist -s $radius -br $radiusBonded -bif $bifForSCM -pd $proteinDelta --smog2output --showProgress";
 	}
 	else {smog_quit ("Contact map method $method is not supported.");}
 	if($ignoreHydrogen == 1) { $params = $params." --ignoreH "; }
@@ -1848,6 +1850,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
     	clearBifMemory();clearPDBMemory();
 	$allowCG = 1;
 	print "\nParsing templates for coarse graining... ";
+	$inputFolder = $coarseFolder;
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
 	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
 }
