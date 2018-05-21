@@ -179,8 +179,29 @@ sub addToTop {
 
 #read file "extras" in template directory
 sub addExtras {
-	print "\nFound extras file. Parsing $inputFolder/extras for additional topology lines.\n";
-	open(EXTRA,"$inputFolder/extras");
+	my $filename = "$inputFolder/extras";
+	print "\nAdding extras information.\n";
+	open(EXTRA,"$filename");
+	my $line = "";
+	my $directive;my $stuff;my @tokens;
+	while($line = <EXTRA>)
+	{
+		chomp($line);
+		my ($A,$B)=checkcomment($line);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+	    	@tokens = split('<',$line);
+		$directive = $tokens[0];
+		$directive =~ s/^\s+|\s+$//g;
+		$stuff = $tokens[1];
+		$stuff =~ s/^\s+|\s+$//g;
+		addToTop($directive,$stuff."\n");
+	}
+}
+
+
+sub checkExtras {
+	my ($filename) = @_;
+	open(EXTRA,"$filename");
 	my $line = "";
 	my $directive;my $stuff;my @tokens;
 	while($line = <EXTRA>)
@@ -190,18 +211,16 @@ sub addExtras {
 		if($A eq ""){next;}  # skip the line if it is only a comment
 	    	@tokens = split('<',$line);
 		if(scalar @tokens > 2) {
-			smog_quit("Line in extras file: $inputFolder/extras contains more than one instance of character '<'. Offending line:\n $line");
+			smog_quit("Line in extras file: $filename contains more than one instance of character '<'. Offending line:\n $line");
 		}
 		$directive = $tokens[0];
 		$directive =~ s/^\s+|\s+$//g;
 		if(!exists $directives{$directive}) {
-			smog_quit("extras file: $inputFolder/extras has a non-valid directive \"$directive\". Check for typos or add directive to directivesList in src/smogv2.");			
+			smog_quit("extras file: $filename has a non-valid directive \"$directive\". Check for typos or add directive to directivesList in src/smogv2.");			
 		}
-		$stuff = $tokens[1];
-		$stuff =~ s/^\s+|\s+$//g;
-		addToTop($directive,$stuff."\n");
 	}
 }
+
 
 #####################
 ## CALCULATE BONDS ##
@@ -1317,7 +1336,8 @@ sub parseInputFolder
 		if($file =~ m/^extras$/) {
 			$extrasexists++;
 			$extras = "$folderName/extras";
-			print "Found extras file $folderName/extras\n";
+			print "Found extras file $extras\n";
+			checkExtras($extras);
 			next;}
 	}
 	$bifForSCM = $bif;
