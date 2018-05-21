@@ -311,7 +311,6 @@ sub parseBif {
 		 		my $T=$atom->{"pairType"};
 		 		smog_quit("Only letters, numbers and _ can appear in pairType definitions. nbType \"$T\" found in residue $res");
 			}
-
 			$NBtypespresent{$atom->{"nbType"}}=1;
 			$Btypespresent{$atom->{"bType"}}=1;
 			$PAIRtypespresent{$atom->{"pairType"}}=1;

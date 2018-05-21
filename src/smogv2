@@ -73,6 +73,7 @@ our $setBondtoLimit=0;
 our $setContacttoLimit=0;
 our $extrasexists=0; #this is set to 1 if extras file is in the template directory
 our %funtypechecked;
+our %presentatomtypes;
 my $printversion;
 my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
 ## this is the array that defines how function names are converted to gromacs function types
@@ -194,6 +195,16 @@ sub addExtras {
 		$directive =~ s/^\s+|\s+$//g;
 		$stuff = $tokens[1];
 		$stuff =~ s/^\s+|\s+$//g;
+		# check that nonbonded params are only added if the atom types are present
+		if($directive eq "nonbond_params"){
+			my $tempstuff  = $stuff;
+			$tempstuff =~ s/\s+/ /g;
+			my @tarray=split(/ /,$tempstuff);
+			if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
+				next;
+			}	
+		}
+
 		addToTop($directive,$stuff."\n");
 	}
 }
@@ -1081,7 +1092,7 @@ sub calculateAtomTypes
 	my $formattedString = "";	
 	
 	## OBTAIN UNIQUE ATOM TYPES ##
-	my %obtained;my $nbtype ="";
+	my $nbtype ="";
 	my $c12;my $c6;my $ptype;my $charge;my $mass;
 	
 	foreach my $atoms(keys %{$uniqueHandle})
@@ -1099,7 +1110,7 @@ sub calculateAtomTypes
 		}else{
 			smog_quit("No matching nb parameters found for nbtype $nbtype");
 		}
-		if(exists $obtained{$nbtype}){next;}
+		if(exists $presentatomtypes{$nbtype}){next;}
 		$c6 = $interactions->{"nonbonds"}->{$tmptype}->{"c6"};
 		$c12 = $interactions->{"nonbonds"}->{$tmptype}->{"c12"};
 		$ptype = $interactions->{"nonbonds"}->{$tmptype}->{"ptype"};
@@ -1108,7 +1119,7 @@ sub calculateAtomTypes
 		
 		$formattedString = sprintf(" %-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
 		addToTop("atomtypes",$formattedString."\n");
-		$obtained{$nbtype}=1;
+		$presentatomtypes{$nbtype}=1;
 	}
 }
 
@@ -1858,7 +1869,6 @@ if($CGenabled == 0) {
 my $allowCG = 0;
 print "Parsing templates files...\n";
 parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
-
 if($CGenabled == 0) {
 	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
 } elsif ($CGenabled == 1 && $userProvidedMap == 0) { #CG but we still need full .top to make a map
@@ -1871,13 +1881,16 @@ if($userProvidedMap == 0) { #use SCM.jar if user doesn't provide a map
 }
 if($CGenabled == 1) { #Coarse graining, do everything over with new templates
     	clearBifMemory();clearPDBMemory();
+	undef %presentatomtypes;
 	$allowCG = 1;
 	print "\nParsing templates for coarse graining... ";
 	$inputFolder = $coarseFolder;
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
 	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
 }
+
 appendContacts($shadowFile,$ContactFile,$userProvidedMap);
+
 if($extrasexists) { addExtras(); }
 
 printTop($topFile);
