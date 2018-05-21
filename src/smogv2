@@ -1161,6 +1161,10 @@ sub readAtoms
 		}
 	}
 	print "\nTotal charge of system: $totalcharge\n\n";
+
+	if($totalcharge !=0){
+		addToTop("comments", "; Note: total charge of system is $totalcharge\n");
+	}
 	if($totalcharge-int($totalcharge) > 0.01){
 		smog_quit("Non-integer system charge. This typically means something is wrong with the .bif file.");
 	}
