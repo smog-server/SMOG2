@@ -1640,7 +1640,6 @@ sub appendContacts {
 	}
 	if(exists $interactions->{"gen-pairs"} && $interactions->{"gen-pairs"} == 1) { $genpairs = "yes"; }
 	addToTop("defaults", "  1      $combrule         $genpairs\n");
-	if($extrasexists) { addExtras(); }
 }
 
 ##################
@@ -1879,6 +1878,8 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
 }
 appendContacts($shadowFile,$ContactFile,$userProvidedMap);
+if($extrasexists) { addExtras(); }
+
 printTop($topFile);
 print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$ndxFile\n";
 	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
