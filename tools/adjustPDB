@@ -271,17 +271,18 @@ sub adjustInputFile(){
 			$lastresidue=$resNum;
 
 			## Adjust Tail\Head names ##
+			if($isHead && $isTail){
+				smog_quit("Encountered a single-residue chain. Unclear whether to treat this as a head, or tail...");
+			}
 			if ($isHead){
 				if(!exists $map{$resName}{"head"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 				my $newResName = $map{$resName}{"head"};
 				$resName = $newResName;
 			}
 			if ($isTail){
-				if (not($prevResTypeRNA)){	#check that it's not an amino-accilated tRNA
 				if(!exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 					my $newResName = $map{$resName}{"tail"};
 					$resName = 	$newResName;
-				}
 			}
 			
 			for(my $i=0; $i<$loopInd+1; $i++){
