@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Getopt::Long;
 use smog_common;
+use Scalar::Util qw(looks_like_number);
 
 my $tmpstring = <<EOT;
 
@@ -60,6 +61,7 @@ usage: smog_ions ... options
 	-ionm   <float>    : mass of ions
 	-ionC12 <float>    : C12 excluded-volume parameter for added ions
    Optional settings 
+	-t <string>	   : optional template directory to read ion definitions
 	-f [smog.top]      : input SMOG forcefield file
 	-g [smog.gro]      : input SMOG configuration file
 	-of [smog.ions.top]: output SMOG forcefield file for smog.ions system
@@ -83,20 +85,23 @@ my $outputtop="smog.ions.top";
 my $outputgro="smog.ions.gro";
 my $addnum=0;
 my $mindist=0.5;
-my $addname ="";
-my $addC12 = "";
-my $addC6 = 0;
-my $addcharge = "";
-my $addmass = "";
+my $addname;
+my $addC12;
+my $addC6;
+my $addcharge;
+my $addmass;
+my $template;
 my $help;
 my @grobox;
 quit_init();
 checkForModules();
 
-usage() if (@ARGV < 5 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
-        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionC12=f' => \$addC12, 'ionC6=f' => \$addC6, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'warn=i' => \$maxwarn, 
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionC12=f' => \$addC12, 't=s' => \$template,'ionC6=f' => \$addC6, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
+
+
 
 my $maxbu=10;
 foreach my $filen($outputtop, $outputgro){
@@ -116,27 +121,90 @@ foreach my $filen($outputtop, $outputgro){
 	}
 }
 
-if($addmass eq ""){
-	smog_quit("mass of ion must be provided on command line.");
-}
-if($addcharge eq ""){
-	smog_quit("charge of ion must be provided on command line.");
-}
-if($addC12 eq ""){
-	smog_quit("C12 parameter of ion must be provided on command line.");
-}
-if($addname eq ""){
-	smog_quit("name of ion must be provided on command line.");
-}
-if(length($addname) > 5){
-	smog_quit("Ion name $addname too long. Maximum of 5 characters allowed.");
-}
-warninfo();
 
+if(!defined $addname){
+	smog_quit("Please indicate which ion species to add with the -ionnm option"); 
+}
 if($addnum <1){
 	smog_quit("At least one ion must be added.");
 }
 
+if(defined $template){
+	if(defined $addmass || defined $addcharge || defined $addC12 || defined $addC6){
+		smog_quit("When using the -t option, you may not provide the following additional flags: -ionC12, -ionC6, -ionq, -ionm.");
+	}
+	# read the definitions for ions from ions.def
+	my $ionfile="$template/ions.def";
+	print "\nWill read definitions of ion parameters in $ionfile\n";
+	open(IONFILE,"$ionfile") or smog_quit("Can\'t open $ionfile");
+	my $ionmatch=0;
+	while(<IONFILE>){
+		my $LINE=$_;
+		chomp($LINE);
+		my ($data,$comment)=checkcomment($LINE);
+		if($data eq ""){
+			#skip comment lines; 
+			next;
+		}
+		$data =~ s/^\s+|\s+$//g;
+		# check that nonbonded params are only added if the atom types are present
+		my @tarray=split(/\s+/,$data);
+		if($#tarray != 4){
+			smog_quit("ions.def format error.  Expected: name, mass, charge, C12, C6.\n Found\n $data");
+		}else{
+			if($tarray[0] eq "$addname"){
+				if($ionmatch >0){
+					smog_quit("Found multiple entries for $addname in ions.def file");
+				}
+				# found the ion in the def file
+				$ionmatch++;
+				$addmass=$tarray[1];
+				$addcharge=$tarray[2];
+				$addC12=$tarray[3];
+				$addC6=$tarray[4];
+				if(!looks_like_number($addmass)){
+					smog_quit("value of mass ($addmass) is not numeric.");
+				}elsif($addmass<=0){
+					smog_quit("mass must be positive.");
+				}
+				if(!looks_like_number($addcharge)){
+					smog_quit("value of charge ($addcharge) is not numeric.");
+				}
+				if(!looks_like_number($addC12)){
+					smog_quit("value of C12 ($addC12) is not numeric.");
+				}elsif($addC12<=0){
+					smog_quit("C12 must be positive.");
+				}
+				if(!looks_like_number($addC6)){
+					smog_quit("value of C6 ($addC6) is not numeric.");
+				}elsif($addC6<=0){
+					smog_quit("C6 must be positive.");
+				}
+			}
+		}
+	}
+	if($ionmatch !=1){
+		smog_quit("Could not find $addname in ions.def file");
+	}
+	close(IONFILE);
+}else{
+	if(!defined $addmass){
+		smog_quit("mass of ion not defined.");
+	}
+	if(!defined $addcharge){
+		smog_quit("charge of ion must be provided on command line.");
+	}
+	if(!defined $addC12){
+		smog_quit("C12 parameter of ion must be provided on command line.");
+	}
+	if(!defined $addC6){
+		$addC6=0;
+	}
+	if(length($addname) > 5){
+		smog_quit("Ion name $addname too long. Maximum of 5 characters allowed.");
+	}
+}
+warninfo();
 
 #check and add file name extensions, if missing
 my ($ext)= $outputgro =~ /(\.[^.]+)$/;
@@ -308,9 +376,6 @@ for(my $I=1;$I<=$NATOMS-$addnum;$I++){
 	my ($C0,$C1,$C2)=getcell(\@UNIT0,\@UNIT1,\@UNIT2,$gridwidth0,$gridwidth1,$gridwidth2,$X[$I],$Y[$I],$Z[$I]);
 	$GRIDATOMS{"$C0-$C1-$C2"}{$I}=1;
 }
-
-
-
 
 for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 	$added++;
