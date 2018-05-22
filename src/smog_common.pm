@@ -188,6 +188,7 @@ sub checkforinclude
 	my ($line,$data,$handle)=@_;
 	if($data =~ m/^#/){
 		print "will copy preprocessor line directly to new top.\n$line\n\n";
+		print "Note: not verifying content of included file\n";
 		print $handle "$line\n";
 		return 1;
 	}

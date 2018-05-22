@@ -197,9 +197,7 @@ sub addExtras {
 		$stuff =~ s/^\s+|\s+$//g;
 		# check that nonbonded params are only added if the atom types are present
 		if($directive eq "nonbond_params"){
-			my $tempstuff  = $stuff;
-			$tempstuff =~ s/\s+/ /g;
-			my @tarray=split(/ /,$tempstuff);
+			my @tarray=split(/\s+/,$stuff);
 			if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
 				next;
 			}	
@@ -1645,12 +1643,15 @@ sub appendContacts {
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
 	#print defaults
-	my $combrule = 1; my $genpairs = "no";
+	my $nbfunc=1;my $combrule = 1; my $genpairs = "no";
 	if(exists $interactions->{"gmx-combination-rule"}) { 
 		$combrule = $interactions->{"gmx-combination-rule"};
 	}
+	if(exists $interactions->{"nbfunc"}) { 
+		$nbfunc = $interactions->{"nbfunc"};
+	}
 	if(exists $interactions->{"gen-pairs"} && $interactions->{"gen-pairs"} == 1) { $genpairs = "yes"; }
-	addToTop("defaults", "  1      $combrule         $genpairs\n");
+	addToTop("defaults", "  $nbfunc      $combrule         $genpairs\n");
 }
 
 ##################

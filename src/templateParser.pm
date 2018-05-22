@@ -935,6 +935,9 @@ if(exists $interactions->{"gen-pairs"}){
 if(exists $interHandle[0]->{"gen-pairs"}) {
 	$interactions->{"gen-pairs"} = $interHandle[0]->{"gen-pairs"};
 }
+if(exists $interHandle[0]->{"nbfunc"}) {
+	$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
+}
 if(exists $interHandle[0]->{"gmx-combination-rule"}) {
 $interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
 }
