@@ -283,9 +283,12 @@ $grobox[5] =$tmpbox[6];
 $grobox[6] =$tmpbox[7];
 $grobox[7] =$tmpbox[8];
 
-print "box vectors ";
+print "box vectors:\n";
 for (my $I=0;$I<9;$I++){
-	print "$grobox[$I] ";
+	print "\t$grobox[$I]";
+	if(($I+1) % 3 ==0){
+		print "\n";
+	}
 }
 print "\n";
 
