@@ -3,6 +3,8 @@ use warnings;
 use Getopt::Long;
 use smog_common;
 use Scalar::Util qw(looks_like_number);
+our @ISA = 'Exporter';
+our @EXPORT = qw(%supported_directives);
 
 my $tmpstring = <<EOT;
 
@@ -23,6 +25,25 @@ my $wide=88;
 printdashed($wide);
 printcenter($wide,$tmpstring);
 printdashed($wide);
+
+
+# in supported_directives, a value of 1 means is it required, 0 is not supported. >1 means optional
+our %supported_directives = ( 'defaults' => '1',
+        'atomtypes' => '1',
+        'moleculetype' => '1',
+        'nonbond_params' => '2',
+        'atoms' => '1',
+        'bonds' => '1',
+        'angles' => '1',
+        'dihedrals' => '1',
+        'pairs' => '1',
+        'exclusions' => '1',
+        'system' => '1',
+        'molecules' => '1',
+        'position_restraints' => '0'
+        );
+
+
 
 sub getcell
 {
@@ -502,11 +523,22 @@ print GROFILE "$grodim\n";
 
 print "adding ions to top file...\n";
 #read in the top file, with comments stripped
+
+my $string=loadfile($inputTOP);
+my ($DATA,$DIRLIST)=checkdirectives($string);
+my %DIRLIST=%{$DIRLIST};
+my @DATA=@{$DATA};
+
 open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP"); 
 
 if(-e $outputtop){smog_quit("$outputtop already exists.")}
 open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing");
-$added=0;
+
+
+my $NBbuffer="";
+my $NBPpresent=0;
+my %typesinsystem;
+my $alreadypresent=0;
 while (<FILE>){
 	my $LINE = $_;
 	my $LINEORIG=$LINE;
@@ -538,24 +570,92 @@ while (<FILE>){
 			chomp($LINE);
 			($data,$comment)=checkcomment($LINE);
 			if(checkforinclude($LINE,$data,*TOPOUT)){next;};
-			my @art=split(/\s+/,$data);
-			if($art[0] eq "$addname"){
-				smog_quit("atomtype $addname already defined in .top file");
+			if($data eq ""){next;}
+			my @D=split(/\s+/,$data);
+			$typesinsystem{$D[0]}=1;
+			if($D[0] eq "$addname"){
+				$alreadypresent++;
 			}
 		}
+		if($alreadypresent==0){
+			print "atomtype $addname not found in .top file. Will add parameters\n";
+			print TOPOUT "$addname\t$addmass\t$addcharge\tA\t$addC6\t$addC12\n\n";
+		}elsif($alreadypresent==1){
+			print "atomtype $addname already defined in .top file. Will not overwrite parameters\n";
+		}else{
+			smog_quit("atomtype $addname already defined multiple times in top file.");
+		}
+
 		# append the new atomtype
-		print TOPOUT "$addname\t$addmass\t$addcharge\tA\t$addC6\t$addC12\n\n";
 		$LINEORIG=$LINE;
 
+		if($alreadypresent==1){
+			# since we have already defined the atomtype, we will not check for anything from extras
+		}else{
+			if(defined $template){
+		        	my $extrafile="$template/extras";
+				print "Will check if we should add any nonbond_params from extras file $extrafile";
+				open(EXTRA,"$extrafile") or smog_quit("Unable to open $extrafile");
+				while(my $line = <EXTRA>)
+				{
+					chomp($line);
+					my ($A,$B)=checkcomment($line);
+					if($A eq ""){next;}  # skip the line if it is only a comment
+				    	my @tokens = split('<',$line);
+					my $directive = $tokens[0];
+					$directive =~ s/^\s+|\s+$//g;
+					my $stuff = $tokens[1];
+					$stuff =~ s/^\s+|\s+$//g;
+					# check that nonbonded params are only added if the atom types are present
+					if($directive eq "nonbond_params"){
+						my @tarray=split(/\s+/,$stuff);
+						if((exists $typesinsystem{$tarray[0]} && $tarray[1] eq "$addname") || (exists $typesinsystem{$tarray[1]} && $tarray[0] eq "$addname") ){
+							$NBbuffer .= "$stuff\n";
+						}	
+					}
+				}
+			}
+		}
+		print TOPOUT "\n";
 	}
 	if(!defined $TMP[0]){
 		$TMP[0]="";
 	}
+
+	if($TMP[0] eq "[" and $TMP[1] eq "nonbond_params"){
+		$NBPpresent=1;
+		print TOPOUT "$data\n"; 
+	
+		$LINE = <FILE>;
+		$LINEORIG=$LINE;
+		chomp($LINE);
+		($data,$comment)=checkcomment($LINE);
+		if(checkforinclude($LINE,$data,*TOPOUT)){next;};
+		# read the current list of nonbond_params
+		until(($data eq "" and $comment eq "") or substr($data,0,1) eq "[" ){
+			$data =~ s/ /\t/g;
+			print TOPOUT "$data$comment\n"; 
+			$LINE = <FILE>;
+			$LINEORIG=$LINE;
+			if(!defined $LINE){$data="";$comment="";next;}
+			chomp($LINE);
+			($data,$comment)=checkcomment($LINE);
+			if(checkforinclude($LINE,$data,*TOPOUT)){next;};
+			if($data eq ""){next;}
+		}
+		print TOPOUT "$NBbuffer";
+	}
+
 	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
+		# if we did not find a nonbond_params, add it.
+		if($NBPpresent==0){
+			print TOPOUT "[nonbond_params]\n$NBbuffer\n\n";
+		}
+
+
 		# add a new molecule type
-		if($added == 0){
+		if($alreadypresent == 0){
 			print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
-			$added=1;
 		}
 	}
 
