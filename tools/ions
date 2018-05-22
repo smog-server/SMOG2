@@ -525,7 +525,7 @@ while (<FILE>){
 		chomp($LINE);
 		($data,$comment)=checkcomment($LINE);
 		if(checkforinclude($LINE,$data,*TOPOUT)){next;};
-
+		# read the current list of atomtypes
 		until(($data eq "" and $comment eq "") or substr($data,0,1) eq "[" ){
 			$data =~ s/ /\t/g;
 			print TOPOUT "$data$comment\n"; 
@@ -535,7 +535,12 @@ while (<FILE>){
 			chomp($LINE);
 			($data,$comment)=checkcomment($LINE);
 			if(checkforinclude($LINE,$data,*TOPOUT)){next;};
+			my @art=split(/\s+/,$data);
+			if($art[0] eq "$addname"){
+				smog_quit("atomtype $addname already defined in .top file");
+			}
 		}
+		# append the new atomtype
 		print TOPOUT "$addname\t$addmass\t$addcharge\tA\t$addC6\t$addC12\n\n";
 		$LINEORIG=$LINE;
 
