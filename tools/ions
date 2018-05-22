@@ -455,8 +455,7 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 					}
 
 					# now go through the atoms in the relevant cell
-					foreach my $atomi(keys % {$GRIDATOMS{"$CELL0-$CELL1-$CELL2"}}){
-
+					foreach my $atomi(keys %{$GRIDATOMS{"$CELL0-$CELL1-$CELL2"}}){
 						$XT=$XTT-$X[$atomi];
 						$YT=$YTT-$Y[$atomi];
 						$ZT=$ZTT-$Z[$atomi];
@@ -495,12 +494,14 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 						if($mindistt > $dist){
 							$mindistt=$dist;
 						}
+						if($dist<$mindist){
+							$mindistt=$dist;
+							last;
+						}
 					}
 				}
 			}
 		}
-
-
 	}
 
 	# if kept, then add to the hash of gridded atoms
@@ -609,7 +610,7 @@ while (<FILE>){
 					# check that nonbonded params are only added if the atom types are present
 					if($directive eq "nonbond_params"){
 						my @tarray=split(/\s+/,$stuff);
-						if((exists $typesinsystem{$tarray[0]} && $tarray[1] eq "$addname") || (exists $typesinsystem{$tarray[1]} && $tarray[0] eq "$addname") ){
+						if((exists $typesinsystem{$tarray[0]} && $tarray[1] eq "$addname") || (exists $typesinsystem{$tarray[1]} && $tarray[0] eq "$addname") || ($tarray[0] eq "$addname" && $tarray[1] eq "$addname") ){
 							$NBbuffer .= "$stuff\n";
 						}	
 					}
@@ -656,6 +657,8 @@ while (<FILE>){
 		# add a new molecule type
 		if($alreadypresent == 0){
 			print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
+			# since we just added it, don't add again
+			$alreadypresent++;
 		}
 	}
 
