@@ -407,10 +407,11 @@ for(my $I=1;$I<=$NATOMS-$addnum;$I++){
 
 for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 	$added++;
-	my $mindistt=-1;
+	my $mindistt=0;
 	my $attempt=0;
-	until($mindistt > $mindist){
+	until($mindistt == 1){
 		$attempt++;
+		$mindistt=1; # if any atoms are too close, this is set to 0, resulting in another attempt.
 		if($attempt ==1000){
 			smog_quit("Tried 1000 times to add ion number $added. Giving up.");
 		}
@@ -424,7 +425,6 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 
 		# get cell of test atom		
 		my ($C0,$C1,$C2)=getcell(\@UNIT0,\@UNIT1,\@UNIT2,$gridwidth0,$gridwidth1,$gridwidth2,$XTT,$YTT,$ZTT);
-		$mindistt=10**10;
 		# check the adjacent cells, account for PBCs
 		my $CELL0;
 		my $CELL1;
@@ -491,11 +491,8 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 						}
 
 						my $dist=($XT)**2+($YT)**2+($ZT)**2;
-						if($mindistt > $dist){
-							$mindistt=$dist;
-						}
 						if($dist<$mindist){
-							$mindistt=$dist;
+							$mindistt=0;
 							last;
 						}
 					}
@@ -579,7 +576,7 @@ while (<FILE>){
 			}
 		}
 		if($alreadypresent==0){
-			print "atomtype $addname not found in .top file. Will add parameters\n";
+			print "atomtype $addname not found in .top file. Will add parameters to .top file\n";
 			print TOPOUT "$addname\t$addmass\t$addcharge\tA\t$addC6\t$addC12\n\n";
 		}elsif($alreadypresent==1){
 			print "atomtype $addname already defined in .top file. Will not overwrite parameters\n";

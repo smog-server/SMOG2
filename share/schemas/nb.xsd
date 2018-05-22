@@ -8,7 +8,7 @@
     </xs:restriction>
 </xs:simpleType>
 
-<xs:simpleType name="gmxCombinationType">
+<xs:simpleType name="gmxType">
     <xs:restriction base="xs:integer">
     <xs:pattern value="3|2|1"/>
     </xs:restriction>
@@ -60,7 +60,8 @@
 
 <!--defauts TYPE -->
 <xs:complexType name="defaultsType">
-	<xs:attribute name="gmx-combination-rule" type="gmxCombinationType" use="optional"/>
+    <xs:attribute name="gmx-combination-rule" type="gmxType" use="optional"/>
+    <xs:attribute name="nbfunc" type="gmxType" use="optional"/>
     <xs:attribute name="gen-pairs" type="booleanType" use="optional"/>
 </xs:complexType>
 
@@ -68,7 +69,7 @@
 <!-- NB TYPE -->
 <xs:complexType name="nbTypes">
   <xs:sequence>
-    <xs:element name="defaults" type="defaultsType"/>
+    <xs:element name="defaults" type="defaultsType" minOccurs="1" maxOccurs="1" />
     <xs:element name="nonbond" type="nonbondType" maxOccurs="unbounded"/>
     <xs:element name="contact" type="contactType" maxOccurs="unbounded"/>
   </xs:sequence>
