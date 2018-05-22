@@ -172,7 +172,8 @@ if(defined $template){
 				}
 				if(!looks_like_number($addC12)){
 					smog_quit("value of C12 ($addC12) is not numeric.");
-				}				if(!looks_like_number($addC6)){
+				}
+				if(!looks_like_number($addC6)){
 					smog_quit("value of C6 ($addC6) is not numeric.");
 				}
 			}
