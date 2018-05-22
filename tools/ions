@@ -172,13 +172,8 @@ if(defined $template){
 				}
 				if(!looks_like_number($addC12)){
 					smog_quit("value of C12 ($addC12) is not numeric.");
-				}elsif($addC12<=0){
-					smog_quit("C12 must be positive.");
-				}
-				if(!looks_like_number($addC6)){
+				}				if(!looks_like_number($addC6)){
 					smog_quit("value of C6 ($addC6) is not numeric.");
-				}elsif($addC6<0){
-					smog_quit("C6 must be positive, or 0.");
 				}
 			}
 		}
@@ -204,6 +199,14 @@ if(defined $template){
 		smog_quit("Ion name $addname too long. Maximum of 5 characters allowed.");
 	}
 }
+if($addC12<=0){
+	smog_quit("C12 must be positive.");
+}
+
+if($addC6<0){
+	smog_quit("C6 can not be negative.");
+}
+
 warninfo();
 
 #check and add file name extensions, if missing
