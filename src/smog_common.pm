@@ -187,8 +187,7 @@ sub checkforinclude
 {
 	my ($line,$data,$handle)=@_;
 	if($data =~ m/^#/){
-		print "will copy preprocessor line directly to new top.\n$line\n\n";
-		print "Note: not verifying content of included file\n";
+		smog_quit("#include file listed in .top file.  Can not process associated file (not supported). If you would like smog-tools to simply copy this include line, then use the -warn option.  Offending line:\n$line\n\n");
 		print $handle "$line\n";
 		return 1;
 	}
