@@ -201,7 +201,7 @@ sub readindexfile
 	my $groupname;
 	my @grpnms;
 	my %groupnames;
-	my $Ngrps;
+	my $Ngrps=0;
 	my %atomgroup;
 	open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
 	print "Reading index file $indexFile\n";

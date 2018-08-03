@@ -158,7 +158,7 @@ my %atomgroup=%{$atomgroup};
 
 
 if($Ngrps==0){
-	smog_quit("no atom groups given in ndx file.");
+	smog_quit("no atom groups found in ndx file.");
 
 }elsif($Ngrps>1){
 	print "Select the index of the group you would like to extract?\n";
