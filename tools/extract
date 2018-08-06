@@ -42,6 +42,7 @@ usage: smog_extract  .. options ..
 	-of [extracted.top]	: output SMOG forcefield file for extracted system
 	-og [extracted.gro]	: output SMOG configuration file for extracted system
 	-om [atomindex.map]	: output file with old-to-new atom index mapping
+	-orm [restrained.map]	: output file with old-to-new atom index mapping for restrained atoms
 	-restraints <float>	: generate restraints with a specific strength for atoms 
                                 	that have interactions removed during extraction
 	-warn [0]		: convert the first N errors into warnings
@@ -60,6 +61,7 @@ my $indexFile="smog.ndx";
 my $outputtop="extracted.top";
 my $outputgro="extracted.gro";
 my $outputmap="atomindex.map";
+my $restrainedmap="restrained.map";
 my $help;
 my $gen_restraints="null";
 # in supported_directives, a value of 1 means is it required, 0 is not supported. >1 means optional
@@ -87,7 +89,7 @@ foreach my $filen(@ARGV){
 $call .="\n";
 
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
-        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'restraints=s' => \$gen_restraints,  'warn=i' => \$maxwarn, 
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'orm=s' => \$restrainedmap, 'restraints=s' => \$gen_restraints,  'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -120,13 +122,17 @@ if(!defined $ext || $ext ne ".top"){
 if(!defined $ext || $ext ne ".map"){
 	$outputmap .=  ".map";
 }
+($ext)= $restrainedmap =~ /(\.[^.]+)$/;
+if(!defined $ext || $ext ne ".map"){
+	$restrainedmap .=  ".map";
+}
 ($ext)= $indexFile =~ /(\.[^.]+)$/;
 if(!defined $ext || $ext ne ".ndx"){
 	$indexFile .=  ".ndx";
 }
 
 my $maxbu = 10;
-foreach my $filen($outputgro, $outputtop, $outputmap){
+foreach my $filen($outputgro, $outputtop, $outputmap,$restrainedmap){
 	my ($ext) = $filen =~ /(\.[^.]+)$/;
 	if($filen ne "" && -e $filen){
 		for(my $bu=1;$bu<=$maxbu;$bu++){
@@ -145,6 +151,8 @@ foreach my $filen($outputgro, $outputtop, $outputmap){
 
 open(MAPPING,">$outputmap") or smog_quit("Can\'t open $outputmap.");
 print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
+
+open(RESMAPPING,">$restrainedmap") or smog_quit("Can\'t open $restrainedmap.");
 
 ### read in the list of atoms that we want to keep
 my $groupname;
@@ -539,11 +547,11 @@ if(exists $DIRLIST{"exclusions"}){
 # information about the restraints 
 if($gen_restraints ne "null"){
 	print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
-	print MAPPING "\nThe following atoms are restrained (old and new numbering)\n";
+	print RESMAPPING "The following atoms are restrained (old and new numbering)\n";
 	print TOPOUT "[ position_restraints ]\n";
 	foreach my $res(sort {$a<=>$b} keys %atoms2restrain){
 		print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";
-		print MAPPING "$res $keepatoms2[$res-1]\n";
+		print RESMAPPING "$res $keepatoms2[$res-1]\n";
 	}
 }
 print TOPOUT "\n";
@@ -562,6 +570,7 @@ for(my $II=1;$II<=$#C;$II++){
 }
 print TOPOUT "\n";
 close(MAPPING);
+close(RESMAPPING);
 close(TOPOUT);
 warnsummary();
 
