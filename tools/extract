@@ -307,7 +307,6 @@ if(exists $DIRLIST{"nonbond_params"}){
 	for(my $II=1;$II<=$#C;$II++){
 		my ($A, $B)=checkcomment($C[$II]);
 		if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
-		print "$A\n";
 		if($A eq ""){
 			print TOPOUT "$C[$II]\n";
 		}else{
