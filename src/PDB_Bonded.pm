@@ -1210,32 +1210,36 @@ sub connWildcardMatchDihes
 	my $diheHandle = $interactions->{"dihedrals"}->{"$eG"};
 	my $funct="";
 	## WILD CARD MATCHING CONDITIONALS ##
-	my $matchScore = 0; my $saveScore = 0;;my $matchScoreCount=0; my $symmatch=0; my $Nd=0;
 	my $NumOfKeys=keys %{$diheHandle};
 	my @keys = keys %{$diheHandle};
 	if($NumOfKeys == 1 && $keys[0] eq "*-*-*-*"){
 		$funct = $diheHandle->{$keys[0]};
 
 	}else{
+		my $matchScore;
+		my $saveScore = 0;
+		my $matchScoreCount=0; 
+		my $symmatch=0; 
+		my $Nd=0;
 		foreach my $matches(keys %{$diheHandle})
 		{
 			$Nd++;
-			$matchScore = 0; $saveScore = 0;
+			$matchScore = 0; 
 			# this step can be done once, rather than for each call.
 			my ($aM,$bM,$cM,$dM) = split("-",$matches);
 			if($matches eq "*-*-*-*"){
 				$matchScore=4;
 			}else{
 	
-			if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
-				|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-				|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
-				|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){next;}
+				if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
+					|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
+					|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
+					|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){next;}
 	
-			if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
 	
 			}	
 	
@@ -1248,7 +1252,7 @@ sub connWildcardMatchDihes
 				## this to make sure that the highest scoring angle is unique
 				if($matchScore == $saveScore){
 					if($saveScore != 0){
-					$matchScoreCount++;
+						$matchScoreCount++;
 					}
 				}else{
 					$matchScoreCount=0;
@@ -1270,7 +1274,7 @@ sub connWildcardMatchDihes
 			smog_quit ("$symmatch  $sym $matchScoreCount Multiple possible angles match $a-$b-$c-$d, and energyGroup $eG equally well. Can not determine function based on .b file.");
 		}
 	
-		if($matchScore == 0){
+		if($saveScore == 0){
 			smog_quit ("Dihedral Angle between bTypes $a-$b-$c-$d and energyGroup $eG: Unable to match to a function in .b file.");
 		}
 	

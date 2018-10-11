@@ -46,6 +46,7 @@ usage: smog_extract  .. options ..
 	-restraints <float>	: generate restraints with a specific strength for atoms 
                                 	that have interactions removed during extraction
 	-warn [0]		: convert the first N errors into warnings
+	-nogro			: do not extract a gro file. Only extract a .top
 	-help			: show options
 EOT
   if ( @_ ){
@@ -63,6 +64,7 @@ my $outputgro="extracted.gro";
 my $outputmap="atomindex.map";
 my $restrainedmap="restrained.map";
 my $help;
+my $nogro;
 my $gen_restraints="null";
 # in supported_directives, a value of 1 means is it required, 0 is not supported. >1 means optional
 our %supported_directives = ( 'defaults' => '1',
@@ -90,7 +92,7 @@ $call .="\n";
 
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
         'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'orm=s' => \$restrainedmap, 'restraints=s' => \$gen_restraints,  'warn=i' => \$maxwarn, 
-        '<>' => \&usage)
+        '<>' => \&usage, 'nogro' => \$nogro)
         or defined $help); 
 
 warninfo();
@@ -199,45 +201,49 @@ for my $atom ( sort {$a<=>$b} keys %{$atomgroup{$extgrp}} ) {
 
 
 ### extract the atoms and make a new gro file 
+if(defined $nogro){
+	print "Note: -nogro give. Will not extract a gro file.\n";
 
-open(GROFILE,"$inputGRO") or smog_quit("Can\'t open GRO file $inputGRO");
-my $groheader=<GROFILE>;
-chomp($groheader);
-
-my $TMP=<GROFILE>;
-chomp($TMP);
-$TMP =~ s/\t/ /g; 
-$TMP =~ s/^\s+|\s+$//g;
-$TMP =~ s/ +/ /g;
-@A=split(/\s+/,$TMP);
-my $NATOMS=$A[0];
-my @GRODATA;
-unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
-
-print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted system...\n\n";
-
-print "Processing gro file\n";
-for(my $I=0;$I<$NATOMS;$I++){
-	# store gro data
-	my $LINE=<GROFILE>;
-	chomp($LINE);
-	$GRODATA[$I+1]=$LINE;
-}
-my $grodim=<GROFILE>;
-chomp($grodim);
-close(GROFILE);
-
-open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
-print GROFILE "$groheader\n";
-print GROFILE "$KEEPN\n";
-for(my $I=0;$I<$KEEPN;$I++){
-	if(!exists $GRODATA[$keepatoms2[$I]]){
-		smog_quit("Atom index $I given in index file, but not found in $inputGRO");
+}else{
+	open(GROFILE,"$inputGRO") or smog_quit("Can\'t open GRO file $inputGRO");
+	my $groheader=<GROFILE>;
+	chomp($groheader);
+	
+	my $TMP=<GROFILE>;
+	chomp($TMP);
+	$TMP =~ s/\t/ /g; 
+	$TMP =~ s/^\s+|\s+$//g;
+	$TMP =~ s/ +/ /g;
+	@A=split(/\s+/,$TMP);
+	my $NATOMS=$A[0];
+	my @GRODATA;
+	unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
+	
+	print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted system...\n\n";
+	
+	print "Processing gro file\n";
+	for(my $I=0;$I<$NATOMS;$I++){
+		# store gro data
+		my $LINE=<GROFILE>;
+		chomp($LINE);
+		$GRODATA[$I+1]=$LINE;
 	}
-	print GROFILE "$GRODATA[$keepatoms2[$I]]\n";
+	my $grodim=<GROFILE>;
+	chomp($grodim);
+	close(GROFILE);
+	
+	open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
+	print GROFILE "$groheader\n";
+	print GROFILE "$KEEPN\n";
+	for(my $I=0;$I<$KEEPN;$I++){
+		if(!exists $GRODATA[$keepatoms2[$I]]){
+			smog_quit("Atom index $I given in index file, but not found in $inputGRO");
+		}
+		print GROFILE "$GRODATA[$keepatoms2[$I]]\n";
+	}
+	print GROFILE "$grodim\n";
+	close(GROFILE);
 }
-print GROFILE "$grodim\n";
-
 
 my %atoms2restrain;
 #read in the top file
@@ -546,7 +552,7 @@ if(exists $DIRLIST{"exclusions"}){
 # information about the restraints 
 if($gen_restraints ne "null"){
 	print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
-	print RESMAPPING "The following atoms are restrained (old and new numbering)\n";
+	print RESMAPPING "The following atoms are restrained (new and old numbering)\n";
 	print TOPOUT "[ position_restraints ]\n";
 	foreach my $res(sort {$a<=>$b} keys %atoms2restrain){
 		print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";

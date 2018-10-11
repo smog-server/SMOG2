@@ -1259,8 +1259,7 @@ sub createDihedralAngleFunctionals {
 	
 				smog_quit ("$symmatch  $sym $matchScoreCount Multiple possible angles match $a-$b-$c-$d, and energyGroup $eG equally well. Can not determine function based on .b file.");
 			}
-	
-			if($matchScore == 0){
+			if($saveScore == 0){
 				smog_quit ("Dihedral Angle between bTypes $a-$b-$c-$d and energyGroup $eG: Unable to match to a function in .b file.");
 			}
 	
