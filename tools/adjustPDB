@@ -57,9 +57,9 @@ usage: smog_adjustPDB .. options ..
 	-default 		: use the default file name provided by smog2 
 	-map <filename>		: specify a user-defined mapping file
 	-o [adjusted.pdb] 	: output pdb file name
-	-warn [0] 		: convert first N errors to warnings 
 	-renumber 		: ignore any residue numbering inconsistencies and renumber residues sequentially
 	-removeH		: strip the file of any atoms that begin with "H"
+	-warn [0] 		: convert first N errors to warnings (-1: convert all errors) 
 	-help 	  		: show options
 EOS
 
@@ -219,7 +219,7 @@ sub adjustInputFile(){
 			my $newResNum = $resNum;
 			if($resNum =~ /^\d+$/ && $lastresidue =~ /^\d+$/){
 				if($resNum-$lastresidue > 1 && $firstresidue !=1 && !$renumber){
-					smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum.");
+					smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (near line $k).");
 				}
 			}elsif(!$renumber){
 				smog_quit("Non-integer residue ID found: $resNum.");
