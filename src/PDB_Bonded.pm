@@ -675,6 +675,8 @@ sub GenerateBondedGeometry {
 	print "Storing dihedral info for chain $chid.\n";
 	$DihedralData{$counter} = pdl(@tempArr);
 	@tempArr = ();
+	print "Done generating bonded geometry of chain $chid.\n\n";
+	
 	return(\@ConnectedAtoms2);
 }
 
