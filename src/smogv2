@@ -1131,8 +1131,20 @@ sub readAtoms
 	my $counter=0; my $resCounter=1;my $resNumCurr="null";
 	my $endreached=0;
 	my $totalcharge=0;
+	my $systemcharge=0;
+	my $chainindex=1;
 	while($line = <PDB>)
 	{
+		if($line =~ m/^TER|^END/) {
+			print "\nTotal charge of chain $chainindex: $totalcharge\n";
+			if(abs($totalcharge-int($totalcharge+1)) > 0.001 && abs($totalcharge-int($totalcharge)) > 0.001 && abs($totalcharge-int($totalcharge-1)) > 0.001 ){
+				smog_quit("Non-integer charge for chain $chainindex. This typically means something is wrong with the .bif file.");
+			}
+
+			$systemcharge+=$totalcharge;
+			$totalcharge=0;
+			$chainindex++;
+		}
 		if($line =~ m/^END/) {$endreached=1;last;}
 		if($line =~ m/^ATOM/ || $line =~ m/^HETATM/)
 		{
@@ -1155,7 +1167,6 @@ sub readAtoms
 			if(!$residues{$resName}->{"atoms"}->{$atomName}){next;}
 			$counter++;$atomNum=$counter;
 			$atomType = $residues{$resName}->{"atoms"}->{$atomName}->{"nbType"};
-			#printf $OUTPUT "%6d %10s %6d %6s %6s %6d\n", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum;
 			addToTop("atoms",sprintf("%6d %10s %6d %6s %6s %6d", $atomNum, $atomType, $resCounter, $resName, $atomName, $atomNum));
 			if(defined $residues{$resName}->{"atoms"}->{$atomName}->{"charge"}){
 				#if charge is defined for an atom in a  specific residue, then write it
@@ -1169,12 +1180,12 @@ sub readAtoms
 			addToTop("atoms",sprintf("\n"));
 		}
 	}
-	print "\nTotal charge of system: $totalcharge\n\n";
+	print "\nTotal charge of system: $systemcharge\n\n";
 
 	if($totalcharge !=0){
-		addToTop("comments", "; Note: total charge of system is $totalcharge\n");
+		addToTop("comments", "; Note: total charge of system is $systemcharge\n");
 	}
-	if($totalcharge-int($totalcharge) > 0.01){
+	if(abs($systemcharge-int($systemcharge+1)) > 0.001 && abs($systemcharge-int($systemcharge+1))>0.001 && abs($systemcharge-int($systemcharge-1))>0.001 ){
 		smog_quit("Non-integer system charge. This typically means something is wrong with the .bif file.");
 	}
 	unless($endreached){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
