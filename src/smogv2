@@ -241,12 +241,12 @@ sub checkExtras {
 sub printOrderedBonds
 {
 
-	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2) = @_;
+	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2,$indexhandle) = @_;
 	my @bondCache; ## CACHE BONDS TO ORDER
 
 	## Cache Bonds ##
-	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache);
-	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache);
+	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache,$indexhandle);
+	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache,$indexhandle);
 	## Sort bonds by i then j ## 
 	@bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
 
@@ -257,10 +257,33 @@ sub printOrderedBonds
 	}
 }
 
+##
+# call  calculateBondsHelper1() for each residue defined in templates
+sub calculateBonds1
+{
+	my($bondFunctHandle,$whichPDL,$bondCache,$indexhandle) = @_;
+	foreach my $res(keys %{$bondFunctHandle}){
+	       if(!exists $whichPDL->{$res}){next;}
+	       calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache,$indexhandle);
+	}
+}
+
+
+##
+#call connCalculateBondsHelper() for each chain in PDB
+sub calculateBonds2
+{
+	my($bondHandle,$whichPDL,$bondCache,$indexhandle) = @_;
+	foreach my $chain(keys %{$bondHandle})
+	{
+		calculateBondsHelper2($bondHandle->{$chain},$whichPDL->{$chain},$bondCache,$indexhandle);
+	
+	}
+}
 
 sub calculateBondsHelper1
 {
-	my($bondHash,$inputPDL,$bondCache) = @_;
+	my($bondHash,$inputPDL,$bondCache,$indexhandle) = @_;
 	my $bondArr = $bondHash->{"bonds"};
 	my $bondFunc =$bondHash->{"functions"};
 	my $bondIndex = 0;
@@ -275,7 +298,7 @@ sub calculateBondsHelper1
 	       {
 			my $I1=$indexList1[$i];
 			my $I2=$indexList2[$i];
-			my $val=bondOutput($bondFunc->[$bondIndex],$I1,$I2,$bondList[$i]);
+			my $val=bondOutput($bondFunc->[$bondIndex],$I1,$I2,$bondList[$i],$indexhandle);
 			if(!$val){next;}
 			# i,j are meta data
 	 		push @{$bondCache}, {'i' => $I1,'j' => $I2, 'v' => $val};
@@ -285,34 +308,9 @@ sub calculateBondsHelper1
 	}
 }
 
-##
-# call  calculateBondsHelper1() for each residue defined in templates
-sub calculateBonds1
-{
-	my($bondFunctHandle,$whichPDL,$bondCache) = @_;
-	foreach my $res(keys %{$bondFunctHandle}){
-	       if(!exists $whichPDL->{$res}){next;}
-	       calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache);
-	}
-}
-
-
-##
-#call connCalculateBondsHelper() for each chain in PDB
-sub calculateBonds2
-{
-	my($bondHandle,$whichPDL,$bondCache) = @_;
-	foreach my $chain(keys %{$bondHandle})
-	{
-		calculateBondsHelper2($bondHandle->{$chain},$whichPDL->{$chain},$bondCache);
-	
-	}
-}
-
-##
 sub calculateBondsHelper2
 {
-	my($bondInfo,$inputPDL,$bondCache) = @_;
+	my($bondInfo,$inputPDL,$bondCache,$indexhandle) = @_;
 	my $size = $bondInfo->dim(1);
 	for(my $i=0;$i<$size;$i++)
 	{
@@ -323,7 +321,7 @@ sub calculateBondsHelper2
 		my $output = sclr(sqrt(inner($outer,$outer))*$angToNano);
 		$atomOne = sclr(slice($inputPDL,"3:3,$atomOne,:"));
 		$atomTwo = sclr(slice($inputPDL,"3:3,$atomTwo,:"));
-		my $val=bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output);
+		my $val=bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output,$indexhandle);
 		if(!$val){next;}
 		push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => $val};
 	}
@@ -335,7 +333,7 @@ sub calculateBondsHelper2
 # internal format is f()+g()
 sub bondOutput
 {
-	my($inputFunc,$i,$j,$values) = @_;
+	my($inputFunc,$i,$j,$values,$indexhandle) = @_;
 	if(!$inputFunc){smog_quit ("BONDOUTPUT::NO FUNCTION DEFINED");}
 	## Remove white spaces from string ##
 	$inputFunc =~ s/^\s+|\s+$//g;
@@ -357,8 +355,11 @@ sub bondOutput
 	        	if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
 	        	|| $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
 				my $DIST=int($paramArr[0]*100)/100.0;
+				my %reflist=%{$indexhandle};
 				if($setBondtoLimit){
-					print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.\n\n");
+					my $i1=$reflist{$i};
+					my $j1=$reflist{$j};
+					print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.\n\n");
 					print "-limitbondlength is being used, will set length to ";
 		 			if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
 		  				$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
@@ -368,12 +369,9 @@ sub bondOutput
 		  				print "$paramArr[0] nm\n\n";
 		 			}
 				}else{
-					smog_quit("Distance of $DIST nm calculated for atom pair $i and $j. This is outside of bond threshold range.
-To help locate an output Gro index in the input PDB, the original chain and residue number for each Gro index is shown:\n
- GroIndex  PDB_Chain#  PDB_Residue#  
-----------------------------
-".$i."\t ".($allAtoms{$i}[4]+1)."\t ".$allAtoms{$i}[2]." 
-".$j."\t ".($allAtoms{$j}[4]+1)."\t ".$allAtoms{$j}[2]);
+					my $i1=$reflist{$i};
+					my $j1=$reflist{$j};
+					smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
 				}
 	        	}	
 	       
@@ -1129,6 +1127,7 @@ sub calculateAtomTypes
 sub readAtoms
 {
 	my($inputPDB) = @_;
+	my %reflist;
 	open(PDB,$inputPDB);
 	my $line = "";
 	my $atomName;my $atomNum; my $resName; my $resNum;
@@ -1138,15 +1137,18 @@ sub readAtoms
 	my $totalcharge=0;
 	my $systemcharge=0;
 	my $chainindex=1;
+	my $linenumber=0;
+	my $atomindex=0;
 	while($line = <PDB>)
 	{
+		$linenumber++;
 		if($line =~ m/^TER|^END/) {
 
 			my $TCr=int($totalcharge + $totalcharge/abs($totalcharge*2 || 1));
 			if(abs($totalcharge-int($TCr)) > 0.001){
 				smog_quit("Non-integer charge ($totalcharge) for chain $chainindex. This typically means something is wrong with the .bif file.");
 			}
-			print "\nTotal charge of chain $chainindex: $TCr\n";
+			print "Charge of chain $chainindex: $TCr\n";
 			$systemcharge+=$totalcharge;
 			$totalcharge=0;
 			$chainindex++;
@@ -1154,6 +1156,8 @@ sub readAtoms
 		if($line =~ m/^END/) {$endreached=1;last;}
 		if($line =~ m/^ATOM/ || $line =~ m/^HETATM/)
 		{
+			$atomindex++;
+			$reflist{$atomindex}=$linenumber;
 			$atomName = substr($line, 12, 4);
 			$atomName =~ s/^\s+|\s+$//g;
 			#$atomNum = substr($line,6,5);
@@ -1197,7 +1201,7 @@ sub readAtoms
 		smog_quit("Non-integer system charge ($systemcharge). This typically means something is wrong with the .bif file.");
 	}
 	unless($endreached){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
-
+	return(%reflist);
 }
 
 ##
@@ -1606,11 +1610,11 @@ sub printBondedTopOutput {
 	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms,$rescaleCD);
 	print "Processing atoms\n";
 	calculateAtomTypes(\%allAtoms);
-	readAtoms($inputPDB);
+	my %atomIndex2Line=readAtoms($inputPDB);
 
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "Saving bonds\n";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL);
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL,\%atomIndex2Line);
 
 	## CALCULATE ANGLES ##
 	print "Saving angles\n";
