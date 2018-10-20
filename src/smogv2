@@ -412,11 +412,11 @@ sub bondFuncParser
 # Combined bond calculation,sorting, and printing
 sub printOrderedAngles
 {
-	my($AngleData,$bondPDL) = @_;
+	my($AngleData,$bondPDL,$indexhandle) = @_;
 	my @angleCache; ## CACHE BONDS TO ORDER
 
 	## Cache Bonds ##
-	CalculateAngles($AngleData,$bondPDL,\@angleCache);
+	CalculateAngles($AngleData,$bondPDL,\@angleCache,$indexhandle);
 
 	## Sort angles by i,j then k ## 
 	@angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
@@ -433,17 +433,17 @@ sub printOrderedAngles
 # CalculateAnglesHelper() calculates the angles for each chain
 sub CalculateAngles
 {
-	my($angleFunctHandle,$whichPDL,$angleCache) = @_;
+	my($angleFunctHandle,$whichPDL,$angleCache,$indexhandle) = @_;
  
 	foreach my $chain(keys %{$angleFunctHandle}){
-		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache);
+		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache,$indexhandle);
 	}
 }
 
 ##
 sub CalculateAnglesHelper
 {
-	my($angleArr,$inputPDL,$angleCache) = @_;
+	my($angleArr,$inputPDL,$angleCache,$indexhandle) = @_;
 	my $size = $angleArr->dim(1);
 	for(my $i=0;$i<$size;$i++)
 	{
@@ -461,7 +461,7 @@ sub CalculateAnglesHelper
 		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
 		
 		if($atomi1 > $atomi3) { my $temp = $atomi1; $atomi1 = $atomi3; $atomi3 = $temp; }
-		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos);
+		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos,$indexhandle);
 		if(!$val) {next;}
 			# i,j,k are meta data
 	 	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => $val};
@@ -472,7 +472,7 @@ sub CalculateAnglesHelper
 # Convert internal angle function format to gromacs function format
 sub angleOutput
 {
- 	my($inputFunc,$i,$j,$k,$values) = @_;
+ 	my($inputFunc,$i,$j,$k,$values,$indexhandle) = @_;
 	if(!$inputFunc){smog_quit ("ANGLEOUTPUT::NO FUNCTION DEFINED");}
  ## Remove white spaces from string ##
  	$inputFunc =~ s/^\s+|\s+$//g;
@@ -492,11 +492,19 @@ sub angleOutput
 			## Check angles threshold ##
 	 		if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
 				my $THETA=int($paramArr[0]*100)/100.0;
-				print("\n\nWARNING: ANGLE between atoms $i $j $k smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilites.\n");
+				my %reflist=%{$indexhandle};
+				my $i1=$reflist{$i};
+				my $j1=$reflist{$j};
+				my $k1=$reflist{$k};
+				print("\n\nWARNING: ANGLE between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilites.\n");
 			}
 	 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
 				my $THETA=int($paramArr[0]*100)/100.0;
-				print("\n\nWARNING: ANGLE between atoms $i $j $k greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.\n");
+				my %reflist=%{$indexhandle};
+				my $i1=$reflist{$i};
+				my $j1=$reflist{$j};
+				my $k1=$reflist{$k};
+				print("\n\nWARNING: ANGLE between atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.\n");
 			}
  		## Format output <i j k function p1 p2 ... pn>
  			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
@@ -1618,7 +1626,7 @@ sub printBondedTopOutput {
 
 	## CALCULATE ANGLES ##
 	print "Saving angles\n";
-	printOrderedAngles(\%AngleData,\%bondPDL);
+	printOrderedAngles(\%AngleData,\%bondPDL,\%atomIndex2Line);
 
 	## CALCULATE DIHEDRALS ##
 	print "Saving dihedrals\n";
