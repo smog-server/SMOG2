@@ -496,7 +496,7 @@ sub angleOutput
 				my $i1=$reflist{$i};
 				my $j1=$reflist{$j};
 				my $k1=$reflist{$k};
-				print("\n\nWARNING: ANGLE between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilites.\n");
+				smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilites.",1);
 			}
 	 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
 				my $THETA=int($paramArr[0]*100)/100.0;
@@ -504,7 +504,7 @@ sub angleOutput
 				my $i1=$reflist{$i};
 				my $j1=$reflist{$j};
 				my $k1=$reflist{$k};
-				print("\n\nWARNING: ANGLE between atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.\n");
+				smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
 			}
  		## Format output <i j k function p1 p2 ... pn>
  			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}

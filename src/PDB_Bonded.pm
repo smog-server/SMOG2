@@ -556,15 +556,15 @@ sub GenerateBondedGeometry {
 	if($chainlength == 0){
 		smog_quit("Found 0 atoms in chain $chid.  Perhaps TER appears on consecutive lines, or TER is immediately followed by END.");
 	}elsif($chainlength != 1){
-		print "Attempting to connect all atoms in chain $chid to the first atom: ";
+		print "Attempting to connect all atoms in chain $chid to the first atom..\n";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);
 		if($connected == -1){
-			print "Chain $chid has no bonds. No connections possible. May be a listing of ions.\n";
+			print "\tChain $chid has no bonds. No connections possible. May be a listing of ions.\n";
 			# this chain has no bonds, so no need to try and connect things
 		        return(\@ConnectedAtoms2);
 		}
 		if($missed==0 && $connected == $chainlength){
-			print "All $connected atoms connected via covalent bonds \n"; 
+			print "\tAll $connected atoms connected via covalent bonds \n"; 
 		}else{
 			smog_quit("We appear to have connected $connected of $chainlength atoms in chain $chid.  There is an issue connecting atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file, or missing atoms in the PDB.\nCheck for earlier warning messages. ")
 		}
