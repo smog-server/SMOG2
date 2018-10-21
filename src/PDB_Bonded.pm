@@ -1106,9 +1106,9 @@ sub connWildcardMatchAngles
 		unless(("$a" ne "$aM" && $aM ne "*")
 			|| ("$b" ne "$bM" && "$bM" ne "*")
 			|| ("$c" ne "$cM" && "$cM" ne "*")){
-				if("$a" ne "$aM") {$matchScore+=2;} else {$matchScore+=1;}
-				if("$b" ne "$bM") {$matchScore+=2;} else {$matchScore+=1;}
-				if("$c" ne "$cM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$a" eq "$aM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$b" eq "$bM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$c" eq "$cM") {$matchScore+=2;} else {$matchScore+=1;}
 				if($matchScore >= $saveScore)
 				{
 					if($aM eq $cM || ($aM eq $bM and $bM eq $cM)){
@@ -1190,14 +1190,14 @@ sub connWildcardMatchImpropers
 	{
 		$matchScore = 0;
 		my ($aM,$bM,$cM,$dM) = split("-",$matches);
-		if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
-			|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-			|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
-			|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){next;}
-		if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-		if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-		if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-		if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+		if(        ("$a" ne "$aM" && "$aM" ne "*")
+			|| ("$b" ne "$bM" && "$bM" ne "*")
+			|| ("$c" ne "$cM" && "$cM" ne "*")
+			|| ("$d" ne "$dM" && "$dM" ne "*")){next;}
+		if("$a" eq "$aM") {$matchScore+=2;} else {$matchScore+=1;}
+		if("$b" eq "$bM") {$matchScore+=2;} else {$matchScore+=1;}
+		if("$c" eq "$cM") {$matchScore+=2;} else {$matchScore+=1;}
+		if("$d" eq "$dM") {$matchScore+=2;} else {$matchScore+=1;}
 		if($matchScore >= $saveScore)
 		{$saveScore = $matchScore;$funct = $diheHandle->{$matches};}
 	}
@@ -1233,15 +1233,15 @@ sub connWildcardMatchDihes
 				$matchScore=4;
 			}else{
 	
-				if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
-					|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-					|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
-					|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){next;}
+				if(        ("$a" ne "$aM" && "$aM" ne "*")
+					|| ("$b" ne "$bM" && "$bM" ne "*")
+					|| ("$c" ne "$cM" && "$cM" ne "*")
+					|| ("$d" ne "$dM" && "$dM" ne "*")){next;}
 	
-				if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if("$a" eq "$aM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$b" eq "$bM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$c" eq "$cM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$d" eq "$dM") {$matchScore+=2;} else {$matchScore+=1;}
 	
 			}	
 	
