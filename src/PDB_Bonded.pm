@@ -1097,19 +1097,18 @@ sub connWildcardMatchAngles
 	my($a,$b,$c) = @_;
 	my $angHandle = $interactions->{"angles"};
 	my $funct="";
-		
 	## WILD CARD MATCHING CONDITIONALS ##
 	my $matchScore = 0; my $saveScore = 0; my $matchScoreCount=0; my $symmatch=0;
 	foreach my $matches(keys %{$angHandle})
 	{
 		$matchScore = 0;
 		my ($aM,$bM,$cM) = split("-",$matches);
-		unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
-			|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-			|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){
-				if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+		unless(("$a" ne "$aM" && $aM ne "*")
+			|| ("$b" ne "$bM" && "$bM" ne "*")
+			|| ("$c" ne "$cM" && "$cM" ne "*")){
+				if("$a" ne "$aM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$b" ne "$bM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$c" ne "$cM") {$matchScore+=2;} else {$matchScore+=1;}
 				if($matchScore >= $saveScore)
 				{
 					if($aM eq $cM || ($aM eq $bM and $bM eq $cM)){
@@ -1129,12 +1128,13 @@ sub connWildcardMatchAngles
 			}
 		}
 	}
+
 	my $sym=0;
 	if($a eq $c || ($a eq $b and $b eq $c)){
 		$sym=1;
 	}
 	if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
-		smog_quit ("Multiple possible angles match $a-$b-$c equally well. Unclear assignment of function type");
+		smog_quit ("Multiple possible angles match $a-$b-$c equally well (score=$saveScore;$matchScoreCount). Unclear assignment of function type");
 	}
 
 	if(!defined $funct|| $funct eq ""){smog_quit("There is no function for bType combination $a-$b-$c. Check .b file");}
