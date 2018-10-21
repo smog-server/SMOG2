@@ -954,6 +954,7 @@ my $indexA;my $indexB;my $typeA; my $typeB;
 my $indexC;my $indexD;my $typeC; my $typeD;
 
 my %bondHandle;
+my @improperHandle;
 my %dihedralHandle;
 
 
@@ -968,9 +969,20 @@ foreach my $res (keys %residues)
 	my @inputString; my @functionString;
 	my %adjList; 
 
+# check that every atom in an improper is actually present in the residue
+	@improperHandle = @{$residueHandle->{"impropers"}};
+
+	foreach my $imp(@improperHandle){
+		my $ats = $imp->[0] . "-" . $imp->[1] . "-" . $imp->[2] . "-" . $imp->[3];
+		for (my $ii=0;$ii<4;$ii++){
+			if(!exists $residueHandle->{"atoms"}->{$imp->[$ii]}){
+				smog_quit ("$imp->[$ii] doesn't exists in $res but it is used in improper: $ats");
+			}
+		}
+	}
+
 	foreach my $bondInfo(keys %bondHandle)
 	{
-		
 		($atomA,$atomB) = $bondInfo =~ /(.*)\-(.*)/;
   ## Check if atoms exists in declaration ##
   	    if(!exists $residueHandle->{"atoms"}->{"$atomA"}) 
