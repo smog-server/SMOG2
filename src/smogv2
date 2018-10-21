@@ -330,7 +330,6 @@ sub calculateBondsHelper2
 
 ##
 # Convert internal bond function format to gromacs function format,
-# internal format is f()+g()
 sub bondOutput
 {
 	my($inputFunc,$i,$j,$values,$indexhandle) = @_;
@@ -357,6 +356,9 @@ sub bondOutput
 				my $DIST=int($paramArr[0]*100)/100.0;
 				my %reflist=%{$indexhandle};
 				if($setBondtoLimit){
+					if(!exists $reflist{$i} || !exists $reflist{$j}){
+						smog_quit("Internal error 2.  Please inform smog team");
+					}
 					my $i1=$reflist{$i};
 					my $j1=$reflist{$j};
 					print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.\n\n");
@@ -369,6 +371,9 @@ sub bondOutput
 		  				print "$paramArr[0] nm\n\n";
 		 			}
 				}else{
+					if(!exists $reflist{$i} || !exists $reflist{$j}){
+						smog_quit("Internal error 3.  Please inform smog team");
+					}
 					my $i1=$reflist{$i};
 					my $j1=$reflist{$j};
 					smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
