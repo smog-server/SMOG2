@@ -4,13 +4,13 @@
 <!-- BOOLEAN TYPE -->
 <xs:simpleType name="booleanType">
     <xs:restriction base="xs:integer">
-    <xs:pattern value="1|0"/>
+    <xs:pattern value="^1$|^0$"/>
     </xs:restriction>
 </xs:simpleType>
 
 <xs:simpleType name="gmxType">
     <xs:restriction base="xs:integer">
-    <xs:pattern value="3|2|1"/>
+    <xs:pattern value="^3$|^2$|^1$"/>
     </xs:restriction>
 </xs:simpleType>
 
