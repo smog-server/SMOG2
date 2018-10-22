@@ -71,6 +71,13 @@
         <bType>*</bType>
         <bType>*</bType>
         </dihedral>
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="ligflex">
+	<bType>*</bType>
+	<bType>*</bType>
+	<bType>*</bType>
+	<bType>*</bType>
+	</dihedral>
+
 </dihedrals>
 
 <!-- IMPROPERS -->

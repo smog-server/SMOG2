@@ -79,75 +79,75 @@
 					<atom>C8</atom>
 					<atom>N9</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>N9</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>C1*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>C2*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>C3*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>C4*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>C5*</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>O5*</atom>
 					<atom>PA</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>O3A</atom>
 					<atom>PB</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>PB</atom>
 					<atom>O1B</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>PB</atom>
 					<atom>O2B</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="ligflex">
 					<atom>PB</atom>
 					<atom>O3B</atom>
 				</bond>
