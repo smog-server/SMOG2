@@ -41,7 +41,7 @@ use smog_common;
 ## DECLEARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges round);
+qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges round);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -102,6 +102,7 @@ our %EGinBif;
 our %EGinSif;	
 our %pairtypesused;
 our %bondtypesused;
+our %fTypes;
 
 ###########################
 ## CLEAR VARIABLE MEMORY ##
@@ -147,6 +148,18 @@ sub round
  	}
 	return $round;	
 }
+
+# checkFunction: verifies that function type is supported 
+sub checkFunction
+{
+	my($funcString) = @_;
+	$funcString =~ s/\(.*//g;
+	if(!exists $fTypes{"$funcString"}){smog_quit ("\"$funcString\" is not a supported function type in SMOG");}
+	if(!exists $functions->{$funcString}){smog_quit ("Function \"$funcString\" is being used, but is not defined in .sif file");}
+}
+
+
+
 sub checkREScharges
 {
 	my $string="";
@@ -756,6 +769,7 @@ sub parseBonds {
  		$bondtypesused{$typeA}=1;
  		$bondtypesused{$typeB}=1;
 		my $func = $inter->{"func"};
+		&checkFunction($func);
 		if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
 	               exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
 			smog_quit ("bond type between bType $typeA and bType $typeB defined more than once. Check .b file.");
@@ -785,6 +799,7 @@ sub parseBonds {
 		}
 
 		my $func = $inter->{"func"};
+		&checkFunction($func);
 		my $eG;
 		if(exists $inter->{"energyGroup"})
 		{	
@@ -811,41 +826,42 @@ sub parseBonds {
 
 		
 	## Obtain improper handle
-	@interHandle = @{$data->{"impropers"}->[0]->{"improper"}};
-	
-	## Loop over dihedrals, save $interaction{dihedrals}{typeA}{typeB}{typeC}{typeD}
-	## = function info. 
-	$counter=0;
-	foreach my $inter(@interHandle)
-	{
-		my $typeA = $inter->{"bType"}->[0];
-		my $typeB = $inter->{"bType"}->[1];
-		my $typeC = $inter->{"bType"}->[2];
-		my $typeD = $inter->{"bType"}->[3];
+	if(exists $data->{"impropers"}->[0]->{"improper"}){
+		@interHandle = @{$data->{"impropers"}->[0]->{"improper"}};
+		
+		## Loop over dihedrals, save $interaction{dihedrals}{typeA}{typeB}{typeC}{typeD}
+		## = function info. 
+		$counter=0;
+		foreach my $inter(@interHandle)
+		{
+			my $typeA = $inter->{"bType"}->[0];
+			my $typeB = $inter->{"bType"}->[1];
+			my $typeC = $inter->{"bType"}->[2];
+			my $typeD = $inter->{"bType"}->[3];
 
-		foreach my $name($typeA, $typeB, $typeC, $typeD){
- 			$bondtypesused{$name}=1;
-		}
+			foreach my $name($typeA, $typeB, $typeC, $typeD){
+ 				$bondtypesused{$name}=1;
+			}
 
-		my $func = $inter->{"func"};
+			my $func = $inter->{"func"};
+			&checkFunction($func);
+			my $keyString = "$typeA-$typeB-$typeC-$typeD";
+			if(exists $interactions->{"impropers"}->{$keyString}){
+				smog_quit ("improper type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.");
+			}
+			$interactions->{"impropers"}->{$keyString} = $func;
+			
+			$keyString = "$typeD-$typeC-$typeB-$typeA";
 		
-		my $keyString = "$typeA-$typeB-$typeC-$typeD";
-		if(exists $interactions->{"impropers"}->{$keyString}){
-			smog_quit ("improper type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.");
+			$interactions->{"impropers"}->{$keyString} = $func;
+			
+			$funcTable{"impropers"}->{$func} = $counter;
+			$funcTableRev{"impropers"}->{$counter} = $func;
+			
+			
+			$counter++;
 		}
-		$interactions->{"impropers"}->{$keyString} = $func;
-		
-		$keyString = "$typeD-$typeC-$typeB-$typeA";
-	
-		$interactions->{"impropers"}->{$keyString} = $func;
-		
-		$funcTable{"impropers"}->{$func} = $counter;
-		$funcTableRev{"impropers"}->{$counter} = $func;
-		
-		
-		$counter++;
-	}
-	
+	}	
 	## Obtain angles handle
 	@interHandle = @{$data->{"angles"}->[0]->{"angle"}};
 	## Loop over angles, save $interaction{angles}{A}{B}{C} = function info.
@@ -861,6 +877,7 @@ sub parseBonds {
 		}
 
 		my $func = $inter->{"func"};
+		&checkFunction($func);
 		my $keyString = "$typeA-$typeB-$typeC";
 		## NOTE THE ORDER OF CENTRAL TYPE LISTED IN XML FILE MATTERS ##
 		if(exists $interactions->{"angles"}->{$keyString}){
@@ -915,6 +932,7 @@ foreach my $inter(@interHandle)
  	$pairtypesused{$typeA}=1;
  	$pairtypesused{$typeB}=1;
 	my $func = $inter->{"func"};
+	&checkFunction($func);
  	my $cG = $inter->{"contactGroup"};
 	if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
 		smog_quit ("contact parameters defined multiple times for types $typeA-$typeB. Check .nb file.");

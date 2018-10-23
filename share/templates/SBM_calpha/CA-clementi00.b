@@ -28,16 +28,4 @@
 	<bType>*</bType>
 	</dihedral>
 </dihedrals>
-<!-- IMPROPERS -->
-<impropers>
-	<improper func="not_defined(?,?)">
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	<bType>*</bType>
-	</improper>
-</impropers>
-
-
-
 </b>

@@ -1578,15 +1578,15 @@ sub parseTemplatesAndPDB
     	## PARSE TEMPLATES ##
     	#####################
 	initializeDirectives($inputFolder,$inputPDB);
+	## parse .sif File ##
+	parseSif();
 	## parse .nb file  ##
 	parseNonBonds();
 	## parse .b file   ##
 	parseBonds();
 	## parse .bif File ##
 	parseBif();
-	## parse .sif File ##
-	parseSif();
-    	print "\nDone parsing templates.\n";
+	    	print "\nDone parsing templates.\n";
 
     	print "\nChecking template definitions for consistency.\n";
 	my $checkmessage=checkenergygroups();
