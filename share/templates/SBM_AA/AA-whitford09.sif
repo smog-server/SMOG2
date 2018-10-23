@@ -17,8 +17,8 @@
 <Groups>
 	<!-- NUCLEIC ENERGY GROUPS -->
 	<!-- Normalized -->
-	<energyGroup name="bb_n" residueType="nucleic" intraRelativeStrength="1" normalize="1"/>
-	<energyGroup name="sc_n" residueType="nucleic" intraRelativeStrength="1" normalize="1"/>
+	<energyGroup name="bb_n" residueType="nucleic" intraRelativeStrength="1.0" normalize="1"/>
+	<energyGroup name="sc_n" residueType="nucleic" intraRelativeStrength="1.0" normalize="1"/>
 	<!-- Not-Normalized -->
 	<energyGroup name="pr_n" residueType="nucleic" normalize="0"/>
 
@@ -33,7 +33,6 @@
     	<!-- LIGAND ENERGY GROUP -->
     	<energyGroup residueType="ligand" name="lig" normalize="0"/>
     	<energyGroup residueType="ligand" name="ligflex" normalize="1" intraRelativeStrength="1.0" />
-
 
  	<!-- Global Contacts Settings -->
 	<contactGroup name="c" intraRelativeStrength="1" normalize="1"/>

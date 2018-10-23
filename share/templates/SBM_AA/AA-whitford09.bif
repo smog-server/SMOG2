@@ -3475,10 +3475,6 @@
 			</impropers>
 		</residue>
 
-
-
-
-
 <!--RNA G-->
 		<residue name="G" residueType="nucleic">
 			<atoms>
@@ -7661,41 +7657,40 @@
 </residues>
 <!-- CONNECTIONS -->
 
-	<connections>
-		<!-- NUCLEIC/NUCLEIC -->
-		<connection name="nucleic-nucleic" residueType1="nucleic" residueType2="nucleic">
-			<bond energyGroup="bb_n" >
-				<atom>O3*</atom>
-				<atom>P</atom>
-			</bond>
-		</connection>
-		
-		<!-- AMINO/AMINO -->
-		<connection name="amino-amino" residueType1="amino" residueType2="amino">
-			<bond energyGroup="r_a" >
-				<atom>C</atom>
-				<atom>N</atom>
-			</bond>
-
-                	<improper>
-                        	<atom>O</atom>
-                        	<atom>CA</atom>
-                        	<atom>C</atom>
-                        	<atom>N+</atom>
-                	</improper>
-		</connection>
-		<!-- NUCLEIC to AMINO (e.g. aa-tRNA) -->
-		<connection name="nucleic-amino" residueType1="nucleic" residueType2="amino">
-			<bond energyGroup="r_a" >
-				<atom>O3*</atom>
-				<atom>C</atom>
-			</bond>
-                	<improper>
-                        	<atom>O3*</atom>
-                        	<atom>C+</atom>
-                        	<atom>O+</atom>
-                        	<atom>CA+</atom>
-                	</improper>
-		</connection>
-	</connections>
+<connections>
+	<!-- NUCLEIC/NUCLEIC -->
+	<connection name="nucleic-nucleic" residueType1="nucleic" residueType2="nucleic">
+		<bond energyGroup="bb_n" >
+			<atom>O3*</atom>
+			<atom>P</atom>
+		</bond>
+	</connection>
+	
+	<!-- AMINO/AMINO -->
+	<connection name="amino-amino" residueType1="amino" residueType2="amino">
+		<bond energyGroup="r_a" >
+			<atom>C</atom>
+			<atom>N</atom>
+		</bond>
+        	<improper>
+                	<atom>O</atom>
+                	<atom>CA</atom>
+                	<atom>C</atom>
+                	<atom>N+</atom>
+        	</improper>
+	</connection>
+	<!-- NUCLEIC to AMINO (e.g. aa-tRNA) -->
+	<connection name="nucleic-amino" residueType1="nucleic" residueType2="amino">
+		<bond energyGroup="r_a" >
+			<atom>O3*</atom>
+			<atom>C</atom>
+		</bond>
+        	<improper>
+                	<atom>O3*</atom>
+                	<atom>C+</atom>
+                	<atom>O+</atom>
+                	<atom>CA+</atom>
+        	</improper>
+	</connection>
+</connections>
 </bif>

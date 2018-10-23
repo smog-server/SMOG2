@@ -77,7 +77,6 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-
 </dihedrals>
 
 <!-- IMPROPERS -->
