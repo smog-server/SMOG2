@@ -65,7 +65,7 @@
 	<bType>*</bType>
 	</dihedral>
 	<!-- LIGAND DIHEDRALS -->
-        <dihedral func="dihedral_harmonic(?,10)" energyGroup="lig">
+        <dihedral func="dihedral_harmonic(?,40)" energyGroup="lig">
         <bType>*</bType>
         <bType>*</bType>
         <bType>*</bType>
