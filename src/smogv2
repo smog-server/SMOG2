@@ -746,6 +746,8 @@ sub calculateContacts
 		$pairtypeb = $atomTypes->{$atomb}->[10];
 		$resTypea = $atomTypes->{$atoma}->[1];
 		$resTypeb = $atomTypes->{$atomb}->[1];
+		my $resnamea = $atomTypes->{$atoma}->[5];
+		my $resnameb = $atomTypes->{$atomb}->[5];
 		($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
 		$conttypeseen{$funct}=1;
 		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");}
@@ -754,7 +756,7 @@ sub calculateContacts
 		$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
 
 		my ($fType,$fname,$directive,$addExclusions,@paramArr) = contactFuncParser($funct);
-		unless($fname eq "bond_type6"){
+		unless($residues{$resnamea}->{'atomCount'}==0 || $residues{$resnameb}->{'atomCount'}==0){
 			$count+=$contactIntraScale;
 		}
 	}
