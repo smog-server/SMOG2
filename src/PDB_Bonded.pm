@@ -185,12 +185,12 @@ sub parsePDBATOMS
 			$chaina--;
 			$chainb--;
 			if(!exists $indexMap{"$chaina-$atoma"}){
-				my $chaina1=$chaina+1;
-				smog_quit("Can not find atom $atoma in chain $chaina1");
+				$chaina++;
+				smog_quit("Can not find atom $atoma in chain $chaina");
 			}
 			if(!exists $indexMap{"$chainb-$atomb"}){
-				my $chainb1=$chainb+1;
-				smog_quit("Can not find atom $atomb in chain $chainb1");
+				$chainb++;
+				smog_quit("Can not find atom $atomb in chain $chainb");
 			}
 			my $idxA = $indexMap{"$chaina-$atoma"};
 			my $idxB = $indexMap{"$chainb-$atomb"};
@@ -651,7 +651,6 @@ sub checkconnection
 		my $typeB=$residues{$c1}->{"residueType"};
 		my $ii=$i+1;
 		if((!defined $residues{$c0}->{"connect"} || $residues{$c0}->{"connect"} eq "yes") && (!defined $residues{$c1}->{"connect"} || $residues{$c1}->{"connect"} eq "yes")){
-			print $c0;
 			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $i and $ii in chain $chid (residue index within chain, starting at 0)")
 		}elsif(defined $residues{$c0}->{"connect"} && $residues{$c0}->{"connect"} ne "no"){
 			my $tmp=$residues{$c0}->{"connect"};
@@ -777,25 +776,18 @@ sub connCreateInteractionsSingleBOND
 				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
 				: (getAtomIndexInResidue($consecResidues[0],$d),getAtomBType($consecResidues[0],$d));
 		
-		# only save the dihedral if it is centered about the bond we just added
-		if(($ja==$ia || $ja==$ib || $ja==$ic || $ja==$id) && ($jb==$ia || $jb==$ib || $jb==$ic || $jb==$id) ){
-			if(($ja==$ib || $ja==$ic) &&  ($jb==$ib || $jb==$ic))
-			{
-				$eG=getEnergyGroup($consecResidues[0],$consecResidues[1],$b,$c);
-			}else{
-				$eG=$bEG;
-			}
-				my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
-				$eG = $eGRevTable{$eG};
-				print "$ia,$ib,$ic,$id\n";
-				push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);	
+		if(($ja==$ib || $ja==$ic) && ( $jb==$ib || $jb==$ic) ){
+			$eG=$bEG;
+			my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
+			$eG = $eGRevTable{$eG};
+			push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);	
 		}
 	}
 	     
 	   
 	## Manually add Improper dihedrals ##
 	if(scalar(@{$imp})!=0){
-	appendImpropersBOND($consecResidues[0],$consecResidues[1],$resAIdx,$resBIdx,$sizeA,$imp,\@tempArr);
+		appendImpropersBOND($consecResidues[0],$consecResidues[1],$resAIdx,$resBIdx,$sizeA,$imp,\@tempArr);
 	}
 		
         if(@tempArr)

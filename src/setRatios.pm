@@ -46,8 +46,8 @@ sub DiheCountsHelper
 	{
 		my @A = $diheArr->slice(":,$i:$i")->list;
 		if($#A == 0){
-		$countsIndex[$i]=-1;
-		next;
+			$countsIndex[$i]=-1;
+			next;
 		} 
 		my $b=$A[1];
 		my $c=$A[2];
@@ -70,13 +70,10 @@ sub DiheCountsHelper
 	       			$countsIndex[$i]=$tindex;
 	       			$counts[$tindex]++;
 	       		}
-	
-	
 		}else{
 			$countsIndex[$i]=0;		
 		}	
 	}
-	
 	
 	for(my $i=0;$i<$size;$i++)
 	{
