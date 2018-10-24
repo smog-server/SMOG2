@@ -29,7 +29,7 @@ sub smog_quit
 		warn("\nWARNING $warncount : $LINE\n\n");
 	}elsif($maxwarn < $warncount && $maxwarn>0){
 		print "\nWARNING $warncount : $LINE\n\n";
-		warn("\n\nFATAL: EXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
+		warn("\n\nEXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
 		exit(1);
 	}else{
 		print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error with the -warn flag.\nHowever, it is not recommended that output obtained with this flag be used for an actual simulation.\n";
