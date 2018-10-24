@@ -65,13 +65,13 @@
 	<bType>*</bType>
 	</dihedral>
 	<!-- LIGAND DIHEDRALS -->
-        <dihedral func="dihedral_harmonic(?,40)" energyGroup="lig">
+        <dihedral func="dihedral_harmonic(?,40)" energyGroup="r_l">
         <bType>*</bType>
         <bType>*</bType>
         <bType>*</bType>
         <bType>*</bType>
         </dihedral>
-	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="ligflex">
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,3)" energyGroup="bb_l">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>

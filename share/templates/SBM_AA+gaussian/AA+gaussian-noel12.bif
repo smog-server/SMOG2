@@ -30,103 +30,103 @@
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N6</atom>
 					<atom>C6</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C6</atom>
 					<atom>N1</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C6</atom>
 					<atom>C5</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N1</atom>
 					<atom>C2</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C2</atom>
 					<atom>N3</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N3</atom>
 					<atom>C4</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C4</atom>
 					<atom>C5</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C5</atom>
 					<atom>N7</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C4</atom>
 					<atom>N9</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N7</atom>
 					<atom>C8</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C8</atom>
 					<atom>N9</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>N9</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C1*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C2*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C3*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C4*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C5*</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>O5*</atom>
 					<atom>PA</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
@@ -192,119 +192,119 @@
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N6</atom>
 					<atom>C6</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C6</atom>
 					<atom>N1</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C6</atom>
 					<atom>C5</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N1</atom>
 					<atom>C2</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C2</atom>
 					<atom>N3</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N3</atom>
 					<atom>C4</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C4</atom>
 					<atom>C5</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C5</atom>
 					<atom>N7</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C4</atom>
 					<atom>N9</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N7</atom>
 					<atom>C8</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C8</atom>
 					<atom>N9</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>N9</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C1*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C2*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C3*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C4*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C5*</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>O5*</atom>
 					<atom>PA</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>O3A</atom>
 					<atom>PB</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PB</atom>
 					<atom>O1B</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PB</atom>
 					<atom>O2B</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PB</atom>
 					<atom>O3B</atom>
 				</bond>
@@ -373,135 +373,135 @@
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
 			</atoms>
 			<bonds>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N6</atom>
 					<atom>C6</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C6</atom>
 					<atom>N1</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C6</atom>
 					<atom>C5</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N1</atom>
 					<atom>C2</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C2</atom>
 					<atom>N3</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N3</atom>
 					<atom>C4</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C4</atom>
 					<atom>C5</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C5</atom>
 					<atom>N7</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C4</atom>
 					<atom>N9</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>N7</atom>
 					<atom>C8</atom>
 				</bond>
-				<bond energyGroup="lig">
+				<bond energyGroup="r_l">
 					<atom>C8</atom>
 					<atom>N9</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>N9</atom>
 					<atom>C1*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C1*</atom>
 					<atom>C2*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C1*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C2*</atom>
 					<atom>O2*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C4*</atom>
 					<atom>O4*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C2*</atom>
 					<atom>C3*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C3*</atom>
 					<atom>O3*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C3*</atom>
 					<atom>C4*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C4*</atom>
 					<atom>C5*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>C5*</atom>
 					<atom>O5*</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>O5*</atom>
 					<atom>PA</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PA</atom>
 					<atom>O1A</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PA</atom>
 					<atom>O2A</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PA</atom>
 					<atom>O3A</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>O3A</atom>
 					<atom>PB</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PB</atom>
 					<atom>O1B</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PB</atom>
 					<atom>O2B</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PB</atom>
 					<atom>O3B</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>O3B</atom>
 					<atom>PG</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PG</atom>
 					<atom>O1G</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PG</atom>
 					<atom>O2G</atom>
 				</bond>
-				<bond energyGroup="ligflex">
+				<bond energyGroup="bb_l">
 					<atom>PG</atom>
 					<atom>O3G</atom>
 				</bond>
@@ -530,6 +530,393 @@
 					<atom>C4*</atom>
 					<atom>C3*</atom>
 					<atom>C5*</atom>
+				</improper>
+			</impropers>
+		</residue>
+
+<!--GTP-->
+		<residue name="GTP" residueType="ligand" atomCount="0">
+			<atoms>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">PG</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1G</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2G</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3G</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">PB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1B</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2B</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3B</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">PA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1A</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2A</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3A</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N9</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C8</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_l">
+					<atom>O5*</atom>
+					<atom>PA</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PA</atom>
+					<atom>O1A</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PA</atom>
+					<atom>O2A</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PA</atom>
+					<atom>O3A</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>O3A</atom>
+					<atom>PB</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PB</atom>
+					<atom>O1B</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PB</atom>
+					<atom>O2B</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PB</atom>
+					<atom>O3B</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>O3B</atom>
+					<atom>PG</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PG</atom>
+					<atom>O1G</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PG</atom>
+					<atom>O2G</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PG</atom>
+					<atom>O3G</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="bb_l">
+					<atom>C1*</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>N9</atom>
+					<atom>C8</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C8</atom>
+					<atom>N7</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>N7</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C5</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C6</atom>
+					<atom>O6</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C6</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>N1</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C2</atom>
+					<atom>N2</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C2</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>N3</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C4</atom>
+					<atom>N9</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>O2*</atom>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>C3*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N9</atom>
+				</improper>
+			</impropers>
+		</residue>
+<!--GDP-->
+		<residue name="GDP" residueType="ligand" atomCount="0">
+			<atoms>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">PB</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1B</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2B</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3B</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">PA</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1A</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2A</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3A</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O4*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O3*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O2*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C1*</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N9</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C8</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N7</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C5</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">O6</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N1</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N2</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">N3</atom>
+				<atom bType="B_1" nbType="NB_1" pairType="P_1">C4</atom>
+			</atoms>
+			<bonds>
+	<!--BACKBONE-->
+				<bond energyGroup="bb_l">
+					<atom>O5*</atom>
+					<atom>PA</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PA</atom>
+					<atom>O1A</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PA</atom>
+					<atom>O2A</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PA</atom>
+					<atom>O3A</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>O3A</atom>
+					<atom>PB</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PB</atom>
+					<atom>O1B</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PB</atom>
+					<atom>O2B</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>PB</atom>
+					<atom>O3B</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>O5*</atom>
+					<atom>C5*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C5*</atom>
+					<atom>C4*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C4*</atom>
+					<atom>O4*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C4*</atom>
+					<atom>C3*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C3*</atom>
+					<atom>O3*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C3*</atom>
+					<atom>C2*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C2*</atom>
+					<atom>O2*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+				</bond>
+				<bond energyGroup="bb_l">
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+				</bond>
+	<!--FUNCTIONAL GROUP-->
+				<bond energyGroup="bb_l">
+					<atom>C1*</atom>
+					<atom>N9</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>N9</atom>
+					<atom>C8</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C8</atom>
+					<atom>N7</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>N7</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C5</atom>
+					<atom>C6</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C6</atom>
+					<atom>O6</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C6</atom>
+					<atom>N1</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>N1</atom>
+					<atom>C2</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C2</atom>
+					<atom>N2</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C2</atom>
+					<atom>N3</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>N3</atom>
+					<atom>C4</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C4</atom>
+					<atom>C5</atom>
+				</bond>
+				<bond energyGroup="r_l">
+					<atom>C4</atom>
+					<atom>N9</atom>
+				</bond>
+			</bonds>
+			<impropers>
+				<improper>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C5*</atom>
+					<atom>O4*</atom>
+				</improper>
+				<improper>
+					<atom>O3*</atom>
+					<atom>C3*</atom>
+					<atom>C4*</atom>
+					<atom>C2*</atom>
+				</improper>
+				<improper>
+					<atom>O2*</atom>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>C3*</atom>
+				</improper>
+				<improper>
+					<atom>C2*</atom>
+					<atom>C1*</atom>
+					<atom>O4*</atom>
+					<atom>N9</atom>
 				</improper>
 			</impropers>
 		</residue>
