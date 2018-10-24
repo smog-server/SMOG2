@@ -717,7 +717,7 @@ sub connCreateInteractionsSingleBOND
 	my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");
 	
     	$BondData{$counter}=pdl($ia,$ib,$if);
-	my ($iat,$ibt)=($ia,$ib);	
+        my ($ja,$jb)=($ia,$ib);
 	## ANGLES ##
 	my @tempArr;
 	foreach my $angs(@{$angH})
@@ -738,7 +738,7 @@ sub connCreateInteractionsSingleBOND
 			: (getAtomIndexInResidue($consecResidues[0],$c),getAtomBType($consecResidues[0],$c));
 				
 		# only add angles that include the bond
-		if(($iat==$ia || $iat==$ib || $iat==$ic) && ($ibt==$ia || $ibt==$ib || $ibt==$ic) ){
+		if(($ja==$ia || $ja==$ib || $ja==$ic) && ($jb==$ia || $jb==$ib || $jb==$ic) ){
         	 my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
         	 push(@tempArr,pdl($ia,$ib,$ic,$if));
                 }	
