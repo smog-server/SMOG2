@@ -274,7 +274,12 @@ sub adjustInputFile(){
 
 			## Adjust Tail\Head names ##
 			if($isHead && $isTail){
-				smog_quit("Encountered a single-residue chain. Unclear whether to treat this as a head, or tail...");
+				if("$map{$resName}{\"tail\"}" eq "$map{$resName}{\"head\"}"){
+					# if definitions are the same, just call it head
+					$isTail=0;
+				}else{
+					smog_quit("Encountered a single-residue chain. Unclear whether to treat this as a head, or tail...");
+				}
 			}
 			if ($isHead){
 				if(!exists $map{$resName}{"head"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
