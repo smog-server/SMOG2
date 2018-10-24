@@ -702,7 +702,6 @@ sub appendImpropersBOND
 
 sub connCreateInteractionsSingleBOND
 {
-
     	my($consecResiduesH,$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$bEG,$imp) = @_;
 	my @consecResidues = @{$consecResiduesH};
 
@@ -718,7 +717,7 @@ sub connCreateInteractionsSingleBOND
 	my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");
 	
     	$BondData{$counter}=pdl($ia,$ib,$if);
-			
+	my ($iat,$ibt)=($ia,$ib);	
 	## ANGLES ##
 	my @tempArr;
 	foreach my $angs(@{$angH})
@@ -738,9 +737,11 @@ sub connCreateInteractionsSingleBOND
 			? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
 			: (getAtomIndexInResidue($consecResidues[0],$c),getAtomBType($consecResidues[0],$c));
 				
-			
-        	my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
-        	push(@tempArr,pdl($ia,$ib,$ic,$if));
+		# only add angles that include the bond
+		if(($iat==$ia || $iat==$ib || $iat==$ic) && ($ibt==$ia || $ibt==$ib || $ibt==$ic) ){
+        	 my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
+        	 push(@tempArr,pdl($ia,$ib,$ic,$if));
+                }	
 
 	}
         if(@tempArr)
@@ -1355,7 +1356,6 @@ sub createConnection
 	while(my($k,$v) = each %{$resABonds}){@{$union{$k}}=@{$v};}
 	while(my($k,$v) = each %tempAdjList){$union{$k}=$v;}
 	
-	## Connect C-N
 	push(@{$union{"$atomA"}},"$atomB?");
 	push(@{$union{"$atomB?"}},"$atomA");
 		
@@ -1363,14 +1363,11 @@ sub createConnection
 	($dihes,$angles,$oneFour)=adjListTraversal(\%union); 
   	 
 
-	## REMOVE ANY ANGLES/DIHES NOT CONTAIN C-N? or N?-C and any *.-*. without '?' if firstFlag==0
 	if($firstFlag==0){
 		@tempA = map {$_ =~/\?/ ? ($_) : ()} @{$angles};
 		@tempD = map {$_ =~ /\?/ ? ($_) : () } @{$dihes};
 		@{$angles} = @tempA; @{$dihes} = @tempD;
 	}
-	## ADHOC BONDS ##
-	## REMOVE ALL ANGLES/DIHES EXCEPT INTERDOMAIN ##
 	elsif($firstFlag==-1)
 	{
 		@tempA = map {countQM($_) > 0 && countQM($_) < 3? ($_) : ()} @{$angles};
