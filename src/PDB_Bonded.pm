@@ -748,7 +748,7 @@ sub connCreateInteractionsSingleBOND
         {
 		$AngleData{$counter} = cat(@tempArr);
 	}else{
-		warn("PDB PARSE WARN:: There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);
+		smog_quit("There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);
         }
 	@tempArr = ();
 			
@@ -761,9 +761,6 @@ sub connCreateInteractionsSingleBOND
 		my $ta;my $tb;my $tc;my $td;
 		my $eG;
 	
-		# only save the dihedral if it is centered about the bond we just added
-		if(($b =~ m/^$atomA$/ && $c =~ m/^$atomB\?$/) || ($b =~ m/^$atomA\?$/ && $c =~ m/^$atomB$/) 
-                    || ($c =~ m/^$atomA$/ && $b =~ m/^$atomB\?$/) || ($c =~ m/^$atomA\?$/ && $b =~ m/^$atomB$/)){
 			($ia,$ta) = ($a =~ /(.*)\?/)
 				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
 				: (getAtomIndexInResidue($consecResidues[0],$a),getAtomBType($consecResidues[0],$a));
@@ -780,13 +777,19 @@ sub connCreateInteractionsSingleBOND
 				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
 				: (getAtomIndexInResidue($consecResidues[0],$d),getAtomBType($consecResidues[0],$d));
 		
-			if(!$bEG || ($b =~/.*\?/ && $c =~/.*\?/)|| ($b !~/.*\?/ && $c !~/.*\?/))
-			{$eG=getEnergyGroup($consecResidues[0],$consecResidues[1],$b,$c);}
-			else{$eG=$bEG;}
-			my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
-			$eG = $eGRevTable{$eG};
-			push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);	
-		}		
+		# only save the dihedral if it is centered about the bond we just added
+		if(($ja==$ia || $ja==$ib || $ja==$ic || $ja==$id) && ($jb==$ia || $jb==$ib || $jb==$ic || $jb==$id) ){
+			if(($ja==$ib || $ja==$ic) &&  ($jb==$ib || $jb==$ic))
+			{
+				$eG=getEnergyGroup($consecResidues[0],$consecResidues[1],$b,$c);
+			}else{
+				$eG=$bEG;
+			}
+				my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
+				$eG = $eGRevTable{$eG};
+				print "$ia,$ib,$ic,$id\n";
+				push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);	
+		}
 	}
 	     
 	   
@@ -798,7 +801,7 @@ sub connCreateInteractionsSingleBOND
         if(@tempArr)
         {$DihedralData{$counter} = pdl(@tempArr);
         }else{
-		warn("PDB PARSE WARN:: There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
+		smog_quit("There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
 	}
 	@tempArr = ();
 }
@@ -1502,8 +1505,8 @@ sub parseCONTACT
 				$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2);
 			}
 			$dist = $dist * $angToNano;
-			if(!exists $allAtoms{$contact1}){warn("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
-			if(!exists $allAtoms{$contact2}){warn("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
+			if(!exists $allAtoms{$contact1}){smog_quit("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
+			if(!exists $allAtoms{$contact2}){smog_quit("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
 			{
 

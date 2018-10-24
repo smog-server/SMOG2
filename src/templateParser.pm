@@ -730,7 +730,7 @@ sub getEnergyGroup
 		$residueTypea =$residues{$residuea}->{"residueType"};
 		$residueTypeb =$residues{$residueb}->{"residueType"};
 		if(!exists $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"}){
-			smog_quit("1Connection not defined for resTypes $residueTypea-$residueTypeb (residues $residuea $residueb)");
+			smog_quit("Connection not defined for resTypes $residueTypea-$residueTypeb (residues $residuea $residueb)");
 		}
 		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
 	}elsif($atoma =~/(.*)\?/)
@@ -741,7 +741,7 @@ sub getEnergyGroup
 		$residueTypea =$residues{$residuea}->{"residueType"};
 		$residueTypeb =$residues{$residueb}->{"residueType"};
 		if(!exists $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"}){
-			smog_quit("2Connection not defined for resTypes $residueTypea-$residueTypeb (residues $residuea $residueb)");
+			smog_quit("Connection not defined for resTypes $residueTypea-$residueTypeb (residues $residuea $residueb)");
 		}
 		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
 	}
