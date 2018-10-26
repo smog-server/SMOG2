@@ -20,6 +20,7 @@ my $inputPDB;
 my $mapFile;
 my $default;
 my $renumber;
+my $removeH;
 my $mapOption;
 my $help;
 
@@ -54,10 +55,11 @@ usage: smog_adjustPDB .. options ..
   Options
 	-i <filename>		: input PDB to adjust to smog2 format
 	-default 		: use the default file name provided by smog2 
-	-map <filename>		: specify a user-defined mappint file
+	-map <filename>		: specify a user-defined mapping file
 	-o [adjusted.pdb] 	: output pdb file name
-	-warn [0] 		: convert first N errors to warnings 
 	-renumber 		: ignore any residue numbering inconsistencies and renumber residues sequentially
+	-removeH		: strip the file of any atoms that begin with "H"
+	-warn [0] 		: convert first N errors to warnings (-1: convert all errors) 
 	-help 	  		: show options
 EOS
 
@@ -71,7 +73,7 @@ EOS
 
 checkForModules();
 
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, '<>' => \&usage) or !defined $inputPDB);
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, 'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
 
 warninfo();
 
@@ -94,7 +96,7 @@ if (defined $default){
 	$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";	
 }else{
 	if (!defined $mapFile ){
-		smog_quit("No map file was provided. Please chose a map file or use the default map settings: -default.");
+		smog_quit("No map file was provided. Please choose a map file with -map, or use the default map settings with -default.");
 	}else{
 		$mapOption = $mapFile;
 	}
@@ -217,7 +219,7 @@ sub adjustInputFile(){
 			my $newResNum = $resNum;
 			if($resNum =~ /^\d+$/ && $lastresidue =~ /^\d+$/){
 				if($resNum-$lastresidue > 1 && $firstresidue !=1 && !$renumber){
-					smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum.");
+					smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (near line $k).");
 				}
 			}elsif(!$renumber){
 				smog_quit("Non-integer residue ID found: $resNum.");
@@ -271,35 +273,44 @@ sub adjustInputFile(){
 			$lastresidue=$resNum;
 
 			## Adjust Tail\Head names ##
+			if($isHead && $isTail){
+				if("$map{$resName}{\"tail\"}" eq "$map{$resName}{\"head\"}"){
+					# if definitions are the same, just call it head
+					$isTail=0;
+				}else{
+					smog_quit("Encountered a single-residue chain. Unclear whether to treat this as a head, or tail...");
+				}
+			}
 			if ($isHead){
 				if(!exists $map{$resName}{"head"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 				my $newResName = $map{$resName}{"head"};
 				$resName = $newResName;
 			}
 			if ($isTail){
-				if (not($prevResTypeRNA)){	#check that it's not an amino-accilated tRNA
 				if(!exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 					my $newResName = $map{$resName}{"tail"};
 					$resName = 	$newResName;
-				}
 			}
 			
 			for(my $i=0; $i<$loopInd+1; $i++){
-					my $aName = $residue[$i]->{"atomName"};
-					if ($aName =~ /'/){
-						chop($aName);
-						$aName .= "*";
-					}
-					if ($aName eq "OP1"){$aName="O1P"};
-					if ($aName eq "OP2"){$aName="O2P"};
-					if ($aName eq "OP3"){$aName="O3P"};
-					if (($resName eq "ILE" || $resName eq "ILET") &&  $aName eq "CD"){$aName="CD1"};
-					my $ind = $residue[$i]->{"atomIndex"};
-					my $x = $residue[$i]->{"x"};
-					my $y = $residue[$i]->{"y"};
-					my $z = $residue[$i]->{"z"};
-
+				my $aName = $residue[$i]->{"atomName"};
+				if ($aName =~ /'/){
+					chop($aName);
+					$aName .= "*";
+				}
+				if ($aName eq "OP1"){$aName="O1P"};
+				if ($aName eq "OP2"){$aName="O2P"};
+				if ($aName eq "OP3"){$aName="O3P"};
+				if (($resName eq "ILE" || $resName eq "ILET") &&  $aName eq "CD"){$aName="CD1"};
+				my $ind = $residue[$i]->{"atomIndex"};
+				my $x = $residue[$i]->{"x"};
+				my $y = $residue[$i]->{"y"};
+				my $z = $residue[$i]->{"z"};
+				if(defined $removeH && $aName =~ m/^H/){
+					print "found $aName\n";
+				}else{
 				    printf NEWPDB "ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$resName,$chainName,$resInd,$x,$y,$z;
+				}
 			}
 
 			#LEAVE CURRENT RESIDUE AND UPDATE FLAGS#

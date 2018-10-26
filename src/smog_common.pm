@@ -29,7 +29,7 @@ sub smog_quit
 		warn("\nWARNING $warncount : $LINE\n\n");
 	}elsif($maxwarn < $warncount && $maxwarn>0){
 		print "\nWARNING $warncount : $LINE\n\n";
-		warn("\n\nFATAL: EXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
+		warn("\n\nEXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
 		exit(1);
 	}else{
 		print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error with the -warn flag.\nHowever, it is not recommended that output obtained with this flag be used for an actual simulation.\n";
@@ -61,7 +61,7 @@ sub warnsummary
 sub checkForModules {
 	my $checkPackage; my $sum=0;
 	$checkPackage=`echo \$perl4smog | wc | awk '{print \$3}'`;
-	if($checkPackage < 2) { print "\nSMOG 2 failed to launch.\n\nEnvironment variable perl4smog not set, maybe you need to edit the configure.smog2 script and run it with \"source configure.smog2\"\n"; $sum++;}else{
+	if($checkPackage < 2) { print "\nFailed to launch.\n\nEnvironment variable perl4smog not set, maybe you need to edit the configure.smog2 script and run it with \"source configure.smog2\"\n"; $sum++;}else{
 		$checkPackage=`\$perl4smog -e "use XML::Simple" 2>&1 | wc -l | awk '{print \$1}'`;
 		if($checkPackage > 0) { print "Perl module XML::Simple not installed!\n"; $sum++;}
 		$checkPackage=`\$perl4smog -e "use XML::Validator::Schema" 2>&1 | wc -l | awk '{print \$1}'`;
@@ -75,7 +75,7 @@ sub checkForModules {
 	}
 	$checkPackage=`which java | wc -l | awk '{print \$1}'`;
 	if($checkPackage < 1) { print "Java might not be installed. This package assumes Java 1.7 or greater is in the path as 'java'.\n"; $sum++;}
-	if($sum > 0) { smog_quit("Need above packages before smog-check (and smog2) can run. Some hints may be in the SMOG 2 manual."); }
+	if($sum > 0) { smog_quit("Need above packages before smog2, smog-check and smog tools can run. Some hints may be in the SMOG 2 manual."); }
 }
 
 ##################
@@ -187,7 +187,7 @@ sub checkforinclude
 {
 	my ($line,$data,$handle)=@_;
 	if($data =~ m/^#/){
-		print "will copy preprocessor line directly to new top.\n$line\n\n";
+		smog_quit("#include file listed in .top file.  Can not process associated file (not supported). If you would like smog-tools to simply copy this include line, then use the -warn option.  Offending line:\n$line\n\n");
 		print $handle "$line\n";
 		return 1;
 	}
@@ -200,7 +200,7 @@ sub readindexfile
 	my $groupname;
 	my @grpnms;
 	my %groupnames;
-	my $Ngrps;
+	my $Ngrps=0;
 	my %atomgroup;
 	open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
 	print "Reading index file $indexFile\n";

@@ -185,12 +185,12 @@ sub parsePDBATOMS
 			$chaina--;
 			$chainb--;
 			if(!exists $indexMap{"$chaina-$atoma"}){
-				my $chaina1=$chaina+1;
-				smog_quit("Can not find atom $atoma in chain $chaina1");
+				$chaina++;
+				smog_quit("Can not find atom $atoma in chain $chaina");
 			}
 			if(!exists $indexMap{"$chainb-$atomb"}){
-				my $chainb1=$chainb+1;
-				smog_quit("Can not find atom $atomb in chain $chainb1");
+				$chainb++;
+				smog_quit("Can not find atom $atomb in chain $chainb");
 			}
 			my $idxA = $indexMap{"$chaina-$atoma"};
 			my $idxB = $indexMap{"$chainb-$atomb"};
@@ -428,71 +428,6 @@ sub getAtomBType
 	return $residues{$residue}->{"atoms"}->{$atom}->{"bType"};
 }
 
-
-sub singleCreateInteractions
-{
-	my($residue,$counter) = @_;
-
-	## CREATE SINGLE INTERACTIONS ##
-	my $union = $dihedralAdjList{$residue};	
-	my ($diheH,$angH,$oneFour)=adjListTraversal($union); 
-
-	## CREATE INTERACTION PDLs ##
-	## ANGLES ##
-	my @tempArr;
-	foreach my $angs(@{$angH})
-	{
-		my($a,$b,$c) = split("-",$angs);
-		my $ia;my $ib;my $ic;
-		my $ta;my $tb;my $tc;
-	 	($ia,$ta) = (getAtomIndexInResidue($residue,$a),getAtomBType($residue,$a));
-		($ib,$tb) = (getAtomIndexInResidue($residue,$b),getAtomBType($residue,$b));
-		($ic,$tc) = (getAtomIndexInResidue($residue,$c),getAtomBType($residue,$c));
-   		my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
-   		push(@tempArr,pdl($ia,$ib,$ic,$if));		
-	}
-		$AngleData{$counter} = cat(@tempArr);
-		@tempArr = ();
-				
-	## DIHEDRALS ##
-	foreach my $dihes(@{$diheH})
-	{
-		my($a,$b,$c,$d) = split("-",$dihes);
-		my $ia;my $ib;my $ic;my $id;
-		my $ta;my $tb;my $tc;my $td;
- 		($ia,$ta) = (getAtomIndexInResidue($residue,$a),getAtomBType($residue,$a));
-		($ib,$tb) = (getAtomIndexInResidue($residue,$b),getAtomBType($residue,$b));
-		($ic,$tc) = (getAtomIndexInResidue($residue,$c),getAtomBType($residue,$c));
-		($id,$td) = (getAtomIndexInResidue($residue,$d),getAtomBType($residue,$d));
-				
-		my $eG = getEnergyGroup($consecResidues[0],$consecResidues[1],$b,$c);
-		my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
-		$eG = $eGRevTable{$eG};
-		
-		## [x,y,z,func,countDihedrals,energyGroup]
-		push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);	
-	}
-	    
-		## Manually add Improper dihedrals ##
- 	my $resBIp = $residues{$residue}->{"impropers"};
- 	foreach my $ips(@{$resBIp})
- 	{
-		my $ta;my $tb;my $tc;my $td;
-   		if(! (defined $ips) ) {next;}
-		my($ia,$ib,$ic,$id) = @{$ips};
-		($ia,$ta) = (getAtomIndexInResidue($residue,$ia),getAtomBType($residue,$ia));
-		($ib,$tb) = (getAtomIndexInResidue($residue,$ib),getAtomBType($residue,$ib));
-		($ic,$tc) = (getAtomIndexInResidue($residue,$ic),getAtomBType($residue,$ic));
-		($id,$td) = (getAtomIndexInResidue($residue,$id),getAtomBType($residue,$id));
-		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
-	## [a,b,c,d,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
-	push(@tempArr,[$ia,$ib,$ic,$id,$if,1,-1]);	
-	}
-		
-	$DihedralData{$counter} = pdl(@tempArr);
-	@tempArr = ();
-}
-
 sub connectivityHelper
 {
 	my($listHandle,$atomParent,$visitedList) = @_;
@@ -556,15 +491,15 @@ sub GenerateBondedGeometry {
 	if($chainlength == 0){
 		smog_quit("Found 0 atoms in chain $chid.  Perhaps TER appears on consecutive lines, or TER is immediately followed by END.");
 	}elsif($chainlength != 1){
-		print "Attempting to connect all atoms in chain $chid to the first atom: ";
+		print "Attempting to connect all atoms in chain $chid to the first atom..\n";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);
 		if($connected == -1){
-			print "Chain $chid has no bonds. No connections possible. May be a listing of ions.\n";
+			print "\tChain $chid has no bonds. No connections possible. May be a listing of ions.\n";
 			# this chain has no bonds, so no need to try and connect things
 		        return(\@ConnectedAtoms2);
 		}
 		if($missed==0 && $connected == $chainlength){
-			print "All $connected atoms connected via covalent bonds \n"; 
+			print "\tAll $connected atoms connected via covalent bonds \n"; 
 		}else{
 			smog_quit("We appear to have connected $connected of $chainlength atoms in chain $chid.  There is an issue connecting atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file, or missing atoms in the PDB.\nCheck for earlier warning messages. ")
 		}
@@ -675,6 +610,8 @@ sub GenerateBondedGeometry {
 	print "Storing dihedral info for chain $chid.\n";
 	$DihedralData{$counter} = pdl(@tempArr);
 	@tempArr = ();
+	print "Done generating bonded geometry of chain $chid.\n\n";
+	
 	return(\@ConnectedAtoms2);
 }
 
@@ -714,7 +651,6 @@ sub checkconnection
 		my $typeB=$residues{$c1}->{"residueType"};
 		my $ii=$i+1;
 		if((!defined $residues{$c0}->{"connect"} || $residues{$c0}->{"connect"} eq "yes") && (!defined $residues{$c1}->{"connect"} || $residues{$c1}->{"connect"} eq "yes")){
-			print $c0;
 			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $i and $ii in chain $chid (residue index within chain, starting at 0)")
 		}elsif(defined $residues{$c0}->{"connect"} && $residues{$c0}->{"connect"} ne "no"){
 			my $tmp=$residues{$c0}->{"connect"};
@@ -765,7 +701,6 @@ sub appendImpropersBOND
 
 sub connCreateInteractionsSingleBOND
 {
-
     	my($consecResiduesH,$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$bEG,$imp) = @_;
 	my @consecResidues = @{$consecResiduesH};
 
@@ -781,7 +716,7 @@ sub connCreateInteractionsSingleBOND
 	my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");
 	
     	$BondData{$counter}=pdl($ia,$ib,$if);
-			
+        my ($ja,$jb)=($ia,$ib);
 	## ANGLES ##
 	my @tempArr;
 	foreach my $angs(@{$angH})
@@ -801,16 +736,18 @@ sub connCreateInteractionsSingleBOND
 			? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
 			: (getAtomIndexInResidue($consecResidues[0],$c),getAtomBType($consecResidues[0],$c));
 				
-			
-        	my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
-        	push(@tempArr,pdl($ia,$ib,$ic,$if));
+		# only add angles that include the bond
+		if(($ja==$ia || $ja==$ib || $ja==$ic) && ($jb==$ia || $jb==$ib || $jb==$ic) ){
+        	 my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
+        	 push(@tempArr,pdl($ia,$ib,$ic,$if));
+                }	
 
 	}
         if(@tempArr)
         {
 		$AngleData{$counter} = cat(@tempArr);
 	}else{
-		warn("PDB PARSE WARN:: There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);
+		smog_quit("There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);
         }
 	@tempArr = ();
 			
@@ -823,9 +760,6 @@ sub connCreateInteractionsSingleBOND
 		my $ta;my $tb;my $tc;my $td;
 		my $eG;
 	
-		# only save the dihedral if it is centered about the bond we just added
-		if(($b =~ m/^$atomA$/ && $c =~ m/^$atomB\?$/) || ($b =~ m/^$atomA\?$/ && $c =~ m/^$atomB$/) 
-                    || ($c =~ m/^$atomA$/ && $b =~ m/^$atomB\?$/) || ($c =~ m/^$atomA\?$/ && $b =~ m/^$atomB$/)){
 			($ia,$ta) = ($a =~ /(.*)\?/)
 				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
 				: (getAtomIndexInResidue($consecResidues[0],$a),getAtomBType($consecResidues[0],$a));
@@ -842,25 +776,24 @@ sub connCreateInteractionsSingleBOND
 				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
 				: (getAtomIndexInResidue($consecResidues[0],$d),getAtomBType($consecResidues[0],$d));
 		
-			if(!$bEG || ($b =~/.*\?/ && $c =~/.*\?/)|| ($b !~/.*\?/ && $c !~/.*\?/))
-			{$eG=getEnergyGroup($consecResidues[0],$consecResidues[1],$b,$c);}
-			else{$eG=$bEG;}
+		if(($ja==$ib || $ja==$ic) && ( $jb==$ib || $jb==$ic) ){
+			$eG=$bEG;
 			my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
 			$eG = $eGRevTable{$eG};
 			push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);	
-		}		
+		}
 	}
 	     
 	   
 	## Manually add Improper dihedrals ##
 	if(scalar(@{$imp})!=0){
-	appendImpropersBOND($consecResidues[0],$consecResidues[1],$resAIdx,$resBIdx,$sizeA,$imp,\@tempArr);
+		appendImpropersBOND($consecResidues[0],$consecResidues[1],$resAIdx,$resBIdx,$sizeA,$imp,\@tempArr);
 	}
 		
         if(@tempArr)
         {$DihedralData{$counter} = pdl(@tempArr);
         }else{
-		warn("PDB PARSE WARN:: There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
+		smog_quit("There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
 	}
 	@tempArr = ();
 }
@@ -1095,19 +1028,18 @@ sub connWildcardMatchAngles
 	my($a,$b,$c) = @_;
 	my $angHandle = $interactions->{"angles"};
 	my $funct="";
-		
 	## WILD CARD MATCHING CONDITIONALS ##
 	my $matchScore = 0; my $saveScore = 0; my $matchScoreCount=0; my $symmatch=0;
 	foreach my $matches(keys %{$angHandle})
 	{
 		$matchScore = 0;
 		my ($aM,$bM,$cM) = split("-",$matches);
-		unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
-			|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-			|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){
-				if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+		unless(("$a" ne "$aM" && $aM ne "*")
+			|| ("$b" ne "$bM" && "$bM" ne "*")
+			|| ("$c" ne "$cM" && "$cM" ne "*")){
+				if("$a" eq "$aM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$b" eq "$bM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$c" eq "$cM") {$matchScore+=2;} else {$matchScore+=1;}
 				if($matchScore >= $saveScore)
 				{
 					if($aM eq $cM || ($aM eq $bM and $bM eq $cM)){
@@ -1127,12 +1059,13 @@ sub connWildcardMatchAngles
 			}
 		}
 	}
+
 	my $sym=0;
 	if($a eq $c || ($a eq $b and $b eq $c)){
 		$sym=1;
 	}
 	if(($symmatch ==0 && $sym == 1 && $matchScoreCount != 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount != 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount != 0)){
-		smog_quit ("Multiple possible angles match $a-$b-$c equally well. Unclear assignment of function type");
+		smog_quit ("Multiple possible angles match $a-$b-$c equally well (score=$saveScore;$matchScoreCount). Unclear assignment of function type");
 	}
 
 	if(!defined $funct|| $funct eq ""){smog_quit("There is no function for bType combination $a-$b-$c. Check .b file");}
@@ -1188,14 +1121,14 @@ sub connWildcardMatchImpropers
 	{
 		$matchScore = 0;
 		my ($aM,$bM,$cM,$dM) = split("-",$matches);
-		if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
-			|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-			|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
-			|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){next;}
-		if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-		if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-		if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-		if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+		if(        ("$a" ne "$aM" && "$aM" ne "*")
+			|| ("$b" ne "$bM" && "$bM" ne "*")
+			|| ("$c" ne "$cM" && "$cM" ne "*")
+			|| ("$d" ne "$dM" && "$dM" ne "*")){next;}
+		if("$a" eq "$aM") {$matchScore+=2;} else {$matchScore+=1;}
+		if("$b" eq "$bM") {$matchScore+=2;} else {$matchScore+=1;}
+		if("$c" eq "$cM") {$matchScore+=2;} else {$matchScore+=1;}
+		if("$d" eq "$dM") {$matchScore+=2;} else {$matchScore+=1;}
 		if($matchScore >= $saveScore)
 		{$saveScore = $matchScore;$funct = $diheHandle->{$matches};}
 	}
@@ -1210,32 +1143,36 @@ sub connWildcardMatchDihes
 	my $diheHandle = $interactions->{"dihedrals"}->{"$eG"};
 	my $funct="";
 	## WILD CARD MATCHING CONDITIONALS ##
-	my $matchScore = 0; my $saveScore = 0;;my $matchScoreCount=0; my $symmatch=0; my $Nd=0;
 	my $NumOfKeys=keys %{$diheHandle};
 	my @keys = keys %{$diheHandle};
 	if($NumOfKeys == 1 && $keys[0] eq "*-*-*-*"){
 		$funct = $diheHandle->{$keys[0]};
 
 	}else{
+		my $matchScore;
+		my $saveScore = 0;
+		my $matchScoreCount=0; 
+		my $symmatch=0; 
+		my $Nd=0;
 		foreach my $matches(keys %{$diheHandle})
 		{
 			$Nd++;
-			$matchScore = 0; $saveScore = 0;
+			$matchScore = 0; 
 			# this step can be done once, rather than for each call.
 			my ($aM,$bM,$cM,$dM) = split("-",$matches);
 			if($matches eq "*-*-*-*"){
 				$matchScore=4;
 			}else{
 	
-			if(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
-				|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
-				|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
-				|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){next;}
+				if(        ("$a" ne "$aM" && "$aM" ne "*")
+					|| ("$b" ne "$bM" && "$bM" ne "*")
+					|| ("$c" ne "$cM" && "$cM" ne "*")
+					|| ("$d" ne "$dM" && "$dM" ne "*")){next;}
 	
-			if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-			if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if("$a" eq "$aM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$b" eq "$bM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$c" eq "$cM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$d" eq "$dM") {$matchScore+=2;} else {$matchScore+=1;}
 	
 			}	
 	
@@ -1248,7 +1185,7 @@ sub connWildcardMatchDihes
 				## this to make sure that the highest scoring angle is unique
 				if($matchScore == $saveScore){
 					if($saveScore != 0){
-					$matchScoreCount++;
+						$matchScoreCount++;
 					}
 				}else{
 					$matchScoreCount=0;
@@ -1267,10 +1204,10 @@ sub connWildcardMatchDihes
 		}
 		if(($symmatch ==0 && $sym == 1 && $matchScoreCount > 1)  || ($symmatch ==0 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 0 && $matchScoreCount > 0) || ($symmatch ==1 && $sym == 1 && $matchScoreCount > 0)){
 	
-			smog_quit ("$symmatch  $sym $matchScoreCount Multiple possible angles match $a-$b-$c-$d, and energyGroup $eG equally well. Can not determine function based on .b file.");
+			smog_quit ("symm $symmatch sym $sym msc $matchScoreCount Multiple possible angles match $a-$b-$c-$d, and energyGroup $eG equally well. Can not determine function based on .b file.");
 		}
 	
-		if($matchScore == 0){
+		if($saveScore == 0){
 			smog_quit ("Dihedral Angle between bTypes $a-$b-$c-$d and energyGroup $eG: Unable to match to a function in .b file.");
 		}
 	
@@ -1414,7 +1351,6 @@ sub createConnection
 	while(my($k,$v) = each %{$resABonds}){@{$union{$k}}=@{$v};}
 	while(my($k,$v) = each %tempAdjList){$union{$k}=$v;}
 	
-	## Connect C-N
 	push(@{$union{"$atomA"}},"$atomB?");
 	push(@{$union{"$atomB?"}},"$atomA");
 		
@@ -1422,14 +1358,11 @@ sub createConnection
 	($dihes,$angles,$oneFour)=adjListTraversal(\%union); 
   	 
 
-	## REMOVE ANY ANGLES/DIHES NOT CONTAIN C-N? or N?-C and any *.-*. without '?' if firstFlag==0
 	if($firstFlag==0){
 		@tempA = map {$_ =~/\?/ ? ($_) : ()} @{$angles};
 		@tempD = map {$_ =~ /\?/ ? ($_) : () } @{$dihes};
 		@{$angles} = @tempA; @{$dihes} = @tempD;
 	}
-	## ADHOC BONDS ##
-	## REMOVE ALL ANGLES/DIHES EXCEPT INTERDOMAIN ##
 	elsif($firstFlag==-1)
 	{
 		@tempA = map {countQM($_) > 0 && countQM($_) < 3? ($_) : ()} @{$angles};
@@ -1564,8 +1497,8 @@ sub parseCONTACT
 				$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2);
 			}
 			$dist = $dist * $angToNano;
-			if(!exists $allAtoms{$contact1}){warn("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
-			if(!exists $allAtoms{$contact2}){warn("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
+			if(!exists $allAtoms{$contact1}){smog_quit("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
+			if(!exists $allAtoms{$contact2}){smog_quit("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
 			{
 

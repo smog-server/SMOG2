@@ -1,15 +1,23 @@
 <?xml version='1.0'?>
 <nb>
- <!-- DEFAULTS -->
- <defaults gen-pairs="0"/>
- <!-- GENERAL NONBONDS -->
- <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.0"  c12="5.96046e-9">
-   <nbType>NB_1</nbType>
- </nonbond>	
- <!-- CONTACTS -->
-  <contact func="contact_gaussian(?,5.96046e-9,sqrt(((?)**2)/(34.66)),?)" contactGroup="c">
-    <pairType>*</pairType>
-    <pairType>*</pairType>
-  </contact>
+<!-- DEFAULTS -->
+<defaults gen-pairs="0"/>
+
+<!-- GENERAL NONBONDS -->
+<nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.0"  c12="5.96046e-9">
+	<nbType>*</nbType>
+</nonbond>
+	
+<!-- CONTACTS -->
+<contact func="contact_gaussian(?,5.96046e-9,sqrt(((?)**2)/(34.66)),?)" contactGroup="c">
+	<pairType>*</pairType>
+	<pairType>*</pairType>
+</contact>
+
+<contact func="bond_type6(?,200)" contactGroup="c">
+	<pairType>BMG</pairType>
+	<pairType>*</pairType>
+</contact>
+
 </nb>
 

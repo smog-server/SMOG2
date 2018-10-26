@@ -46,8 +46,8 @@ sub DiheCountsHelper
 	{
 		my @A = $diheArr->slice(":,$i:$i")->list;
 		if($#A == 0){
-		$countsIndex[$i]=-1;
-		next;
+			$countsIndex[$i]=-1;
+			next;
 		} 
 		my $b=$A[1];
 		my $c=$A[2];
@@ -70,13 +70,10 @@ sub DiheCountsHelper
 	       			$countsIndex[$i]=$tindex;
 	       			$counts[$tindex]++;
 	       		}
-	
-	
 		}else{
 			$countsIndex[$i]=0;		
 		}	
 	}
-	
 	
 	for(my $i=0;$i<$size;$i++)
 	{
@@ -142,6 +139,10 @@ sub adjustFactorsHelper1
 	$b = sclr(slice($inputPDL,"3:3,$b,:"));
 	$c = sclr(slice($inputPDL,"3:3,$c,:"));
 	$d = sclr(slice($inputPDL,"3:3,$d,:"));
+	my $resnamea = $atomTypes->{$a}->[5];
+	my $resnameb = $atomTypes->{$b}->[5];
+	my $resnamec = $atomTypes->{$c}->[5];
+	my $resnamed = $atomTypes->{$d}->[5];
     	my $resTypea = $atomTypes->{$a}->[1];
 	my $resTypeb = $atomTypes->{$b}->[1];
 	my $resTypec = $atomTypes->{$c}->[1];
@@ -184,7 +185,10 @@ sub adjustFactorsHelper1
 		}
 
 		$count*=$relativeRatio;
-        	${$sum}+=$count;
+		unless($residues{$resnamea}->{'atomCount'}==0 || $residues{$resnameb}->{'atomCount'}==0
+			|| $residues{$resnamec}->{'atomCount'}==0 || $residues{$resnamed}->{'atomCount'}==0){
+        		${$sum}+=$count;
+		}
         	set($diheArr,5,$i,$count);
 
 		push(@tempArr,pdl($count,1));

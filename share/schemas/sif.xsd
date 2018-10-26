@@ -50,7 +50,7 @@
 <!-- BOOLEAN TYPE -->
 <xs:simpleType name="booleanType">
     <xs:restriction base="xs:integer">
-    <xs:pattern value="1|0"/>
+    <xs:pattern value="^1$|^0$"/>
     </xs:restriction>
 </xs:simpleType>
 
@@ -100,6 +100,13 @@
     <xs:attribute name="tooShortDistance" type="xs:decimal" use="optional"/>
 </xs:complexType>
 
+<!-- dihedralCounting -->
+<xs:complexType name="dihedralNormalizationType">
+    <xs:attribute name="dihedralCounting" type="booleanType" use="optional"/>
+</xs:complexType>
+
+
+
 <!-- SETTINGS TYPE -->
 <xs:complexType name="settingsType">
     <xs:sequence>
@@ -108,6 +115,7 @@
     <xs:element name="bondsThreshold" type="bondsThresholdType" minOccurs="0" maxOccurs="1"/>
     <xs:element name="anglesThreshold" type="anglesThresholdType" minOccurs="0" maxOccurs="1"/>
     <xs:element name="contactsThreshold" type="contactsThresholdType" minOccurs="0" maxOccurs="1"/>
+    <xs:element name="dihedralNormalization" type="dihedralNormalizationType" minOccurs="0" maxOccurs="1"/>
     <xs:element name="distanceThreshold" type="distanceThresholdType" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
 </xs:complexType>
