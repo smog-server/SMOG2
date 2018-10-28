@@ -590,7 +590,8 @@ while (<FILE>){
 		if($alreadypresent==1){
 			# since we have already defined the atomtype, we will not check for anything from extras
 		}else{
-			if(defined $template){
+			# if -t is used and there is an extras file, read it
+			if(defined $template && -e "$template/extras"){
 		        	my $extrafile="$template/extras";
 				print "Will check if we should add any nonbond_params from extras file $extrafile";
 				open(EXTRA,"$extrafile") or smog_quit("Unable to open $extrafile");
@@ -646,7 +647,7 @@ while (<FILE>){
 
 	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
 		# if we did not find a nonbond_params, add it.
-		if($NBPpresent==0){
+		if($NBPpresent==0 && $NBbuffer ne ""){
 			print TOPOUT "[nonbond_params]\n$NBbuffer\n\n";
 		}
 

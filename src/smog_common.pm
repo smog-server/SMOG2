@@ -139,7 +139,6 @@ sub loadfile
 
 sub checkdirectives
 {
-	print "Preparing top data\n";
 	my ($string) = @_;
 # split the top file and check that only supported directives are included.
 	my %DIRLIST;
@@ -164,7 +163,7 @@ sub checkdirectives
 			smog_quit("Format error near directive \"$DIR\"");
 		}
 		if(!exists $supported_directives{$DIR}){
-			smog_quit("Directive \"$DIR \" not recognized.");
+			smog_quit("Directive \"$DIR\" not recognized.");
 		}else{
 			$DIRLIST{$DIR}=$I;
 		}
