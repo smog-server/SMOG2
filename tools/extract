@@ -101,8 +101,8 @@ unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen
 	smog_quit("-restraints given with a non-numerical value: $gen_restraints");
 }
 
-if($gen_restraints ne "null" && $gen_restraints <0){
-	smog_quit("-restraints called with a negative value");
+if($gen_restraints ne "null" && $gen_restraints <=0){
+	smog_quit("-restraints called with a negative (or zero) value");
 }
 
 ### read in the list of atoms that we want to keep
@@ -153,8 +153,6 @@ foreach my $filen($outputgro, $outputtop, $outputmap,$restrainedmap){
 
 open(MAPPING,">$outputmap") or smog_quit("Can\'t open $outputmap.");
 print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
-
-open(RESMAPPING,">$restrainedmap") or smog_quit("Can\'t open $restrainedmap.");
 
 ### read in the list of atoms that we want to keep
 my $groupname;
@@ -551,6 +549,7 @@ if(exists $DIRLIST{"exclusions"}){
 
 # information about the restraints 
 if($gen_restraints ne "null"){
+ 	open(RESMAPPING,">$restrainedmap") or smog_quit("Can\'t open $restrainedmap.");
 	print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
 	print RESMAPPING "The following atoms are restrained (new and old numbering)\n";
 	print TOPOUT "[ position_restraints ]\n";
@@ -558,6 +557,7 @@ if($gen_restraints ne "null"){
 		print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";
 		print RESMAPPING "$res $keepatoms2[$res-1]\n";
 	}
+	close(RESMAPPING);
 }
 print TOPOUT "\n";
 
@@ -575,7 +575,6 @@ for(my $II=1;$II<=$#C;$II++){
 }
 print TOPOUT "\n";
 close(MAPPING);
-close(RESMAPPING);
 close(TOPOUT);
 warnsummary();
 
