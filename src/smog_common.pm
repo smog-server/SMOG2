@@ -8,7 +8,7 @@ use Exporter;
 our $maxwarn;
 our $warncount;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile loaddirectives %supported_directives checkforinclude readindexfile printdashed printcenter);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter);
 our %supported_directives;
 
 #####################
@@ -137,7 +137,7 @@ sub loadfile
 	return $string;
 }
 
-sub loaddirectives
+sub checkdirectives
 {
 	print "Preparing top data\n";
 	my ($string) = @_;
