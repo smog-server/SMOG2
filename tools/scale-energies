@@ -228,7 +228,7 @@ print "Reading top file $inputTOP\n";
 
 my $string=loadfile($inputTOP);
 
-my ($DATA,$DIRLIST)=checkdirectives($string);
+my ($DATA,$DIRLIST)=loaddirectives($string);
 my %DIRLIST=%{$DIRLIST};
 my @DATA=@{$DATA};
 

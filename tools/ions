@@ -523,7 +523,7 @@ print "adding ions to top file...\n";
 #read in the top file, with comments stripped
 
 my $string=loadfile($inputTOP);
-my ($DATA,$DIRLIST)=checkdirectives($string);
+my ($DATA,$DIRLIST)=loaddirectives($string);
 my %DIRLIST=%{$DIRLIST};
 my @DATA=@{$DATA};
 
