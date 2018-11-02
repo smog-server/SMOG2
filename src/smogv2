@@ -1206,14 +1206,10 @@ sub readAtoms
 		}
 	}
 
-	my $TCr=round($systemcharge);
-	printf("\nTotal charge of system: %8.3f\n\n",$systemcharge);
-
-	if($totalcharge !=0){
-		addToTop("comments", "; Note: total charge of system is $systemcharge\n");
-	}
-	if(abs($systemcharge-$TCr) > 0.001){
+	if(abs($systemcharge-round($systemcharge)) > 0.001){
 		smog_quit("Non-integer system charge ($systemcharge). This typically means something is wrong with the .bif file.");
+	}else{
+		printf("\nTotal charge of system: %8.3f\n\n",$systemcharge);
 	}
 	unless($endreached){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 	return(%reflist);

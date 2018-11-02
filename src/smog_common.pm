@@ -129,7 +129,8 @@ sub loadfile
 	while (<FILE>){
 		my $LINE = $_;
 		chomp($LINE);
-		unless($LINE =~ m/^[\s+|\t+]$/){ 
+		# remove blank lines
+		unless($LINE =~ m/^[\s+|\t+]$|^$/ ){ 
 			 $string .= "$LINE\n";
 		}
 	}

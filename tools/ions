@@ -577,7 +577,7 @@ while (<FILE>){
 		}
 		if($alreadypresent==0){
 			print "atomtype $addname not found in .top file. Will add parameters to .top file\n";
-			print TOPOUT "$addname\t$addmass\t$addcharge\tA\t$addC6\t$addC12\n\n";
+			print TOPOUT "$addname\t$addmass\t$addcharge\tA\t$addC6\t$addC12\n";
 		}elsif($alreadypresent==1){
 			print "atomtype $addname already defined in .top file. Will not overwrite parameters\n";
 		}else{
