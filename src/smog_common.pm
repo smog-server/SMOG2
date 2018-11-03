@@ -131,7 +131,13 @@ sub loadfile
 		chomp($LINE);
 		# remove blank lines
 		unless($LINE =~ m/^[\s+|\t+]$|^$/ ){ 
-			 $string .= "$LINE\n";
+			if($LINE =~ m/\[\S/){
+				$LINE =~ s/\[/\[ /g;
+ 			}
+			if($LINE =~ m/\S\]/){
+				$LINE =~ s/\]/ \]/g;
+ 			}
+			$string .= "$LINE\n";
 		}
 	}
 	close(FILE);
