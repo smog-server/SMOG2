@@ -579,7 +579,7 @@ while (<FILE>){
 			print "atomtype $addname not found in .top file. Will add parameters to .top file\n";
 			print TOPOUT "$addname\t$addmass\t$addcharge\tA\t$addC6\t$addC12\n";
 		}elsif($alreadypresent==1){
-			print "atomtype $addname already defined in .top file. Will not overwrite parameters\n";
+			print "\nNote: atomtype $addname already defined in .top file. Will not overwrite parameters\n";
 		}else{
 			smog_quit("atomtype $addname already defined multiple times in top file.");
 		}
@@ -589,6 +589,9 @@ while (<FILE>){
 
 		if($alreadypresent==1){
 			# since we have already defined the atomtype, we will not check for anything from extras
+			if(defined $template && -e "$template/extras"){
+				print "\nNote: Since $addname was defined in the original top file, we will not try to read $template/extras.\n";
+			}
 		}else{
 			# if -t is used and there is an extras file, read it
 			if(defined $template && -e "$template/extras"){
