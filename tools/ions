@@ -648,7 +648,7 @@ while (<FILE>){
 	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
 		# if we did not find a nonbond_params, add it.
 		if($NBPpresent==0 && $NBbuffer ne ""){
-			print TOPOUT "[nonbond_params]\n$NBbuffer\n\n";
+			print TOPOUT "[ nonbond_params ]\n$NBbuffer\n\n";
 		}
 
 

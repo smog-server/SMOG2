@@ -226,7 +226,7 @@ sub addExtras {
 			addToTop($directive,$stuff."\n");
 		}
 	}
-	if($interactions->{"nbfunc"} == 3){
+	if(exists $interactions->{"nbfunc"} && $interactions->{"nbfunc"} == 3){
 	# type 3 is not defined for official versions of gromacs. We have added routines in a SMOG-supported version, in which effective potentials are defined for nonbonded interactions. These effective potentials are defined as type 3. Since there are no known combination rules for the effective potentials, the nonbonded params need to be given for every possible type of combination.  We will check that this condition is satisfied, here.
 		foreach my $t1(keys %presentatomtypes){	
 			foreach my $t2(keys %presentatomtypes){	
