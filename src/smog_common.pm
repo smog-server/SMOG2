@@ -171,6 +171,8 @@ sub checkdirectives
 		}
 		if(!exists $supported_directives{$DIR}){
 			smog_quit("Directive \"$DIR\" not recognized.");
+		}elsif(exists $DIRLIST{$DIR}){
+			smog_quit("Directive \"$DIR\" defined more than once. Currently not supported.");
 		}else{
 			$DIRLIST{$DIR}=$I;
 		}

@@ -520,12 +520,6 @@ print GROFILE "$grodim\n";
 ##******************* END OF GRO MODIFICATIONS**************************
 
 print "adding ions to top file...\n";
-#read in the top file, with comments stripped
-
-my $string=loadfile($inputTOP);
-my ($DATA,$DIRLIST)=checkdirectives($string);
-my %DIRLIST=%{$DIRLIST};
-my @DATA=@{$DATA};
 
 open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP"); 
 
