@@ -5,6 +5,7 @@ use smog_common;
 use Scalar::Util qw(looks_like_number);
 our @ISA = 'Exporter';
 our @EXPORT = qw(%supported_directives);
+my $inputArguments=join(' ',@ARGV);
 
 my $tmpstring = <<EOT;
 
@@ -520,11 +521,11 @@ open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP");
 if(-e $outputtop){smog_quit("$outputtop already exists.")}
 open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing");
 
-
 my $NBbuffer="";
 my $NBPpresent=0;
 my %typesinsystem;
 my $alreadypresent=0;
+print TOPOUT "; File generated with: smog_ions $inputArguments\n";
 while (<FILE>){
 	my $LINE = $_;
 	my $LINEORIG=$LINE;

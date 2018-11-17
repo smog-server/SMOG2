@@ -3,6 +3,7 @@ use warnings;
 use List::Util qw(max);
 use Getopt::Long;
 use smog_common;
+my $inputArguments=join(' ',@ARGV);
 
 my $tmpstring = <<EOT;
 
@@ -59,12 +60,6 @@ our %supported_directives = ( 'defaults' => '1',
 
 quit_init();
 checkForModules();
-my $call="";
-foreach my $filen(@ARGV){
-        $call .=  "$filen ";
-}
-$call .="\n";
-
 sub usage
 {
   print <<EOT;
@@ -141,7 +136,7 @@ if($rescaleD < 0){
 
 $inputTOP=checksuffix($inputTOP,".top");
 $outputTOP=checksuffix($outputTOP,".top");
-$indexFile=checksuffix($indexFile,".top");
+$indexFile=checksuffix($indexFile,".ndx");
 
 if($rescaleD == 1.0 && $rescaleC == 1.0){
 	smog_quit("-rc and -rd given values of 1.  There is nothing to do, besides quit.\n\nNo .top file generated.");
@@ -231,7 +226,7 @@ open(TOPOUT,">$outputTOP") or smog_quit("Can\'t open $outputTOP for writing.");
 #copy header
 
 print TOPOUT "; This is a top file generated with smog_scale-energies using the command:\n;";
-print TOPOUT "   smog_scale-energies $call\n";
+print TOPOUT "   smog_scale-energies $inputArguments\n";
 print TOPOUT "$DATA[0]\n";
 
 foreach my $DIR("defaults","atomtypes","nonbond_params","moleculetype","atoms","bonds","angles")
