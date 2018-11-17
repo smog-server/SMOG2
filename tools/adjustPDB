@@ -76,6 +76,8 @@ checkForModules();
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, 'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
 
 warninfo();
+$outputPDB=checksuffix($outputPDB,".pdb");
+$inputPDB=checksuffix($inputPDB,".pdb");
 
 if (defined $renumber){
 	print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";

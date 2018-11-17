@@ -111,27 +111,11 @@ my $KEEPN=0;
 my @keepatoms2;
 
 #check and add file name extensions, if missing
-
-my ($ext)= $outputgro =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".gro"){
-	$outputgro .=  ".gro";
-}
-($ext)= $outputtop =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".top"){
-	$outputtop .=  ".top";
-}
-($ext)= $outputmap =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".map"){
-	$outputmap .=  ".map";
-}
-($ext)= $restrainedmap =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".map"){
-	$restrainedmap .=  ".map";
-}
-($ext)= $indexFile =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".ndx"){
-	$indexFile .=  ".ndx";
-}
+$outputgro=checksuffix($outputgro,".gro");
+$outputtop=checksuffix($outputtop,".top");
+$outputmap=checksuffix($outputmap,".map");
+$restrainedmap=checksuffix($restrainedmap,".map");
+$indexFile=checksuffix($indexFile,".ndx");
 
 my $maxbu = 10;
 foreach my $filen($outputgro, $outputtop, $outputmap,$restrainedmap){

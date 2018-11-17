@@ -232,14 +232,8 @@ if($addC6<0){
 warninfo();
 
 #check and add file name extensions, if missing
-my ($ext)= $outputgro =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".gro"){
-	$outputgro .=  ".gro";
-}
-($ext)= $outputtop =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".top"){
-	$outputtop .=  ".top";
-}
+$outputgro=checksuffix($outputgro,".gro");
+$outputtop=checksuffix($outputtop,".top");
 
 print "\nWill add ions to $inputTOP and $inputGRO\n";
 print "Will try to add $addnum $addname ions with charge $addcharge and mass $addmass\n";

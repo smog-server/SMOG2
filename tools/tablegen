@@ -107,15 +107,10 @@ if($rc <= $r1 && $rc != 0){
 	smog_quit("table must extend beyond the cutoff distance");
 }
 
+$outfilename=checksuffix($outfilename,".xvg");
 print "Parameter used to generate table file $outfilename\n";
 print "\tM=$exponent1\n\tN=$exponent2\n\tmonovalent ion conc.=$conc\n\tkappa=$kappa\n\tbegin switching function=$r1\n\tend switching function=$rc\n\tLength of table=$Rtable\n";
 
-my ($ext)=$outfilename =~ /(\.[^.]+)$/;
-if($outfilename !~ /(\.[^.]+)$/){
-        $outfilename = $outfilename . ".xvg";
-}elsif($ext ne ".xvg"){
-        $outfilename = $outfilename . ".xvg";
-}
 
 my $maxbu=10;
 foreach my $filen($outfilename){
