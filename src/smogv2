@@ -1874,22 +1874,12 @@ if($topFile eq ""){$topFile=$DNAME};
 if($groFile eq ""){$groFile=$DNAME};
 if($shadowFile eq ""){$shadowFile=$DNAME};
 if($ndxFile eq ""){$ndxFile=$DNAME};
-my ($ext)=$topFile =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".top"){
-	$topFile = $topFile . ".top";
-}
-($ext)=$groFile =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".gro"){
-	$groFile = $groFile . ".gro";
-}
-($ext)=$shadowFile =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".contacts"){
-	$shadowFile = $shadowFile . ".contacts";
-}
-($ext)=$ndxFile =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".ndx"){
-	$ndxFile = $ndxFile . ".ndx";
-}
+
+$topFile=checksuffix($topFile,".top");
+$groFile=checksuffix($groFile,".gro");
+$shadowFile=checksuffix($shadowFile,".contacts");
+$ndxFile=checksuffix($ndxFile,".ndx");
+
 
 ## check if files exist
 # things we don't want to overwrite

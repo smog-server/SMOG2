@@ -8,7 +8,7 @@ use Exporter;
 our $maxwarn;
 our $warncount;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix);
 our %supported_directives;
 
 #####################
@@ -256,6 +256,16 @@ sub readindexfile
 	}
 	close(ATOMLIST);
 	return ($Ngrps,\@grpnms,\%groupnames,\%atomgroup);
+}
+
+sub checksuffix
+{
+	my ($name,$suf)=@_;
+	my ($ext)= $name =~ /(\.[^.]+)$/;
+	if(!defined $ext || $ext ne "$suf"){
+	        $name .=  "$suf";
+	}
+	return $name;
 }
 
 sub printdashed
