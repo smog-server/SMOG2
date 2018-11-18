@@ -524,6 +524,7 @@ open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing");
 my $NBbuffer="";
 my $NBPpresent=0;
 my %typesinsystem;
+my %seenmoltype;
 my $alreadypresent=0;
 print TOPOUT "; File generated with: smog_ions $inputArguments\n";
 while (<FILE>){
@@ -647,9 +648,34 @@ while (<FILE>){
 		# add a new molecule type
 		if($alreadypresent == 0){
 			print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
+			if(exists $seenmoltype{$addname}){
+				smog_quit("moleculetype $addname would be defined more than once in new top file.");
+ 			}
+			$seenmoltype{$addname}=0;
 			# since we just added it, don't add again
 			$alreadypresent++;
 		}
+	}
+
+	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
+		print TOPOUT "$LINEORIG"; 
+
+		$LINEORIG = <FILE>;
+		$LINE = $LINEORIG;
+		chomp($LINE);
+		my ($data,$comment)=checkcomment($LINE);
+		until($data ne ""){
+			print TOPOUT "$LINEORIG"; 
+			$LINEORIG = <FILE>;
+			$LINE = $LINEORIG;
+			chomp($LINE);
+			($data,$comment)=checkcomment($LINE);
+		} 
+		$LINE =~ s/\t/ /g; 
+		$LINE =~ s/^\s+|\s+$//g;
+		$LINE =~ s/ +/ /g;
+		my @tmp2=split(/\s+/,$LINE);
+		$seenmoltype{$tmp2[0]}=0;
 	}
 
 	if($TMP[0] eq "[" and $TMP[1] eq "molecules"){
