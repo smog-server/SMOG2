@@ -233,7 +233,8 @@ foreach my $DIR("defaults","atomtypes","nonbond_params","moleculetype","atoms","
 {
 	if(exists $DIRLIST{"$DIR"}){
 		print TOPOUT "[";
-		print TOPOUT $DATA[$DIRLIST{"$DIR"}];	
+		print TOPOUT $DATA[$DIRLIST{"$DIR"}]; 
+		print TOPOUT "\n";	
 	}
 }
 
@@ -241,6 +242,7 @@ if($rescaleD == 1.0){
 	if(exists $DIRLIST{"dihedrals"}){
                 print TOPOUT "[";
 		print TOPOUT $DATA[$DIRLIST{"dihedrals"}];
+		print TOPOUT "\n";	
         }
 }else{
 	my @C = split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
@@ -285,7 +287,8 @@ if($rescaleD == 1.0){
 if($rescaleC == 1.0){
 	if(exists $DIRLIST{"pairs"}){
 		print TOPOUT "[";
-		print TOPOUT  $DATA[$DIRLIST{"pairs"}];
+		print TOPOUT $DATA[$DIRLIST{"pairs"}];
+		print TOPOUT "\n";	
         }
 }else{
 	print TOPOUT "[ pairs ]\n";
@@ -323,7 +326,8 @@ if($rescaleC == 1.0){
 if($rescaleC !=0){
 	if(exists $DIRLIST{"exclusions"}){
 		print TOPOUT "[";
-		print TOPOUT  $DATA[$DIRLIST{"exclusions"}];
+		print TOPOUT $DATA[$DIRLIST{"exclusions"}];
+		print TOPOUT "\n";	
         }
 }else{
 	print TOPOUT "[ exclusions ]\n";
@@ -354,7 +358,8 @@ foreach my $DIR("system","molecules")
 {
 	if(exists $DIRLIST{"$DIR"}){
 		print TOPOUT "[";
-		print TOPOUT  $DATA[$DIRLIST{"$DIR"}];	
+		print TOPOUT $DATA[$DIRLIST{"$DIR"}];	
+		print TOPOUT "\n";	
 	}
 }
 
