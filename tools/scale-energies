@@ -45,7 +45,7 @@ my $help;
 our %supported_directives = ( 'defaults' => '1',
         'atomtypes' => '1',
         'moleculetype' => '1',
-        'nonbond_params' => '0',
+        'nonbond_params' => '2',
         'atoms' => '1',
         'bonds' => '1',
         'angles' => '1',
@@ -56,7 +56,6 @@ our %supported_directives = ( 'defaults' => '1',
         'molecules' => '1',
         'position_restraints' => '0'
         );
-
 
 quit_init();
 checkForModules();
