@@ -276,6 +276,7 @@ sub adjustInputFile(){
 			}
 			$lastresidue=$resNum;
 
+			if(!exists $map{$resName}{"head"} || !exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 			## Adjust Tail\Head names ##
 			if($isHead && $isTail){
 				if("$map{$resName}{\"tail\"}" eq "$map{$resName}{\"head\"}"){
@@ -286,12 +287,10 @@ sub adjustInputFile(){
 				}
 			}
 			if ($isHead){
-				if(!exists $map{$resName}{"head"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 				my $newResName = $map{$resName}{"head"};
 				$resName = $newResName;
 			}
 			if ($isTail){
-				if(!exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 					my $newResName = $map{$resName}{"tail"};
 					$resName = 	$newResName;
 			}
