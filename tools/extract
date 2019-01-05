@@ -6,6 +6,7 @@ use Getopt::Long;
 
 our @ISA = 'Exporter';
 our @EXPORT = qw(%supported_directives);
+my $inputArguments=join(' ',@ARGV);
 
 print <<EOT;
 ********************************************************************************************
@@ -84,12 +85,6 @@ our %supported_directives = ( 'defaults' => '1',
 
 quit_init();
 checkForModules();
-my $call="";
-foreach my $filen(@ARGV){
-        $call .=  "$filen ";
-}
-$call .="\n";
-
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
         'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'orm=s' => \$restrainedmap, 'restraints=s' => \$gen_restraints,  'warn=i' => \$maxwarn, 
         '<>' => \&usage, 'nogro' => \$nogro)
@@ -101,8 +96,8 @@ unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen
 	smog_quit("-restraints given with a non-numerical value: $gen_restraints");
 }
 
-if($gen_restraints ne "null" && $gen_restraints <0){
-	smog_quit("-restraints called with a negative value");
+if($gen_restraints ne "null" && $gen_restraints <=0){
+	smog_quit("-restraints called with a negative (or zero) value");
 }
 
 ### read in the list of atoms that we want to keep
@@ -111,27 +106,11 @@ my $KEEPN=0;
 my @keepatoms2;
 
 #check and add file name extensions, if missing
-
-my ($ext)= $outputgro =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".gro"){
-	$outputgro .=  ".gro";
-}
-($ext)= $outputtop =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".top"){
-	$outputtop .=  ".top";
-}
-($ext)= $outputmap =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".map"){
-	$outputmap .=  ".map";
-}
-($ext)= $restrainedmap =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".map"){
-	$restrainedmap .=  ".map";
-}
-($ext)= $indexFile =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".ndx"){
-	$indexFile .=  ".ndx";
-}
+$outputgro=checksuffix($outputgro,".gro");
+$outputtop=checksuffix($outputtop,".top");
+$outputmap=checksuffix($outputmap,".map");
+$restrainedmap=checksuffix($restrainedmap,".map");
+$indexFile=checksuffix($indexFile,".ndx");
 
 my $maxbu = 10;
 foreach my $filen($outputgro, $outputtop, $outputmap,$restrainedmap){
@@ -153,8 +132,6 @@ foreach my $filen($outputgro, $outputtop, $outputmap,$restrainedmap){
 
 open(MAPPING,">$outputmap") or smog_quit("Can\'t open $outputmap.");
 print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
-
-open(RESMAPPING,">$restrainedmap") or smog_quit("Can\'t open $restrainedmap.");
 
 ### read in the list of atoms that we want to keep
 my $groupname;
@@ -260,7 +237,7 @@ open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing.");
 #copy header
 
 print TOPOUT "; This is a top file generated with smog_extract, using the command:\n;";
-print TOPOUT "   smog_extract $call\n";
+print TOPOUT "   smog_extract $inputArguments\n";
 print TOPOUT "$DATA[0]\n";
 
 print TOPOUT "[ defaults ]\n";
@@ -551,6 +528,7 @@ if(exists $DIRLIST{"exclusions"}){
 
 # information about the restraints 
 if($gen_restraints ne "null"){
+ 	open(RESMAPPING,">$restrainedmap") or smog_quit("Can\'t open $restrainedmap.");
 	print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
 	print RESMAPPING "The following atoms are restrained (new and old numbering)\n";
 	print TOPOUT "[ position_restraints ]\n";
@@ -558,6 +536,7 @@ if($gen_restraints ne "null"){
 		print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";
 		print RESMAPPING "$res $keepatoms2[$res-1]\n";
 	}
+	close(RESMAPPING);
 }
 print TOPOUT "\n";
 
@@ -575,7 +554,6 @@ for(my $II=1;$II<=$#C;$II++){
 }
 print TOPOUT "\n";
 close(MAPPING);
-close(RESMAPPING);
 close(TOPOUT);
 warnsummary();
 

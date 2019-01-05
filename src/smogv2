@@ -71,7 +71,6 @@ our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
 our $setContacttoLimit=0;
-our $extrasexists=0; #this is set to 1 if extras file is in the template directory
 our %funtypechecked;
 our %presentatomtypes;
 my $printversion;
@@ -181,29 +180,67 @@ sub addToTop {
 #read file "extras" in template directory
 sub addExtras {
 	my $filename = "$inputFolder/extras";
-	print "\nAdding extras information.\n";
-	open(EXTRA,"$filename");
-	my $line = "";
-	my $directive;my $stuff;my @tokens;
-	while($line = <EXTRA>)
-	{
-		chomp($line);
-		my ($A,$B)=checkcomment($line);
-		if($A eq ""){next;}  # skip the line if it is only a comment
-	    	@tokens = split('<',$line);
-		$directive = $tokens[0];
-		$directive =~ s/^\s+|\s+$//g;
-		$stuff = $tokens[1];
-		$stuff =~ s/^\s+|\s+$//g;
-		# check that nonbonded params are only added if the atom types are present
-		if($directive eq "nonbond_params"){
-			my @tarray=split(/\s+/,$stuff);
-			if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
-				next;
-			}	
+	my %foundNBe;
+	if( -e $filename){
+		print "\nAdding extras information.\n";
+		open(EXTRA,"$filename");
+		my $line = "";
+		my $directive;my $stuff;my @tokens;
+		while($line = <EXTRA>)
+		{
+			chomp($line);
+			my ($A,$B)=checkcomment($line);
+			if($A eq ""){next;}  # skip the line if it is only a comment
+		    	@tokens = split('<',$line);
+			$directive = $tokens[0];
+			$directive =~ s/^\s+|\s+$//g;
+			$stuff = $tokens[1];
+			$stuff =~ s/^\s+|\s+$//g;
+			# check that nonbonded params are only added if the atom types are present
+			if($directive eq "nonbond_params"){
+				my @tarray=split(/\s+/,$stuff);
+				if(@tarray < 5){
+					smog_quit("nonbond_params defined in extras file, but too few parameters are given. Offending line:$line");
+				}
+				unless($tarray[2]  =~ /^[1-3]$/){
+					smog_quit("In extras file, only nonbond_param types 1-3 are supported. Offending line:$line");
+				}
+				if($tarray[2]==1 && @tarray!=5){
+					smog_quit("In extras file, nonbond_param defined with nbtype 1. Must have 5 parameters. Offending line:$line");
+				}
+				if($tarray[2]==3 && @tarray!=20){
+					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 20 parameters. Offending line:$line");
+				}
+				my $f;
+				if($tarray[0] lt $tarray[1]){
+					$f = $tarray[0] . "-" . $tarray[1];
+				}else{
+					$f = $tarray[1] . "-" . $tarray[0];
+				}
+				$foundNBe{$f}=1;
+				if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
+					next;
+				}	
+				# since they are both defined, we will keep a record of them.
+			}
+			addToTop($directive,$stuff."\n");
 		}
-
-		addToTop($directive,$stuff."\n");
+	}
+	if(exists $interactions->{"nbfunc"} && $interactions->{"nbfunc"} == 3){
+	# type 3 is not defined for official versions of gromacs. We have added routines in a SMOG-supported version, in which effective potentials are defined for nonbonded interactions. These effective potentials are defined as type 3. Since there are no known combination rules for the effective potentials, the nonbonded params need to be given for every possible type of combination.  We will check that this condition is satisfied, here.
+		foreach my $t1(keys %presentatomtypes){	
+			foreach my $t2(keys %presentatomtypes){	
+				my $f;
+				if($t1 lt $t2){
+					$f = $t1 . "-" . $t2;
+				}else{
+					$f = $t2 . "-" . $t1;
+				}
+				if(!exists $foundNBe{$f}){
+					smog_quit("nbtype 3 is being used, yet not all possible nonbond_params are given in extras file. Did not find params for atomtype pair $t1-$t2");
+				}
+			}
+		}
 	}
 }
 
@@ -1206,14 +1243,10 @@ sub readAtoms
 		}
 	}
 
-	my $TCr=round($systemcharge);
-	printf("\nTotal charge of system: %8.3f\n\n",$systemcharge);
-
-	if($totalcharge !=0){
-		addToTop("comments", "; Note: total charge of system is $systemcharge\n");
-	}
-	if(abs($systemcharge-$TCr) > 0.001){
+	if(abs($systemcharge-round($systemcharge)) > 0.001){
 		smog_quit("Non-integer system charge ($systemcharge). This typically means something is wrong with the .bif file.");
+	}else{
+		printf("\nTotal charge of system: %8.3f\n\n",$systemcharge);
 	}
 	unless($endreached){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 	return(%reflist);
@@ -1385,7 +1418,6 @@ sub parseInputFolder
 			print "Validating XML format of $nb\n";
 			validateTemplate($nb,"nb");next;}
 		if($file =~ m/^extras$/) {
-			$extrasexists++;
 			$extras = "$folderName/extras";
 			print "Found extras file $extras\n";
 			checkExtras($extras);
@@ -1842,22 +1874,12 @@ if($topFile eq ""){$topFile=$DNAME};
 if($groFile eq ""){$groFile=$DNAME};
 if($shadowFile eq ""){$shadowFile=$DNAME};
 if($ndxFile eq ""){$ndxFile=$DNAME};
-my ($ext)=$topFile =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".top"){
-	$topFile = $topFile . ".top";
-}
-($ext)=$groFile =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".gro"){
-	$groFile = $groFile . ".gro";
-}
-($ext)=$shadowFile =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".contacts"){
-	$shadowFile = $shadowFile . ".contacts";
-}
-($ext)=$ndxFile =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".ndx"){
-	$ndxFile = $ndxFile . ".ndx";
-}
+
+$topFile=checksuffix($topFile,".top");
+$groFile=checksuffix($groFile,".gro");
+$shadowFile=checksuffix($shadowFile,".contacts");
+$ndxFile=checksuffix($ndxFile,".ndx");
+
 
 ## check if files exist
 # things we don't want to overwrite
@@ -1933,7 +1955,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 
 appendContacts($shadowFile,$ContactFile,$userProvidedMap);
 
-if($extrasexists) { addExtras(); }
+addExtras();
 
 printTop($topFile);
 print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$ndxFile\n";

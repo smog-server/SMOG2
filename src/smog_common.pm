@@ -8,7 +8,7 @@ use Exporter;
 our $maxwarn;
 our $warncount;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix);
 our %supported_directives;
 
 #####################
@@ -129,8 +129,15 @@ sub loadfile
 	while (<FILE>){
 		my $LINE = $_;
 		chomp($LINE);
-		unless($LINE =~ m/^[\s+|\t+]$/){ 
-			 $string .= "$LINE\n";
+		# remove blank lines
+		unless($LINE =~ m/^[\s+|\t+]$|^$/ ){ 
+			if($LINE =~ m/\[\S/){
+				$LINE =~ s/\[/\[ /g;
+ 			}
+			if($LINE =~ m/\S\]/){
+				$LINE =~ s/\]/ \]/g;
+ 			}
+			$string .= "$LINE\n";
 		}
 	}
 	close(FILE);
@@ -139,7 +146,6 @@ sub loadfile
 
 sub checkdirectives
 {
-	print "Preparing top data\n";
 	my ($string) = @_;
 # split the top file and check that only supported directives are included.
 	my %DIRLIST;
@@ -164,7 +170,9 @@ sub checkdirectives
 			smog_quit("Format error near directive \"$DIR\"");
 		}
 		if(!exists $supported_directives{$DIR}){
-			smog_quit("Directive \"$DIR \" not recognized.");
+			smog_quit("Directive \"$DIR\" not recognized.");
+		}elsif(exists $DIRLIST{$DIR}){
+			smog_quit("Directive \"$DIR\" defined more than once. Currently not supported.");
 		}else{
 			$DIRLIST{$DIR}=$I;
 		}
@@ -248,6 +256,16 @@ sub readindexfile
 	}
 	close(ATOMLIST);
 	return ($Ngrps,\@grpnms,\%groupnames,\%atomgroup);
+}
+
+sub checksuffix
+{
+	my ($name,$suf)=@_;
+	my ($ext)= $name =~ /(\.[^.]+)$/;
+	if(!defined $ext || $ext ne "$suf"){
+	        $name .=  "$suf";
+	}
+	return $name;
 }
 
 sub printdashed

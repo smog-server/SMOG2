@@ -5,6 +5,7 @@ use smog_common;
 use Scalar::Util qw(looks_like_number);
 our @ISA = 'Exporter';
 our @EXPORT = qw(%supported_directives);
+my $inputArguments=join(' ',@ARGV);
 
 my $tmpstring = <<EOT;
 
@@ -232,14 +233,8 @@ if($addC6<0){
 warninfo();
 
 #check and add file name extensions, if missing
-my ($ext)= $outputgro =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".gro"){
-	$outputgro .=  ".gro";
-}
-($ext)= $outputtop =~ /(\.[^.]+)$/;
-if(!defined $ext || $ext ne ".top"){
-	$outputtop .=  ".top";
-}
+$outputgro=checksuffix($outputgro,".gro");
+$outputtop=checksuffix($outputtop,".top");
 
 print "\nWill add ions to $inputTOP and $inputGRO\n";
 print "Will try to add $addnum $addname ions with charge $addcharge and mass $addmass\n";
@@ -520,23 +515,18 @@ print GROFILE "$grodim\n";
 ##******************* END OF GRO MODIFICATIONS**************************
 
 print "adding ions to top file...\n";
-#read in the top file, with comments stripped
-
-my $string=loadfile($inputTOP);
-my ($DATA,$DIRLIST)=checkdirectives($string);
-my %DIRLIST=%{$DIRLIST};
-my @DATA=@{$DATA};
 
 open(FILE, "$inputTOP") or smog_quit("Can not open $inputTOP"); 
 
 if(-e $outputtop){smog_quit("$outputtop already exists.")}
 open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing");
 
-
 my $NBbuffer="";
 my $NBPpresent=0;
 my %typesinsystem;
+my %seenmoltype;
 my $alreadypresent=0;
+print TOPOUT "; File generated with: smog_ions $inputArguments\n";
 while (<FILE>){
 	my $LINE = $_;
 	my $LINEORIG=$LINE;
@@ -577,9 +567,9 @@ while (<FILE>){
 		}
 		if($alreadypresent==0){
 			print "atomtype $addname not found in .top file. Will add parameters to .top file\n";
-			print TOPOUT "$addname\t$addmass\t$addcharge\tA\t$addC6\t$addC12\n\n";
+			print TOPOUT "$addname\t$addmass\t$addcharge\tA\t$addC6\t$addC12\n";
 		}elsif($alreadypresent==1){
-			print "atomtype $addname already defined in .top file. Will not overwrite parameters\n";
+			print "\nNote: atomtype $addname already defined in .top file. Will not overwrite parameters\n";
 		}else{
 			smog_quit("atomtype $addname already defined multiple times in top file.");
 		}
@@ -589,8 +579,12 @@ while (<FILE>){
 
 		if($alreadypresent==1){
 			# since we have already defined the atomtype, we will not check for anything from extras
+			if(defined $template && -e "$template/extras"){
+				print "\nNote: Since $addname was defined in the original top file, we will not try to read $template/extras.\n";
+			}
 		}else{
-			if(defined $template){
+			# if -t is used and there is an extras file, read it
+			if(defined $template && -e "$template/extras"){
 		        	my $extrafile="$template/extras";
 				print "Will check if we should add any nonbond_params from extras file $extrafile";
 				open(EXTRA,"$extrafile") or smog_quit("Unable to open $extrafile");
@@ -646,17 +640,42 @@ while (<FILE>){
 
 	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
 		# if we did not find a nonbond_params, add it.
-		if($NBPpresent==0){
-			print TOPOUT "[nonbond_params]\n$NBbuffer\n\n";
+		if($NBPpresent==0 && $NBbuffer ne ""){
+			print TOPOUT "[ nonbond_params ]\n$NBbuffer\n\n";
 		}
 
 
 		# add a new molecule type
 		if($alreadypresent == 0){
 			print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
+			if(exists $seenmoltype{$addname}){
+				smog_quit("moleculetype $addname would be defined more than once in new top file.");
+ 			}
+			$seenmoltype{$addname}=0;
 			# since we just added it, don't add again
 			$alreadypresent++;
 		}
+	}
+
+	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
+		print TOPOUT "$LINEORIG"; 
+
+		$LINEORIG = <FILE>;
+		$LINE = $LINEORIG;
+		chomp($LINE);
+		my ($data,$comment)=checkcomment($LINE);
+		until($data ne ""){
+			print TOPOUT "$LINEORIG"; 
+			$LINEORIG = <FILE>;
+			$LINE = $LINEORIG;
+			chomp($LINE);
+			($data,$comment)=checkcomment($LINE);
+		} 
+		$LINE =~ s/\t/ /g; 
+		$LINE =~ s/^\s+|\s+$//g;
+		$LINE =~ s/ +/ /g;
+		my @tmp2=split(/\s+/,$LINE);
+		$seenmoltype{$tmp2[0]}=0;
 	}
 
 	if($TMP[0] eq "[" and $TMP[1] eq "molecules"){

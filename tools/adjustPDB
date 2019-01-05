@@ -23,7 +23,7 @@ my $renumber;
 my $removeH;
 my $mapOption;
 my $help;
-
+my $inputArguments=join(' ',@ARGV);
 ## MODULE HEADERS ##
 use Getopt::Long;
 
@@ -76,6 +76,9 @@ checkForModules();
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, 'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
 
 warninfo();
+
+$outputPDB=checksuffix($outputPDB,".pdb");
+$inputPDB=checksuffix($inputPDB,".pdb");
 
 if (defined $renumber){
 	print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";
@@ -178,6 +181,7 @@ sub adjustInputFile(){
 	my $firstresidue=0;
 	my $lastresidue=0;
 	my $lastresName="";
+	print NEWPDB "COMMENT File generated with: smog_adjustPDB $inputArguments\n";
 	## Loops through all PDB rows ##
 	while($k<$rows){
 		
@@ -272,6 +276,7 @@ sub adjustInputFile(){
 			}
 			$lastresidue=$resNum;
 
+			if(!exists $map{$resName}{"head"} || !exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 			## Adjust Tail\Head names ##
 			if($isHead && $isTail){
 				if("$map{$resName}{\"tail\"}" eq "$map{$resName}{\"head\"}"){
@@ -282,12 +287,10 @@ sub adjustInputFile(){
 				}
 			}
 			if ($isHead){
-				if(!exists $map{$resName}{"head"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 				my $newResName = $map{$resName}{"head"};
 				$resName = $newResName;
 			}
 			if ($isTail){
-				if(!exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 					my $newResName = $map{$resName}{"tail"};
 					$resName = 	$newResName;
 			}
