@@ -221,7 +221,7 @@ sub adjustInputFile(){
 			my $resNum = substr($pArr[$k],22,5);
 			$resNum =~ s/^\s+|\s+$//g;		
 			my $newResNum = $resNum;
-			if($resNum =~ /^\d+$/ && $lastresidue =~ /^\d+$/){
+			if($resNum =~ /^\d+$|^-\d+$/ && $lastresidue =~ /^\d+$|^-\d+$/){
 				if($resNum-$lastresidue > 1 && $firstresidue !=1 && !$renumber){
 					smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (near line $k).");
 				}

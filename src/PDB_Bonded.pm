@@ -274,10 +274,7 @@ sub parsePDBATOMS
 		 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 			my $resname=$residue;
 	        	my $resindex = substr($record,22,5);
-			if ($lastresindex ne "null" && $resindex-$lastresindex ==0 ){
-				$lineNumber++;
-				smog_quit("Extra atoms found in residue $resname. Check near line $lineNumber.");
-			}elsif ($lastresindex ne "null" && $resindex-$lastresindex != 1){
+			if ($lastresindex ne "null" && $resindex-$lastresindex != 1 && $resindex-$lastresindex != 0){
 				smog_quit("Non-sequential residue numbers ($lastresindex,$resindex) appear at line $lineNumber.");
 			}
 			$lastresindex=$resindex;
