@@ -177,7 +177,7 @@ sub adjustInputFile(){
 	$resInd = 1;
 	$atomCount=0;	
 	my $k = 0;
-	
+	my $removestring="";	
 	my $firstresidue=0;
 	my $lastresidue=0;
 	my $lastresName="";
@@ -310,7 +310,7 @@ sub adjustInputFile(){
 				my $y = $residue[$i]->{"y"};
 				my $z = $residue[$i]->{"z"};
 				if(defined $removeH && $aName =~ m/^H/){
-					print "found $aName\n";
+					$removestring .= "$resName$resInd-$aName ";
 				}else{
 				    printf NEWPDB "ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$resName,$chainName,$resInd,$x,$y,$z;
 				}
@@ -329,7 +329,9 @@ sub adjustInputFile(){
 			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM, HETATM, TER, BOND, COMMENT, END");
 		}
 	}
-	
+	if($removestring ne ""){
+		print "\nNote: The following atoms were removed: $removestring\n";
+	}
 	close NEWPDB;
 }
 
