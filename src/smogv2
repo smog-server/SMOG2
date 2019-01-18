@@ -91,8 +91,8 @@ our %fTypes = (	'bond_harmonic' => '1',
 		);
 
 ## this is the topfile buffer stuff
-our %directives = ("comments",1,"defaults",2,"atomtypes",3,"nonbond_params",4,"moleculetype",5,"atoms",6,"bonds",7,"angles",8,"dihedrals",9,"pairs",10,"exclusions",11,"position_restraints",12,"system",13,"molecules",14);
-our @directivesList=("comments","defaults","atomtypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
+our %directives = ("comments",1,"defaults",2,"atomtypes",3,"bondtypes",4,"angletypes",5,"dihedraltypes",6,"nonbond_params",7,"moleculetype",8,"atoms",9,"bonds",10,"angles",11,"dihedrals",12,"pairs",13,"exclusions",14,"position_restraints",15,"system",16,"molecules",17);
+our @directivesList=("comments","defaults","atomtypes","bondtypes","angletypes","dihedraltypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
 our @topFileBuffer;
 our @linesInDirectives;
 our @linesInDirectivesWithContent;
@@ -151,6 +151,9 @@ sub initializeDirectives {
 	addToTop("exclusions",";ai	aj\n");
 	addToTop("atomtypes","\n[ atomtypes ] \n");
 	addToTop("atomtypes","; name  mass     charge    ptype c6            c12\n");
+	addToTop("bondtypes","\n[ bondtypes ] \n");
+	addToTop("angletypes","\n[ angletypes ] \n");
+	addToTop("dihedraltypes","\n[ dihedraltypes ] \n");
 	addToTop("nonbond_params","\n[ nonbond_params ]\n");
 	addToTop("nonbond_params",";ai     aj    func    c6       c12\n");
 	addToTop("position_restraints","\n[ position_restraints ]\n");
@@ -198,7 +201,8 @@ sub addExtras {
 			$stuff =~ s/^\s+|\s+$//g;
 			# check that nonbonded params are only added if the atom types are present
 			if($directive eq "nonbond_params"){
-				my @tarray=split(/\s+/,$stuff);
+		    		my @ltokens = split('<',$A);
+				my @tarray=split(/\s+/,$ltokens[1]);
 				if(@tarray < 5){
 					smog_quit("nonbond_params defined in extras file, but too few parameters are given. Offending line:$line");
 				}
@@ -223,6 +227,33 @@ sub addExtras {
 				}	
 				# since they are both defined, we will keep a record of them.
 			}
+			if($directive eq "bondtypes"){
+		    		my @ltokens = split('<',$A);
+				my $lstuff=$ltokens[1];
+				$lstuff =~ s/^\s+|\s+$//g;
+				my @tarray=split(/\s+/,$lstuff);
+				if(@tarray < 5){
+					smog_quit("bondtypes defined in extras file, but too few parameters are given. Offending line:$line");
+				}
+				unless($tarray[2]  =~ /^[1-9]$|^10$/){
+					smog_quit("In extras file, only bondtypes types 1-10 are supported. Offending line:$line");
+				}
+				if($tarray[2]==1 && @tarray!=5){
+					smog_quit("In extras file, bondtypes defined with nbtype 1. Must have 5 parameters. Offending line:$line");
+				}
+				my $f;
+				if($tarray[0] lt $tarray[1]){
+					$f = $tarray[0] . "-" . $tarray[1];
+				}else{
+					$f = $tarray[1] . "-" . $tarray[0];
+				}
+				$foundNBe{$f}=1;
+				if((!defined $presentatomtypes{$tarray[0]} && $tarray[0] ne "X") || (!defined $presentatomtypes{$tarray[1]} && $tarray[1] ne "X")  ){
+					next;
+				}	
+				# since they are both defined, we will keep a record of them.
+			}
+
 			addToTop($directive,$stuff."\n");
 		}
 	}
@@ -385,42 +416,49 @@ sub bondOutput
 		## $paramArr[0] is bond length
 		if($fType != 0){
 	       
-			if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## native option used
+			if($paramArr[0] =~ /\?/){
+				$paramArr[0]=$values; # native option used
+			} 
+			if($paramArr[0] =~ /^X$/){
+				 ## don't write distance. Make gromacs use bondtype
+				$formattedString = sprintf("%d\t%d\t%d",$i,$j,$fType);
+				$outputString = "$outputString$formattedString\n";
+			}else{
 	        
-	        ## Check bonds threshold ##
-	        	if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
-	        	|| $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
-				my $DIST=int($paramArr[0]*100)/100.0;
-				my %reflist=%{$indexhandle};
-				if($setBondtoLimit){
-					if(!exists $reflist{$i} || !exists $reflist{$j}){
-						smog_quit("Internal error 2.  Please inform smog team");
+	        		## Check bonds threshold ##
+	        		if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
+	        		|| $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
+					my $DIST=int($paramArr[0]*100)/100.0;
+					my %reflist=%{$indexhandle};
+					if($setBondtoLimit){
+						if(!exists $reflist{$i} || !exists $reflist{$j}){
+							smog_quit("Internal error 2.  Please inform smog team");
+						}
+						my $i1=$reflist{$i};
+						my $j1=$reflist{$j};
+						print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.\n\n");
+						print "-limitbondlength is being used, will set length to ";
+		 				if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
+		  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
+		  					print "$paramArr[0] nm\n\n";
+		 				}elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
+		  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
+		  					print "$paramArr[0] nm\n\n";
+		 				}
+					}else{
+						if(!exists $reflist{$i} || !exists $reflist{$j}){
+							smog_quit("Internal error 3.  Please inform smog team");
+						}
+						my $i1=$reflist{$i};
+						my $j1=$reflist{$j};
+						smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
 					}
-					my $i1=$reflist{$i};
-					my $j1=$reflist{$j};
-					print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.\n\n");
-					print "-limitbondlength is being used, will set length to ";
-		 			if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
-		  				$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
-		  				print "$paramArr[0] nm\n\n";
-		 			}elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
-		  				$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
-		  				print "$paramArr[0] nm\n\n";
-		 			}
-				}else{
-					if(!exists $reflist{$i} || !exists $reflist{$j}){
-						smog_quit("Internal error 3.  Please inform smog team");
-					}
-					my $i1=$reflist{$i};
-					my $j1=$reflist{$j};
-					smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
-				}
-	        	}	
-	       
+	        		}	
 	## Format output <i j function p1 p2 ... pn>
-			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
-			$outputString = "$outputString$formattedString\n";
+				foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+				$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
+				$outputString = "$outputString$formattedString\n";
+	       		}
 		}else{
 			$freebonds{"$i-$j"}=1;
 			$freebonds{"$j-$i"}=1;
