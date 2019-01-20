@@ -122,7 +122,7 @@ sub parsePDBATOMS
 	unless (open(PDBFILE, $fileName)) {
 		smog_quit ("Cannot read from '$fileName'.");
 	}
-
+	my $lastrecord="";
 	while(my $record = <PDBFILE>)
 	{
 		my $lng = $record;
@@ -236,7 +236,7 @@ sub parsePDBATOMS
 			## CREATE INTERACTION ##
 			my $chainlength=$atomSerial-$lastchainstart;
 			print "Building covalent geometry for chain $chainNumber\n";
-        		my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength);
+        		my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength,$lastrecord);
 			my @connset=@{$connset};
 			foreach my $I(@connset){
 				my $T=$I+$lastchainstart+1;
@@ -390,6 +390,7 @@ sub parsePDBATOMS
 		}else{
 			smog_quit("Expected ATOM or HETATM line at line $lineNumber.");
 		}
+		$lastrecord=$record;
 		$record = "";
  	}
 }
@@ -479,7 +480,7 @@ sub connectivityCheck
 
 sub GenerateBondedGeometry {
 
-	my ($connect,$counter,$chid,$chainlength) = @_;
+	my ($connect,$counter,$chid,$chainlength,$lastread) = @_;
 	## $connect is a list of connected residues ##
    	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union,$ConnectedAtoms) = GenAnglesDihedrals($connect,$chainlength,$chid);
 	my %union=%{$union};
@@ -498,7 +499,7 @@ sub GenerateBondedGeometry {
 		if($missed==0 && $connected == $chainlength){
 			print "\tAll $connected atoms connected via covalent bonds \n"; 
 		}else{
-			smog_quit("We appear to have connected $connected of $chainlength atoms in chain $chid.  There is an issue connecting atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file, or missing atoms in the PDB.\nCheck for earlier warning messages. ")
+			smog_quit("We appear to have connected $connected of $chainlength atoms in chain $chid.  There is an issue connecting atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file, or missing atoms in the PDB.\nCheck for earlier warning messages. Last line read: $lastread ")
 		}
 	}elsif($chainlength == 1){
 		print "Only 1 atom in chain $chid.  Will not perform connectivity checks.\n";

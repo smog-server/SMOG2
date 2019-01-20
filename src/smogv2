@@ -202,6 +202,11 @@ sub addExtras {
 			# check that nonbonded params are only added if the atom types are present
 			if($directive eq "nonbond_params"){
 		    		my @ltokens = split('<',$A);
+				if(@ltokens ==1){
+					# if it is just a comment, save.
+					addToTop($directive,$stuff."\n");
+					next;	
+				}
 				my @tarray=split(/\s+/,$ltokens[1]);
 				if(@tarray < 5){
 					smog_quit("nonbond_params defined in extras file, but too few parameters are given. Offending line:$line");
@@ -229,10 +234,15 @@ sub addExtras {
 			}
 			if($directive eq "bondtypes"){
 		    		my @ltokens = split('<',$A);
+				if(@ltokens ==1){
+					# if it is just a comment, save.
+					addToTop($directive,$stuff."\n");
+					next;	
+				}
 				my $lstuff=$ltokens[1];
 				$lstuff =~ s/^\s+|\s+$//g;
 				my @tarray=split(/\s+/,$lstuff);
-				if(@tarray < 5){
+				if(@tarray < 5 ){
 					smog_quit("bondtypes defined in extras file, but too few parameters are given. Offending line:$line");
 				}
 				unless($tarray[2]  =~ /^[1-9]$|^10$/){
@@ -241,18 +251,58 @@ sub addExtras {
 				if($tarray[2]==1 && @tarray!=5){
 					smog_quit("In extras file, bondtypes defined with nbtype 1. Must have 5 parameters. Offending line:$line");
 				}
-				my $f;
-				if($tarray[0] lt $tarray[1]){
-					$f = $tarray[0] . "-" . $tarray[1];
-				}else{
-					$f = $tarray[1] . "-" . $tarray[0];
-				}
-				$foundNBe{$f}=1;
 				if((!defined $presentatomtypes{$tarray[0]} && $tarray[0] ne "X") || (!defined $presentatomtypes{$tarray[1]} && $tarray[1] ne "X")  ){
 					next;
 				}	
 				# since they are both defined, we will keep a record of them.
 			}
+			if($directive eq "angletypes"){
+		    		my @ltokens = split('<',$A);
+				if(@ltokens ==1){
+					# if it is just a comment, save.
+					addToTop($directive,$stuff."\n");
+					next;	
+				}
+				my $lstuff=$ltokens[1];
+				$lstuff =~ s/^\s+|\s+$//g;
+				my @tarray=split(/\s+/,$lstuff);
+				if(@tarray < 6 ){
+					smog_quit("angletypes defined in extras file, but too few parameters are given. Offending line:$line");
+				}
+				unless($tarray[3]  =~ /^[1-6]$|^8$|^10$/){
+					smog_quit("In extras file, only angletypes types 1-6, 8 and 10 are supported. Offending line:$line");
+				}
+				if($tarray[3]==1 && @tarray!=6){
+					smog_quit("In extras file, angletypes defined with nbtype 1. Must have 6 parameters. Offending line:$line");
+				}
+				if((!defined $presentatomtypes{$tarray[0]} && $tarray[0] ne "X") || (!defined $presentatomtypes{$tarray[1]} && $tarray[1] ne "X") || (!defined $presentatomtypes{$tarray[2]} && $tarray[2] ne "X") ){
+					next;
+				}	
+				# since they are both defined, we will keep a record of them.
+			}
+			if($directive eq "dihedraltypes"){
+		    		my @ltokens = split('<',$A);
+				if(@ltokens ==1){
+					# if it is just a comment, save.
+					addToTop($directive,$stuff."\n");
+					next;	
+				}
+				my $lstuff=$ltokens[1];
+				$lstuff =~ s/^\s+|\s+$//g;
+				my @tarray=split(/\s+/,$lstuff);
+				if(@tarray < 7 ){
+					smog_quit("dihedraltypes defined in extras file, but too few parameters are given. Offending line:$line");
+				}
+				unless($tarray[4]  =~ /^[1-5]$|^[89]$|^1[01]$/){
+					smog_quit("In extras file, only angletypes types 1-5, 8, 9, 10 and 11 are supported. Offending line:$line");
+				}
+				if((!defined $presentatomtypes{$tarray[0]} && $tarray[0] ne "X") || (!defined $presentatomtypes{$tarray[1]} && $tarray[1] ne "X") || (!defined $presentatomtypes{$tarray[2]} && $tarray[2] ne "X") || (!defined $presentatomtypes{$tarray[3]} && $tarray[3] ne "X") ){
+					next;
+				}	
+				# since they are both defined, we will keep a record of them.
+			}
+
+
 
 			addToTop($directive,$stuff."\n");
 		}
@@ -566,33 +616,41 @@ sub angleOutput
 	{
 		my $paramFormat="";
 		($fType,@paramArr) = angleFuncParser($fun);
-		if($fType != 0 && !exists $freebonds{"$i-$j"} && !exists $freebonds{"$j-$i"} && !exists $freebonds{"$k-$j"} && !exists $freebonds{"$j-$k"}){
-			if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## non-native option used
-	
-			## Check angles threshold ##
-	 		if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
-				my $THETA=int($paramArr[0]*100)/100.0;
-				my %reflist=%{$indexhandle};
-				my $i1=$reflist{$i};
-				my $j1=$reflist{$j};
-				my $k1=$reflist{$k};
-				smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilites.",1);
-			}
-	 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
-				my $THETA=int($paramArr[0]*100)/100.0;
-				my %reflist=%{$indexhandle};
-				my $i1=$reflist{$i};
-				my $j1=$reflist{$j};
-				my $k1=$reflist{$k};
-				smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
-			}
- 		## Format output <i j k function p1 p2 ... pn>
- 			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-			$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
+
+		if($paramArr[0] =~ /^X$/){
+			 ## don't write distance. Make gromacs use angletype
+			$formattedString = sprintf("%d\t%d\t%d\t%d",$i,$j,$k,$fType);
 			$outputString = "$outputString$formattedString\n";
 		}else{
-			$freeangles{"$i-$j-$k"}=1;
-			$freeangles{"$k-$j-$i"}=1;
+
+			if($fType != 0 && !exists $freebonds{"$i-$j"} && !exists $freebonds{"$j-$i"} && !exists $freebonds{"$k-$j"} && !exists $freebonds{"$j-$k"}){
+				if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## non-native option used
+		
+				## Check angles threshold ##
+		 		if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
+					my $THETA=int($paramArr[0]*100)/100.0;
+					my %reflist=%{$indexhandle};
+					my $i1=$reflist{$i};
+					my $j1=$reflist{$j};
+					my $k1=$reflist{$k};
+					smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilites.",1);
+				}
+		 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
+					my $THETA=int($paramArr[0]*100)/100.0;
+					my %reflist=%{$indexhandle};
+					my $i1=$reflist{$i};
+					my $j1=$reflist{$j};
+					my $k1=$reflist{$k};
+					smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
+				}
+	 		## Format output <i j k function p1 p2 ... pn>
+	 			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+				$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
+				$outputString = "$outputString$formattedString\n";
+			}else{
+				$freeangles{"$i-$j-$k"}=1;
+				$freeangles{"$k-$j-$i"}=1;
+			}
 		}
 	}
 	return $outputString; 
@@ -717,58 +775,64 @@ sub dihedralOutput
 		my $paramFormat="";
 		# since this is only used here, we may remove the call and sub in the code
 		($fType,@paramArr) = diheFuncParser($fun);
-	
-	 	if($fType !=0 && !exists $freeangles{"$ai-$aj-$ak"} && !exists $freeangles{"$ak-$aj-$ai"} && !exists $freeangles{"$aj-$ak-$al"} && !exists $freeangles{"$al-$ak-$aj"}  ){
-			# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
-			if($paramArr[0] =~ /\?/){
-		         # replace ? with native angles
-		   	 $paramArr[0] =~ s/\?/$values/g;
-			 # evaluate
-			 $paramArr[0] = eval($paramArr[0]);
-			 }
-			 if( $fType == 1){
-		            # Angle will be scaled by multiplicity factor n, if they are cosine functions
-		            $paramArr[0] *= $paramArr[2];
-			 }
-		
-	
-			# Perform checks of dihedral parameters (only do this once, then set funtypechecked)
-			unless(exists $funtypechecked{$fun}){
-				$funtypechecked{$fun}=1;		
-		        	if($paramArr[1] =~ /[*?^&!@#%()]/){smog_quit ("Dihedral weight can only contain numbers, but $paramArr[1] found.")};
-		
-				if($fType == 0 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
-					smog_quit("Function type dihedral_free is being used for an energy group with normalize != 0.  This can lead to unpredictable results.");
-				}
-		
-				if($funci == 0){
-				  $fTypei[0]= $fType;
-		
-				  if($fType==1 and $paramArr[1] != 1 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
-				   smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
-				  }
-				}elsif($funci != 0 and $fTypei[0] != $fType){
-		        	  smog_quit ("Sums of dihedrals of different types is not supported.");
-				}
-			}
-			# end of consistency checks
-	
-	
-			$funci++;
-			## If dihedral kd is normalized or has scaling&normalize ##
-		 	$paramArr[1]*=$ratio;
-			## Format output <i j k function p1 p2 ... pn>
-		 	for(my $I=0;$I<=$#paramArr;$I++){$paramFormat="$paramFormat %12.9e";}
-		 	#foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-
-			if($fType == 1) {
-				$paramFormat=" %12.9e %12.9e %u";
-			}elsif($fType == 2){	
-			### CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
-				if($paramArr[0]>180){$paramArr[0]-=180;}else{$paramArr[0]+=180;}
-			}	
-			$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
+		if($paramArr[0] =~ /^X$/){
+			 ## don't write angle. Make gromacs use dihedraltype
+			$formattedString = sprintf("%d\t%d\t%d\t%d",$ai,$aj,$ak,$al);
 			$outputString = "$outputString$formattedString\n";
+		}else{
+
+	 		if($fType !=0 && !exists $freeangles{"$ai-$aj-$ak"} && !exists $freeangles{"$ak-$aj-$ai"} && !exists $freeangles{"$aj-$ak-$al"} && !exists $freeangles{"$al-$ak-$aj"}  ){
+				# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
+				if($paramArr[0] =~ /\?/){
+			         # replace ? with native angles
+			   	 $paramArr[0] =~ s/\?/$values/g;
+				 # evaluate
+				 $paramArr[0] = eval($paramArr[0]);
+				 }
+				 if( $fType == 1){
+			            # Angle will be scaled by multiplicity factor n, if they are cosine functions
+			            $paramArr[0] *= $paramArr[2];
+				 }
+			
+	
+				# Perform checks of dihedral parameters (only do this once, then set funtypechecked)
+				unless(exists $funtypechecked{$fun}){
+					$funtypechecked{$fun}=1;		
+			        	if($paramArr[1] =~ /[*?^&!@#%()]/){smog_quit ("Dihedral weight can only contain numbers, but $paramArr[1] found.")};
+			
+					if($fType == 0 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
+						smog_quit("Function type dihedral_free is being used for an energy group with normalize != 0.  This can lead to unpredictable results.");
+					}
+			
+					if($funci == 0){
+					  $fTypei[0]= $fType;
+			
+					  if($fType==1 and $paramArr[1] != 1 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
+					   smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
+					  }
+					}elsif($funci != 0 and $fTypei[0] != $fType){
+			        	  smog_quit ("Sums of dihedrals of different types is not supported.");
+					}
+				}
+				# end of consistency checks
+	
+	
+				$funci++;
+				## If dihedral kd is normalized or has scaling&normalize ##
+			 	$paramArr[1]*=$ratio;
+				## Format output <i j k function p1 p2 ... pn>
+			 	for(my $I=0;$I<=$#paramArr;$I++){$paramFormat="$paramFormat %12.9e";}
+			 	#foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+
+				if($fType == 1) {
+					$paramFormat=" %12.9e %12.9e %u";
+				}elsif($fType == 2){	
+				### CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
+					if($paramArr[0]>180){$paramArr[0]-=180;}else{$paramArr[0]+=180;}
+				}	
+				$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
+				$outputString = "$outputString$formattedString\n";
+			}
 		}
 	}
 		return $outputString;
