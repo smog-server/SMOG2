@@ -74,6 +74,8 @@ our $setContacttoLimit=0;
 our %funtypechecked;
 our %presentatomtypes;
 our %foundBtype;
+our %foundAtype;
+our %foundDtype;
 my $printversion;
 my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
 ## this is the array that defines how function names are converted to gromacs function types
@@ -281,6 +283,9 @@ sub addExtras {
 					next;
 				}	
 				# since they are both defined, we will keep a record of them.
+
+				$foundAtype{"$tarray[0]-$tarray[1]-$tarray[2]"}=1;
+				$foundAtype{"$tarray[2]-$tarray[1]-$tarray[0]"}=1;
 			}
 			if($directive eq "dihedraltypes"){
 		    		my @ltokens = split('<',$A);
@@ -302,6 +307,8 @@ sub addExtras {
 					next;
 				}	
 				# since they are both defined, we will keep a record of them.
+				$foundDtype{"$tarray[0]-$tarray[1]-$tarray[2]-$tarray[3]"}=1;
+				$foundDtype{"$tarray[3]-$tarray[2]-$tarray[1]-$tarray[0]"}=1;
 			}
 
 
@@ -524,15 +531,90 @@ sub bondOutput
 sub checkbondtype
 {
 	my ($i,$j,$allatoms)=@_;
+	my $found=0;
 	# only check that the pair has a bondtype, if the hash is defined
 	if($allatoms ne "0"){
 		my $typei=$allatoms->{$i}->[0];
 		my $typej=$allatoms->{$j}->[0];
-		if(!defined $foundBtype{"$typei-$typej"}){
+		foreach my $I("X",$typei)
+		{
+			foreach my $J("X",$typej)
+			{
+				my $nm="$I-$J";
+				if(defined $foundBtype{$nm})
+				{
+					$found=1;
+					return;
+				}
+			}
+		}
+		if($found ==0){
 			smog_quit("Default bond interaction not provided for pair $i-$j (types $typei and $typej)");
 		}
 	}
 }
+
+sub checkangletype
+{
+	my ($i,$j,$k,$allatoms)=@_;
+	my $found=0;
+	# only check that the pair has a bondtype, if the hash is defined
+	my $typei=$allatoms->{$i}->[0];
+	my $typej=$allatoms->{$j}->[0];
+	my $typek=$allatoms->{$k}->[0];
+	foreach my $I("X",$typei)
+	{
+		foreach my $J("X",$typej)
+		{
+			foreach my $K("X",$typek)
+			{
+				my $nm="$I-$J-$K";
+				if(defined $foundAtype{$nm})
+				{
+					$found=1;
+					return;
+				}
+			}
+		}
+	}
+	if($found ==0){
+		smog_quit("Default angle interaction not provided for pair $i-$j-$k (types $typei, $typej, $typek)");
+	}
+}
+
+
+sub checkdihedraltype
+{
+	my ($i,$j,$k,,$l,$allatoms)=@_;
+	# only check that the pair has a bondtype, if the hash is defined
+	my $typei=$allatoms->{$i}->[0];
+	my $typej=$allatoms->{$j}->[0];
+	my $typek=$allatoms->{$k}->[0];
+	my $typel=$allatoms->{$l}->[0];
+	my $found=0;
+	foreach my $I("X",$typei)
+	{
+		foreach my $J("X",$typej)
+		{
+			foreach my $K("X",$typek)
+			{
+				foreach my $L("X",$typel)
+				{
+					my $nm="$I-$J-$K-$L";
+					if(defined $foundDtype{$nm})
+					{
+						$found=1;
+						return;
+					}
+				}
+			}
+		}
+	}
+	if($found ==0){
+		smog_quit("Default dihedral interaction not provided for pair $i-$j-$k-$l (types $typei, $typej, $typek, $typel)");
+	}
+}
+
 
 ##
 # Given a user defined function, parse values
@@ -559,11 +641,11 @@ sub bondFuncParser
 # Combined bond calculation,sorting, and printing
 sub printOrderedAngles
 {
-	my($AngleData,$bondPDL,$indexhandle) = @_;
+	my($AngleData,$bondPDL,$indexhandle,$allatoms) = @_;
 	my @angleCache; ## CACHE BONDS TO ORDER
 
 	## Cache Bonds ##
-	CalculateAngles($AngleData,$bondPDL,\@angleCache,$indexhandle);
+	CalculateAngles($AngleData,$bondPDL,\@angleCache,$indexhandle,$allatoms);
 
 	## Sort angles by i,j then k ## 
 	@angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
@@ -580,17 +662,17 @@ sub printOrderedAngles
 # CalculateAnglesHelper() calculates the angles for each chain
 sub CalculateAngles
 {
-	my($angleFunctHandle,$whichPDL,$angleCache,$indexhandle) = @_;
+	my($angleFunctHandle,$whichPDL,$angleCache,$indexhandle,$allatoms) = @_;
  
 	foreach my $chain(keys %{$angleFunctHandle}){
-		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache,$indexhandle);
+		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache,$indexhandle,$allatoms);
 	}
 }
 
 ##
 sub CalculateAnglesHelper
 {
-	my($angleArr,$inputPDL,$angleCache,$indexhandle) = @_;
+	my($angleArr,$inputPDL,$angleCache,$indexhandle,$allatoms) = @_;
 	my $size = $angleArr->dim(1);
 	for(my $i=0;$i<$size;$i++)
 	{
@@ -608,7 +690,7 @@ sub CalculateAnglesHelper
 		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
 		
 		if($atomi1 > $atomi3) { my $temp = $atomi1; $atomi1 = $atomi3; $atomi3 = $temp; }
-		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos,$indexhandle);
+		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos,$indexhandle,$allatoms);
 		if(!$val) {next;}
 			# i,j,k are meta data
 	 	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => $val};
@@ -619,7 +701,7 @@ sub CalculateAnglesHelper
 # Convert internal angle function format to gromacs function format
 sub angleOutput
 {
- 	my($inputFunc,$i,$j,$k,$values,$indexhandle) = @_;
+ 	my($inputFunc,$i,$j,$k,$values,$indexhandle,$allatoms) = @_;
 	if(!$inputFunc){smog_quit ("ANGLEOUTPUT::NO FUNCTION DEFINED");}
  ## Remove white spaces from string ##
  	$inputFunc =~ s/^\s+|\s+$//g;
@@ -636,6 +718,7 @@ sub angleOutput
 
 		if($paramArr[0] =~ /^X$/){
 			 ## don't write distance. Make gromacs use angletype
+			&checkangletype($i,$j,$k,$allatoms); 
 			$formattedString = sprintf("%d\t%d\t%d\t%d",$i,$j,$k,$fType);
 			$outputString = "$outputString$formattedString\n";
 		}else{
@@ -698,10 +781,10 @@ sub angleFuncParser
 # Combined dihedral calculation,sorting, and printing
 sub printOrderedDihedrals
 {
-	my($DihedralData,$bondPDL) = @_;
+	my($DihedralData,$bondPDL,$allatoms) = @_;
 	my @diheCache; ## CACHE BONDS TO ORDER
 	## Cache Bonds ##
-	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache);
+	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache,$allatoms);
 	## Sort dihedrals by i, then j then k then l ## 
 	@diheCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"l"} <=> $b->{"l"}) } @diheCache;
 	
@@ -716,15 +799,15 @@ sub printOrderedDihedrals
 # Setup the calculation of dihedral angles of all combined residues,
 sub CalculateDihedrals
 {
-	my($diheFunctHandle,$whichPDL,$diheCache) = @_;
+	my($diheFunctHandle,$whichPDL,$diheCache,$allatoms) = @_;
 	foreach my $chain(keys %{$diheFunctHandle}){
-		CalculateDihedralsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain},$diheCache);
+		CalculateDihedralsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain},$diheCache,$allatoms);
 	}
 }
 
 sub CalculateDihedralsHelper
 {
-	 my($diheArr,$inputPDL,$diheCache) = @_;
+	 my($diheArr,$inputPDL,$diheCache,$allatoms) = @_;
 	 my $size = $diheArr->dim(1);
 	 for(my $i=0;$i<$size;$i++)
 	 {
@@ -762,7 +845,7 @@ sub CalculateDihedralsHelper
 			## $eG >=0 dihedral is proper dihedral of any functional form
 	        if($eG >= 0)
 			{
-				my $val = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG);
+				my $val = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
 				if(!$val) {next;}
 				# i,j,k,l are meta data
 				push @{$diheCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'l' => $atomi4, 'v' => $val};
@@ -777,7 +860,7 @@ sub CalculateDihedralsHelper
 
 sub dihedralOutput
 {
- 	my($inputFunc,$ai,$aj,$ak,$al,$values,$ratio,$eG) = @_;
+ 	my($inputFunc,$ai,$aj,$ak,$al,$values,$ratio,$eG,$allatoms) = @_;
  	## Remove white spaces from string ##
  	$inputFunc =~ s/^\s+|\s+$//g;
  	## If $input contains a + ##
@@ -794,6 +877,7 @@ sub dihedralOutput
 		($fType,@paramArr) = diheFuncParser($fun);
 		if($paramArr[0] =~ /^X$/){
 			 ## don't write angle. Make gromacs use dihedraltype
+			&checkdihedraltype($ai,$aj,$ak,$al,$allatoms);
 			$formattedString = sprintf("%d\t%d\t%d\t%d",$ai,$aj,$ak,$al);
 			$outputString = "$outputString$formattedString\n";
 		}else{
@@ -1712,7 +1796,7 @@ sub freeMemoryForShadow
 {
 	undef %resPDL;undef %bondPDL;
 	undef %AngleData;undef %DihedralData;
-	undef %BondData;undef $contactPDL;undef %foundBtype;
+	undef %BondData;undef $contactPDL;undef %foundBtype; undef %foundAtype, undef %foundDtype;
 }
 
 
@@ -1789,11 +1873,11 @@ sub printBondedTopOutput {
 
 	## CALCULATE ANGLES ##
 	print "Saving angles\n";
-	printOrderedAngles(\%AngleData,\%bondPDL,\%atomIndex2Line);
+	printOrderedAngles(\%AngleData,\%bondPDL,\%atomIndex2Line,\%allAtoms);
 
 	## CALCULATE DIHEDRALS ##
 	print "Saving dihedrals\n";
-	printOrderedDihedrals(\%DihedralData,\%bondPDL);
+	printOrderedDihedrals(\%DihedralData,\%bondPDL,\%allAtoms);
 
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
