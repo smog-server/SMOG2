@@ -73,6 +73,7 @@ our $setBondtoLimit=0;
 our $setContacttoLimit=0;
 our %funtypechecked;
 our %presentatomtypes;
+our %foundBtype;
 my $printversion;
 my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
 ## this is the array that defines how function names are converted to gromacs function types
@@ -171,8 +172,6 @@ sub initializeDirectives {
 	addToTop("molecules","  Macromolecule   1\n");
 }
 
-
-
 #adds something to the topfile at the bottom of a directive
 sub addToTop {
 	my($directive,$stuff) = @_;
@@ -255,6 +254,9 @@ sub addExtras {
 					next;
 				}	
 				# since they are both defined, we will keep a record of them.
+				# save the type hash
+				$foundBtype{"$tarray[0]-$tarray[1]"}=1;
+				$foundBtype{"$tarray[1]-$tarray[0]"}=1;
 			}
 			if($directive eq "angletypes"){
 		    		my @ltokens = split('<',$A);
@@ -359,11 +361,11 @@ sub checkExtras {
 sub printOrderedBonds
 {
 
-	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2,$indexhandle) = @_;
+	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2,$indexhandle,$allatoms) = @_;
 	my @bondCache; ## CACHE BONDS TO ORDER
 
 	## Cache Bonds ##
-	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache,$indexhandle);
+	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache,$indexhandle,$allatoms);
 	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache,$indexhandle);
 	## Sort bonds by i then j ## 
 	@bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
@@ -379,10 +381,10 @@ sub printOrderedBonds
 # call  calculateBondsHelper1() for each residue defined in templates
 sub calculateBonds1
 {
-	my($bondFunctHandle,$whichPDL,$bondCache,$indexhandle) = @_;
+	my($bondFunctHandle,$whichPDL,$bondCache,$indexhandle,$allatoms) = @_;
 	foreach my $res(keys %{$bondFunctHandle}){
 	       if(!exists $whichPDL->{$res}){next;}
-	       calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache,$indexhandle);
+	       calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache,$indexhandle,$allatoms);
 	}
 }
 
@@ -401,7 +403,7 @@ sub calculateBonds2
 
 sub calculateBondsHelper1
 {
-	my($bondHash,$inputPDL,$bondCache,$indexhandle) = @_;
+	my($bondHash,$inputPDL,$bondCache,$indexhandle,$allatoms) = @_;
 	my $bondArr = $bondHash->{"bonds"};
 	my $bondFunc =$bondHash->{"functions"};
 	my $bondIndex = 0;
@@ -416,7 +418,7 @@ sub calculateBondsHelper1
 	       {
 			my $I1=$indexList1[$i];
 			my $I2=$indexList2[$i];
-			my $val=bondOutput($bondFunc->[$bondIndex],$I1,$I2,$bondList[$i],$indexhandle);
+			my $val=bondOutput($bondFunc->[$bondIndex],$I1,$I2,$bondList[$i],$indexhandle,$allatoms);
 			if(!$val){next;}
 			# i,j are meta data
 	 		push @{$bondCache}, {'i' => $I1,'j' => $I2, 'v' => $val};
@@ -439,7 +441,7 @@ sub calculateBondsHelper2
 		my $output = sclr(sqrt(inner($outer,$outer))*$angToNano);
 		$atomOne = sclr(slice($inputPDL,"3:3,$atomOne,:"));
 		$atomTwo = sclr(slice($inputPDL,"3:3,$atomTwo,:"));
-		my $val=bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output,$indexhandle);
+		my $val=bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output,$indexhandle,0);
 		if(!$val){next;}
 		push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => $val};
 	}
@@ -450,7 +452,7 @@ sub calculateBondsHelper2
 # Convert internal bond function format to gromacs function format,
 sub bondOutput
 {
-	my($inputFunc,$i,$j,$values,$indexhandle) = @_;
+	my($inputFunc,$i,$j,$values,$indexhandle,$allatoms) = @_;
 	if(!$inputFunc){smog_quit ("BONDOUTPUT::NO FUNCTION DEFINED");}
 	## Remove white spaces from string ##
 	$inputFunc =~ s/^\s+|\s+$//g;
@@ -470,7 +472,9 @@ sub bondOutput
 				$paramArr[0]=$values; # native option used
 			} 
 			if($paramArr[0] =~ /^X$/){
-				 ## don't write distance. Make gromacs use bondtype
+				# don't write distance. Make gromacs use bondtype
+				# since we are not writing a distance, let's check and make sure this pair has a bondtype provided
+				&checkbondtype($i,$j,$allatoms); 
 				$formattedString = sprintf("%d\t%d\t%d",$i,$j,$fType);
 				$outputString = "$outputString$formattedString\n";
 			}else{
@@ -515,6 +519,19 @@ sub bondOutput
 		}
 	}
 	return $outputString;
+}
+
+sub checkbondtype
+{
+	my ($i,$j,$allatoms)=@_;
+	# only check that the pair has a bondtype, if the hash is defined
+	if($allatoms ne "0"){
+		my $typei=$allatoms->{$i}->[0];
+		my $typej=$allatoms->{$j}->[0];
+		if(!defined $foundBtype{"$typei-$typej"}){
+			smog_quit("Default bond interaction not provided for pair $i-$j (types $typei and $typej)");
+		}
+	}
 }
 
 ##
@@ -1250,7 +1267,7 @@ sub calculateAtomTypes
 	my $nbtype ="";
 	my $c12;my $c6;my $ptype;my $charge;my $mass;
 	
-	foreach my $atoms(keys %{$uniqueHandle})
+	foreach my $atoms(sort { $a <=> $b } keys %{$uniqueHandle})
 	{
 		$nbtype = $uniqueHandle->{$atoms}->[0];
   		if(!$uniqueHandle->{$atoms}->[0])
@@ -1695,7 +1712,7 @@ sub freeMemoryForShadow
 {
 	undef %resPDL;undef %bondPDL;
 	undef %AngleData;undef %DihedralData;
-	undef %BondData;undef $contactPDL;
+	undef %BondData;undef $contactPDL;undef %foundBtype;
 }
 
 
@@ -1762,11 +1779,13 @@ sub printBondedTopOutput {
 	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms,$rescaleCD);
 	print "Processing atoms\n";
 	calculateAtomTypes(\%allAtoms);
+ 	# adding extras at this point is a bit out of place.  but, it is important, in order to verify that all bonds have bondtypes, etc.
+	addExtras();
 	my %atomIndex2Line=readAtoms($inputPDB);
 
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "Saving bonds\n";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL,\%atomIndex2Line);
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL,\%atomIndex2Line,\%allAtoms);
 
 	## CALCULATE ANGLES ##
 	print "Saving angles\n";
@@ -2057,7 +2076,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 
 appendContacts($shadowFile,$ContactFile,$userProvidedMap);
 
-addExtras();
+#PCWaddExtras();
 
 printTop($topFile);
 print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$ndxFile\n";
