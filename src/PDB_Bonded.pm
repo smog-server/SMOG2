@@ -393,6 +393,7 @@ sub parsePDBATOMS
 		$lastrecord=$record;
 		$record = "";
  	}
+	print "Done building covalent geometry of all chains.\n\n";
 }
 
 # returnFunction: Return the fType and directive field for a specified function
@@ -492,7 +493,7 @@ sub GenerateBondedGeometry {
 		print "Attempting to connect all atoms in chain $chid to the first atom..\n";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);
 		if($connected == -1){
-			print "\tChain $chid has no bonds. No connections possible. May be a listing of ions.\n";
+			print "\tChain $chid has no bonds. No connections possible. May be a listing of ions.\n\n";
 			# this chain has no bonds, so no need to try and connect things
 		        return(\@ConnectedAtoms2);
 		}
