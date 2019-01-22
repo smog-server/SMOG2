@@ -80,12 +80,15 @@ my $printversion;
 my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
 ## this is the array that defines how function names are converted to gromacs function types
 our %fTypes = (	'bond_harmonic' => '1',
+		'bond_bytype' => '-1',
 		'bond_type6' => '6',
 		'bond_free' => '0',
 		'angle_harmonic' => '1',
+		'angle_bytype' => '-1',
 		'angle_free' => '0',
 		'dihedral_cosine'=>'1',
 		'dihedral_harmonic' => '2',
+		'dihedral_bytype' => '-1',
 		'dihedral_free' => '0',
 		'contact_free'=>'0',
 		'contact_1'=>'1',
@@ -475,17 +478,18 @@ sub bondOutput
 		## $paramArr[0] is bond length
 		if($fType != 0){
 	       
-			if($paramArr[0] =~ /\?/){
-				$paramArr[0]=$values; # native option used
-			} 
-			if($paramArr[0] =~ /^X$/){
-				# don't write distance. Make gromacs use bondtype
+			
+			if($fType == -1){
+				# this mean bond_bytype was used
+				# don't write distances or strengths. Make gromacs use bondtype
 				# since we are not writing a distance, let's check and make sure this pair has a bondtype provided
 				&checkbondtype($i,$j,$allatoms); 
-				$formattedString = sprintf("%d\t%d\t%d",$i,$j,$fType);
+				$formattedString = sprintf("%d\t%d\t%d",$i,$j,$paramArr[0]);
 				$outputString = "$outputString$formattedString\n";
 			}else{
-	        
+	        		if($paramArr[0] =~ /\?/){
+					$paramArr[0]=$values; # native option used
+				} 
 	        		## Check bonds threshold ##
 	        		if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
 	        		|| $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
@@ -716,10 +720,10 @@ sub angleOutput
 		my $paramFormat="";
 		($fType,@paramArr) = angleFuncParser($fun);
 
-		if($paramArr[0] =~ /^X$/){
+		if($fType ==-1){
 			 ## don't write distance. Make gromacs use angletype
 			&checkangletype($i,$j,$k,$allatoms); 
-			$formattedString = sprintf("%d\t%d\t%d\t%d",$i,$j,$k,$fType);
+			$formattedString = sprintf("%d\t%d\t%d\t%d",$i,$j,$k,$paramArr[0]);
 			$outputString = "$outputString$formattedString\n";
 		}else{
 
@@ -875,7 +879,7 @@ sub dihedralOutput
 		my $paramFormat="";
 		# since this is only used here, we may remove the call and sub in the code
 		($fType,@paramArr) = diheFuncParser($fun);
-		if($paramArr[0] =~ /^X$/){
+		if($fType ==-1){
 			 ## don't write angle. Make gromacs use dihedraltype
 			&checkdihedraltype($ai,$aj,$ak,$al,$allatoms);
 			$formattedString = sprintf("%d\t%d\t%d\t%d",$ai,$aj,$ak,$al);
@@ -1868,15 +1872,15 @@ sub printBondedTopOutput {
 	my %atomIndex2Line=readAtoms($inputPDB);
 
 	## CALCULATE BONDS/CONNECTED BONDS ##
-	print "Saving bonds\n";
+	print "Checking and saving bonds\n";
 	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL,\%atomIndex2Line,\%allAtoms);
 
 	## CALCULATE ANGLES ##
-	print "Saving angles\n";
+	print "Checking and saving angles\n";
 	printOrderedAngles(\%AngleData,\%bondPDL,\%atomIndex2Line,\%allAtoms);
 
 	## CALCULATE DIHEDRALS ##
-	print "Saving dihedrals\n";
+	print "Checking and saving dihedrals\n";
 	printOrderedDihedrals(\%DihedralData,\%bondPDL,\%allAtoms);
 
 	## CREATE GRO FILE ##
