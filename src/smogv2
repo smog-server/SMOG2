@@ -1398,6 +1398,7 @@ sub readAtoms
 	my $chainindex=1;
 	my $linenumber=0;
 	my $atomindex=0;
+	my $lastTER=0;
 	while($line = <PDB>)
 	{
 		$linenumber++;
@@ -1411,6 +1412,8 @@ sub readAtoms
 			$systemcharge+=$totalcharge;
 			$totalcharge=0;
 			$chainindex++;
+			$resCounter++;
+			$lastTER=1;
 		}
 		if($line =~ m/^END/) {$endreached=1;last;}
 		if($line =~ m/^ATOM/ || $line =~ m/^HETATM/)
@@ -1431,7 +1434,9 @@ sub readAtoms
    			if($resNum ne $resNumCurr)
 			{
 				$resNumCurr=$resNum;
-				$resCounter++;
+				if($lastTER ==0){
+					$resCounter++;
+				}
 			}
 			if(!$residues{$resName}->{"atoms"}->{$atomName}){next;}
 			$counter++;$atomNum=$counter;
@@ -1447,6 +1452,7 @@ sub readAtoms
 				$totalcharge += $interactions->{"nonbonds"}->{$atomType}->{"charge"};
 			}
 			addToTop("atoms",sprintf("\n"));
+			$lastTER=0;
 		}
 	}
 
@@ -1478,6 +1484,7 @@ sub convertPDBToGroNdx
  	my %chainHash;
 	my $resNumCurr=1;my $resCounter=1;
 	my $boundflag=0;
+	my $lastTER=0;
 	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
  	open(PDB,"$inputPDB") or smog_quit("can not open $inputPDB"); ## INPUT PDB
 	if(-e "meta.Gro"){
@@ -1488,7 +1495,12 @@ sub convertPDBToGroNdx
 	{
 		
 	 if($line =~ m/^END/) {last;}
-  	 if($line =~ m/^TER/) {$chainCounter++;next;}
+  	 if($line =~ m/^TER/) {
+		$chainCounter++;
+		$resCounter++;
+		$lastTER=1;
+		next;
+	}
          if($line =~ m/^ATOM|^HETATM/)
          {
 		$atomName = substr($line, 12, 4);
@@ -1527,15 +1539,18 @@ sub convertPDBToGroNdx
 		if($resNum ne $resNumCurr)
 			{
 				$resNumCurr=$resNum;
-				$resCounter++;
+				if($lastTER==0){
+					$resCounter++;
+				}
 			}
 
   		## Save atom index to chain ##
   		push(@{$chainHash{$chain}},$atomNum);
 		if($atomNum >= 100000){$atomNum = $atomNum%100000;}
-	    if($resCounter >= 100000){$resCounter = $resCounter%100000;}
+	        if($resCounter >= 100000){$resCounter = $resCounter%100000;}
 		$output = sprintf("%5d%-5s%5s%5d%8.3f%8.3f%8.3f\n",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
 		print GRO $output;
+		$lastTER=0;
 		
 	 }
 	}
