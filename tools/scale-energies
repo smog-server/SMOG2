@@ -54,7 +54,7 @@ our %supported_directives = ( 'defaults' => '1',
         'exclusions' => '1',
         'system' => '1',
         'molecules' => '1',
-        'position_restraints' => '0'
+        'position_restraints' => '2'
         );
 
 quit_init();
@@ -353,7 +353,7 @@ if($rescaleC !=0){
 
 
 
-foreach my $DIR("system","molecules")
+foreach my $DIR("position_restraints","system","molecules")
 {
 	if(exists $DIRLIST{"$DIR"}){
 		print TOPOUT "[";
