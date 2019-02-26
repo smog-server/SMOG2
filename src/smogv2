@@ -215,13 +215,13 @@ sub addExtras {
 				if(@tarray < 5){
 					smog_quit("nonbond_params defined in extras file, but too few parameters are given. Offending line:$line");
 				}
-				unless($tarray[2]  =~ /^[1-3]$/){
+				unless($tarray[3]  =~ /^[1-3]$/){
 					smog_quit("In extras file, only nonbond_param types 1-3 are supported. Offending line:$line");
 				}
-				if($tarray[2]==1 && @tarray!=5){
+				if($tarray[3]==1 && @tarray!=6){
 					smog_quit("In extras file, nonbond_param defined with nbtype 1. Must have 5 parameters. Offending line:$line");
 				}
-				if($tarray[2]==3 && @tarray!=20){
+				if($tarray[3]==3 && @tarray!=21){
 					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 20 parameters. Offending line:$line");
 				}
 				my $f;
