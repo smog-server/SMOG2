@@ -92,6 +92,8 @@ sub parseExternalContacts
 # checkPDB
 # this function will check to make sure the PDB conforms to all
 # expected formatting requirements
+# right now, most of the formatting checks are repeated by parsePDBatoms
+# later, we will clean up parsePDB, in order to streamline things
 ####################################################################
 sub checkPDB
 {
