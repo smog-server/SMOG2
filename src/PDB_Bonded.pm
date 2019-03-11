@@ -937,7 +937,7 @@ sub checkconnection
 		my $typeB=$residues{$c1}->{"residueType"};
 		my $ii=$i+1;
 		if((!defined $residues{$c0}->{"connect"} || $residues{$c0}->{"connect"} eq "yes") && (!defined $residues{$c1}->{"connect"} || $residues{$c1}->{"connect"} eq "yes")){
-			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $i and $ii in chain $chid (residue index within chain, starting at 0)")
+			smog_quit("Connection not defined between residues of type $typeA ($c0) and $typeB ($c1). Check .bif file. Issue encountered when connecting residue $i and $ii in chain $chid (residue index within chain, starting at 0)")
 		}elsif(defined $residues{$c0}->{"connect"} && $residues{$c0}->{"connect"} ne "no"){
 			my $tmp=$residues{$c0}->{"connect"};
 			smog_quit("residue connect value must be yes, or no.  $tmp found.")
