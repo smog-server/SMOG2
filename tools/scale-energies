@@ -165,7 +165,6 @@ my $modgrp;
 my $groupname;
 my $groupnames;
 my $grpnms;
-print "Reading index file $indexFile\n";
 
 ($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
 
@@ -184,7 +183,6 @@ if($Ngrps==0){
 		print "Select the index of the group for dihedral rescaling?\n";
 		$groupD=selectgroup();
 		$groupD=$grpnms[$groupD];
-		print "\nWill modify weights of dihedrals for atom group $groupD.\n\n";
 	}
 	if($rescaleC != 1.0){
 		listgroups();
@@ -194,26 +192,24 @@ if($Ngrps==0){
 		$groupC2=selectgroup();
 		$groupC1=$grpnms[$groupC1];
 		$groupC2=$grpnms[$groupC2];
-		print "\nWill modify weights of contacts between atom groups $groupC1 and $groupC2.\n\n";
 	}
 }
 
 print "\nUsing $inputTOP and $indexFile to generate $outputTOP. ";
 if($rescaleC != 1.0 && $rescaleC != 0.0){
-	print "Contacts will be rescaled by $rescaleC. ";
+	print "\nWill rescale weights of contacts between atom groups \"$groupC1\" and \"$groupC2\" by $rescaleC.\n";
 }elsif($rescaleC == 0){
-	print "-rc 0 given.  Rather than rescale contacts, the contacts (and associated exclusions) will be removed.\n";
+	print "\nWill remove contacts between atom groups \"$groupC1\" and \"$groupC2\".\n";
 }
 
 if($rescaleD != 1.0 && $rescaleD != 0.0){
-	print "Dihedrals will be rescaled by $rescaleD.";
+	print "\nWill rescale weights of dihedrals for atom group \"$groupD\" by $rescaleD.\n";
 }elsif($rescaleD == 0){
-	print "-rd 0 given.  Rather than rescale dihedrals, the dihedrals will be removed.\n";
+	print "\nWill remove dihedrals for atom group \"$groupD\".\n";
 }
 
-print "\n\n";
 
-print "Reading top file $inputTOP\n";
+print "\nReading top file $inputTOP\n";
 
 my $string=loadfile($inputTOP);
 
