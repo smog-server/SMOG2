@@ -124,15 +124,10 @@ usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n
 
 if($rescaleC < 0){
 	smog_quit("negative may not be provided with -rc.")
-}elsif($rescaleC == 0){
-	print "-rc 0 given.  Rather than rescale contacts, the contacts (and associated exclusions) will be removed.\n";
 }
 if($rescaleD < 0){
 	smog_quit("negative may not be provided with -rd.")
-}elsif($rescaleD == 0){
-	print "-rd 0 given.  Rather than rescale dihedrals, the dihedrals will be removed.\n";
 }
-
 $inputTOP=checksuffix($inputTOP,".top");
 $outputTOP=checksuffix($outputTOP,".top");
 $indexFile=checksuffix($indexFile,".ndx");
@@ -204,12 +199,18 @@ if($Ngrps==0){
 }
 
 print "\nUsing $inputTOP and $indexFile to generate $outputTOP. ";
-if($rescaleC != 1.0){
+if($rescaleC != 1.0 && $rescaleC != 0.0){
 	print "Contacts will be rescaled by $rescaleC. ";
+}elsif($rescaleC == 0){
+	print "-rc 0 given.  Rather than rescale contacts, the contacts (and associated exclusions) will be removed.\n";
 }
-if($rescaleD != 1.0){
+
+if($rescaleD != 1.0 && $rescaleD != 0.0){
 	print "Dihedrals will be rescaled by $rescaleD.";
+}elsif($rescaleD == 0){
+	print "-rd 0 given.  Rather than rescale dihedrals, the dihedrals will be removed.\n";
 }
+
 print "\n\n";
 
 print "Reading top file $inputTOP\n";

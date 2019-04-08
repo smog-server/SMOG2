@@ -17,6 +17,7 @@ my $prevResTypeRNA;
 my $noexit=0;
 my $outputPDB="adjusted.pdb";
 my $inputPDB;
+my $insertTER;
 my $mapFile;
 my $default;
 my $renumber;
@@ -59,6 +60,7 @@ usage: smog_adjustPDB .. options ..
 	-o [adjusted.pdb] 	: output pdb file name
 	-renumber 		: ignore any residue numbering inconsistencies and renumber residues sequentially
 	-removeH		: strip the file of any atoms that begin with "H"
+	-insertTER		: Insert "TER" lines between any non-consecutive residue numbers
 	-warn [0] 		: convert first N errors to warnings (-1: convert all errors) 
 	-help 	  		: show options
 EOS
@@ -73,15 +75,23 @@ EOS
 
 checkForModules();
 
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, 'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
 
 warninfo();
 
 $outputPDB=checksuffix($outputPDB,".pdb");
 $inputPDB=checksuffix($inputPDB,".pdb");
 
+if(defined $renumber && defined $insertTER){
+	smog_quit("Simultaneous use of -renumber and -insertTER not supported");
+}
+
 if (defined $renumber){
 	print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";
+}
+
+if (defined $insertTER){
+	print "\nNOTE: the flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.\n";
 }
 
 if(!defined $inputPDB){
@@ -184,7 +194,7 @@ sub adjustInputFile(){
 	print NEWPDB "COMMENT File generated with: smog_adjustPDB $inputArguments\n";
 	## Loops through all PDB rows ##
 	while($k<$rows){
-		
+		my $line=$pArr[$k];	
 		chomp($pArr[$k]);
 		$pArr[$k] =~ s/^\s+|\s+$//g;
 		
@@ -222,8 +232,13 @@ sub adjustInputFile(){
 			$resNum =~ s/^\s+|\s+$//g;		
 			my $newResNum = $resNum;
 			if($resNum =~ /^\d+$|^-\d+$/ && $lastresidue =~ /^\d+$|^-\d+$/){
-				if($resNum-$lastresidue > 1 && $firstresidue !=1 && !$renumber){
-					smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (near line $k).");
+				if($resNum-$lastresidue > 1 && $firstresidue !=1){
+					if(!$renumber && !$insertTER){
+						smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (near line $k).");
+					}elsif($insertTER){
+						print "Non-consecutive residue numbering detected.  -insertTER used.  TER will be inserted after:$line\n";
+						print NEWPDB "TER\n";
+					}
 				}
 			}elsif(!$renumber){
 				smog_quit("Non-integer residue ID found: $resNum.");
