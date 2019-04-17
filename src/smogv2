@@ -331,7 +331,7 @@ sub addExtras {
 					$f = $t2 . "-" . $t1;
 				}
 				if(!exists $foundNBe{$f}){
-					smog_quit("nbtype 3 is being used, yet not all possible nonbond_params are given in extras file. Did not find params for atomtype pair $t1-$t2");
+					smog_quit("nbtype 3 is being used, yet not all possible nonbond_params are given in extras file. Did not find params for atomtype pair $f");
 				}
 			}
 		}
