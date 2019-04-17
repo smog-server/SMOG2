@@ -190,7 +190,7 @@ sub addExtras {
 	my $filename = "$inputFolder/extras";
 	my %foundNBe;
 	if( -e $filename){
-		print "\nAdding extras information.\n";
+		print "\nAdding extras information.\n\n";
 		open(EXTRA,"$filename");
 		my $line = "";
 		my $directive;my $stuff;my @tokens;
@@ -212,19 +212,25 @@ sub addExtras {
 					addToTop($directive,$stuff."\n");
 					next;	
 				}
-				my @tarray=split(/\s+/,$ltokens[1]);
+				my $lstuff=$ltokens[1];
+				$lstuff =~ s/^\s+|\s+$//g;
+				my @tarray=split(/\s+/,$lstuff);
 				if(@tarray < 5){
 					smog_quit("nonbond_params defined in extras file, but too few parameters are given. Offending line:$line");
 				}
-				unless($tarray[3]  =~ /^[1-3]$/){
+				unless($tarray[2]  =~ /^[1-3]$/){
 					smog_quit("In extras file, only nonbond_param types 1-3 are supported. Offending line:$line");
 				}
-				if($tarray[3]==1 && @tarray!=6){
+				if($tarray[2]==1 && @tarray!=5){
 					smog_quit("In extras file, nonbond_param defined with nbtype 1. Must have 5 parameters. Offending line:$line");
 				}
-				if($tarray[3]==3 && @tarray!=21){
+				if($tarray[2]==3 && @tarray!=20){
 					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 20 parameters. Offending line:$line");
 				}
+				if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
+					next;
+				}	
+				# since they are both defined, we will keep a record of them.
 				my $f;
 				if($tarray[0] lt $tarray[1]){
 					$f = $tarray[0] . "-" . $tarray[1];
@@ -232,10 +238,7 @@ sub addExtras {
 					$f = $tarray[1] . "-" . $tarray[0];
 				}
 				$foundNBe{$f}=1;
-				if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
-					next;
-				}	
-				# since they are both defined, we will keep a record of them.
+
 			}
 			if($directive eq "bondtypes"){
 		    		my @ltokens = split('<',$A);
