@@ -77,6 +77,8 @@ To finish the configure process, issue the command:
  
 source configure.smog2
 
+Note: This is written for use with BASH.
+
 If configuration is complete, you will have a directory
 $smog2dir/bin, which will contain wrappers for SMOG 2,
 as well as for tools described in the manual. If you
