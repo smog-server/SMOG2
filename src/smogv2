@@ -259,7 +259,7 @@ sub addExtras {
 				if($tarray[2]==1 && @tarray!=5){
 					smog_quit("In extras file, bondtypes defined with nbtype 1. Must have 5 parameters. Offending line:$line");
 				}
-				if((!defined $presentatomtypes{$tarray[0]} && $tarray[0] ne "X") || (!defined $presentatomtypes{$tarray[1]} && $tarray[1] ne "X")  ){
+				unless(defined $presentatomtypes{$tarray[0]} &&  defined $presentatomtypes{$tarray[1]}){
 					next;
 				}	
 				# since they are both defined, we will keep a record of them.
@@ -286,7 +286,7 @@ sub addExtras {
 				if($tarray[3]==1 && @tarray!=6){
 					smog_quit("In extras file, angletypes defined with nbtype 1. Must have 6 parameters. Offending line:$line");
 				}
-				if((!defined $presentatomtypes{$tarray[0]} && $tarray[0] ne "X") || (!defined $presentatomtypes{$tarray[1]} && $tarray[1] ne "X") || (!defined $presentatomtypes{$tarray[2]} && $tarray[2] ne "X") ){
+				unless(defined $presentatomtypes{$tarray[0]} && defined $presentatomtypes{$tarray[1]} && defined $presentatomtypes{$tarray[2]}){
 					next;
 				}	
 				# since they are both defined, we will keep a record of them.
