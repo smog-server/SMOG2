@@ -66,6 +66,7 @@ my $outputmap="atomindex.map";
 my $restrainedmap="restrained.map";
 my $help;
 my $nogro;
+my $ndxorder;
 my $gen_restraints="null";
 # in supported_directives, a value of 1 means is it required, 0 is not supported. >1 means optional
 our %supported_directives = ( 'defaults' => '1',
@@ -86,7 +87,7 @@ our %supported_directives = ( 'defaults' => '1',
 quit_init();
 checkForModules();
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
-        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'orm=s' => \$restrainedmap, 'restraints=s' => \$gen_restraints,  'warn=i' => \$maxwarn, 
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'orm=s' => \$restrainedmap, 'restraints=s' => \$gen_restraints, 'ndxorder' => \$ndxorder,  'warn=i' => \$maxwarn, 
         '<>' => \&usage, 'nogro' => \$nogro)
         or defined $help); 
 
@@ -169,14 +170,27 @@ if($Ngrps==0){
 
 
 my @A;
+my $tkeep;
+my %maphash;
 for my $atom ( sort {$a<=>$b} keys %{$atomgroup{$extgrp}} ) {
 	$KEEPN++;
-	$keepatoms2[$KEEPN-1]=$atom;
-	$keepatoms{$atom}=$KEEPN;
-	print MAPPING "$KEEPN $atom\n";
+	if(defined $ndxorder){
+		$tkeep=$atomgroup{$extgrp}{$atom};
+	}else{
+		$tkeep=$KEEPN;
+	}
+	$keepatoms2[$tkeep-1]=$atom;
+	$keepatoms{$atom}=$tkeep;
+	$maphash{$tkeep}=$atom;
 }
 
+for my $finalindex ( sort {$a<=>$b} keys %maphash ) {
+	print MAPPING "$finalindex $maphash{$finalindex}\n";
+}
 
+if(defined $ndxorder){
+	print "Note: New files will order atoms exactly as listed in .ndx file.\n";
+}
 ### extract the atoms and make a new gro file 
 if(defined $nogro){
 	print "Note: -nogro give. Will not extract a gro file.\n";
