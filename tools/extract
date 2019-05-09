@@ -45,6 +45,7 @@ usage: smog_extract  .. options ..
 	-om [atomindex.map]	: output file with old-to-new atom index mapping
 	-orm [restrained.map]	: output file with old-to-new atom index mapping for restrained atoms
 	-restraints <float>	: generate restraints with a specific strength for atoms 
+	-ndxorder		: Order the top and gro atoms in the order provided in the ndx file. Default is to preserve the original ordering. 
                                 	that have interactions removed during extraction
 	-warn [0]		: convert the first N errors into warnings
 	-nogro			: do not extract a gro file. Only extract a .top
