@@ -176,7 +176,7 @@ my %maphash;
 for my $atom ( sort {$a<=>$b} keys %{$atomgroup{$extgrp}} ) {
 	$KEEPN++;
 	if(defined $ndxorder){
-		$tkeep=$atomgroup{$extgrp}{$atom};
+		$tkeep=$atomgroup{$extgrp}{$atom}+1;
 	}else{
 		$tkeep=$KEEPN;
 	}
