@@ -250,7 +250,7 @@ sub readindexfile
 			if(exists $atomgroup{$groupname}{$A[$I]}){
 				smog_quit("Duplicate atom $A[$I] in group $groupname");
 			}else{
-				$atomgroup{$groupname}{$A[$I]}=$I;
+				$atomgroup{$groupname}{$A[$I]}=$I+1;
 			}
 		}
 	}
