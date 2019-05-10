@@ -173,10 +173,11 @@ if($Ngrps==0){
 my @A;
 my $tkeep;
 my %maphash;
-for my $atom ( sort {$a<=>$b} keys %{$atomgroup{$extgrp}} ) {
+my %tmphash=%{$atomgroup{$extgrp}};
+for my $atom ( sort {$a<=>$b} keys %tmphash ) {
 	$KEEPN++;
 	if(defined $ndxorder){
-		$tkeep=$atomgroup{$extgrp}{$atom}+1;
+		$tkeep=$tmphash{$atom}+1;
 	}else{
 		$tkeep=$KEEPN;
 	}
@@ -332,6 +333,8 @@ print TOPOUT "\n";
 @C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
 print TOPOUT "[ atoms ]\n";
 
+my %atomshash;
+
 for(my $I=1;$I<=$#C;$I++){
 	my ($A, $B)=checkcomment($C[$I]);
 	if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
@@ -343,16 +346,35 @@ for(my $I=1;$I<=$#C;$I++){
 		my @D=split(/ /,$A);
 		my $NUM=$D[0];
 		if(exists $keepatoms{$NUM}){
-			print TOPOUT "$keepatoms{$NUM}\t$D[1]\t$D[2]\t$D[3]\t$D[4]\t$keepatoms{$NUM}";
-			for(my $K=6;$K<=$#D;$K++){
-				print TOPOUT "\t$D[$K]";
-			}
-			if($B ne ""){
-				print TOPOUT "\t$B\n";
+			if(defined $ndxorder){
+				$atomshash{$keepatoms{$NUM}}="$keepatoms{$NUM}\t$D[1]\t$D[2]\t$D[3]\t$D[4]\t$keepatoms{$NUM}";
+				for(my $K=6;$K<=$#D;$K++){
+					$atomshash{$keepatoms{$NUM}} .= "\t$D[$K]";
+				}
+				if($B ne ""){
+					$atomshash{$keepatoms{$NUM}} .=  "\t$B\n";
+				}else{
+					$atomshash{$keepatoms{$NUM}} .= "\n";
+				}
+
 			}else{
-				print TOPOUT "\n";
+				print TOPOUT "$keepatoms{$NUM}\t$D[1]\t$D[2]\t$D[3]\t$D[4]\t$keepatoms{$NUM}";
+				for(my $K=6;$K<=$#D;$K++){
+					print TOPOUT "\t$D[$K]";
+				}
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
 			}
 		}
+	}
+}
+# if we want to preserve ndx ordering, we need to make sure the new indices are in order
+if(defined $ndxorder){
+	foreach my $atomn(sort {$a<=>$b} keys %atomshash){
+		print TOPOUT "$atomshash{$atomn}";
 	}
 }
 print TOPOUT "\n";

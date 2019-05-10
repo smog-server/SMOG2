@@ -210,6 +210,7 @@ sub readindexfile
 	my %groupnames;
 	my $Ngrps=0;
 	my %atomgroup;
+	my $groupindex;
 	open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
 	print "Reading index file $indexFile\n";
 	while(<ATOMLIST>){
@@ -229,6 +230,7 @@ sub readindexfile
 		}
 		if($A[0] eq "[" and $A[2] eq "]"){
 			# must be a new group
+			$groupindex=0;
 			$groupname=$A[1];
 			$grpnms[$Ngrps]=$groupname;
 			if(exists $A[3]){
@@ -250,7 +252,8 @@ sub readindexfile
 			if(exists $atomgroup{$groupname}{$A[$I]}){
 				smog_quit("Duplicate atom $A[$I] in group $groupname");
 			}else{
-				$atomgroup{$groupname}{$A[$I]}=$I;
+				$atomgroup{$groupname}{$A[$I]}=$groupindex;
+				$groupindex++;
 			}
 		}
 	}
