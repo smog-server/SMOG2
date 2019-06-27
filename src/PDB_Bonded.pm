@@ -90,10 +90,8 @@ sub parseExternalContacts
 
 ####################################################################
 # checkPDB
-# this function will check to make sure the PDB conforms to all
+# this routine will check to make sure the PDB conforms to all
 # expected formatting requirements
-# right now, most of the formatting checks are repeated by parsePDBatoms
-# later, we will clean up parsePDB, in order to streamline things
 ####################################################################
 sub checkPDB
 {
@@ -154,6 +152,8 @@ sub checkPDB
 	 ## LOOP THROUGH EACH LINE ##
 	while(my $record = <PDBFILE>)
 	{
+ 		# when reading the file, check to see if the line is a BOND, then check if TER/END
+		# if neither, then read each residue and make sure they are only ATOM/HETATM
 		$lineNumber++;
 	
 		my @impAtoms = ();
@@ -169,6 +169,7 @@ sub checkPDB
 			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$lng\"\n");
 		}
 
+		# CHECK IF IT IS A BOND
  		if($record =~ m/^BOND/){
 
 			if($CGenabled==1){
@@ -222,7 +223,7 @@ sub checkPDB
 			next;
 		}
 
-		## IF TER LINE  ##
+		## CHECK FOR END OR TER  ##
 		if($record =~ m/^TER|^END/)
 		{
  			$lastresindex="null";
@@ -236,7 +237,7 @@ sub checkPDB
 			next;
 		} 
 	
-		## ONLY WORK WITH ATOM LINES ##
+		## CHECK IF ATOM/HETATM ##
 		if($record =~ m/^ATOM/ || $record =~ m/^HETATM/)
 		{
 	        	$lineNumber--;
@@ -268,10 +269,10 @@ sub checkPDB
 			$residueSerial++;
 			for($i=0;$i<$atomsInRes;$i++)
 			{
-					$record = <PDBFILE>;
-	 				$lineNumber++;
-				if($record !~ m/^ATOM|^HETATM/)
-				{smog_quit("Expected ATOM or HETATM at line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
+				$record = <PDBFILE>;
+	 			$lineNumber++;
+				if($record =~ m/^ATOM|^HETATM/)
+				{
 	
 				$interiorResidue = substr($record,17,4);
 				$interiorResidue =~ s/^\s+|\s+$//g;
@@ -283,8 +284,9 @@ sub checkPDB
 				}
 	
 		        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
-	            		$interiorPdbResidueIndex = substr($record,22,5);  
-				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex){
+	            		$interiorPdbResidueIndex = substr($record,22,5); 
+				} 
+				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex or  $record !~ m/^ATOM|^HETATM/){
 					my $linetemp=$lineNumber-1;
 					my $missingatoms="";
 					$uniqueAtom{$atom}=1;
@@ -426,12 +428,8 @@ sub parsePDBATOMS
 			next;
 		# make sure BOND appears after END
 		}
-		if($record !~ m/^BOND/ && $endfound ==1){
-			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$record\"\n");
-		}
 	}
 	close(PDBFILE);
-        unless($endfound){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 
 	unless (open(PDBFILE, $fileName)) {
 		smog_quit ("Cannot read from '$fileName'.");
@@ -452,38 +450,17 @@ sub parsePDBATOMS
 		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $lng eq ""){
 			next;
 		# make sure BOND appears after END
-		}elsif($record !~ m/^BOND/ && $endfound ==1){
-			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$lng\"\n");
 		}
-
  		if($record =~ m/^BOND/){
-
-			if($CGenabled==1){
-				smog_quit("User-defined bonds, via BOND declaration, are not supported with Coarse-Grained models. Remove BOND lines and try again.");
-				next;
-  			}elsif($endfound ==0){
-   				smog_quit("PDB format issue: User-defined bonds given by BOND should be listed immediately after END.");
-  			}
 
     			chomp($record);
    
 			my @TMP = split(/\s+/,$record);
-			if(@TMP <= 5){
-				smog_quit("Directive BOND must have 5 arguments (chain A, atom number A, chain B, atom number B, energy group). Offending line:\n$record");
-			}
 			my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
 			
 			#internally, chains are indexed 0,1...
 			$chaina--;
 			$chainb--;
-			if(!exists $indexMap{"$chaina-$atoma"}){
-				$chaina++;
-				smog_quit("Can not find atom $atoma in chain $chaina");
-			}
-			if(!exists $indexMap{"$chainb-$atomb"}){
-				$chainb++;
-				smog_quit("Can not find atom $atomb in chain $chainb");
-			}
 			my $idxA = $indexMap{"$chaina-$atoma"};
 			my $idxB = $indexMap{"$chainb-$atomb"};
 			my $resA = $allAtoms{$idxA}->[5];
@@ -550,7 +527,6 @@ sub parsePDBATOMS
 		 	## OBTAIN RESIDUE NAME ##
 			$residue = substr($record,17,4);
 			$residue =~ s/^\s+|\s+$//g;
-			if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 			## if first iteration, save residueBackup, and use residues
 			#if(exists $residueBackup{$residue}){
 			if($CGenabled == 1){
@@ -559,83 +535,32 @@ sub parsePDBATOMS
 				$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
 			}
 			my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
-			if($atomsInBif != 1 && $CGenabled ==1){
-				smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
-			}
 			my $atomsmatch=0;
 		 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 			my $resname=$residue;
 	        	my $resindex = substr($record,22,5);
-			if ($lastresindex ne "null" && $resindex-$lastresindex != 1 && $resindex-$lastresindex != 0){
-				smog_quit("Non-sequential residue numbers ($lastresindex,$resindex) appear at line $lineNumber.");
-			}
 			$lastresindex=$resindex;
 			my %uniqueAtom;
 			$residueSerial++;
 			for($i=0;$i<$atomsInRes;$i++)
 			{
-					$record = <PDBFILE>;
-	 				$lineNumber++;
-				if($record !~ m/^ATOM|^HETATM/)
-				{smog_quit("Expected ATOM or HETATM at line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
+				$record = <PDBFILE>;
+	 			$lineNumber++;
 	
 				$interiorResidue = substr($record,17,4);
 				$interiorResidue =~ s/^\s+|\s+$//g;
 		   		$residue = substr($record,17,4);
 	        	        $residue =~ s/^\s+|\s+$//g;
 		   		my $altlocator = substr($record,16,1);
-				if($altlocator ne " "){
-					smog_quit("Alternate location indicator found at line $lineNumber.  Alt. Loc. Indic. not supported by SMOG.");
-				}
 	
-		        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 	            		$interiorPdbResidueIndex = substr($record,22,5);  
-				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex){
-					my $linetemp=$lineNumber-1;
-					my $missingatoms="";
-					$uniqueAtom{$atom}=1;
-				        if($CGenabled == 1){
-						foreach my $atomcheck(keys (%{$residueBackup{$resname}->{"atoms"}})){
-	                        			if(!exists $uniqueAtom{$atomcheck}){
-								$missingatoms=$missingatoms . "$atomcheck ";
-							}
-						}		
-	                		}else{
-						foreach my $atomcheck(keys (%{$residues{$resname}->{"atoms"}})){
-	                        			if(!exists $uniqueAtom{$atomcheck}){
-								$missingatoms=$missingatoms . "$atomcheck ";
-							}
-						}		
-	                		}
-					smog_quit("It appears that a residue in the PDB file does not contain all of the atoms defined in the .bif file.\nOffending residue: $resname (ending at line $linetemp).  Missing atoms: $missingatoms");	
-					# these next lines only matter if errors are being reported as warnings
-		 			seek(PDBFILE, -length($record), 1); # place the same line in the handle
-	        			$lineNumber--;
-					last;
-				}
 	
 				$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
-				unless($interiorPdbResidueIndex =~ /^\d+$/){;
-					smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
-				}
 	
 				## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 				$atom = substr($record, 12, 4);
 				$atom =~ s/^\s+|\s+$//g;
 	
-				if(exists $uniqueAtom{$atom})
-				{
-					smog_quit("$atom appears twice in $residue at line $lineNumber\n");
-				}
-				else {
-					$uniqueAtom{$atom}=1;
-				}
-					
-				if($CGenabled == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
-				{
-					smog_quit ("\"$atom\" doesn't exist in .bif declaration of \"$residue\"");
-				}
-				
 				## CHECK IF ATOM EXISTS IN MODEL ##
 				if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
 				$atomsmatch++;
@@ -674,8 +599,6 @@ sub parsePDBATOMS
 			@tempBond = ();
 			$residueIndex++;
 				
-		}else{
-			smog_quit("Expected ATOM or HETATM line at line $lineNumber.");
 		}
 		$lastrecord=$record;
 		$record = "";
