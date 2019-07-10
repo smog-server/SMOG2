@@ -56,7 +56,7 @@ usage: smog_adjustPDB .. options ..
 
   Options
 	-i <filename>		: input PDB to adjust to smog2 format
-	-default 		: use the default file name provided by smog2 
+	-default 		: use the default map file provided by smog2 
 	-map <filename>		: specify a user-defined mapping file
 	-o [adjusted.pdb] 	: output pdb file name
 	-renumber 		: ignore any residue numbering inconsistencies and renumber residues sequentially
@@ -72,7 +72,6 @@ EOS
   }else{
    exit
   }
-
 }
 
 checkForModules();
@@ -193,8 +192,20 @@ sub adjustInputFile{
 	my $firstresidue=0;
 	my $lastresidue=0;
 	my $lastresName="";
+
+	# identify all TER and END lines.
+	my $k = 0;
+	my %isTEREND;
+	while($k<$rows){
+		if ($pArr[$k] =~ m/^END/ || $pArr[$k] =~ m/^TER/){
+			$isTEREND{$k}=1;
+		}
+		$k++;
+	}
+
 	print NEWPDB "COMMENT File generated with: smog_adjustPDB $inputArguments\n";
 	## Loops through all PDB rows ##
+	my $k = 0;
 	while($k<$rows){
 		my $line=$pArr[$k];	
 		chomp($pArr[$k]);
@@ -208,11 +219,15 @@ sub adjustInputFile{
 		
 		## If TER line: ##
 		elsif($pArr[$k] =~ m/^TER/){
+			# if the next line has a TER, or END, then don't write the current TER.
+			$k++;
+			if(exists $isTEREND{$k}){
+				next;
+			}
 			print NEWPDB "TER\n";
 			$atomCount=0;
 			$isHead = 1;
 			$resInd = 1;
-			$k++;
 		}
 
 		## Exit if there's a BOND line in PDB: ##
