@@ -1,5 +1,5 @@
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 use smog_common;
 ## VARS: ##
 my %map;
@@ -187,7 +187,6 @@ sub adjustInputFile{
 	$isTail = 0;
 	$resInd = 1;
 	$atomCount=0;	
-	my $k = 0;
 	my $removestring="";	
 	my $firstresidue=0;
 	my $lastresidue=0;
@@ -205,7 +204,7 @@ sub adjustInputFile{
 
 	print NEWPDB "COMMENT File generated with: smog_adjustPDB $inputArguments\n";
 	## Loops through all PDB rows ##
-	my $k = 0;
+	$k = 0;
 	while($k<$rows){
 		my $line=$pArr[$k];	
 		chomp($pArr[$k]);

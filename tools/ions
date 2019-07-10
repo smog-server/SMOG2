@@ -1,5 +1,5 @@
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 use Getopt::Long;
 use smog_common;
 use Scalar::Util qw(looks_like_number);

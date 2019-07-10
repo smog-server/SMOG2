@@ -25,7 +25,7 @@
 ## COMPILE HEADERS ##
 #####################
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 ####################
 ## MODULE HEADERS ##
 ####################

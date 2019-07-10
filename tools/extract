@@ -1,5 +1,5 @@
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 use smog_common;
 use List::Util qw(max);
 use Getopt::Long;
