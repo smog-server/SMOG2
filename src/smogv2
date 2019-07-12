@@ -1847,7 +1847,7 @@ sub parseTemplatesAndPDB
 	parseBonds();
 	## parse .bif File ##
 	parseBif();
-	    	print "\nDone parsing templates.\n";
+	print "\nDone parsing templates.\n";
 
     	print "\nChecking template definitions for consistency.\n";
 	my $checkmessage=checkenergygroups();
@@ -1916,9 +1916,9 @@ sub generateContactMap {
 	my $SCMparams = setContactParams();
     	my $memoryMax = "";
 	my $absAtomCount = keys(%allAtoms);
-		#AKE lattice with 6e5 atoms needs 70 MB. Use 80MB for safety...
-		my $megabytesNeeded = int($absAtomCount / 60000 * 80);
-		if( $megabytesNeeded > 100 ) #default java heapsize is 1/4 physical memory. Don't think anyone will have <400MB these days 
+	#AKE lattice with 6e5 atoms needs 70 MB. Use 80MB for safety...
+	my $megabytesNeeded = int($absAtomCount / 60000 * 80);
+	if( $megabytesNeeded > 100 ) #default java heapsize is 1/4 physical memory. Don't think anyone will have <400MB these days 
     	{
 		print "JAVA HEAP SIZE INCREASED to $megabytesNeeded Mb\n";
 		$memoryMax = "-Xmx$megabytesNeeded"."m";
