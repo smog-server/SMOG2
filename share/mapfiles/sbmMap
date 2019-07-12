@@ -1,4 +1,4 @@
-#<Residue> <head terminal> <tail terminal>
+;<Residue> <head terminal> <tail terminal>
 ALA ALA ALAT
 ARG ARG ARGT
 ASN ASN ASNT
