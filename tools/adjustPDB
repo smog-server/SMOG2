@@ -31,7 +31,7 @@ use Getopt::Long;
 
 	my $tmpstring = <<"EOT";
 
-                                      smog_adjustPDB                                   
+                                    smog_adjustPDB                                   
 
     smog_adjustPDB is part of the SMOG 2 distribution, available at smog-server.org     
 
@@ -125,15 +125,15 @@ print "New file will be written: $outputPDB\n";
 
 ## CACHE MAP ##
 #Note: Map files has to be in format <residue> <head_name> <tail_name>
-open(MAP,$mapOption) || smog_quit("Cannot open Map file\n");
+open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
 print "Mapping file $mapOption will be used.\n";
 
 while(my $line = <MAP>)
 {
 	## SKIP COMMENT LINE ##
-	chomp($line);
-	if($line =~ /#/){next;}
-	my @entries = split(/\s+/,$line);
+	my ($A,$B)=checkcomment($line);
+	if($A eq ""){next;}  # skip the line if it is only a comment
+	my @entries = split(/\s+/,$A);
 	#map-->residue-->{head|tail} 
 	if($#entries != 2){
 		my $count=$#entries+1;
