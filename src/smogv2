@@ -2099,7 +2099,6 @@ if(defined $ContactFile){
 }
 
 ## Ensure we only write out files with gromacs-compatible suffices
-my $maxbu=10;
 if($topFile eq ""){$topFile=$DNAME};
 if($groFile eq ""){$groFile=$DNAME};
 if($shadowFile eq ""){$shadowFile=$DNAME};
@@ -2115,20 +2114,7 @@ $ndxFile=checksuffix($ndxFile,".ndx");
 # things we don't want to overwrite
 if($backup eq "yes"){
 	foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile){
-		my ($ext) = $filen =~ /(\.[^.]+)$/;
-		if($filen ne "" && -e $filen){
-			for(my $bu=1;$bu<=$maxbu;$bu++){
-				my $buname="$filen.bu$bu";
-				if( ! -e $buname){	
-				print "$filen already exists.  Backing up to $buname\n";
-				system("mv $filen $buname");
-				last;
-				}
-				if($bu == $maxbu){
-			 	smog_quit ("Already backed up $maxbu copies of $filen."); 
-				}
-			}
-		}
+		checkalreadyexists($filen);
 	}
 }
 

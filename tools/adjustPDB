@@ -116,24 +116,9 @@ if (defined $default){
 	}
 }
 
-my $maxbu=10;
 foreach my $filen($outputPDB){
-	my ($ext) = $filen =~ /(\.[^.]+)$/;
-	if($filen ne "" && -e $filen){
-		for(my $bu=1;$bu<=$maxbu;$bu++){
-			my $buname="$filen.bu$bu";
-			if( ! -e $buname){	
-			print "$filen already exists.  Backing up to $buname\n";
-			system("mv $filen $buname");
-			last;
-			}
-			if($bu == $maxbu){
-		 	smog_quit ("Already backed up $maxbu copies of $filen."); 
-			}
-		}
-	}
+	checkalreadyexists($filen);
 }
-
 
 open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
 print "New file will be written: $outputPDB\n";
@@ -145,18 +130,18 @@ print "Mapping file $mapOption will be used.\n";
 
 while(my $line = <MAP>)
 {
-  ## SKIP COMMENT LINE ##
-  chomp($line);
-  if($line =~ /#/){next;}
-  my @entries = split(/\s+/,$line);
-  #map-->residue-->{head|tail} 
-  if($#entries != 2){
-   my $count=$#entries+1;
-   smog_quit("Looking for 3 fields in $mapOption, but found $count.\n
-   				Offending line: $line");
-  }
-  $map{$entries[0]}{"head"} = $entries[1];
-  $map{$entries[0]}{"tail"} = $entries[2];
+	## SKIP COMMENT LINE ##
+	chomp($line);
+	if($line =~ /#/){next;}
+	my @entries = split(/\s+/,$line);
+	#map-->residue-->{head|tail} 
+	if($#entries != 2){
+		my $count=$#entries+1;
+		smog_quit("Looking for 3 fields in $mapOption, but found $count.\n
+						Offending line: $line");
+	}
+	$map{$entries[0]}{"head"} = $entries[1];
+	$map{$entries[0]}{"tail"} = $entries[2];
 }
 
 ## Returns 1 if a residue is a RNA, else returns zero. ##
