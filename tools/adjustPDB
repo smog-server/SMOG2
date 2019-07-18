@@ -1,5 +1,5 @@
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 use smog_common;
 ## VARS: ##
 my %map;
@@ -17,6 +17,8 @@ my $prevResTypeRNA;
 my $noexit=0;
 my $outputPDB="adjusted.pdb";
 my $inputPDB;
+my $insertTER;
+my $subALA;
 my $mapFile;
 my $default;
 my $renumber;
@@ -29,7 +31,7 @@ use Getopt::Long;
 
 	my $tmpstring = <<"EOT";
 
-                                      smog_adjustPDB                                   
+                                    smog_adjustPDB                                   
 
     smog_adjustPDB is part of the SMOG 2 distribution, available at smog-server.org     
 
@@ -54,11 +56,13 @@ usage: smog_adjustPDB .. options ..
 
   Options
 	-i <filename>		: input PDB to adjust to smog2 format
-	-default 		: use the default file name provided by smog2 
+	-default 		: use the default map file provided by smog2 
 	-map <filename>		: specify a user-defined mapping file
 	-o [adjusted.pdb] 	: output pdb file name
 	-renumber 		: ignore any residue numbering inconsistencies and renumber residues sequentially
 	-removeH		: strip the file of any atoms that begin with "H"
+	-insertTER		: Insert "TER" lines between any non-consecutive residue numbers
+	-subALA			: If a residue only has C, CA, N, O, and CB atoms, then rename it ALA 
 	-warn [0] 		: convert first N errors to warnings (-1: convert all errors) 
 	-help 	  		: show options
 EOS
@@ -68,20 +72,27 @@ EOS
   }else{
    exit
   }
-
 }
 
 checkForModules();
 
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, 'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
 
 warninfo();
 
 $outputPDB=checksuffix($outputPDB,".pdb");
 $inputPDB=checksuffix($inputPDB,".pdb");
 
+if(defined $renumber && defined $insertTER){
+	smog_quit("Simultaneous use of -renumber and -insertTER not supported");
+}
+
 if (defined $renumber){
 	print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";
+}
+
+if (defined $insertTER){
+	print "\nNOTE: the flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.\n";
 }
 
 if(!defined $inputPDB){
@@ -105,50 +116,35 @@ if (defined $default){
 	}
 }
 
-my $maxbu=10;
 foreach my $filen($outputPDB){
-	my ($ext) = $filen =~ /(\.[^.]+)$/;
-	if($filen ne "" && -e $filen){
-		for(my $bu=1;$bu<=$maxbu;$bu++){
-			my $buname="$filen.bu$bu";
-			if( ! -e $buname){	
-			print "$filen already exists.  Backing up to $buname\n";
-			system("mv $filen $buname");
-			last;
-			}
-			if($bu == $maxbu){
-		 	smog_quit ("Already backed up $maxbu copies of $filen."); 
-			}
-		}
-	}
+	checkalreadyexists($filen);
 }
-
 
 open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
 print "New file will be written: $outputPDB\n";
 
 ## CACHE MAP ##
 #Note: Map files has to be in format <residue> <head_name> <tail_name>
-open(MAP,$mapOption) || smog_quit("Cannot open Map file\n");
+open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
 print "Mapping file $mapOption will be used.\n";
 
 while(my $line = <MAP>)
 {
-  ## SKIP COMMENT LINE ##
-  chomp($line);
-  if($line =~ /#/){next;}
-  my @entries = split(/\s+/,$line);
-  #map-->residue-->{head|tail} 
-  if($#entries != 2){
-   my $count=$#entries+1;
-   smog_quit("Looking for 3 fields in $mapOption, but found $count.\n
-   				Offending line: $line");
-  }
-  $map{$entries[0]}{"head"} = $entries[1];
-  $map{$entries[0]}{"tail"} = $entries[2];
+	## SKIP COMMENT LINE ##
+	my ($A,$B)=checkcomment($line);
+	if($A eq ""){next;}  # skip the line if it is only a comment
+	my @entries = split(/\s+/,$A);
+	#map-->residue-->{head|tail} 
+	if($#entries != 2){
+		my $count=$#entries+1;
+		smog_quit("Looking for 3 fields in $mapOption, but found $count.\n
+						Offending line: $line");
+	}
+	$map{$entries[0]}{"head"} = $entries[1];
+	$map{$entries[0]}{"tail"} = $entries[2];
 }
 
-## Returns 1 if a residue is a RNA or DNA, else returns zero. ##
+## Returns 1 if a residue is a RNA, else returns zero. ##
 sub isRNA{
 	my($resName) = @_;
 	my %RNAlist=("U",1,"U5",1,"G",1,"G5",1,"A",1,"A5",1,"C",1,"C5",1,"MIA",1);
@@ -159,9 +155,9 @@ sub isRNA{
 }
 
 
-sub adjustInputFile(){
-	
-	# Read the molecule PDB into an array (for convinience)
+sub adjustInputFile{
+	my ($subALA)=@_;	
+	# Read the molecule PDB into an array (for convenience)
 	
 	$rows=0;
 	while(<OLDPDB>){
@@ -176,15 +172,26 @@ sub adjustInputFile(){
 	$isTail = 0;
 	$resInd = 1;
 	$atomCount=0;	
-	my $k = 0;
-	
+	my $removestring="";	
 	my $firstresidue=0;
 	my $lastresidue=0;
 	my $lastresName="";
+
+	# identify all TER and END lines.
+	my $k = 0;
+	my %isTEREND;
+	while($k<$rows){
+		if ($pArr[$k] =~ m/^END/ || $pArr[$k] =~ m/^TER/){
+			$isTEREND{$k}=1;
+		}
+		$k++;
+	}
+
 	print NEWPDB "COMMENT File generated with: smog_adjustPDB $inputArguments\n";
 	## Loops through all PDB rows ##
+	$k = 0;
 	while($k<$rows){
-		
+		my $line=$pArr[$k];	
 		chomp($pArr[$k]);
 		$pArr[$k] =~ s/^\s+|\s+$//g;
 		
@@ -196,11 +203,15 @@ sub adjustInputFile(){
 		
 		## If TER line: ##
 		elsif($pArr[$k] =~ m/^TER/){
+			# if the next line has a TER, or END, then don't write the current TER.
+			$k++;
+			if(exists $isTEREND{$k}){
+				next;
+			}
 			print NEWPDB "TER\n";
 			$atomCount=0;
 			$isHead = 1;
 			$resInd = 1;
-			$k++;
 		}
 
 		## Exit if there's a BOND line in PDB: ##
@@ -221,9 +232,14 @@ sub adjustInputFile(){
 			my $resNum = substr($pArr[$k],22,5);
 			$resNum =~ s/^\s+|\s+$//g;		
 			my $newResNum = $resNum;
-			if($resNum =~ /^\d+$/ && $lastresidue =~ /^\d+$/){
-				if($resNum-$lastresidue > 1 && $firstresidue !=1 && !$renumber){
-					smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (near line $k).");
+			if($resNum =~ /^\d+$|^-\d+$/ && $lastresidue =~ /^\d+$|^-\d+$/){
+				if($resNum-$lastresidue > 1 && $firstresidue !=1){
+					if(!$renumber && !$insertTER){
+						smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (near line $k).");
+					}elsif($insertTER){
+						print "Non-consecutive residue numbering detected.  -insertTER used.  TER will be inserted after:$line\n";
+						print NEWPDB "TER\n";
+					}
 				}
 			}elsif(!$renumber){
 				smog_quit("Non-integer residue ID found: $resNum.");
@@ -295,7 +311,28 @@ sub adjustInputFile(){
 					$resName = 	$newResName;
 			}
 			
-			for(my $i=0; $i<$loopInd+1; $i++){
+			# check if subALA
+			if(defined $subALA && $resName ne "ALA" && $resName ne "ALAT"){
+				# only check to sub if turned on, and not already ALA
+				my %atomsin;
+				for(my $i=0; $i<=$loopInd; $i++){
+					my $aName = $residue[$i]->{"atomName"};
+					$atomsin{$aName}=1;
+				}
+				if($loopInd == 4){
+					if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} ){
+						$resName="ALA"
+					}
+				}
+				if($loopInd == 5){
+					if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} && exists $atomsin{"OXT"} ){
+						$resName="ALAT"
+					}
+				}
+
+
+			}
+			for(my $i=0; $i<=$loopInd; $i++){
 				my $aName = $residue[$i]->{"atomName"};
 				if ($aName =~ /'/){
 					chop($aName);
@@ -310,7 +347,7 @@ sub adjustInputFile(){
 				my $y = $residue[$i]->{"y"};
 				my $z = $residue[$i]->{"z"};
 				if(defined $removeH && $aName =~ m/^H/){
-					print "found $aName\n";
+					$removestring .= "$resName$resInd-$aName ";
 				}else{
 				    printf NEWPDB "ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$resName,$chainName,$resInd,$x,$y,$z;
 				}
@@ -329,10 +366,12 @@ sub adjustInputFile(){
 			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM, HETATM, TER, BOND, COMMENT, END");
 		}
 	}
-	
+	if($removestring ne ""){
+		print "\nNote: The following atoms were removed: $removestring\n";
+	}
 	close NEWPDB;
 }
 
-adjustInputFile();
+adjustInputFile($subALA);
 warnsummary();
 print "\n\tAdjustment of PDB is complete.\n\n";

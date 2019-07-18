@@ -8,7 +8,7 @@ use Exporter;
 our $maxwarn;
 our $warncount;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists);
 our %supported_directives;
 
 #####################
@@ -210,6 +210,7 @@ sub readindexfile
 	my %groupnames;
 	my $Ngrps=0;
 	my %atomgroup;
+	my $groupindex;
 	open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
 	print "Reading index file $indexFile\n";
 	while(<ATOMLIST>){
@@ -229,6 +230,7 @@ sub readindexfile
 		}
 		if($A[0] eq "[" and $A[2] eq "]"){
 			# must be a new group
+			$groupindex=0;
 			$groupname=$A[1];
 			$grpnms[$Ngrps]=$groupname;
 			if(exists $A[3]){
@@ -250,7 +252,8 @@ sub readindexfile
 			if(exists $atomgroup{$groupname}{$A[$I]}){
 				smog_quit("Duplicate atom $A[$I] in group $groupname");
 			}else{
-				$atomgroup{$groupname}{$A[$I]}=1;
+				$atomgroup{$groupname}{$A[$I]}=$groupindex;
+				$groupindex++;
 			}
 		}
 	}
@@ -275,6 +278,26 @@ sub printdashed
   		print "*";
 	}
 	print "\n";
+}
+
+sub checkalreadyexists
+{
+	# check if a file exists and back it up, if so.
+	my $maxbu=10;
+	my ($ext) = my $filen =~ /(\.[^.]+)$/;
+	if($filen ne "" && -e $filen){
+		for(my $bu=1;$bu<=$maxbu;$bu++){
+			my $buname="$filen.bu$bu";
+			if( ! -e $buname){	
+			print "$filen already exists.  Backing up to $buname\n";
+			system("mv $filen $buname");
+			last;
+			}
+			if($bu == $maxbu){
+		 	smog_quit ("Already backed up $maxbu copies of $filen."); 
+			}
+		}
+	}
 }
 
 sub printcenter

@@ -1,5 +1,5 @@
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 use List::Util qw(max);
 use smog_common;
 my $tmpstring = <<EOT;

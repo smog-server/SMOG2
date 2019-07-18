@@ -25,7 +25,7 @@
 ## COMPILE HEADERS ##
 #####################
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 ####################
 ## MODULE HEADERS ##
 ####################
@@ -46,7 +46,7 @@ use smog_common;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
-my $VERSION="2.2beta";
+my $VERSION="2.3beta";
 my $angToNano = 0.1;
 my $OUTPUT;
 my $help;
@@ -66,6 +66,7 @@ my $AAdefault = 0;
 my $CAdefault = 0;
 my $AAGdefault = 0; 
 my $CAGdefault = 0;
+my $absolutecontactindex=0;
 our %freebonds;
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
@@ -73,16 +74,22 @@ our $setBondtoLimit=0;
 our $setContacttoLimit=0;
 our %funtypechecked;
 our %presentatomtypes;
+our %foundBtype;
+our %foundAtype;
+our %foundDtype;
 my $printversion;
 my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
 ## this is the array that defines how function names are converted to gromacs function types
 our %fTypes = (	'bond_harmonic' => '1',
+		'bond_bytype' => '-1',
 		'bond_type6' => '6',
 		'bond_free' => '0',
 		'angle_harmonic' => '1',
+		'angle_bytype' => '-1',
 		'angle_free' => '0',
 		'dihedral_cosine'=>'1',
 		'dihedral_harmonic' => '2',
+		'dihedral_bytype' => '-1',
 		'dihedral_free' => '0',
 		'contact_free'=>'0',
 		'contact_1'=>'1',
@@ -91,8 +98,8 @@ our %fTypes = (	'bond_harmonic' => '1',
 		);
 
 ## this is the topfile buffer stuff
-our %directives = ("comments",1,"defaults",2,"atomtypes",3,"nonbond_params",4,"moleculetype",5,"atoms",6,"bonds",7,"angles",8,"dihedrals",9,"pairs",10,"exclusions",11,"position_restraints",12,"system",13,"molecules",14);
-our @directivesList=("comments","defaults","atomtypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
+our %directives = ("comments",1,"defaults",2,"atomtypes",3,"bondtypes",4,"angletypes",5,"dihedraltypes",6,"nonbond_params",7,"moleculetype",8,"atoms",9,"bonds",10,"angles",11,"dihedrals",12,"pairs",13,"exclusions",14,"position_restraints",15,"system",16,"molecules",17);
+our @directivesList=("comments","defaults","atomtypes","bondtypes","angletypes","dihedraltypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
 our @topFileBuffer;
 our @linesInDirectives;
 our @linesInDirectivesWithContent;
@@ -151,6 +158,9 @@ sub initializeDirectives {
 	addToTop("exclusions",";ai	aj\n");
 	addToTop("atomtypes","\n[ atomtypes ] \n");
 	addToTop("atomtypes","; name  mass     charge    ptype c6            c12\n");
+	addToTop("bondtypes","\n[ bondtypes ] \n");
+	addToTop("angletypes","\n[ angletypes ] \n");
+	addToTop("dihedraltypes","\n[ dihedraltypes ] \n");
 	addToTop("nonbond_params","\n[ nonbond_params ]\n");
 	addToTop("nonbond_params",";ai     aj    func    c6       c12\n");
 	addToTop("position_restraints","\n[ position_restraints ]\n");
@@ -168,8 +178,6 @@ sub initializeDirectives {
 	addToTop("molecules","  Macromolecule   1\n");
 }
 
-
-
 #adds something to the topfile at the bottom of a directive
 sub addToTop {
 	my($directive,$stuff) = @_;
@@ -182,7 +190,7 @@ sub addExtras {
 	my $filename = "$inputFolder/extras";
 	my %foundNBe;
 	if( -e $filename){
-		print "\nAdding extras information.\n";
+		print "\nAdding extras information.\n\n";
 		open(EXTRA,"$filename");
 		my $line = "";
 		my $directive;my $stuff;my @tokens;
@@ -198,7 +206,15 @@ sub addExtras {
 			$stuff =~ s/^\s+|\s+$//g;
 			# check that nonbonded params are only added if the atom types are present
 			if($directive eq "nonbond_params"){
-				my @tarray=split(/\s+/,$stuff);
+		    		my @ltokens = split('<',$A);
+				if(@ltokens ==1){
+					# if it is just a comment, save.
+					addToTop($directive,$stuff."\n");
+					next;	
+				}
+				my $lstuff=$ltokens[1];
+				$lstuff =~ s/^\s+|\s+$//g;
+				my @tarray=split(/\s+/,$lstuff);
 				if(@tarray < 5){
 					smog_quit("nonbond_params defined in extras file, but too few parameters are given. Offending line:$line");
 				}
@@ -211,6 +227,10 @@ sub addExtras {
 				if($tarray[2]==3 && @tarray!=20){
 					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 20 parameters. Offending line:$line");
 				}
+				if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
+					next;
+				}	
+				# since they are both defined, we will keep a record of them.
 				my $f;
 				if($tarray[0] lt $tarray[1]){
 					$f = $tarray[0] . "-" . $tarray[1];
@@ -218,11 +238,88 @@ sub addExtras {
 					$f = $tarray[1] . "-" . $tarray[0];
 				}
 				$foundNBe{$f}=1;
-				if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
+
+			}
+			if($directive eq "bondtypes"){
+		    		my @ltokens = split('<',$A);
+				if(@ltokens ==1){
+					# if it is just a comment, save.
+					addToTop($directive,$stuff."\n");
+					next;	
+				}
+				my $lstuff=$ltokens[1];
+				$lstuff =~ s/^\s+|\s+$//g;
+				my @tarray=split(/\s+/,$lstuff);
+				if(@tarray < 5 ){
+					smog_quit("bondtypes defined in extras file, but too few parameters are given. Offending line:$line");
+				}
+				unless($tarray[2]  =~ /^[1-9]$|^10$/){
+					smog_quit("In extras file, only bondtypes types 1-10 are supported. Offending line:$line");
+				}
+				if($tarray[2]==1 && @tarray!=5){
+					smog_quit("In extras file, bondtypes defined with nbtype 1. Must have 5 parameters. Offending line:$line");
+				}
+				unless(defined $presentatomtypes{$tarray[0]} &&  defined $presentatomtypes{$tarray[1]}){
 					next;
 				}	
 				# since they are both defined, we will keep a record of them.
+				# save the type hash
+				$foundBtype{"$tarray[0]-$tarray[1]"}=1;
+				$foundBtype{"$tarray[1]-$tarray[0]"}=1;
 			}
+			if($directive eq "angletypes"){
+		    		my @ltokens = split('<',$A);
+				if(@ltokens ==1){
+					# if it is just a comment, save.
+					addToTop($directive,$stuff."\n");
+					next;	
+				}
+				my $lstuff=$ltokens[1];
+				$lstuff =~ s/^\s+|\s+$//g;
+				my @tarray=split(/\s+/,$lstuff);
+				if(@tarray < 6 ){
+					smog_quit("angletypes defined in extras file, but too few parameters are given. Offending line:$line");
+				}
+				unless($tarray[3]  =~ /^[1-6]$|^8$|^10$/){
+					smog_quit("In extras file, only angletypes types 1-6, 8 and 10 are supported. Offending line:$line");
+				}
+				if($tarray[3]==1 && @tarray!=6){
+					smog_quit("In extras file, angletypes defined with nbtype 1. Must have 6 parameters. Offending line:$line");
+				}
+				unless(defined $presentatomtypes{$tarray[0]} && defined $presentatomtypes{$tarray[1]} && defined $presentatomtypes{$tarray[2]}){
+					next;
+				}	
+				# since they are both defined, we will keep a record of them.
+
+				$foundAtype{"$tarray[0]-$tarray[1]-$tarray[2]"}=1;
+				$foundAtype{"$tarray[2]-$tarray[1]-$tarray[0]"}=1;
+			}
+			if($directive eq "dihedraltypes"){
+		    		my @ltokens = split('<',$A);
+				if(@ltokens ==1){
+					# if it is just a comment, save.
+					addToTop($directive,$stuff."\n");
+					next;	
+				}
+				my $lstuff=$ltokens[1];
+				$lstuff =~ s/^\s+|\s+$//g;
+				my @tarray=split(/\s+/,$lstuff);
+				if(@tarray < 7 ){
+					smog_quit("dihedraltypes defined in extras file, but too few parameters are given. Offending line:$line");
+				}
+				unless($tarray[4]  =~ /^[1-5]$|^[89]$|^1[01]$/){
+					smog_quit("In extras file, only angletypes types 1-5, 8, 9, 10 and 11 are supported. Offending line:$line");
+				}
+				if((!defined $presentatomtypes{$tarray[0]} && $tarray[0] ne "X") || (!defined $presentatomtypes{$tarray[1]} && $tarray[1] ne "X") || (!defined $presentatomtypes{$tarray[2]} && $tarray[2] ne "X") || (!defined $presentatomtypes{$tarray[3]} && $tarray[3] ne "X") ){
+					next;
+				}	
+				# since they are both defined, we will keep a record of them.
+				$foundDtype{"$tarray[0]-$tarray[1]-$tarray[2]-$tarray[3]"}=1;
+				$foundDtype{"$tarray[3]-$tarray[2]-$tarray[1]-$tarray[0]"}=1;
+			}
+
+
+
 			addToTop($directive,$stuff."\n");
 		}
 	}
@@ -237,7 +334,7 @@ sub addExtras {
 					$f = $t2 . "-" . $t1;
 				}
 				if(!exists $foundNBe{$f}){
-					smog_quit("nbtype 3 is being used, yet not all possible nonbond_params are given in extras file. Did not find params for atomtype pair $t1-$t2");
+					smog_quit("nbtype 3 is being used, yet not all possible nonbond_params are given in extras file. Did not find params for atomtype pair $f");
 				}
 			}
 		}
@@ -278,11 +375,11 @@ sub checkExtras {
 sub printOrderedBonds
 {
 
-	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2,$indexhandle) = @_;
+	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2,$indexhandle,$allatoms) = @_;
 	my @bondCache; ## CACHE BONDS TO ORDER
 
 	## Cache Bonds ##
-	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache,$indexhandle);
+	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache,$indexhandle,$allatoms);
 	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache,$indexhandle);
 	## Sort bonds by i then j ## 
 	@bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
@@ -298,10 +395,10 @@ sub printOrderedBonds
 # call  calculateBondsHelper1() for each residue defined in templates
 sub calculateBonds1
 {
-	my($bondFunctHandle,$whichPDL,$bondCache,$indexhandle) = @_;
+	my($bondFunctHandle,$whichPDL,$bondCache,$indexhandle,$allatoms) = @_;
 	foreach my $res(keys %{$bondFunctHandle}){
 	       if(!exists $whichPDL->{$res}){next;}
-	       calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache,$indexhandle);
+	       calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache,$indexhandle,$allatoms);
 	}
 }
 
@@ -320,7 +417,7 @@ sub calculateBonds2
 
 sub calculateBondsHelper1
 {
-	my($bondHash,$inputPDL,$bondCache,$indexhandle) = @_;
+	my($bondHash,$inputPDL,$bondCache,$indexhandle,$allatoms) = @_;
 	my $bondArr = $bondHash->{"bonds"};
 	my $bondFunc =$bondHash->{"functions"};
 	my $bondIndex = 0;
@@ -335,7 +432,7 @@ sub calculateBondsHelper1
 	       {
 			my $I1=$indexList1[$i];
 			my $I2=$indexList2[$i];
-			my $val=bondOutput($bondFunc->[$bondIndex],$I1,$I2,$bondList[$i],$indexhandle);
+			my $val=bondOutput($bondFunc->[$bondIndex],$I1,$I2,$bondList[$i],$indexhandle,$allatoms);
 			if(!$val){next;}
 			# i,j are meta data
 	 		push @{$bondCache}, {'i' => $I1,'j' => $I2, 'v' => $val};
@@ -358,7 +455,7 @@ sub calculateBondsHelper2
 		my $output = sclr(sqrt(inner($outer,$outer))*$angToNano);
 		$atomOne = sclr(slice($inputPDL,"3:3,$atomOne,:"));
 		$atomTwo = sclr(slice($inputPDL,"3:3,$atomTwo,:"));
-		my $val=bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output,$indexhandle);
+		my $val=bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output,$indexhandle,0);
 		if(!$val){next;}
 		push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => $val};
 	}
@@ -369,7 +466,7 @@ sub calculateBondsHelper2
 # Convert internal bond function format to gromacs function format,
 sub bondOutput
 {
-	my($inputFunc,$i,$j,$values,$indexhandle) = @_;
+	my($inputFunc,$i,$j,$values,$indexhandle,$allatoms) = @_;
 	if(!$inputFunc){smog_quit ("BONDOUTPUT::NO FUNCTION DEFINED");}
 	## Remove white spaces from string ##
 	$inputFunc =~ s/^\s+|\s+$//g;
@@ -385,42 +482,52 @@ sub bondOutput
 		## $paramArr[0] is bond length
 		if($fType != 0){
 	       
-			if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## native option used
-	        
-	        ## Check bonds threshold ##
-	        	if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
-	        	|| $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
-				my $DIST=int($paramArr[0]*100)/100.0;
-				my %reflist=%{$indexhandle};
-				if($setBondtoLimit){
-					if(!exists $reflist{$i} || !exists $reflist{$j}){
-						smog_quit("Internal error 2.  Please inform smog team");
+			
+			if($fType == -1){
+				# this mean bond_bytype was used
+				# don't write distances or strengths. Make gromacs use bondtype
+				# since we are not writing a distance, let's check and make sure this pair has a bondtype provided
+				&checkbondtype($i,$j,$allatoms); 
+				$formattedString = sprintf("%d\t%d\t%d",$i,$j,$paramArr[0]);
+				$outputString = "$outputString$formattedString\n";
+			}else{
+	        		if($paramArr[0] =~ /\?/){
+					$paramArr[0]=$values; # native option used
+				} 
+	        		## Check bonds threshold ##
+	        		if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
+	        		|| $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
+					my $DIST=int($paramArr[0]*100)/100.0;
+					my %reflist=%{$indexhandle};
+					if($setBondtoLimit){
+						if(!exists $reflist{$i} || !exists $reflist{$j}){
+							smog_quit("Internal error 2.  Please inform smog team");
+						}
+						my $i1=$reflist{$i};
+						my $j1=$reflist{$j};
+						print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.\n\n");
+						print "-limitbondlength is being used, will set length to ";
+		 				if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
+		  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
+		  					print "$paramArr[0] nm\n\n";
+		 				}elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
+		  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
+		  					print "$paramArr[0] nm\n\n";
+		 				}
+					}else{
+						if(!exists $reflist{$i} || !exists $reflist{$j}){
+							smog_quit("Internal error 3.  Please inform smog team");
+						}
+						my $i1=$reflist{$i};
+						my $j1=$reflist{$j};
+						smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
 					}
-					my $i1=$reflist{$i};
-					my $j1=$reflist{$j};
-					print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.\n\n");
-					print "-limitbondlength is being used, will set length to ";
-		 			if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
-		  				$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
-		  				print "$paramArr[0] nm\n\n";
-		 			}elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
-		  				$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
-		  				print "$paramArr[0] nm\n\n";
-		 			}
-				}else{
-					if(!exists $reflist{$i} || !exists $reflist{$j}){
-						smog_quit("Internal error 3.  Please inform smog team");
-					}
-					my $i1=$reflist{$i};
-					my $j1=$reflist{$j};
-					smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
-				}
-	        	}	
-	       
+	        		}	
 	## Format output <i j function p1 p2 ... pn>
-			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
-			$outputString = "$outputString$formattedString\n";
+				foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+				$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
+				$outputString = "$outputString$formattedString\n";
+	       		}
 		}else{
 			$freebonds{"$i-$j"}=1;
 			$freebonds{"$j-$i"}=1;
@@ -428,6 +535,94 @@ sub bondOutput
 	}
 	return $outputString;
 }
+
+sub checkbondtype
+{
+	my ($i,$j,$allatoms)=@_;
+	my $found=0;
+	# only check that the pair has a bondtype, if the hash is defined
+	if($allatoms ne "0"){
+		my $typei=$allatoms->{$i}->[0];
+		my $typej=$allatoms->{$j}->[0];
+		foreach my $I("X",$typei)
+		{
+			foreach my $J("X",$typej)
+			{
+				my $nm="$I-$J";
+				if(defined $foundBtype{$nm})
+				{
+					$found=1;
+					return;
+				}
+			}
+		}
+		if($found ==0){
+			smog_quit("Default bond interaction not provided for pair $i-$j (types $typei and $typej)");
+		}
+	}
+}
+
+sub checkangletype
+{
+	my ($i,$j,$k,$allatoms)=@_;
+	my $found=0;
+	# only check that the pair has a bondtype, if the hash is defined
+	my $typei=$allatoms->{$i}->[0];
+	my $typej=$allatoms->{$j}->[0];
+	my $typek=$allatoms->{$k}->[0];
+	foreach my $I("X",$typei)
+	{
+		foreach my $J("X",$typej)
+		{
+			foreach my $K("X",$typek)
+			{
+				my $nm="$I-$J-$K";
+				if(defined $foundAtype{$nm})
+				{
+					$found=1;
+					return;
+				}
+			}
+		}
+	}
+	if($found ==0){
+		smog_quit("Default angle interaction not provided for pair $i-$j-$k (types $typei, $typej, $typek)");
+	}
+}
+
+
+sub checkdihedraltype
+{
+	my ($i,$j,$k,,$l,$allatoms)=@_;
+	# only check that the pair has a bondtype, if the hash is defined
+	my $typei=$allatoms->{$i}->[0];
+	my $typej=$allatoms->{$j}->[0];
+	my $typek=$allatoms->{$k}->[0];
+	my $typel=$allatoms->{$l}->[0];
+	my $found=0;
+	foreach my $I("X",$typei)
+	{
+		foreach my $J("X",$typej)
+		{
+			foreach my $K("X",$typek)
+			{
+				foreach my $L("X",$typel)
+				{
+					my $nm="$I-$J-$K-$L";
+					if(defined $foundDtype{$nm})
+					{
+						$found=1;
+						return;
+					}
+				}
+			}
+		}
+	}
+	if($found ==0){
+		smog_quit("Default dihedral interaction not provided for pair $i-$j-$k-$l (types $typei, $typej, $typek, $typel)");
+	}
+}
+
 
 ##
 # Given a user defined function, parse values
@@ -454,11 +649,11 @@ sub bondFuncParser
 # Combined bond calculation,sorting, and printing
 sub printOrderedAngles
 {
-	my($AngleData,$bondPDL,$indexhandle) = @_;
+	my($AngleData,$bondPDL,$indexhandle,$allatoms) = @_;
 	my @angleCache; ## CACHE BONDS TO ORDER
 
 	## Cache Bonds ##
-	CalculateAngles($AngleData,$bondPDL,\@angleCache,$indexhandle);
+	CalculateAngles($AngleData,$bondPDL,\@angleCache,$indexhandle,$allatoms);
 
 	## Sort angles by i,j then k ## 
 	@angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
@@ -475,17 +670,17 @@ sub printOrderedAngles
 # CalculateAnglesHelper() calculates the angles for each chain
 sub CalculateAngles
 {
-	my($angleFunctHandle,$whichPDL,$angleCache,$indexhandle) = @_;
+	my($angleFunctHandle,$whichPDL,$angleCache,$indexhandle,$allatoms) = @_;
  
 	foreach my $chain(keys %{$angleFunctHandle}){
-		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache,$indexhandle);
+		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache,$indexhandle,$allatoms);
 	}
 }
 
 ##
 sub CalculateAnglesHelper
 {
-	my($angleArr,$inputPDL,$angleCache,$indexhandle) = @_;
+	my($angleArr,$inputPDL,$angleCache,$indexhandle,$allatoms) = @_;
 	my $size = $angleArr->dim(1);
 	for(my $i=0;$i<$size;$i++)
 	{
@@ -503,7 +698,7 @@ sub CalculateAnglesHelper
 		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
 		
 		if($atomi1 > $atomi3) { my $temp = $atomi1; $atomi1 = $atomi3; $atomi3 = $temp; }
-		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos,$indexhandle);
+		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos,$indexhandle,$allatoms);
 		if(!$val) {next;}
 			# i,j,k are meta data
 	 	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => $val};
@@ -514,7 +709,7 @@ sub CalculateAnglesHelper
 # Convert internal angle function format to gromacs function format
 sub angleOutput
 {
- 	my($inputFunc,$i,$j,$k,$values,$indexhandle) = @_;
+ 	my($inputFunc,$i,$j,$k,$values,$indexhandle,$allatoms) = @_;
 	if(!$inputFunc){smog_quit ("ANGLEOUTPUT::NO FUNCTION DEFINED");}
  ## Remove white spaces from string ##
  	$inputFunc =~ s/^\s+|\s+$//g;
@@ -528,33 +723,42 @@ sub angleOutput
 	{
 		my $paramFormat="";
 		($fType,@paramArr) = angleFuncParser($fun);
-		if($fType != 0 && !exists $freebonds{"$i-$j"} && !exists $freebonds{"$j-$i"} && !exists $freebonds{"$k-$j"} && !exists $freebonds{"$j-$k"}){
-			if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## non-native option used
-	
-			## Check angles threshold ##
-	 		if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
-				my $THETA=int($paramArr[0]*100)/100.0;
-				my %reflist=%{$indexhandle};
-				my $i1=$reflist{$i};
-				my $j1=$reflist{$j};
-				my $k1=$reflist{$k};
-				smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilites.",1);
-			}
-	 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
-				my $THETA=int($paramArr[0]*100)/100.0;
-				my %reflist=%{$indexhandle};
-				my $i1=$reflist{$i};
-				my $j1=$reflist{$j};
-				my $k1=$reflist{$k};
-				smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
-			}
- 		## Format output <i j k function p1 p2 ... pn>
- 			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-			$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
+
+		if($fType ==-1){
+			 ## don't write distance. Make gromacs use angletype
+			&checkangletype($i,$j,$k,$allatoms); 
+			$formattedString = sprintf("%d\t%d\t%d\t%d",$i,$j,$k,$paramArr[0]);
 			$outputString = "$outputString$formattedString\n";
 		}else{
-			$freeangles{"$i-$j-$k"}=1;
-			$freeangles{"$k-$j-$i"}=1;
+
+			if($fType != 0 && !exists $freebonds{"$i-$j"} && !exists $freebonds{"$j-$i"} && !exists $freebonds{"$k-$j"} && !exists $freebonds{"$j-$k"}){
+				if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} ## non-native option used
+		
+				## Check angles threshold ##
+		 		if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
+					my $THETA=int($paramArr[0]*100)/100.0;
+					my %reflist=%{$indexhandle};
+					my $i1=$reflist{$i};
+					my $j1=$reflist{$j};
+					my $k1=$reflist{$k};
+					smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilites.",1);
+				}
+		 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
+					my $THETA=int($paramArr[0]*100)/100.0;
+					my %reflist=%{$indexhandle};
+					my $i1=$reflist{$i};
+					my $j1=$reflist{$j};
+					my $k1=$reflist{$k};
+					smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
+				}
+	 		## Format output <i j k function p1 p2 ... pn>
+	 			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+				$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
+				$outputString = "$outputString$formattedString\n";
+			}else{
+				$freeangles{"$i-$j-$k"}=1;
+				$freeangles{"$k-$j-$i"}=1;
+			}
 		}
 	}
 	return $outputString; 
@@ -585,10 +789,10 @@ sub angleFuncParser
 # Combined dihedral calculation,sorting, and printing
 sub printOrderedDihedrals
 {
-	my($DihedralData,$bondPDL) = @_;
+	my($DihedralData,$bondPDL,$allatoms) = @_;
 	my @diheCache; ## CACHE BONDS TO ORDER
 	## Cache Bonds ##
-	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache);
+	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache,$allatoms);
 	## Sort dihedrals by i, then j then k then l ## 
 	@diheCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"l"} <=> $b->{"l"}) } @diheCache;
 	
@@ -603,15 +807,15 @@ sub printOrderedDihedrals
 # Setup the calculation of dihedral angles of all combined residues,
 sub CalculateDihedrals
 {
-	my($diheFunctHandle,$whichPDL,$diheCache) = @_;
+	my($diheFunctHandle,$whichPDL,$diheCache,$allatoms) = @_;
 	foreach my $chain(keys %{$diheFunctHandle}){
-		CalculateDihedralsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain},$diheCache);
+		CalculateDihedralsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain},$diheCache,$allatoms);
 	}
 }
 
 sub CalculateDihedralsHelper
 {
-	 my($diheArr,$inputPDL,$diheCache) = @_;
+	 my($diheArr,$inputPDL,$diheCache,$allatoms) = @_;
 	 my $size = $diheArr->dim(1);
 	 for(my $i=0;$i<$size;$i++)
 	 {
@@ -649,7 +853,7 @@ sub CalculateDihedralsHelper
 			## $eG >=0 dihedral is proper dihedral of any functional form
 	        if($eG >= 0)
 			{
-				my $val = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG);
+				my $val = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
 				if(!$val) {next;}
 				# i,j,k,l are meta data
 				push @{$diheCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'l' => $atomi4, 'v' => $val};
@@ -664,7 +868,7 @@ sub CalculateDihedralsHelper
 
 sub dihedralOutput
 {
- 	my($inputFunc,$ai,$aj,$ak,$al,$values,$ratio,$eG) = @_;
+ 	my($inputFunc,$ai,$aj,$ak,$al,$values,$ratio,$eG,$allatoms) = @_;
  	## Remove white spaces from string ##
  	$inputFunc =~ s/^\s+|\s+$//g;
  	## If $input contains a + ##
@@ -679,58 +883,65 @@ sub dihedralOutput
 		my $paramFormat="";
 		# since this is only used here, we may remove the call and sub in the code
 		($fType,@paramArr) = diheFuncParser($fun);
-	
-	 	if($fType !=0 && !exists $freeangles{"$ai-$aj-$ak"} && !exists $freeangles{"$ak-$aj-$ai"} && !exists $freeangles{"$aj-$ak-$al"} && !exists $freeangles{"$al-$ak-$aj"}  ){
-			# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
-			if($paramArr[0] =~ /\?/){
-		         # replace ? with native angles
-		   	 $paramArr[0] =~ s/\?/$values/g;
-			 # evaluate
-			 $paramArr[0] = eval($paramArr[0]);
-			 }
-			 if( $fType == 1){
-		            # Angle will be scaled by multiplicity factor n, if they are cosine functions
-		            $paramArr[0] *= $paramArr[2];
-			 }
-		
-	
-			# Perform checks of dihedral parameters (only do this once, then set funtypechecked)
-			unless(exists $funtypechecked{$fun}){
-				$funtypechecked{$fun}=1;		
-		        	if($paramArr[1] =~ /[*?^&!@#%()]/){smog_quit ("Dihedral weight can only contain numbers, but $paramArr[1] found.")};
-		
-				if($fType == 0 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
-					smog_quit("Function type dihedral_free is being used for an energy group with normalize != 0.  This can lead to unpredictable results.");
-				}
-		
-				if($funci == 0){
-				  $fTypei[0]= $fType;
-		
-				  if($fType==1 and $paramArr[1] != 1 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
-				   smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
-				  }
-				}elsif($funci != 0 and $fTypei[0] != $fType){
-		        	  smog_quit ("Sums of dihedrals of different types is not supported.");
-				}
-			}
-			# end of consistency checks
-	
-	
-			$funci++;
-			## If dihedral kd is normalized or has scaling&normalize ##
-		 	$paramArr[1]*=$ratio;
-			## Format output <i j k function p1 p2 ... pn>
-		 	for(my $I=0;$I<=$#paramArr;$I++){$paramFormat="$paramFormat %12.9e";}
-		 	#foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-
-			if($fType == 1) {
-				$paramFormat=" %12.9e %12.9e %u";
-			}elsif($fType == 2){	
-			### CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
-				if($paramArr[0]>180){$paramArr[0]-=180;}else{$paramArr[0]+=180;}
-			}	
-			$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
+		if($fType ==-1){
+			 ## don't write angle. Make gromacs use dihedraltype
+			&checkdihedraltype($ai,$aj,$ak,$al,$allatoms);
+			$formattedString = sprintf("%d\t%d\t%d\t%d",$ai,$aj,$ak,$al);
 			$outputString = "$outputString$formattedString\n";
+		}else{
+
+	 		if($fType !=0 && !exists $freeangles{"$ai-$aj-$ak"} && !exists $freeangles{"$ak-$aj-$ai"} && !exists $freeangles{"$aj-$ak-$al"} && !exists $freeangles{"$al-$ak-$aj"}  ){
+				# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
+				if($paramArr[0] =~ /\?/){
+			         # replace ? with native angles
+			   	 $paramArr[0] =~ s/\?/$values/g;
+				 # evaluate
+				 $paramArr[0] = eval($paramArr[0]);
+				 }
+				 if( $fType == 1){
+			            # Angle will be scaled by multiplicity factor n, if they are cosine functions
+			            $paramArr[0] *= $paramArr[2];
+				 }
+			
+	
+				# Perform checks of dihedral parameters (only do this once, then set funtypechecked)
+				unless(exists $funtypechecked{$fun}){
+					$funtypechecked{$fun}=1;		
+			        	if($paramArr[1] =~ /[*?^&!@#%()]/){smog_quit ("Dihedral weight can only contain numbers, but $paramArr[1] found.")};
+			
+					if($fType == 0 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
+						smog_quit("Function type dihedral_free is being used for an energy group with normalize != 0.  This can lead to unpredictable results.");
+					}
+			
+					if($funci == 0){
+					  $fTypei[0]= $fType;
+			
+					  if($fType==1 and $paramArr[1] != 1 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
+					   smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
+					  }
+					}elsif($funci != 0 and $fTypei[0] != $fType){
+			        	  smog_quit ("Sums of dihedrals of different types is not supported.");
+					}
+				}
+				# end of consistency checks
+	
+	
+				$funci++;
+				## If dihedral kd is normalized or has scaling&normalize ##
+			 	$paramArr[1]*=$ratio;
+				## Format output <i j k function p1 p2 ... pn>
+			 	for(my $I=0;$I<=$#paramArr;$I++){$paramFormat="$paramFormat %12.9e";}
+			 	#foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+
+				if($fType == 1) {
+					$paramFormat=" %12.9e %12.9e %u";
+				}elsif($fType == 2){	
+				### CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
+					if($paramArr[0]>180){$paramArr[0]-=180;}else{$paramArr[0]+=180;}
+				}	
+				$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
+				$outputString = "$outputString$formattedString\n";
+			}
 		}
 	}
 		return $outputString;
@@ -1148,7 +1359,7 @@ sub calculateAtomTypes
 	my $nbtype ="";
 	my $c12;my $c6;my $ptype;my $charge;my $mass;
 	
-	foreach my $atoms(keys %{$uniqueHandle})
+	foreach my $atoms(sort { $a <=> $b } keys %{$uniqueHandle})
 	{
 		$nbtype = $uniqueHandle->{$atoms}->[0];
   		if(!$uniqueHandle->{$atoms}->[0])
@@ -1191,6 +1402,7 @@ sub readAtoms
 	my $chainindex=1;
 	my $linenumber=0;
 	my $atomindex=0;
+	my $lastTER=0;
 	while($line = <PDB>)
 	{
 		$linenumber++;
@@ -1204,6 +1416,8 @@ sub readAtoms
 			$systemcharge+=$totalcharge;
 			$totalcharge=0;
 			$chainindex++;
+			$resCounter++;
+			$lastTER=1;
 		}
 		if($line =~ m/^END/) {$endreached=1;last;}
 		if($line =~ m/^ATOM/ || $line =~ m/^HETATM/)
@@ -1224,7 +1438,9 @@ sub readAtoms
    			if($resNum ne $resNumCurr)
 			{
 				$resNumCurr=$resNum;
-				$resCounter++;
+				if($lastTER ==0){
+					$resCounter++;
+				}
 			}
 			if(!$residues{$resName}->{"atoms"}->{$atomName}){next;}
 			$counter++;$atomNum=$counter;
@@ -1240,6 +1456,7 @@ sub readAtoms
 				$totalcharge += $interactions->{"nonbonds"}->{$atomType}->{"charge"};
 			}
 			addToTop("atoms",sprintf("\n"));
+			$lastTER=0;
 		}
 	}
 
@@ -1271,6 +1488,7 @@ sub convertPDBToGroNdx
  	my %chainHash;
 	my $resNumCurr=1;my $resCounter=1;
 	my $boundflag=0;
+	my $lastTER=0;
 	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
  	open(PDB,"$inputPDB") or smog_quit("can not open $inputPDB"); ## INPUT PDB
 	if(-e "meta.Gro"){
@@ -1281,7 +1499,12 @@ sub convertPDBToGroNdx
 	{
 		
 	 if($line =~ m/^END/) {last;}
-  	 if($line =~ m/^TER/) {$chainCounter++;next;}
+  	 if($line =~ m/^TER/) {
+		$chainCounter++;
+		$resCounter++;
+		$lastTER=1;
+		next;
+	}
          if($line =~ m/^ATOM|^HETATM/)
          {
 		$atomName = substr($line, 12, 4);
@@ -1320,15 +1543,18 @@ sub convertPDBToGroNdx
 		if($resNum ne $resNumCurr)
 			{
 				$resNumCurr=$resNum;
-				$resCounter++;
+				if($lastTER==0){
+					$resCounter++;
+				}
 			}
 
   		## Save atom index to chain ##
   		push(@{$chainHash{$chain}},$atomNum);
 		if($atomNum >= 100000){$atomNum = $atomNum%100000;}
-	    if($resCounter >= 100000){$resCounter = $resCounter%100000;}
+	        if($resCounter >= 100000){$resCounter = $resCounter%100000;}
 		$output = sprintf("%5d%-5s%5s%5d%8.3f%8.3f%8.3f\n",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
 		print GRO $output;
+		$lastTER=0;
 		
 	 }
 	}
@@ -1500,6 +1726,7 @@ usage: smog2 .. options ..
 	-s [smog.contacts]	: output .contacts file name
 	-n [smog.ndx]		: output .ndx file name
 	-c [contacts.txt]	: input contact map file
+	-c_global 		: Use global numbering for input contact map (atoms start with 1)
 	-dname [smog]		: default name to use for all output files
 	-backup [yes]		: back up any pre-existing output files
 	-warn [0]		: convert the first N fatal errors to warnings.  
@@ -1593,7 +1820,7 @@ sub freeMemoryForShadow
 {
 	undef %resPDL;undef %bondPDL;
 	undef %AngleData;undef %DihedralData;
-	undef %BondData;undef $contactPDL;
+	undef %BondData;undef $contactPDL;undef %foundBtype; undef %foundAtype, undef %foundDtype;
 }
 
 
@@ -1620,7 +1847,7 @@ sub parseTemplatesAndPDB
 	parseBonds();
 	## parse .bif File ##
 	parseBif();
-	    	print "\nDone parsing templates.\n";
+	print "\nDone parsing templates.\n";
 
     	print "\nChecking template definitions for consistency.\n";
 	my $checkmessage=checkenergygroups();
@@ -1641,6 +1868,7 @@ sub parseTemplatesAndPDB
     	## PARSE PDB ##
     	###############
 	print "\nReading $inputPDB\n\n";
+	checkPDB($inputPDB,$allowCG);
 	parsePDBATOMS($inputPDB,$allowCG);
 	catPDL();
 }
@@ -1660,19 +1888,21 @@ sub printBondedTopOutput {
 	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms,$rescaleCD);
 	print "Processing atoms\n";
 	calculateAtomTypes(\%allAtoms);
+ 	# adding extras at this point is a bit out of place.  but, it is important, in order to verify that all bonds have bondtypes, etc.
+	addExtras();
 	my %atomIndex2Line=readAtoms($inputPDB);
 
 	## CALCULATE BONDS/CONNECTED BONDS ##
-	print "Saving bonds\n";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL,\%atomIndex2Line);
+	print "Checking and saving bonds\n";
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL,\%atomIndex2Line,\%allAtoms);
 
 	## CALCULATE ANGLES ##
-	print "Saving angles\n";
-	printOrderedAngles(\%AngleData,\%bondPDL,\%atomIndex2Line);
+	print "Checking and saving angles\n";
+	printOrderedAngles(\%AngleData,\%bondPDL,\%atomIndex2Line,\%allAtoms);
 
 	## CALCULATE DIHEDRALS ##
-	print "Saving dihedrals\n";
-	printOrderedDihedrals(\%DihedralData,\%bondPDL);
+	print "Checking and saving dihedrals\n";
+	printOrderedDihedrals(\%DihedralData,\%bondPDL,\%allAtoms);
 
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
@@ -1686,9 +1916,9 @@ sub generateContactMap {
 	my $SCMparams = setContactParams();
     	my $memoryMax = "";
 	my $absAtomCount = keys(%allAtoms);
-		#AKE lattice with 6e5 atoms needs 70 MB. Use 80MB for safety...
-		my $megabytesNeeded = int($absAtomCount / 60000 * 80);
-		if( $megabytesNeeded > 100 ) #default java heapsize is 1/4 physical memory. Don't think anyone will have <400MB these days 
+	#AKE lattice with 6e5 atoms needs 70 MB. Use 80MB for safety...
+	my $megabytesNeeded = int($absAtomCount / 60000 * 80);
+	if( $megabytesNeeded > 100 ) #default java heapsize is 1/4 physical memory. Don't think anyone will have <400MB these days 
     	{
 		print "JAVA HEAP SIZE INCREASED to $megabytesNeeded Mb\n";
 		$memoryMax = "-Xmx$megabytesNeeded"."m";
@@ -1706,9 +1936,9 @@ sub generateContactMap {
 }
 
 sub appendContacts {
-	my($fileName,$fileName2,$userProvidedMap) = @_;
+	my($fileName,$fileName2,$userProvidedMap,$absolutecontactindex) = @_;
 	#Parse the contact map, either the generated one or the user provided one
-	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled);
+	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled,$absolutecontactindex);
 	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
@@ -1745,7 +1975,7 @@ print "\n";
 ## parse command line options ##
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
-	'c=s' => \$ContactFile, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
+	'c=s' => \$ContactFile, 'c_global' => \$absolutecontactindex, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
 	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warn=i' => \$maxwarn, 
          'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
          'rescaleCD=s' => \$rescaleCD, '<>' => \&usage, 'v' => \$printversion)
@@ -1869,7 +2099,6 @@ if(defined $ContactFile){
 }
 
 ## Ensure we only write out files with gromacs-compatible suffices
-my $maxbu=10;
 if($topFile eq ""){$topFile=$DNAME};
 if($groFile eq ""){$groFile=$DNAME};
 if($shadowFile eq ""){$shadowFile=$DNAME};
@@ -1885,20 +2114,7 @@ $ndxFile=checksuffix($ndxFile,".ndx");
 # things we don't want to overwrite
 if($backup eq "yes"){
 	foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile){
-		my ($ext) = $filen =~ /(\.[^.]+)$/;
-		if($filen ne "" && -e $filen){
-			for(my $bu=1;$bu<=$maxbu;$bu++){
-				my $buname="$filen.bu$bu";
-				if( ! -e $buname){	
-				print "$filen already exists.  Backing up to $buname\n";
-				system("mv $filen $buname");
-				last;
-				}
-				if($bu == $maxbu){
-			 	smog_quit ("Already backed up $maxbu copies of $filen."); 
-				}
-			}
-		}
+		checkalreadyexists($filen);
 	}
 }
 
@@ -1953,9 +2169,8 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
 }
 
-appendContacts($shadowFile,$ContactFile,$userProvidedMap);
+appendContacts($shadowFile,$ContactFile,$userProvidedMap,$absolutecontactindex);
 
-addExtras();
 
 printTop($topFile);
 print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$ndxFile\n";

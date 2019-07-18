@@ -1332,9 +1332,9 @@ sub createDihedralAngleFunctionals {
 				unless(($a !~ /\Q$aM\E/ && $aM !~ /\Q*\E/)
 					|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
 					|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)){
-				if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+				if("$a" eq "$aM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$b" eq "$bM") {$matchScore+=2;} else {$matchScore+=1;}
+				if("$c" eq "$cM") {$matchScore+=2;} else {$matchScore+=1;}
 				if($matchScore >= $saveScore)
 					{
 					if($aM eq $cM || ($aM eq $bM and $bM eq $cM)){

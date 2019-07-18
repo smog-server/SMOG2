@@ -36,7 +36,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %bondFunctionals %AngleData %DihedralData %BondData %resPDL %bondPDL %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS);
+qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %bondFunctionals %AngleData %DihedralData %BondData %resPDL %bondPDL %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS checkPDB);
 
 my @vector;
 my $coorPDL;
@@ -89,11 +89,13 @@ sub parseExternalContacts
 
 
 ####################################################################
-# parsePDBATOMS
+# checkPDB
+# this routine will check to make sure the PDB conforms to all
+# expected formatting requirements
 ####################################################################
-sub parsePDBATOMS
+sub checkPDB
 {
-	
+	print "Checking PDB formatting\n";	
 	my ($fileName,$CGenabled) = @_;
 	
 	## INTERNAL VARIABLES ##
@@ -118,11 +120,11 @@ sub parsePDBATOMS
 	my $residueSerial=0;
 	## OPEN .PDB FILE ##
 
-	# first check and make sure there is an END and there are no ATOM lines afterwards
 	unless (open(PDBFILE, $fileName)) {
 		smog_quit ("Cannot read from '$fileName'.");
 	}
-
+	my $lastrecord="";
+	# first check and make sure there is an END and there are no ATOM lines afterwards
 	while(my $record = <PDBFILE>)
 	{
 		my $lng = $record;
@@ -139,6 +141,7 @@ sub parsePDBATOMS
 		}
 	}
 	close(PDBFILE);
+
         unless($endfound){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 
 	unless (open(PDBFILE, $fileName)) {
@@ -149,6 +152,8 @@ sub parsePDBATOMS
 	 ## LOOP THROUGH EACH LINE ##
 	while(my $record = <PDBFILE>)
 	{
+ 		# when reading the file, check to see if the line is a BOND, then check if TER/END
+		# if neither, then read each residue and make sure they are only ATOM/HETATM
 		$lineNumber++;
 	
 		my @impAtoms = ();
@@ -164,6 +169,7 @@ sub parsePDBATOMS
 			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$lng\"\n");
 		}
 
+		# CHECK IF IT IS A BOND
  		if($record =~ m/^BOND/){
 
 			if($CGenabled==1){
@@ -202,19 +208,9 @@ sub parsePDBATOMS
 			my $resBIdx = $allAtoms{$idxB}->[2];
 			
 			my $sizeA = scalar(keys %{$residues{$resA}->{"atoms"}});
-			my $union;
-			$union=($tempPDL{$resA}->{$resAIdx})->glue(1,$tempPDL{$resB}->{$resBIdx});
 			print "\nNOTE:";
 			my $chaina1=$chaina+1;
 			my $chainb1=$chainb+1;
-			print "Generating user-specified bonded interaction between chain-atom pair $chaina1-$atoma,$chainb1-$atomb.\nWill assign to energy group $eG.\n";
-			if(exists $connectedatom{$idxA}){ 
-				smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomA, in $resA$resAIdx) and line:$record");
-			}
-			if(exists $connectedatom{$idxB}){ 
-				smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
-			}
-			$bondPDL{$counter}=$union;
 			## Check if improper directive is present ##
 			if($record =~ m/^IMPROPER/)
 			{
@@ -223,34 +219,25 @@ sub parsePDBATOMS
 				@impAtoms = split(/\s+/,$right);
 				print "IMPROPER DETECTED @impAtoms\n";
 			}
-			connCreateInteractionsSingleBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
 			$counter++;
 			next;
 		}
 
-		## IF TER LINE  ##
+		## CHECK FOR END OR TER  ##
 		if($record =~ m/^TER|^END/)
 		{
  			$lastresindex="null";
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
 			## CREATE INTERACTION ##
 			my $chainlength=$atomSerial-$lastchainstart;
-			print "Building covalent geometry for chain $chainNumber\n";
-        		my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength);
-			my @connset=@{$connset};
-			foreach my $I(@connset){
-				my $T=$I+$lastchainstart+1;
-				$connectedatom{$T}=1;
-			}
-		   	$bondPDL{$counter}=pdl(@union);
-			@union = ();$counter++;
+			$counter++;
         		@consecResidues = ();
 			$lastchainstart=$atomSerial;
 			if($record =~ m/^END/){$endfound=1;}
 			next;
 		} 
 	
-		## ONLY WORK WITH ATOM LINES ##
+		## CHECK IF ATOM/HETATM ##
 		if($record =~ m/^ATOM/ || $record =~ m/^HETATM/)
 		{
 	        	$lineNumber--;
@@ -274,10 +261,7 @@ sub parsePDBATOMS
 		 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 			my $resname=$residue;
 	        	my $resindex = substr($record,22,5);
-			if ($lastresindex ne "null" && $resindex-$lastresindex ==0 ){
-				$lineNumber++;
-				smog_quit("Extra atoms found in residue $resname. Check near line $lineNumber.");
-			}elsif ($lastresindex ne "null" && $resindex-$lastresindex != 1){
+			if ($lastresindex ne "null" && $resindex-$lastresindex != 1 && $resindex-$lastresindex != 0){
 				smog_quit("Non-sequential residue numbers ($lastresindex,$resindex) appear at line $lineNumber.");
 			}
 			$lastresindex=$resindex;
@@ -285,10 +269,10 @@ sub parsePDBATOMS
 			$residueSerial++;
 			for($i=0;$i<$atomsInRes;$i++)
 			{
-					$record = <PDBFILE>;
-	 				$lineNumber++;
-				if($record !~ m/^ATOM|^HETATM/)
-				{smog_quit("Expected ATOM or HETATM at line $lineNumber. Residue $residue might have been truncated at $lineNumber");}
+				$record = <PDBFILE>;
+	 			$lineNumber++;
+				if($record =~ m/^ATOM|^HETATM/)
+				{
 	
 				$interiorResidue = substr($record,17,4);
 				$interiorResidue =~ s/^\s+|\s+$//g;
@@ -300,8 +284,9 @@ sub parsePDBATOMS
 				}
 	
 		        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
-	            		$interiorPdbResidueIndex = substr($record,22,5);  
-				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex){
+	            		$interiorPdbResidueIndex = substr($record,22,5); 
+				} 
+				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex or  $record !~ m/^ATOM|^HETATM/){
 					my $linetemp=$lineNumber-1;
 					my $missingatoms="";
 					$uniqueAtom{$atom}=1;
@@ -361,7 +346,7 @@ sub parsePDBATOMS
 				$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 				$pairType = $residues{$residue}->{"atoms"}->{$atom}->{"pairType"};
 				$residueType = $residues{$residue}->{"residueType"};
-				
+				# the atoms are now being stored in checkPDB, not parsePDB	
 				$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType]; 
 				my $pdbIndex;
 				if($CGenabled==1){
@@ -374,6 +359,230 @@ sub parsePDBATOMS
 					smog_quit("Atom/Residue numbers must be unique within each chain. Offending line:\n$record");
 				}
 				$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
+			}
+			if($residues{$residue}->{"atomCount"} == -1){
+				$totalAtoms+=$atomsInRes;
+			}else{
+				$totalAtoms+=$residues{$residue}->{"atomCount"};
+			}
+			## CONCAT RESIDUE ##
+			$headFlag = 0;		
+			$residueIndex++;
+				
+		}else{
+			smog_quit("Expected ATOM or HETATM line at line $lineNumber.");
+		}
+		$lastrecord=$record;
+		$record = "";
+ 	}
+	print "Done checking PDB formatting.\n\n";
+}
+
+
+
+####################################################################
+# parsePDBATOMS
+# this routine will parse the PDB atoms and build the covalent
+# geometry
+####################################################################
+sub parsePDBATOMS
+{
+	
+	my ($fileName,$CGenabled) = @_;
+	
+	## INTERNAL VARIABLES ##
+	my $counter = 0;
+	my @temp; my @union;
+	my @tempBond;
+	my @consecResidues;
+	my $x;my $y;my $z;
+	my $residue; my $interiorResidue; my $atom;my $atomSerial;
+	my $atomsInRes; 
+	my $i; my $putIndex=0; 
+	my $headFlag=1;my $outLength;
+	$totalAtoms = 0;my $nbType;my $residueType; my $pairType;
+	my $atomCounter=0;
+	my $chainNumber = 0;
+	my $residueIndex=1;
+	my $interiorPdbResidueIndex=0;
+	my $lineNumber = 0;
+	my %connectedatom;
+	my $lastchainstart=0;
+	my $endfound=0;
+	my $residueSerial=0;
+	## OPEN .PDB FILE ##
+
+	# first check and make sure there is an END and there are no ATOM lines afterwards
+	unless (open(PDBFILE, $fileName)) {
+		smog_quit ("Cannot read from '$fileName'.");
+	}
+	my $lastrecord="";
+	while(my $record = <PDBFILE>)
+	{
+		my $lng = $record;
+		if($record =~m/^END/){
+			$endfound=1;
+			next;
+		}
+		if($lng eq "" || $record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/){
+			next;
+		# make sure BOND appears after END
+		}
+	}
+	close(PDBFILE);
+
+	unless (open(PDBFILE, $fileName)) {
+		smog_quit ("Cannot read from '$fileName'.");
+	}
+	$endfound=0;
+	my $lastresindex="null";
+	 ## LOOP THROUGH EACH LINE ##
+	while(my $record = <PDBFILE>)
+	{
+		$lineNumber++;
+	
+		my @impAtoms = ();
+		## PARSE BOND LINES ##
+		my $lng = $record;
+		chomp($lng);
+		$lng =~ s/\s+//g;	
+		$lng =~ s/\t+//g;	
+		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $lng eq ""){
+			next;
+		# make sure BOND appears after END
+		}
+ 		if($record =~ m/^BOND/){
+
+    			chomp($record);
+   
+			my @TMP = split(/\s+/,$record);
+			my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
+			
+			#internally, chains are indexed 0,1...
+			$chaina--;
+			$chainb--;
+			my $idxA = $indexMap{"$chaina-$atoma"};
+			my $idxB = $indexMap{"$chainb-$atomb"};
+			my $resA = $allAtoms{$idxA}->[5];
+			my $resB = $allAtoms{$idxB}->[5];
+			my $atomA = $allAtoms{$idxA}->[3];
+			my $atomB = $allAtoms{$idxB}->[3];
+			my $resAIdx = $allAtoms{$idxA}->[2];
+			my $resBIdx = $allAtoms{$idxB}->[2];
+			
+			my $sizeA = scalar(keys %{$residues{$resA}->{"atoms"}});
+			my $union;
+			$union=($tempPDL{$resA}->{$resAIdx})->glue(1,$tempPDL{$resB}->{$resBIdx});
+			print "\nNOTE:";
+			my $chaina1=$chaina+1;
+			my $chainb1=$chainb+1;
+			print "Generating user-specified bonded interaction between chain-atom pair $chaina1-$atoma,$chainb1-$atomb.\nWill assign to energy group $eG.\n";
+			if(exists $connectedatom{$idxA}){ 
+				smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomA, in $resA$resAIdx) and line:$record");
+			}
+			if(exists $connectedatom{$idxB}){ 
+				smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
+			}
+			$bondPDL{$counter}=$union;
+			## Check if improper directive is present ##
+			if($record =~ m/^IMPROPER/)
+			{
+				my($left,$right) = split(/IMPROPER/,$record);
+				$right =~ s/^\s+|\s+$//g;
+				@impAtoms = split(/\s+/,$right);
+				print "IMPROPER DETECTED @impAtoms\n";
+			}
+			connCreateInteractionsSingleBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
+			$counter++;
+			next;
+		}
+
+		## IF TER LINE  ##
+		if($record =~ m/^TER|^END/)
+		{
+ 			$lastresindex="null";
+			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
+			## CREATE INTERACTION ##
+			my $chainlength=$atomSerial-$lastchainstart;
+			print "Building covalent geometry for chain $chainNumber\n";
+        		my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength,$lastrecord);
+			my @connset=@{$connset};
+			foreach my $I(@connset){
+				my $T=$I+$lastchainstart+1;
+				$connectedatom{$T}=1;
+			}
+		   	$bondPDL{$counter}=pdl(@union);
+			@union = ();$counter++;
+        		@consecResidues = ();
+			$lastchainstart=$atomSerial;
+			if($record =~ m/^END/){$endfound=1;}
+			next;
+		} 
+	
+		## ONLY WORK WITH ATOM LINES ##
+		if($record =~ m/^ATOM/ || $record =~ m/^HETATM/)
+		{
+	        	$lineNumber--;
+			$outLength = length($record);
+		 	## OBTAIN RESIDUE NAME ##
+			$residue = substr($record,17,4);
+			$residue =~ s/^\s+|\s+$//g;
+			## if first iteration, save residueBackup, and use residues
+			#if(exists $residueBackup{$residue}){
+			if($CGenabled == 1){
+				$atomsInRes = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
+			}else{
+				$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
+			}
+			my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
+			my $atomsmatch=0;
+		 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
+			my $resname=$residue;
+	        	my $resindex = substr($record,22,5);
+			$lastresindex=$resindex;
+			my %uniqueAtom;
+			$residueSerial++;
+			for($i=0;$i<$atomsInRes;$i++)
+			{
+				$record = <PDBFILE>;
+	 			$lineNumber++;
+	
+				$interiorResidue = substr($record,17,4);
+				$interiorResidue =~ s/^\s+|\s+$//g;
+		   		$residue = substr($record,17,4);
+	        	        $residue =~ s/^\s+|\s+$//g;
+		   		my $altlocator = substr($record,16,1);
+	
+	            		$interiorPdbResidueIndex = substr($record,22,5);  
+	
+				$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
+	
+				## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
+				$atom = substr($record, 12, 4);
+				$atom =~ s/^\s+|\s+$//g;
+	
+				## CHECK IF ATOM EXISTS IN MODEL ##
+				if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
+				$atomsmatch++;
+				$x = substr($record, 30, 8);
+				$y = substr($record, 38, 8);
+				$z = substr($record, 46, 8);
+				$atomCounter++;
+				$atomSerial=$atomCounter;
+				$atomSerial =~ s/^\s+|\s+$//g;	
+				
+				$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
+				$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
+				$pairType = $residues{$residue}->{"atoms"}->{$atom}->{"pairType"};
+				$residueType = $residues{$residue}->{"residueType"};
+				
+				my $pdbIndex;
+				if($CGenabled==1){
+					$pdbIndex = $interiorPdbResidueIndex;
+				}else{
+					$pdbIndex = substr($record,6,5);
+				}
+				$pdbIndex =~ s/^\s+|\s+$//g;
 				$temp[$putIndex]=[$x,$y,$z,$atomSerial];
 				$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			}
@@ -390,11 +599,11 @@ sub parsePDBATOMS
 			@tempBond = ();
 			$residueIndex++;
 				
-		}else{
-			smog_quit("Expected ATOM or HETATM line at line $lineNumber.");
 		}
+		$lastrecord=$record;
 		$record = "";
  	}
+	print "Done building covalent geometry of all chains.\n\n";
 }
 
 # returnFunction: Return the fType and directive field for a specified function
@@ -482,7 +691,7 @@ sub connectivityCheck
 
 sub GenerateBondedGeometry {
 
-	my ($connect,$counter,$chid,$chainlength) = @_;
+	my ($connect,$counter,$chid,$chainlength,$lastread) = @_;
 	## $connect is a list of connected residues ##
    	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union,$ConnectedAtoms) = GenAnglesDihedrals($connect,$chainlength,$chid);
 	my %union=%{$union};
@@ -494,17 +703,17 @@ sub GenerateBondedGeometry {
 		print "Attempting to connect all atoms in chain $chid to the first atom..\n";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);
 		if($connected == -1){
-			print "\tChain $chid has no bonds. No connections possible. May be a listing of ions.\n";
+			print "\tChain $chid has no bonds. No connections possible. May be a listing of ions.\n\n";
 			# this chain has no bonds, so no need to try and connect things
 		        return(\@ConnectedAtoms2);
 		}
 		if($missed==0 && $connected == $chainlength){
 			print "\tAll $connected atoms connected via covalent bonds \n"; 
 		}else{
-			smog_quit("We appear to have connected $connected of $chainlength atoms in chain $chid.  There is an issue connecting atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file, or missing atoms in the PDB.\nCheck for earlier warning messages. ")
+			smog_quit("We appear to have connected $connected of $chainlength atoms in chain $chid.  There is an issue connecting atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file, or missing atoms in the PDB.\nCheck for earlier warning messages. Last line read: $lastread ")
 		}
 	}elsif($chainlength == 1){
-		print "Only 1 atom in chain $chid.  Will not perform connectivity checks.";
+		print "Only 1 atom in chain $chid.  Will not perform connectivity checks.\n";
 	}
 
 	# convert and save the connected atoms' numbering, so that we can avoid trouble if we include BONDs later
@@ -651,7 +860,7 @@ sub checkconnection
 		my $typeB=$residues{$c1}->{"residueType"};
 		my $ii=$i+1;
 		if((!defined $residues{$c0}->{"connect"} || $residues{$c0}->{"connect"} eq "yes") && (!defined $residues{$c1}->{"connect"} || $residues{$c1}->{"connect"} eq "yes")){
-			smog_quit("Connection not defined between residues of type $typeA and $typeB. Check .bif file. Issue encountered when connecting residue $i and $ii in chain $chid (residue index within chain, starting at 0)")
+			smog_quit("Connection not defined between residues of type $typeA ($c0) and $typeB ($c1). Check .bif file. Issue encountered when connecting residue $i and $ii in chain $chid (residue index within chain, starting at 0)")
 		}elsif(defined $residues{$c0}->{"connect"} && $residues{$c0}->{"connect"} ne "no"){
 			my $tmp=$residues{$c0}->{"connect"};
 			smog_quit("residue connect value must be yes, or no.  $tmp found.")
@@ -1389,7 +1598,7 @@ sub catPDL
 sub parseCONTACT
 {
 	#lets leave this as two filename inputs in case we want to allow two sources of contacts in the future (i.e. user and shadow)
-	my($fileName,$fileName2,$userProvidedMap,$CGenabled) = @_;
+	my($fileName,$fileName2,$userProvidedMap,$CGenabled,$absolutecontactindex) = @_;
 	my $numContacts = 0; 
 	my $line = "";
 	my $chain1;my $chain2; my $contact1; my $contact2; my $res1; my $res2;
@@ -1471,16 +1680,24 @@ sub parseCONTACT
 				smog_quit("non-integer value given for chain, or atom, in contact file.")
 			}
 			$chain1--;$chain2--; #moving to zero based numbering
-			if(!exists $indexMap{"$chain1-$pdbNum1"}) { 
-				$chain1++;
-				smog_quit("Seems that PDB number $pdbNum1 in chain $chain1 does not exist. Check input contact map.\n");
+			if($absolutecontactindex){
+				#sometimes, it is more convenient to give an index file that uses absolute numbering
+				#where the numbering in the pdb is ignored. Here, we assume the first atom is 1.
+				$contact1 = $pdbNum1;
+				$contact2 = $pdbNum2;
+			}else{
+				if(!exists $indexMap{"$chain1-$pdbNum1"}) { 
+					$chain1++;
+					smog_quit("Seems that PDB number $pdbNum1 in chain $chain1 does not exist. Check input contact map.\n");
+				}
+				if(!exists $indexMap{"$chain2-$pdbNum2"}) { 
+					$chain2++;
+					smog_quit("Seems that PDB number $pdbNum2 in chain $chain2 does not exist. Check input contact map.\n");
+				}
+
+				$contact1 = $indexMap{"$chain1-$pdbNum1"};
+				$contact2 = $indexMap{"$chain2-$pdbNum2"};
 			}
-			if(!exists $indexMap{"$chain2-$pdbNum2"}) { 
-				$chain2++;
-				smog_quit("Seems that PDB number $pdbNum2 in chain $chain2 does not exist. Check input contact map.\n");
-			}
-			$contact1 = $indexMap{"$chain1-$pdbNum1"};
-			$contact2 = $indexMap{"$chain2-$pdbNum2"};
 			if($dist) { #check if distance provided
 				if(whatAmI($dist)!=3) { #check if it is numeric
 					if($dist < 0 || $dist > 1000) { #check that it is a sensible number

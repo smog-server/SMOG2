@@ -1,5 +1,5 @@
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 use Getopt::Long;
 use smog_common;
 use Scalar::Util qw(looks_like_number);
@@ -125,22 +125,8 @@ usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g
 
 
 
-my $maxbu=10;
 foreach my $filen($outputtop, $outputgro){
-	my ($ext) = $filen =~ /(\.[^.]+)$/;
-	if($filen ne "" && -e $filen){
-		for(my $bu=1;$bu<=$maxbu;$bu++){
-			my $buname="$filen.bu$bu";
-			if( ! -e $buname){	
-			print "$filen already exists.  Backing up to $buname\n";
-			system("mv $filen $buname");
-			last;
-			}
-			if($bu == $maxbu){
-		 	smog_quit ("Already backed up $maxbu copies of $filen."); 
-			}
-		}
-	}
+	checkalreadyexists($filen);
 }
 
 
