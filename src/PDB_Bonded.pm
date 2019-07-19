@@ -1732,6 +1732,11 @@ sub parseCONTACT
 		}
 	} 
 	$contactPDL = pdl(@interiorTempPDL);
+	#here (if necessary) we will delete the shadow output and make a new output contact file that is consistent with the input pdb. What does this mean?
+	#It means that instead of using a serial numbering starting from 1 (which is the shadow output), it should have chain and atom number the same as in
+	#the PDB. The conversion between serial and PDB is contained inside the allAtoms array which is indexed by serial and has the pdb number as the 3rd column.
+	#$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType]; 
+	
 	return $numContacts;
   
 }
