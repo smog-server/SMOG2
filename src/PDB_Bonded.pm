@@ -1651,7 +1651,7 @@ sub parseCONTACT
 	                            smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");
 	 			  }
 				}
-				push(@interiorTempPDL,[0,$contact1,$contact2,$dist]);
+				push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
 				$numContacts++;
 			}
 		}
@@ -1727,7 +1727,7 @@ sub parseCONTACT
                             smog_quit("CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist");
  			  }
 		        }
-			push(@interiorTempPDL,[1,$contact1,$contact2,$dist]);
+			push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
 			$numContacts++;
 		}
 	} 
