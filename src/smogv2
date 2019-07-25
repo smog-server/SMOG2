@@ -66,7 +66,7 @@ my $AAdefault = 0;
 my $CAdefault = 0;
 my $AAGdefault = 0; 
 my $CAGdefault = 0;
-my $absolutecontactindex=0;
+my $saveSCMorig=0;
 our %freebonds;
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
@@ -1726,7 +1726,7 @@ usage: smog2 .. options ..
 	-s [smog.contacts]	: output .contacts file name
 	-n [smog.ndx]		: output .ndx file name
 	-c [contacts.txt]	: input contact map file
-	-c_global 		: Use global numbering for input contact map (atoms start with 1)
+	-SCMorig 		: directly save SCM contact map (i.e. not PBD numbering).  Generally, only useful for debugging.
 	-dname [smog]		: default name to use for all output files
 	-backup [yes]		: back up any pre-existing output files
 	-warn [0]		: convert the first N fatal errors to warnings.  
@@ -1936,9 +1936,9 @@ sub generateContactMap {
 }
 
 sub appendContacts {
-	my($fileName,$fileName2,$userProvidedMap,$absolutecontactindex) = @_;
+	my($fileName,$fileName2,$userProvidedMap,$saveSCMorig) = @_;
 	#Parse the contact map, either the generated one or the user provided one
-	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled,$absolutecontactindex);
+	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled,$saveSCMorig);
 	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
@@ -1975,7 +1975,7 @@ print "\n";
 ## parse command line options ##
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
-	'c=s' => \$ContactFile, 'c_global' => \$absolutecontactindex, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
+	'c=s' => \$ContactFile, 'SCMorig' => \$saveSCMorig, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
 	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warn=i' => \$maxwarn, 
          'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
          'rescaleCD=s' => \$rescaleCD, '<>' => \&usage, 'v' => \$printversion)
@@ -2169,7 +2169,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
 }
 
-appendContacts($shadowFile,$ContactFile,$userProvidedMap,$absolutecontactindex);
+appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
 
 
 printTop($topFile);

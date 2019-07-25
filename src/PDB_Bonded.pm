@@ -1598,7 +1598,7 @@ sub catPDL
 sub parseCONTACT
 {
 	#lets leave this as two filename inputs in case we want to allow two sources of contacts in the future (i.e. user and shadow)
-	my($fileName,$fileName2,$userProvidedMap,$CGenabled,$absolutecontactindex) = @_;
+	my($fileName,$fileName2,$userProvidedMap,$CGenabled,$saveSCMorig) = @_;
 	my $numContacts = 0; 
 	my $line = "";
 	my $chain1;my $chain2; my $contact1; my $contact2; my $res1; my $res2;
@@ -1663,10 +1663,14 @@ sub parseCONTACT
 		#the PDB. The conversion between serial and PDB is contained inside the allAtoms array which is indexed by serial and has the pdb number as the 11th column.
 		#$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType,$pdbIndex];
 		#unlink($fileName);
-		rename $fileName,$fileName.".shadowOutput";
-		unlink($fileName);
-		unless (open(CONTFILE,">$fileName")) { smog_quit ("PDB consistent contact file cannot be written."); }
+		if ($saveSCMorig==1){
+			rename $fileName,$fileName.".shadowOutput";
+			unlink($fileName);
+		}else{
+			`rm $fileName`;
+		}
 		
+		unless (open(CONTFILE,">$fileName")) { smog_quit ("PDB consistent contact file $fileName cannot be written."); }
 		for(my $i=0;$i<$numContacts;$i++)
 		{
 			my $atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
@@ -1702,24 +1706,17 @@ sub parseCONTACT
 				smog_quit("non-integer value given for chain, or atom, in contact file.")
 			}
 			$chain1--;$chain2--; #moving to zero based numbering
-			if($absolutecontactindex){
-				#sometimes, it is more convenient to give an index file that uses absolute numbering
-				#where the numbering in the pdb is ignored. Here, we assume the first atom is 1.
-				$contact1 = $pdbNum1;
-				$contact2 = $pdbNum2;
-			}else{
-				if(!exists $indexMap{"$chain1-$pdbNum1"}) { 
-					$chain1++;
-					smog_quit("Seems that PDB number $pdbNum1 in chain $chain1 does not exist. Check input contact map.\n");
-				}
-				if(!exists $indexMap{"$chain2-$pdbNum2"}) { 
-					$chain2++;
-					smog_quit("Seems that PDB number $pdbNum2 in chain $chain2 does not exist. Check input contact map.\n");
-				}
-
-				$contact1 = $indexMap{"$chain1-$pdbNum1"};
-				$contact2 = $indexMap{"$chain2-$pdbNum2"};
+			if(!exists $indexMap{"$chain1-$pdbNum1"}) { 
+				$chain1++;
+				smog_quit("Seems that PDB number $pdbNum1 in chain $chain1 does not exist. Check input contact map.\n");
 			}
+			if(!exists $indexMap{"$chain2-$pdbNum2"}) { 
+				$chain2++;
+				smog_quit("Seems that PDB number $pdbNum2 in chain $chain2 does not exist. Check input contact map.\n");
+			}
+
+			$contact1 = $indexMap{"$chain1-$pdbNum1"};
+			$contact2 = $indexMap{"$chain2-$pdbNum2"};
 			if($dist) { #check if distance provided
 				if(whatAmI($dist)!=3) { #check if it is numeric
 					if($dist < 0 || $dist > 1000) { #check that it is a sensible number
