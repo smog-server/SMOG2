@@ -1664,7 +1664,7 @@ sub parseCONTACT
 		#$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType,$pdbIndex];
 		#unlink($fileName);
 		if ($saveSCMorig==1){
-			rename $fileName,$fileName.".shadowOutput";
+			`mv $fileName $fileName.ShadowOutput`;
 			unlink($fileName);
 		}else{
 			`rm $fileName`;
