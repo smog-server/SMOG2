@@ -242,7 +242,7 @@ sub adjustInputFile{
 					}
 				}
 			}elsif(!$renumber){
-				smog_quit("Non-integer residue ID found: $resNum.");
+				smog_quit("Residue IDs must be positive integers. Found: $resNum.");
 			}
 	
 			$resName = substr($pArr[$k],17,4);
