@@ -1654,8 +1654,8 @@ sub parseCONTACT
 				push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
 				$numContacts++;
 			}
-			$contactPDL = pdl(@interiorTempPDL);
 		}
+		$contactPDL = pdl(@interiorTempPDL);
 		if($CGenabled == 1) { close($COARSECONT); }
 		close(CONTFILE);
 		#here we will delete (or rename) the shadow output and make a new output contact file that is consistent with the input pdb. What does this mean?
@@ -1738,13 +1738,13 @@ sub parseCONTACT
 			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
 			{
 
-			  if($main::setContacttoLimit){
-			    $dist=$interactionThreshold->{"contacts"}->{"shortContacts"};
-                            print "CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist\n";
-			    print "-limitcontactlength is being used, will set distance of contact to $dist\n\n";
-			  }else{
-                            smog_quit("CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist");
- 			  }
+				if($main::setContacttoLimit){
+			    		$dist=$interactionThreshold->{"contacts"}->{"shortContacts"};
+                            		print "CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist\n";
+			    		print "-limitcontactlength is being used, will set distance of contact to $dist\n\n";
+			  	}else{
+                            		smog_quit("CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist");
+ 			  	}
 		        }
 			push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
 			$numContacts++;
