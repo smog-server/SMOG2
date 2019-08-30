@@ -50,6 +50,7 @@ my $VERSION="2.3beta";
 my $angToNano = 0.1;
 my $OUTPUT;
 my $help;
+our $gen_map;
 my $inputPDB="molecule.pdb"; 
 my $inputFolder=""; my $bifForSCM;
 my $userProvidedMap=0;
@@ -1714,29 +1715,30 @@ sub usage
 usage: smog2 .. options ..
 
    Options
-	-i [molecule.pdb]	: input PDB to generate Hamiltonian
-	-AA			: use default All-atom model
-	-AAgaussian		: use default All-atom model with gaussian contacts
-	-CA			: use default Calpha protein model
-	-CAgaussian		: use default Calpha protein model with gaussian contacts
-	-t [templateFolder]	: folder containing templates of molecular and interaction definitions. Required when defaults are not used.
-	-tCG [templateFolder]	: folder containing templates Coarse Graining. Indicates that the program should coarse grain.
-	-g [smog.gro]		: output .gro file name
-	-o [smog.top]		: output .top file name
-	-s [smog.contacts]	: output .contacts file name
-	-n [smog.ndx]		: output .ndx file name
-	-c [contacts.txt]	: input contact map file
-	-SCMorig 		: directly save SCM contact map (i.e. not PBD numbering).  Generally, only useful for debugging.
-	-dname [smog]		: default name to use for all output files
-	-backup [yes]		: back up any pre-existing output files
-	-warn [0]		: convert the first N fatal errors to warnings.  
+	-i [molecule.pdb]       : input PDB to generate Hamiltonian
+	-AA                     : use default All-atom model
+	-AAgaussian             : use default All-atom model with gaussian contacts
+	-CA                     : use default Calpha protein model
+	-CAgaussian             : use default Calpha protein model with gaussian contacts
+	-t [templateFolder]     : folder containing templates of molecular and interaction definitions. Required when defaults are not used.
+	-tCG [templateFolder]   : folder containing templates Coarse Graining. Indicates that the program should coarse grain.
+	-g [smog.gro]           : output .gro file name
+	-o [smog.top]           : output .top file name
+	-s [smog.contacts]      : output .contacts file name
+	-n [smog.ndx]           : output .ndx file name
+	-c [contacts.txt]       : input contact map file
+	-SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  Generally, only useful for debugging.
+	-dname [smog]           : default name to use for all output files
+	-backup [yes]           : back up any pre-existing output files
+	-warn [0]               : convert the first N fatal errors to warnings.  
 					Convert all errors if N=-1 (Caution: Consult manual 
 					before using this option)
-	-limitbondlength	: if a bond length is outside of the allowable range, set it to limiting value
-	-limitcontactlength	: if a contact length is too short, set it to the minimal value
-	-ignH			: ignore any atoms with name starting with 'H' in the internal contact algorithm
-	-rescaleCD [1.0]	: override total energy normalization and rescale all contacts/dihedrals by a factor
-	-help 			: show options 
+	-limitbondlength        : if a bond length is outside of the allowable range, set it to limiting value
+	-limitcontactlength     : if a contact length is too short, set it to the minimal value
+	-ignH                   : ignore any atoms with name starting with 'H' in the internal contact algorithm
+	-rescaleCD [1.0]        : override total energy normalization and rescale all contacts/dihedrals by a factor
+	-gen_map                : read the .bif file, generate a mapping file for smog_adjustPDB and exit
+	-help                   : show options 
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
@@ -1831,14 +1833,15 @@ sub parseTemplatesAndPDB
     	## TEST IF SMOG PATH EXISTS ##
     	if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
 	$| = 1;
-	## OPEN .top handle ## don't do this here since we buffered the output now
-	#open($OUTPUT, ">$topFile"); 
-	parseInputFolder($inputFolder); ## PARSE FOLDER --> FILE
+	parseInputFolder($inputFolder); 
 
+	
 	#####################
     	## PARSE TEMPLATES ##
     	#####################
-	initializeDirectives($inputFolder,$inputPDB);
+	if(!defined $gen_map){
+		initializeDirectives($inputFolder,$inputPDB);
+	}
 	## parse .sif File ##
 	parseSif();
 	## parse .nb file  ##
@@ -1859,6 +1862,11 @@ sub parseTemplatesAndPDB
 		smog_quit("Cross-comparison of templates failed. See messages below:\n\n$checkmessage");
 	}
 
+	# simply generate a map for adjustPDB and exit
+	if(defined $gen_map){
+		parseBif($gen_map);
+		exit(0);
+	}
 	print "\nPre-processing templates.\n";
 	## Find Bonds ##
 	createBondFunctionals();
@@ -1975,7 +1983,7 @@ print "\n";
 ## parse command line options ##
 # -o output top file name, default is smog.top
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
-	'c=s' => \$ContactFile, 'SCMorig' => \$saveSCMorig, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
+	'c=s' => \$ContactFile, 'SCMorig' => \$saveSCMorig, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,  'gen_map=s' => \$gen_map,
 	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warn=i' => \$maxwarn, 
          'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
          'rescaleCD=s' => \$rescaleCD, '<>' => \&usage, 'v' => \$printversion)
@@ -2006,7 +2014,7 @@ if($inputFolder eq "" && $numdefaults==0){
 if($coarseFolder ne "") { $CGenabled = 1; }
 
 if($backup ne "yes" and $backup ne "no"){
-	smog_quit("Can not understand -backup flag. Usage -bu [yes/no]");
+	smog_quit("Can not understand -backup flag. Usage -backup [yes/no]");
 }elsif($backup eq "no"){
 	print "-backup no issued.  Will overwrite any existing output files.\n";
 }
@@ -2092,6 +2100,13 @@ if($AAGdefault == 1){
 	}
 }
 
+if(defined $gen_map) {
+	# read the bif, generate a map file and exit
+	if (-e $gen_map) {
+		smog_quit("$gen_map exists, will not overwrite");
+	}
+	parseTemplatesAndPDB($inputFolder,$inputPDB,0);
+}
 
 # if a contact file is provided, then don't calculate contacts
 if(defined $ContactFile){
@@ -2117,7 +2132,7 @@ if($backup eq "yes"){
 		checkalreadyexists($filen);
 	}
 }
-
+ 
 # files we will read
 foreach my $filen($inputPDB,$ContactFile){
 	if(defined $filen  && ! -f $filen){
@@ -2179,6 +2194,5 @@ print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n
 	printCitation();
 
 warnsummary();
-##exit(0);
 
 ## END ##
