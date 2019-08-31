@@ -1,10 +1,4 @@
-
-
-
-
-
-
-## #######################################################################################
+#########################################################################################
 #
 #                          Structure-based Model (SMOG) software
 #    This package is the product of contributions from a number of people, including:
