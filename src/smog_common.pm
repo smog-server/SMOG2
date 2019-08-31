@@ -282,9 +282,10 @@ sub printdashed
 
 sub checkalreadyexists
 {
+	my ($filen)=@_;
 	# check if a file exists and back it up, if so.
 	my $maxbu=10;
-	my ($ext) = my $filen =~ /(\.[^.]+)$/;
+	my ($ext) = $filen =~ /(\.[^.]+)$/;
 	if($filen ne "" && -e $filen){
 		for(my $bu=1;$bu<=$maxbu;$bu++){
 			my $buname="$filen.bu$bu";

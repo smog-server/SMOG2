@@ -1737,7 +1737,7 @@ usage: smog2 .. options ..
 	-limitcontactlength     : if a contact length is too short, set it to the minimal value
 	-ignH                   : ignore any atoms with name starting with 'H' in the internal contact algorithm
 	-rescaleCD [1.0]        : override total energy normalization and rescale all contacts/dihedrals by a factor
-	-gen_map                : read the .bif file, generate a mapping file for smog_adjustPDB and exit
+	-gen_map <file name>    : read the .bif file, generate a mapping file for smog_adjustPDB and exit. 
 	-help                   : show options 
 EOT
   if ( @_ ){
@@ -1840,6 +1840,7 @@ sub parseTemplatesAndPDB
     	## PARSE TEMPLATES ##
     	#####################
 	if(!defined $gen_map){
+		# no need to initialize these things if we are only making a map file
 		initializeDirectives($inputFolder,$inputPDB);
 	}
 	## parse .sif File ##
@@ -1864,7 +1865,7 @@ sub parseTemplatesAndPDB
 
 	# simply generate a map for adjustPDB and exit
 	if(defined $gen_map){
-		parseBif($gen_map);
+		parseBif($inputFolder,$gen_map);
 		exit(0);
 	}
 	print "\nPre-processing templates.\n";

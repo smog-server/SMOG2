@@ -88,6 +88,19 @@ sub isRNA{
 	return 0;
 }
 
+sub renamesummary {
+	my ($string,$chain)=@_;
+	if ($string ne "") {
+		print "Renamed residues in chain index $chain: $string\n";
+	}
+}
+
+sub removesummary {
+	my ($string,$chain)=@_;
+	if($string ne ""){
+		print "\nNote: The following atoms were removed from chain $chain: $string\n";
+	}
+}
 
 sub adjustInputFile{
 	my ($subALA)=@_;	
@@ -107,10 +120,12 @@ sub adjustInputFile{
 	$resInd = 1;
 	$atomCount=0;	
 	my $removestring="";	
+	my $renamedstring="";
 	my $firstresidue=0;
 	my $lastresidue=0;
 	my $lastresName="";
-
+	my $chainindex=1;
+	my $resIDorig;
 	# identify all TER and END lines.
 	my $k = 0;
 	my %isTEREND;
@@ -132,6 +147,10 @@ sub adjustInputFile{
 		## If end of file: ##
 		if ($pArr[$k] =~ m/^END/){
 			print NEWPDB "END\n";
+			renamesummary($renamedstring,$chainindex);
+			removesummary($removestring,$chainindex);
+			$renamedstring="";
+			$removestring="";
 			last;
 		}
 		
@@ -146,6 +165,12 @@ sub adjustInputFile{
 			$atomCount=0;
 			$isHead = 1;
 			$resInd = 1;
+			renamesummary($renamedstring,$chainindex);
+			removesummary($removestring,$chainindex);
+			$renamedstring="";
+			$removestring="";
+
+			$chainindex++;
 		}
 
 		## Exit if there's a BOND line in PDB: ##
@@ -207,6 +232,8 @@ sub adjustInputFile{
 				$residue[$loopInd]->{"x"} = substr($pArr[$k],30,8);   
 				$residue[$loopInd]->{"y"} = substr($pArr[$k],38,8);  
 				$residue[$loopInd]->{"z"} = substr($pArr[$k],46,8);  
+				$resIDorig = substr($pArr[$k],22,5);
+				$resIDorig =~ s/\s+//g;  
 				
 				$k++;
 				
@@ -313,7 +340,7 @@ sub adjustInputFile{
 				} else {
 					$nres=$map{$str};
 					if ($resName ne $nres) {
-						print "Will change name of $resName$resInd to $nres\n"; 
+						$renamedstring .="$resName$resIDorig->$nres$resInd "; 
 					}
 				}
 				for(my $i=0; $i<=$loopInd; $i++){
@@ -337,14 +364,10 @@ sub adjustInputFile{
 			$prevResTypeRNA = isRNA($resName);
 			undef @residue; 
 		}
-		
 		## If the line is niether ATOM, BOND, COMMENT, TER or END - exit. ##
 		else{
 			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM, HETATM, TER, BOND, COMMENT, END");
 		}
-	}
-	if($removestring ne ""){
-		print "\nNote: The following atoms were removed: $removestring\n";
 	}
 	close NEWPDB;
 }
@@ -382,14 +405,14 @@ if(!defined $inputPDB){
 }
 
 if (defined $default){
-	print "\n-default selected. Will use the default map file provided for terminal residue names.\n";
+	print "-default selected. Will use the default map file provided for terminal residue names.\n";
 	if(!exists $ENV{"SMOG_PATH"}){
         smog_quit("Environmental Variable SMOG_PATH not set\n");
 	}
 	if (!defined $matchexact) {
 		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";
 	} else {
-		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMapexact";
+		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMapExact";
 	}	
 }else{
 	if (!defined $mapFile ){
@@ -399,7 +422,7 @@ if (defined $default){
 	}
 }
 
-foreach my $filen($outputPDB){
+foreach my $filen ($outputPDB){
 	checkalreadyexists($filen);
 }
 
@@ -450,7 +473,6 @@ if (! defined $matchexact) {
 		foreach my $I (sort @tmparr) {
 			$str.="$I ";
 		}
-		print "$str\n";
 		# key is the list of atoms
 		if(!exists $map{$str}) {
 			$map{$str}=$entries[0];
