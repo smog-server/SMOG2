@@ -295,10 +295,7 @@ sub adjustInputFile{
 				}
 				for(my $i=0; $i<=$loopInd; $i++){
 					my $aName = $residue[$i]->{"atomName"};
-					if ($aName =~ /'/){
-						chop($aName);
-						$aName .= "*";
-					}
+					$aName =~ s/'/*/g;
 					if ($aName eq "OP1"){$aName="O1P"};
 					if ($aName eq "OP2"){$aName="O2P"};
 					if ($aName eq "OP3"){$aName="O3P"};
@@ -322,10 +319,7 @@ sub adjustInputFile{
 				my @tmparr;
 				for(my $i=0; $i<=$loopInd; $i++){
 					my $aName = $residue[$i]->{"atomName"};
-					if ($aName =~ /'/){
-						chop($aName);
-						$aName .= "*";
-					}
+					$aName =~ s/'/*/g;
 					$tmparr[$i]=$aName;
 				}
 				my $str="";
