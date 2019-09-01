@@ -3,6 +3,7 @@ use warnings FATAL => 'all';
 use smog_common;
 ## VARS: ##
 my %map;
+my %altname;
 my $rows;
 my $atomCount;
 my $isHead;
@@ -319,6 +320,15 @@ sub adjustInputFile{
 				my @tmparr;
 				for(my $i=0; $i<=$loopInd; $i++){
 					my $aName = $residue[$i]->{"atomName"};
+					if(exists $altname{"$resName-$aName"}){
+						my $tn=$aName;
+						$aName=$altname{"$resName-$aName"};
+						$renamedstring .="$resName$resIDorig-$tn->$aName ";
+					} elsif (exists $altname{"*-$aName"}){
+						my $tn=$aName;
+						$aName=$altname{"*-$aName"};
+						$renamedstring .="$resName$resIDorig-$tn->$aName ";
+					} 
 					$aName =~ s/'/*/g;
 					$tmparr[$i]=$aName;
 				}
@@ -457,8 +467,22 @@ if (! defined $matchexact) {
 		#map-->residue-->{head|tail} 
 		if($#entries < 1){
 			my $count=$#entries+1;
-			smog_quit("Looking for at lease 2 fields (residue and atom) in $mapOption, but found $count.\n
+			smog_quit("Looking for at least 2 fields in $mapOption, but found $count.\n
 							Offending line: $line");
+		}
+
+		if($entries[0] =~ /[Aa][Ll][Tt][Nn][Aa][Mm][Ee]/) {
+			if($#entries < 3){
+				my $count=$#entries+1;
+				smog_quit("When giving ALTNAME in map file, must have at least 4 fields (ALTNAME <RES> <TARGET NAME> <ALTERNATE NAMES>).\n
+							Offending line: $line");
+			}
+
+			for( my $I=3;$I<=$#entries;$I++){
+				#save with key "resname-target name"
+				$altname{"$entries[1]-$entries[$I]"}=$entries[2];
+			}
+			
 		}
 		for( my $I=1;$I<=$#entries;$I++){
 			$tmparr[$I-1]=$entries[$I];
