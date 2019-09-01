@@ -62,7 +62,8 @@ usage: smog_adjustPDB .. options ..
 	-i <filename>           : input PDB to adjust to smog2 format
 	-default                : use the default map file provided by smog2 
 	-map <filename>         : specify a user-defined mapping file
-	-match                  : rename residues if they have the exact atoms listed in the map file
+	-match                  : name residues if they have the exact atoms listed in the map file
+                                     Note: Mapping files used for -map and -match are different.  See manual.
 	-o [adjusted.pdb]       : output pdb file name
 	-renumber               : ignore any residue numbering inconsistencies and renumber residues sequentially
 	-removeH                : strip the file of any atoms that begin with "H"
@@ -400,6 +401,10 @@ if (defined $renumber){
 
 if (defined $insertTER){
 	print "\nNOTE: the flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.\n";
+}
+
+if (defined $renumber && defined $insertTER) {
+	smog_quit("Can not use -renumber and -insertTER flags together");
 }
 
 if(!defined $inputPDB){
