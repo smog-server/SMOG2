@@ -1,6 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 use smog_common;
+use Getopt::Long;
 ## VARS: ##
 my %map;
 my %altname;
@@ -15,7 +16,6 @@ my @residue;
 my @pArr;
 my $loopInd;
 my $prevResTypeRNA;
-my $noexit=0;
 my $outputPDB="adjusted.pdb";
 my $inputPDB;
 my $insertTER;
@@ -29,8 +29,9 @@ my $matchexact;
 my $help;
 my $inputArguments=join(' ',@ARGV);
 ## MODULE HEADERS ##
-use Getopt::Long;
-
+	
+sub adjust_main {
+	# this is called after all subroutines are read in
 	my $tmpstring = <<"EOT";
 
                                     smog_adjustPDB                                   
@@ -44,13 +45,76 @@ use Getopt::Long;
 
             For questions regarding this script, contact info\@smog-server.org              
 EOT
+	
+	my $wide=88;
+	printdashed($wide);
+	printcenter($wide,$tmpstring);
+	printdashed($wide);
 
-my $wide=88;
-printdashed($wide);
-printcenter($wide,$tmpstring);
-printdashed($wide);
+	checkForModules();
+	
+	usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'match' => \$matchexact, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
+	
+	warninfo();
+	
+	$outputPDB=checksuffix($outputPDB,".pdb");
+	$inputPDB=checksuffix($inputPDB,".pdb");
+	
+	if(defined $renumber && defined $insertTER){
+		smog_quit("Simultaneous use of -renumber and -insertTER not supported");
+	}
+	
+	if (defined $renumber){
+		print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";
+	}
+	
+	if (defined $insertTER){
+		print "\nNOTE: the flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.\n";
+	}
+	
+	if (defined $renumber && defined $insertTER) {
+		smog_quit("Can not use -renumber and -insertTER flags together");
+	}
+	
+	if(!defined $inputPDB){
+		smog_quit("No input PDB was specified. Use -i to specify your input pdb file.");
+	}else{
+		open(OLDPDB,"$inputPDB") or smog_quit("Can't open PDB file $inputPDB.");
+		print "Will reformat the PDB file: $inputPDB\n";	
+	}
+	
+	if (defined $default){
+		print "-default selected. Will use the default map file provided for terminal residue names.\n";
+		if(!exists $ENV{"SMOG_PATH"}){
+	        smog_quit("Environmental Variable SMOG_PATH not set\n");
+		}
+		if (!defined $matchexact) {
+			$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";
+		} else {
+			$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMapExact";
+		}	
+	}else{
+		if (!defined $mapFile ){
+			smog_quit("No map file was provided. Please choose a map file with -map, or use the default map settings with -default.");
+		}else{
+			$mapOption = $mapFile;
+		}
+	}
+	
+	foreach my $filen ($outputPDB){
+		checkalreadyexists($filen);
+	}
+	
+	open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
+	print "New file will be written: $outputPDB\n";
+	
+  	readmap();	
+	adjustInputFile($subALA);
+	warnsummary();
+	print "\n\tAdjustment of PDB is complete.\n\n";
 
-# DEFINE SOME SUBROUTINES
+}
+
 
 sub usage
 {
@@ -378,135 +442,79 @@ sub adjustInputFile{
 	close NEWPDB;
 }
 
+sub readmap {
+	## CACHE MAP ##
+	#Note: Map files has to be in format <residue> <head_name> <tail_name>
+	open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
+	print "Mapping file $mapOption will be read.\n";
+	
+	if (! defined $matchexact) {
+		# use the old head/tail convention for renaming
+		while(my $line = <MAP>)
+		{
+			## SKIP COMMENT LINE ##
+			my ($A,$B)=checkcomment($line);
+			if($A eq ""){next;}  # skip the line if it is only a comment
+			my @entries = split(/\s+/,$A);
+			#map-->residue-->{head|tail} 
+			if($#entries != 2){
+				my $count=$#entries+1;
+				smog_quit("Looking for 3 fields in $mapOption, but found $count. Offending line:\n$line");
+			}
+			$map{$entries[0]}{"head"} = $entries[1];
+			$map{$entries[0]}{"tail"} = $entries[2];
+		}
+	} else {
+		# rename residues based one exact matches, only
+		while(my $line = <MAP>)
+		{
+			## SKIP COMMENT LINE ##
+			my ($A,$B)=checkcomment($line);
+			if($A eq ""){next;}  # skip the line if it is only a comment
+			my @entries = split(/\s+/,$A);
+			my @tmparr;
+			#map-->residue-->{head|tail} 
+			if($#entries < 1){
+				my $count=$#entries+1;
+				smog_quit("Looking for at least 2 fields in $mapOption, but found $count. Offending line:\n$line");
+			}
+	
+			if($entries[0] =~ /[Aa][Ll][Tt][Nn][Aa][Mm][Ee]/) {
+				if($#entries < 3){
+					my $count=$#entries+1;
+					smog_quit("When giving ALTNAME in map file, must have at least 4 fields (ALTNAME <RES> <TARGET NAME> <ALTERNATE NAMES>). Offending line:\n$line");
+				}
+	
+				for( my $I=3;$I<=$#entries;$I++){
+					#save with key "resname-target name"
+					if(exists $altname{"$entries[1]-$entries[$I]"}){
+						smog_quit("Repeated altname entry in mapping file. Offending line:\n$line");
+					}
+					$altname{"$entries[1]-$entries[$I]"}=$entries[2];
+				}
+				
+			}
+			for( my $I=1;$I<=$#entries;$I++){
+				$tmparr[$I-1]=$entries[$I];
+			}
+			my $str="";
+			foreach my $I (sort @tmparr) {
+				$str.="$I ";
+			}
+			# key is the list of atoms
+			if(!exists $map{$str}) {
+				$map{$str}=$entries[0];
+			} else {
+				smog_quit("Mapping file ($mapOption) defines two residues as having the same atoms: $map{$str}, $entries[0]");
+			}
+		}
+	
+	}
+
+}
 
 # END OF SUBROUTINES
 
 
-checkForModules();
 
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'match' => \$matchexact, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
-
-warninfo();
-
-$outputPDB=checksuffix($outputPDB,".pdb");
-$inputPDB=checksuffix($inputPDB,".pdb");
-
-if(defined $renumber && defined $insertTER){
-	smog_quit("Simultaneous use of -renumber and -insertTER not supported");
-}
-
-if (defined $renumber){
-	print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";
-}
-
-if (defined $insertTER){
-	print "\nNOTE: the flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.\n";
-}
-
-if (defined $renumber && defined $insertTER) {
-	smog_quit("Can not use -renumber and -insertTER flags together");
-}
-
-if(!defined $inputPDB){
-	smog_quit("No input PDB was specified. Use -i to specify your input pdb file.");
-}else{
-	open(OLDPDB,"$inputPDB") or smog_quit("Can't open PDB file $inputPDB.");
-	print "Will reformat the PDB file: $inputPDB\n";	
-}
-
-if (defined $default){
-	print "-default selected. Will use the default map file provided for terminal residue names.\n";
-	if(!exists $ENV{"SMOG_PATH"}){
-        smog_quit("Environmental Variable SMOG_PATH not set\n");
-	}
-	if (!defined $matchexact) {
-		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";
-	} else {
-		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMapExact";
-	}	
-}else{
-	if (!defined $mapFile ){
-		smog_quit("No map file was provided. Please choose a map file with -map, or use the default map settings with -default.");
-	}else{
-		$mapOption = $mapFile;
-	}
-}
-
-foreach my $filen ($outputPDB){
-	checkalreadyexists($filen);
-}
-
-open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
-print "New file will be written: $outputPDB\n";
-
-## CACHE MAP ##
-#Note: Map files has to be in format <residue> <head_name> <tail_name>
-open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
-print "Mapping file $mapOption will be read.\n";
-
-if (! defined $matchexact) {
-	# use the old head/tail convention for renaming
-	while(my $line = <MAP>)
-	{
-		## SKIP COMMENT LINE ##
-		my ($A,$B)=checkcomment($line);
-		if($A eq ""){next;}  # skip the line if it is only a comment
-		my @entries = split(/\s+/,$A);
-		#map-->residue-->{head|tail} 
-		if($#entries != 2){
-			my $count=$#entries+1;
-			smog_quit("Looking for 3 fields in $mapOption, but found $count. Offending line:\n$line");
-		}
-		$map{$entries[0]}{"head"} = $entries[1];
-		$map{$entries[0]}{"tail"} = $entries[2];
-	}
-} else {
-	# rename residues based one exact matches, only
-	while(my $line = <MAP>)
-	{
-		## SKIP COMMENT LINE ##
-		my ($A,$B)=checkcomment($line);
-		if($A eq ""){next;}  # skip the line if it is only a comment
-		my @entries = split(/\s+/,$A);
-		my @tmparr;
-		#map-->residue-->{head|tail} 
-		if($#entries < 1){
-			my $count=$#entries+1;
-			smog_quit("Looking for at least 2 fields in $mapOption, but found $count. Offending line:\n$line");
-		}
-
-		if($entries[0] =~ /[Aa][Ll][Tt][Nn][Aa][Mm][Ee]/) {
-			if($#entries < 3){
-				my $count=$#entries+1;
-				smog_quit("When giving ALTNAME in map file, must have at least 4 fields (ALTNAME <RES> <TARGET NAME> <ALTERNATE NAMES>). Offending line:\n$line");
-			}
-
-			for( my $I=3;$I<=$#entries;$I++){
-				#save with key "resname-target name"
-				if(exists $altname{"$entries[1]-$entries[$I]"}){
-					smog_quit("Repeated altname entry in mapping file. Offending line:\n$line");
-				}
-				$altname{"$entries[1]-$entries[$I]"}=$entries[2];
-			}
-			
-		}
-		for( my $I=1;$I<=$#entries;$I++){
-			$tmparr[$I-1]=$entries[$I];
-		}
-		my $str="";
-		foreach my $I (sort @tmparr) {
-			$str.="$I ";
-		}
-		# key is the list of atoms
-		if(!exists $map{$str}) {
-			$map{$str}=$entries[0];
-		} else {
-			smog_quit("Mapping file ($mapOption) defines two residues as having the same atoms: $map{$str}, $entries[0]");
-		}
-	}
-
-}
-
-adjustInputFile($subALA);
-warnsummary();
-print "\n\tAdjustment of PDB is complete.\n\n";
+adjust_main;
