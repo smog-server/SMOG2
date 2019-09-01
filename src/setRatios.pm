@@ -87,7 +87,6 @@ sub DiheCountsHelper
 	}
 }
 
-##
 # For each chain, count the total number of bonds through a dihedral,
 # utilizes getDiheCounts and setDiheCounts
 sub getSetDiheCounts
@@ -99,7 +98,6 @@ sub getSetDiheCounts
 	}	
 }
 
-##
 # Set the dihedral strength through normalization.
 sub setRatios	
 {
@@ -118,7 +116,6 @@ sub setRatios
 		adjustFactorsHelper2($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomNum,$atomTypes,$diheStrengthTotal,\$sum,\%rescalePDL,$chain,$rescaleCD);
 	}
 }
-
 
 sub adjustFactorsHelper1
 {

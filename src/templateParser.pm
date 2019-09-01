@@ -61,12 +61,7 @@ qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedr
 ##
 our %residues;
 our %residueBackup;
-## HOLDS INFORMATION ON FUNCTIONS ##
-## functions = 
-##	"function name" => {fType=>"",directive=""}
-##
 our $functions;
-
 our $contactSettings;
 our $interactionThreshold;
 our $countDihedrals;
@@ -79,8 +74,6 @@ our @topFileBuffer;our @linesInDirectives;
 ## SORTED FUNCTIONALS ##
 our %bondFunctionals;
 our %dihedralFunctionals;
-
-
 our %angleFunctionals;
 our %connections;
 our %dihedralAdjList;
@@ -105,6 +98,15 @@ our %pairtypesused;
 our %bondtypesused;
 our %fTypes;
 
+my $atomA;my $atomB;my $funct; my $inputString;
+my $atomC;my $atomD;
+my $indexA;my $indexB;my $typeA; my $typeB;
+my $indexC;my $indexD;my $typeC; my $typeD;
+
+my %bondHandle;
+my @improperHandle;
+my %dihedralHandle;
+
 ###########################
 ## CLEAR VARIABLE MEMORY ##
 ###########################
@@ -124,7 +126,6 @@ sub clearBifMemory {
 	undef @linesInDirectives;
 }
 
-
 ########################
 ## SET INPUTFILE NAME ##
 ########################
@@ -135,7 +136,6 @@ sub setInputFileName {
 	$bondxml = $c;
 	$nbondxml = $d;
 }
-
 
 sub round
 {
@@ -158,8 +158,6 @@ sub checkFunction
 	if(!exists $fTypes{"$funcString"}){smog_quit ("\"$funcString\" is not a supported function type in SMOG");}
 	if(!exists $functions->{$funcString}){smog_quit ("Function \"$funcString\" is being used, but is not defined in .sif file");}
 }
-
-
 
 sub checkREScharges
 {
@@ -277,11 +275,6 @@ sub checkenergygroups
 	return $string;
 }
 
-
-
-####################
-## PARSE BIF FILE ##
-####################
 sub parseBif {
 	my ($tempdir,$maponly)=@_;
 	## Read .bif ##
@@ -473,11 +466,6 @@ sub parseBif {
 		} 
 	}
 }
-
-
-####################
-## PARSE SIF FILE ##
-####################
 
 sub parseSif {
 
@@ -739,6 +727,7 @@ sub intToFunc
 		}
 	}
 }
+
 # getEnergyGroup: Return the energy group for both connected, and internal dihedrals
 sub getEnergyGroup
 {
@@ -780,13 +769,6 @@ sub getEnergyGroup
 		return $connections{$residueTypea}->{$residueTypeb}->{"bond"}->[0]->{"energyGroup"};
 	}
 }
-
-
-##############################
-## PARSE BOND/NONBOND FILES ##
-##############################
-
-## PARSE BOND FILE ##
 
 sub parseBonds {
 	$data = $xml->XMLin($bondxml,KeyAttr=>{function=>"name"},ForceArray=>1);
@@ -929,90 +911,74 @@ sub parseBonds {
 
 ## PARSE NONBOND FILE ##
 sub parseNonBonds {
-$data = $xml->XMLin($nbondxml,KeyAttr => ['name'],ForceArray=>1);
-
-my @interHandle = @{$data->{"nonbond"}};
-## Loop over nonbonds, save in $interaction{nonbonds}{typeA} = func info.
-my $counter = 0;
-foreach my $inter(@interHandle)
-{
-	my $typeA = $inter->{"nbType"}->[0];
-	if($inter->{"mass"} <=0){
-		my $M=$inter->{"mass"};
-		smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
+	$data = $xml->XMLin($nbondxml,KeyAttr => ['name'],ForceArray=>1);
+	
+	my @interHandle = @{$data->{"nonbond"}};
+	## Loop over nonbonds, save in $interaction{nonbonds}{typeA} = func info.
+	my $counter = 0;
+	foreach my $inter(@interHandle)
+	{
+		my $typeA = $inter->{"nbType"}->[0];
+		if($inter->{"mass"} <=0){
+			my $M=$inter->{"mass"};
+			smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
+		}
+		my $func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
+		"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
+		if(exists $interactions->{"nonbonds"}->{$typeA}){
+			smog_quit ("nonbonded parameters defined multiple times for nbType $typeA. Check .nb file.");
+		}
+		$interactions->{"nonbonds"}->{$typeA} = $func;
+		$funcTable{"nonbonds"}->{$func} = $counter;
+		$funcTableRev{"nonbonds"}->{$counter} = $func;
+		$counter++;
 	}
-	my $func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
-	"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
-	if(exists $interactions->{"nonbonds"}->{$typeA}){
-		smog_quit ("nonbonded parameters defined multiple times for nbType $typeA. Check .nb file.");
+	
+	@interHandle = @{$data->{"contact"}};
+	## Loop over contacts, save in $interaction{contacts}{typeA}{typeB} = func info.
+	$counter = 0;
+	foreach my $inter(@interHandle)
+	{
+		my $nbtype;my $type;
+	 	$nbtype = $inter->{"pairType"};$type = "pairType";
+		my $typeA = $inter->{$type}->[0];
+		my $typeB = $inter->{$type}->[1];
+	 	$pairtypesused{$typeA}=1;
+	 	$pairtypesused{$typeB}=1;
+		my $func = $inter->{"func"};
+		&checkFunction($func);
+	 	my $cG = $inter->{"contactGroup"};
+		if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
+			smog_quit ("contact parameters defined multiple times for types $typeA-$typeB. Check .nb file.");
+		}
+		$interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB} = $func;
+		$interactions->{"contacts"}->{"func"}->{$typeB}->{$typeA} = $func;
+		$interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{$typeB} = $cG;
+		$interactions->{"contacts"}->{"contactGroup"}->{$typeB}->{$typeA} = $cG;
+		$funcTable{"contacts"}->{"func"}->{$func} = $counter;
+		$funcTable{"contacts"}->{"contactGroup"}->{$cG} = $counter;
+		$funcTableRev{"contacts"}->{$counter}->{"func"} = $func;
+		$funcTableRev{"contacts"}->{$counter}->{"contactGroup"} = $cG;
+		$counter++;
 	}
-	$interactions->{"nonbonds"}->{$typeA} = $func;
-	$funcTable{"nonbonds"}->{$func} = $counter;
-	$funcTableRev{"nonbonds"}->{$counter} = $func;
-	$counter++;
-}
-
-
-
-@interHandle = @{$data->{"contact"}};
-## Loop over contacts, save in $interaction{contacts}{typeA}{typeB} = func info.
-$counter = 0;
-foreach my $inter(@interHandle)
-{
-	my $nbtype;my $type;
- 	$nbtype = $inter->{"pairType"};$type = "pairType";
-	my $typeA = $inter->{$type}->[0];
-	my $typeB = $inter->{$type}->[1];
- 	$pairtypesused{$typeA}=1;
- 	$pairtypesused{$typeB}=1;
-	my $func = $inter->{"func"};
-	&checkFunction($func);
- 	my $cG = $inter->{"contactGroup"};
-	if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
-		smog_quit ("contact parameters defined multiple times for types $typeA-$typeB. Check .nb file.");
+	
+	
+	## Obtain default options (ONLY FOR GEN PAIRS) ##
+	@interHandle = @{$data->{"defaults"}};
+	if(exists $interactions->{"gen-pairs"}){
+		smog_quit ("default declaration is given multiple times. Check .nb file.");
 	}
-	$interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB} = $func;
-	$interactions->{"contacts"}->{"func"}->{$typeB}->{$typeA} = $func;
-	$interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{$typeB} = $cG;
-	$interactions->{"contacts"}->{"contactGroup"}->{$typeB}->{$typeA} = $cG;
-	$funcTable{"contacts"}->{"func"}->{$func} = $counter;
-	$funcTable{"contacts"}->{"contactGroup"}->{$cG} = $counter;
-	$funcTableRev{"contacts"}->{$counter}->{"func"} = $func;
-	$funcTableRev{"contacts"}->{$counter}->{"contactGroup"} = $cG;
-	$counter++;
-}
-
-
-## Obtain default options (ONLY FOR GEN PAIRS) ##
-@interHandle = @{$data->{"defaults"}};
-if(exists $interactions->{"gen-pairs"}){
-	smog_quit ("default declaration is given multiple times. Check .nb file.");
-}
-if(exists $interHandle[0]->{"gen-pairs"}) {
-	$interactions->{"gen-pairs"} = $interHandle[0]->{"gen-pairs"};
-}
-if(exists $interHandle[0]->{"nbfunc"}) {
-	$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
-}
-if(exists $interHandle[0]->{"gmx-combination-rule"}) {
-$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
-}
+	if(exists $interHandle[0]->{"gen-pairs"}) {
+		$interactions->{"gen-pairs"} = $interHandle[0]->{"gen-pairs"};
+	}
+	if(exists $interHandle[0]->{"nbfunc"}) {
+		$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
+	}
+	if(exists $interHandle[0]->{"gmx-combination-rule"}) {
+		$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
+	}
 
 }
-
-
-#########################################
-## CREATE FUNCTIONALS FROM PARSED DATA ##
-#########################################
-my $atomA;my $atomB;my $funct; my $inputString;
-my $atomC;my $atomD;
-my $indexA;my $indexB;my $typeA; my $typeB;
-my $indexC;my $indexD;my $typeC; my $typeD;
-
-my %bondHandle;
-my @improperHandle;
-my %dihedralHandle;
-
 
 ######################
 ## BOND FUNCTIONALS ##
@@ -1089,12 +1055,6 @@ foreach my $res (keys %residues)
 	}
 }
 
-
-################################
-## CONTACTS MATCH FUNCTIONALS ##
-################################
-
-
 sub getContactFunctionals
 {
 	my($typeA,$typeB) = @_;
@@ -1167,45 +1127,40 @@ sub getContactFunctionals
 ## Traverses through an adj list; works with adjListTraversal 
 sub adjListTraversalHelper
 {
- my($listHandle,$atomParent,$visitedString,$diheStringList,$angleStringList,$visitedList,$counter) = @_;
- my $limitCounter = $counter;
+	my($listHandle,$atomParent,$visitedString,$diheStringList,$angleStringList,$visitedList,$counter) = @_;
+	my $limitCounter = $counter;
  
- ## End reached don't need to search further
- if($counter >=4){return;}
- ## Given an atom loop through all the atoms it is bonded to
- foreach my $atomIn(@{$listHandle->{$atomParent}})
- {
-    ## If bond was already considered from atomIn goto next
-    if(exists($visitedList->{$atomIn})){next;}
-	## Stitch dihedral string with atomIn
-	my $visitedStringNew = "$visitedString-$atomIn";
+ 	## End reached don't need to search further
+ 	if($counter >=4){return;}
+ 	## Given an atom loop through all the atoms it is bonded to
+ 	foreach my $atomIn(@{$listHandle->{$atomParent}})
+ 	{
+		## If bond was already considered from atomIn goto next
+		if(exists($visitedList->{$atomIn})){next;}
+		## Stitch dihedral string with atomIn
+		my $visitedStringNew = "$visitedString-$atomIn";
 	
-	## Update counters, visitedList hash
-	#my $counterNew = $counter;$counterNew++;
-	$counter++;
+		## Update counters, visitedList hash
+		#my $counterNew = $counter;$counterNew++;
+		$counter++;
+		$visitedList->{$atomIn} = 1;
+		my %sendHash = %{$visitedList};
 	
-	$visitedList->{$atomIn} = 1;
-	my %sendHash = %{$visitedList};
+		## Traverse through the child of atomIn
+		adjListTraversalHelper($listHandle,$atomIn,$visitedStringNew,$diheStringList,$angleStringList,\%sendHash,$counter);
+		if($limitCounter < 2) {$counter--;}
 	
-	## Traverse through the child of atomIn
-	adjListTraversalHelper($listHandle,$atomIn,$visitedStringNew,$diheStringList,$angleStringList,\%sendHash,$counter);
+		## 3 atom count is reached, creating an angle
+		## add to angleStringList; continue
+		if($counter == 3) {push(@{$angleStringList},$visitedStringNew);$counter--;}
 	
-	if($limitCounter < 2) {$counter--;}
+		## 4 atom count is reached, creating a dihedral;
+		## add to the diheStringList; exit out of traversing this branch
+		if($counter == 4) {push(@{$diheStringList}, $visitedStringNew);$counter--;}
 	
-	## 3 atom count is reached, creating an angle
-	## add to angleStringList; continue
-	if($counter == 3) {push(@{$angleStringList},$visitedStringNew);$counter--;}
-	
-	## 4 atom count is reached, creating a dihedral;
-	## add to the diheStringList; exit out of traversing this branch
-	if($counter == 4) {push(@{$diheStringList}, $visitedStringNew);$counter--;}
-	
-	#if($counter == 4) {push(@{$diheStringList}, $visitedStringNew);last;}
- 
- }
-
+		#if($counter == 4) {push(@{$diheStringList}, $visitedStringNew);last;}
+	}
 }
-
 
 ## Traverse through the adjacency list of bonds
 sub adjListTraversal
@@ -1251,10 +1206,6 @@ sub adjListTraversal
  	@oneFourStringList = @uniqueOF;
  	return (\@diheStringList,\@angleStringList,\@oneFourStringList);
 }
-
-####################################
-## DIHEDRALS & ANGLES FUNCTIONALS ##
-####################################
 
 sub createDihedralAngleFunctionals {
 ## CALCULATE DIHEDRALS AND ANGLES FOR ALL RESIDUES

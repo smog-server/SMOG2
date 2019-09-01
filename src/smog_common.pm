@@ -61,7 +61,6 @@ sub warnsummary
 # module check
 ################
 
-
 sub checkForModules {
 	my $checkPackage; my $sum=0;
 	$checkPackage=`echo \$perl4smog | wc | awk '{print \$3}'`;
@@ -325,6 +324,5 @@ sub printcenter
 
 	}
 }
-
 
 1;
