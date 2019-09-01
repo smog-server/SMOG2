@@ -24,10 +24,14 @@ sub quit_init
 sub smog_quit
 {
 	my ($LINE,$warn)=@_;
+	if(defined $warn){
+		#if $warn is defined, it means we that this call is never treated as fatal
+		warn("\nWARNING : $LINE\n\n");
+	}elsif($maxwarn > $warncount || $maxwarn ==-1 ){
 		$warncount++;
-	if($maxwarn >= $warncount || $maxwarn ==-1 || defined $warn){
-		warn("\nWARNING $warncount : $LINE\n\n");
-	}elsif($maxwarn < $warncount && $maxwarn>0){
+		warn("\nWARNING (suppressed error no. $warncount): $LINE\n\n");
+	}elsif($maxwarn <= $warncount && $maxwarn>0){
+		$warncount++;
 		print "\nWARNING $warncount : $LINE\n\n";
 		warn("\n\nEXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
 		exit(1);

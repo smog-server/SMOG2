@@ -1720,24 +1720,23 @@ usage: smog2 .. options ..
 	-AAgaussian             : use default All-atom model with gaussian contacts
 	-CA                     : use default Calpha protein model
 	-CAgaussian             : use default Calpha protein model with gaussian contacts
-	-t [templateFolder]     : folder containing templates of molecular and interaction definitions. Required when defaults are not used.
-	-tCG [templateFolder]   : folder containing templates Coarse Graining. Indicates that the program should coarse grain.
+	-t [templateFolder]     : folder containing templates of molecular and interaction definitions. required when defaults are not used
+	-tCG [templateFolder]   : folder containing templates Coarse Graining. indicates that the program should coarse grain
 	-g [smog.gro]           : output .gro file name
 	-o [smog.top]           : output .top file name
 	-s [smog.contacts]      : output .contacts file name
 	-n [smog.ndx]           : output .ndx file name
 	-c [contacts.txt]       : input contact map file
-	-SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  Generally, only useful for debugging.
+	-SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  useful for debugging
 	-dname [smog]           : default name to use for all output files
 	-backup [yes]           : back up any pre-existing output files
-	-warn [0]               : convert the first N fatal errors to warnings.  
-					Convert all errors if N=-1 (Caution: Consult manual 
-					before using this option)
+	-warn [0]               : convert the first N fatal errors to warnings  
+					Convert all if N=-1 (Caution: Consult manual before using this option)
 	-limitbondlength        : if a bond length is outside of the allowable range, set it to limiting value
 	-limitcontactlength     : if a contact length is too short, set it to the minimal value
 	-ignH                   : ignore any atoms with name starting with 'H' in the internal contact algorithm
 	-rescaleCD [1.0]        : override total energy normalization and rescale all contacts/dihedrals by a factor
-	-gen_map <file name>    : read the .bif file, generate a mapping file for smog_adjustPDB and exit. 
+	-gen_map <file name>    : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
 	-help                   : show options 
 EOT
   if ( @_ ){
