@@ -59,61 +59,6 @@ our %supported_directives = ( 'defaults' => '1',
 
 quit_init();
 checkForModules();
-sub usage
-{
-  print <<EOT;
-
-usage: smog_scale-energies  .. options ..
-
-   Options
-	-f [smog.top]		: input SMOG forcefield file
-	-n [smog.ndx]		: index file
-        -of [smog.rescaled.top]	: output SMOG forcefield file with rescaled energies
-	-rc [1.0]		: rescale contact weights by factor (0 means interactions will be removed) 
-	-rd [1.0]		: rescale dihedral weights by factor (0 means interactions will be removed)
-	-help    		: show supported options
-EOT
-  if ( @_ ){
-   smog_quit("Command-line argument \"@_\" not recognized.");
-  }else{
-   exit(1);
-  }
-}
-
-sub listgroups
-{
-	print "index\t:\tgroup name\n";
-	for(my $I=0;$I<$Ngrps;$I++){
-		print "$I\t:\t$grpnms[$I]\n";
-	}
-}
-
-sub selectgroup
-{
-	my $tmp=<STDIN>;
-	chomp($tmp);
-	unless($tmp =~ m/^\d+$/){
-		smog_quit("$tmp is an invalid selection");
-	}
-	if($tmp <0 or $tmp >=$Ngrps){
-		smog_quit("selection must be positive and less than or $Ngrps");
-	}
-	return $tmp;
-}
-
-sub dorescaleC
-{
-	my ($atomgroup,$groupC1,$groupC2,$A,$B) = @_;
-	my %atomgroup = %{$atomgroup};
-	if(exists $atomgroup{$groupC1}{$A} && exists $atomgroup{$groupC2}{$B} ){
-		return 1;
-	}
-	if(exists $atomgroup{$groupC1}{$B} && exists $atomgroup{$groupC2}{$A} ){
-		return 1;
-	}
-
-	return 0;
-}
 
 
 
@@ -351,3 +296,63 @@ warnsummary();
 
 print "\n\tSUCCESS: Interactions rescaled.\n\n";
 exit(0);
+
+
+##########SUBROUTINES##########
+
+sub usage
+{
+  print <<EOT;
+
+usage: smog_scale-energies  .. options ..
+
+   Options
+	-f [smog.top]		: input SMOG forcefield file
+	-n [smog.ndx]		: index file
+        -of [smog.rescaled.top]	: output SMOG forcefield file with rescaled energies
+	-rc [1.0]		: rescale contact weights by factor (0 means interactions will be removed) 
+	-rd [1.0]		: rescale dihedral weights by factor (0 means interactions will be removed)
+	-help    		: show supported options
+EOT
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit(1);
+  }
+}
+
+sub listgroups
+{
+	print "index\t:\tgroup name\n";
+	for(my $I=0;$I<$Ngrps;$I++){
+		print "$I\t:\t$grpnms[$I]\n";
+	}
+}
+
+sub selectgroup
+{
+	my $tmp=<STDIN>;
+	chomp($tmp);
+	unless($tmp =~ m/^\d+$/){
+		smog_quit("$tmp is an invalid selection");
+	}
+	if($tmp <0 or $tmp >=$Ngrps){
+		smog_quit("selection must be positive and less than or $Ngrps");
+	}
+	return $tmp;
+}
+
+sub dorescaleC
+{
+	my ($atomgroup,$groupC1,$groupC2,$A,$B) = @_;
+	my %atomgroup = %{$atomgroup};
+	if(exists $atomgroup{$groupC1}{$A} && exists $atomgroup{$groupC2}{$B} ){
+		return 1;
+	}
+	if(exists $atomgroup{$groupC1}{$B} && exists $atomgroup{$groupC2}{$A} ){
+		return 1;
+	}
+
+	return 0;
+}
+

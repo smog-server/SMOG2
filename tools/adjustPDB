@@ -29,10 +29,9 @@ my $matchexact;
 my $help;
 my $inputArguments=join(' ',@ARGV);
 ## MODULE HEADERS ##
-	
-sub adjust_main {
-	# this is called after all subroutines are read in
-	my $tmpstring = <<"EOT";
+
+# this is called after all subroutines are read in
+my $tmpstring = <<"EOT";
 
                                     smog_adjustPDB                                   
 
@@ -46,75 +45,74 @@ sub adjust_main {
             For questions regarding this script, contact info\@smog-server.org              
 EOT
 	
-	my $wide=88;
-	printdashed($wide);
-	printcenter($wide,$tmpstring);
-	printdashed($wide);
+my $wide=88;
+printdashed($wide);
+printcenter($wide,$tmpstring);
+printdashed($wide);
 
-	checkForModules();
-	
-	usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'match' => \$matchexact, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
-	
-	warninfo();
-	
-	$outputPDB=checksuffix($outputPDB,".pdb");
-	$inputPDB=checksuffix($inputPDB,".pdb");
-	
-	if(defined $renumber && defined $insertTER){
-		smog_quit("Simultaneous use of -renumber and -insertTER not supported");
-	}
-	
-	if (defined $renumber){
-		print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";
-	}
-	
-	if (defined $insertTER){
-		print "\nNOTE: the flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.\n";
-	}
-	
-	if (defined $renumber && defined $insertTER) {
-		smog_quit("Can not use -renumber and -insertTER flags together");
-	}
-	
-	if(!defined $inputPDB){
-		smog_quit("No input PDB was specified. Use -i to specify your input pdb file.");
-	}else{
-		open(OLDPDB,"$inputPDB") or smog_quit("Can't open PDB file $inputPDB.");
-		print "Will reformat the PDB file: $inputPDB\n";	
-	}
-	
-	if (defined $default){
-		print "-default selected. Will use the default map file provided for terminal residue names.\n";
-		if(!exists $ENV{"SMOG_PATH"}){
-	        smog_quit("Environmental Variable SMOG_PATH not set\n");
-		}
-		if (!defined $matchexact) {
-			$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";
-		} else {
-			$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMapExact";
-		}	
-	}else{
-		if (!defined $mapFile ){
-			smog_quit("No map file was provided. Please choose a map file with -map, or use the default map settings with -default.");
-		}else{
-			$mapOption = $mapFile;
-		}
-	}
-	
-	foreach my $filen ($outputPDB){
-		checkalreadyexists($filen);
-	}
-	
-	open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
-	print "New file will be written: $outputPDB\n";
-	
-  	readmap();	
-	adjustInputFile($subALA);
-	warnsummary();
-	print "\n\tAdjustment of PDB is complete.\n\n";
+checkForModules();
 
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'match' => \$matchexact, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
+
+warninfo();
+
+$outputPDB=checksuffix($outputPDB,".pdb");
+$inputPDB=checksuffix($inputPDB,".pdb");
+
+if(defined $renumber && defined $insertTER){
+	smog_quit("Simultaneous use of -renumber and -insertTER not supported");
 }
 
+if (defined $renumber){
+	print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";
+}
+
+if (defined $insertTER){
+	print "\nNOTE: the flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.\n";
+}
+
+if (defined $renumber && defined $insertTER) {
+	smog_quit("Can not use -renumber and -insertTER flags together");
+}
+
+if(!defined $inputPDB){
+	smog_quit("No input PDB was specified. Use -i to specify your input pdb file.");
+}else{
+	open(OLDPDB,"$inputPDB") or smog_quit("Can't open PDB file $inputPDB.");
+	print "Will reformat the PDB file: $inputPDB\n";	
+}
+
+if (defined $default){
+	print "-default selected. Will use the default map file provided for terminal residue names.\n";
+	if(!exists $ENV{"SMOG_PATH"}){
+        smog_quit("Environmental Variable SMOG_PATH not set\n");
+	}
+	if (!defined $matchexact) {
+		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";
+	} else {
+		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMapExact";
+	}	
+}else{
+	if (!defined $mapFile ){
+		smog_quit("No map file was provided. Please choose a map file with -map, or use the default map settings with -default.");
+	}else{
+		$mapOption = $mapFile;
+	}
+}
+
+foreach my $filen ($outputPDB){
+	checkalreadyexists($filen);
+}
+
+open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
+print "New file will be written: $outputPDB\n";
+
+readmap();	
+adjustInputFile($subALA);
+warnsummary();
+print "\n\tAdjustment of PDB is complete.\n\n";
+
+#########SUBROUTINES#########
 
 sub usage
 {
@@ -515,6 +513,3 @@ sub readmap {
 
 # END OF SUBROUTINES
 
-
-
-adjust_main;
