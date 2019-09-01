@@ -325,6 +325,7 @@ sub adjustInputFile{
 						$aName=$altname{"$resName-$aName"};
 						$renamedstring .="$resName$resIDorig-$tn->$aName ";
 					} elsif (exists $altname{"*-$aName"}){
+						# if no exact replacement found, see if there is a wildcard match
 						my $tn=$aName;
 						$aName=$altname{"*-$aName"};
 						$renamedstring .="$resName$resIDorig-$tn->$aName ";
@@ -449,8 +450,7 @@ if (! defined $matchexact) {
 		#map-->residue-->{head|tail} 
 		if($#entries != 2){
 			my $count=$#entries+1;
-			smog_quit("Looking for 3 fields in $mapOption, but found $count.\n
-							Offending line: $line");
+			smog_quit("Looking for 3 fields in $mapOption, but found $count. Offending line:\n$line");
 		}
 		$map{$entries[0]}{"head"} = $entries[1];
 		$map{$entries[0]}{"tail"} = $entries[2];
@@ -467,19 +467,20 @@ if (! defined $matchexact) {
 		#map-->residue-->{head|tail} 
 		if($#entries < 1){
 			my $count=$#entries+1;
-			smog_quit("Looking for at least 2 fields in $mapOption, but found $count.\n
-							Offending line: $line");
+			smog_quit("Looking for at least 2 fields in $mapOption, but found $count. Offending line:\n$line");
 		}
 
 		if($entries[0] =~ /[Aa][Ll][Tt][Nn][Aa][Mm][Ee]/) {
 			if($#entries < 3){
 				my $count=$#entries+1;
-				smog_quit("When giving ALTNAME in map file, must have at least 4 fields (ALTNAME <RES> <TARGET NAME> <ALTERNATE NAMES>).\n
-							Offending line: $line");
+				smog_quit("When giving ALTNAME in map file, must have at least 4 fields (ALTNAME <RES> <TARGET NAME> <ALTERNATE NAMES>). Offending line:\n$line");
 			}
 
 			for( my $I=3;$I<=$#entries;$I++){
 				#save with key "resname-target name"
+				if(exists $altname{"$entries[1]-$entries[$I]"}){
+					smog_quit("Repeated altname entry in mapping file. Offending line:\n$line");
+				}
 				$altname{"$entries[1]-$entries[$I]"}=$entries[2];
 			}
 			
