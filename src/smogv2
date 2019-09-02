@@ -851,7 +851,6 @@ sub bondFuncParser
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "bonds"){smog_quit ("$funcName is not a valid bonds function");}
  	@paramArr = split(",",$params); ## Parse all parameters
- 	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
 }
 
@@ -980,7 +979,6 @@ sub angleFuncParser
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "angles"){smog_quit ("$funcName is not a valid angles function");}
  	@paramArr = split(",",$params); ## Parse all parameters
- 	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
 }
 
@@ -1156,7 +1154,6 @@ sub diheFuncParser
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "dihedrals"){smog_quit ("$funcName is not a valid dihedrals function");}
 	@paramArr = split(",",$params); ## Parse all parameters;
-	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
 }
 
@@ -1525,7 +1522,6 @@ sub contactFuncParser
 	($fType,$directive,$addExclusions) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "pairs" && $directive ne "bonds"){smog_quit ("$funcName is a contact type function and should only go into pairs or bonds directives");}
  	@paramArr = split(",",$params); ## Parse all parameters
- 	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,$funcName,$directive,$addExclusions,@paramArr);
 }
 
