@@ -698,8 +698,6 @@ sub bondOutput
 		($fType,@paramArr) = bondFuncParser($fun);
 		## $paramArr[0] is bond length
 		if($fType != 0){
-	       
-			
 			if($fType == -1){
 				# this mean bond_bytype was used
 				# don't write distances or strengths. Make gromacs use bondtype

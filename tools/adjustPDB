@@ -289,7 +289,7 @@ sub adjustInputFile{
 				if($loopInd==0){
 					$lastresName=$resNametmp;
 				}elsif($lastresName ne $resNametmp){
-					smog_quit("Atoms within a residue have inconsistent names. See\n$pArr[$k]");
+					smog_quit("Atoms within a residue have inconsistent residue names. See\n$pArr[$k]");
 				}	
 				$residue[$loopInd]->{"atomName"} = $atomName;
 				$residue[$loopInd]->{"atomIndex"} = $atomCount;
