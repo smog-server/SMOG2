@@ -154,13 +154,15 @@ sub checkdirectives
 	my %DIRLIST;
 	my @DATA=split(/\n\s+\[|\n\[|^\s+\[|^\[/,$string);
 	for (my $I=1;$I<=$#DATA;$I++){
+		# add the \n since we just stripped them using split
+		$DATA[$I] .="\n";
 		my $string1 = $DATA[$I];
 		open my($fh), "<", \$string1 or smog_quit("internal error 1") ; # reading from the data in $string
 		my $first_line = <$fh>; 
 		close $fh;
 		my ($line,$comment)=checkcomment($first_line);
 	        $line =~ s/\]/ \]/g;
-	        $line =~ s/\t+/ /g;
+	        #$line =~ s/\t+/ /g;
 	        $line =~ s/\s+/ /g;
 		my @B=split(/ /,$line);
 		my $DIR=$B[0];

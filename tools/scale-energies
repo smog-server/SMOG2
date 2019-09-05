@@ -140,7 +140,7 @@ if($rescaleD != 1.0 && $rescaleD != 0.0){
 	$topbuff .= ";Dihedral group selected \"$groupD\"\n";
 }
 
-
+$topbuff .="; Below are the comments that were in the top file provided to scale-energies\n";
 print "\nReading top file $inputTOP\n";
 
 my $string=loadfile($inputTOP);
