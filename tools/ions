@@ -46,60 +46,6 @@ our %supported_directives = ( 'defaults' => '1',
 
 
 
-sub getcell
-{
-	my ($UNIT0,$UNIT1,$UNIT2,$width0,$width1,$width2,$Xt,$Yt,$Zt)=@_;
-	my @UNIT0=@{$UNIT0};
-	my @UNIT1=@{$UNIT1};
-	my @UNIT2=@{$UNIT2};
-	# calculate and subtract projection along c vector
-	my $proj=$UNIT2[0]*$Xt+$UNIT2[1]*$Yt+$UNIT2[2]*$Zt;
-	my $C2=int($proj/$width2);
-	$Xt-=$UNIT2[0]*$proj;
-	$Yt-=$UNIT2[1]*$proj;
-	$Zt-=$UNIT2[2]*$proj;
-	$proj=$UNIT1[0]*$Xt+$UNIT1[1]*$Yt+$UNIT1[2]*$Zt;
-	my $C1=int($proj/$width1);
-	$Xt-=$UNIT1[0]*$proj;
-	$Yt-=$UNIT1[1]*$proj;
-	$Zt-=$UNIT1[2]*$proj;
-	$proj=$UNIT0[0]*$Xt+$UNIT0[1]*$Yt+$UNIT0[2]*$Zt;
-	my $C0=int($proj/$width0);
-
-	return ($C0,$C1,$C2);
-
-}
-
-sub usage
-{
-  print <<EOT;
-
-usage: smog_ions ... options
-
-   Required flags
-	-ionnm  <string>   : name of ion to be added to the system
-	-ionn   <integer>  : number of ions to add
-	-ionq   <float>    : charge of ions
-	-ionm   <float>    : mass of ions
-	-ionC12 <float>    : C12 excluded-volume parameter for added ions
-   Optional settings 
-	-t <string>	   : optional template directory to read ion definitions
-	-f [smog.top]      : input SMOG forcefield file
-	-g [smog.gro]      : input SMOG configuration file
-	-of [smog.ions.top]: output SMOG forcefield file for smog.ions system
-	-og [smog.ions.gro]: output SMOG configuration file for smog.ions system
-	-mindist [0.5]     : the minimium distance (nm) between an added ion and any other atom in the system
-	-ionC6 [0.0]	   : C6 parameter for added ions
-	-warn [0]	   : convert first N errors into warnings
-	-help 		   : show options 
-EOT
-  if ( @_ ){
-   smog_quit("Command-line argument \"@_\" not recognized.");
-  }else{
-   exit(1);
-  }
-}
-
 
 my $inputTOP="smog.top";
 my $inputGRO="smog.gro";
@@ -693,3 +639,63 @@ while (<FILE>){
 warnsummary();
 print "\n\tSUCCESS: Added $addnum $addname ions.\n\n";
 exit(0);
+
+
+###########SUBROUTINES##############
+sub getcell
+{
+	my ($UNIT0,$UNIT1,$UNIT2,$width0,$width1,$width2,$Xt,$Yt,$Zt)=@_;
+	my @UNIT0=@{$UNIT0};
+	my @UNIT1=@{$UNIT1};
+	my @UNIT2=@{$UNIT2};
+	# calculate and subtract projection along c vector
+	my $proj=$UNIT2[0]*$Xt+$UNIT2[1]*$Yt+$UNIT2[2]*$Zt;
+	my $C2=int($proj/$width2);
+	$Xt-=$UNIT2[0]*$proj;
+	$Yt-=$UNIT2[1]*$proj;
+	$Zt-=$UNIT2[2]*$proj;
+	$proj=$UNIT1[0]*$Xt+$UNIT1[1]*$Yt+$UNIT1[2]*$Zt;
+	my $C1=int($proj/$width1);
+	$Xt-=$UNIT1[0]*$proj;
+	$Yt-=$UNIT1[1]*$proj;
+	$Zt-=$UNIT1[2]*$proj;
+	$proj=$UNIT0[0]*$Xt+$UNIT0[1]*$Yt+$UNIT0[2]*$Zt;
+	my $C0=int($proj/$width0);
+
+	return ($C0,$C1,$C2);
+
+}
+
+sub usage
+{
+  print <<EOT;
+
+usage: smog_ions ... options
+
+   Required flags
+	-ionnm  <string>   : name of ion to be added to the system
+	-ionn   <integer>  : number of ions to add
+	-ionq   <float>    : charge of ions
+	-ionm   <float>    : mass of ions
+	-ionC12 <float>    : C12 excluded-volume parameter for added ions
+   Optional settings 
+	-t <string>	   : optional template directory to read ion definitions
+	-f [smog.top]      : input SMOG forcefield file
+	-g [smog.gro]      : input SMOG configuration file
+	-of [smog.ions.top]: output SMOG forcefield file for smog.ions system
+	-og [smog.ions.gro]: output SMOG configuration file for smog.ions system
+	-mindist [0.5]     : the minimium distance (nm) between an added ion and any other atom in the system
+	-ionC6 [0.0]	   : C6 parameter for added ions
+	-warn [0]	   : convert first N errors into warnings
+	-help 		   : show options 
+EOT
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit(1);
+  }
+}
+
+
+
+

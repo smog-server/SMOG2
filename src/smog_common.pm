@@ -24,10 +24,14 @@ sub quit_init
 sub smog_quit
 {
 	my ($LINE,$warn)=@_;
+	if(defined $warn){
+		#if $warn is defined, it means we that this call is never treated as fatal
+		warn("\nWARNING : $LINE\n\n");
+	}elsif($maxwarn > $warncount || $maxwarn ==-1 ){
 		$warncount++;
-	if($maxwarn >= $warncount || $maxwarn ==-1 || defined $warn){
-		warn("\nWARNING $warncount : $LINE\n\n");
-	}elsif($maxwarn < $warncount && $maxwarn>0){
+		warn("\nWARNING (suppressed error no. $warncount): $LINE\n\n");
+	}elsif($maxwarn <= $warncount && $maxwarn>0){
+		$warncount++;
 		print "\nWARNING $warncount : $LINE\n\n";
 		warn("\n\nEXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
 		exit(1);
@@ -56,7 +60,6 @@ sub warnsummary
 ################
 # module check
 ################
-
 
 sub checkForModules {
 	my $checkPackage; my $sum=0;
@@ -151,13 +154,15 @@ sub checkdirectives
 	my %DIRLIST;
 	my @DATA=split(/\n\s+\[|\n\[|^\s+\[|^\[/,$string);
 	for (my $I=1;$I<=$#DATA;$I++){
+		# add the \n since we just stripped them using split
+		$DATA[$I] .="\n";
 		my $string1 = $DATA[$I];
 		open my($fh), "<", \$string1 or smog_quit("internal error 1") ; # reading from the data in $string
 		my $first_line = <$fh>; 
 		close $fh;
 		my ($line,$comment)=checkcomment($first_line);
 	        $line =~ s/\]/ \]/g;
-	        $line =~ s/\t+/ /g;
+	        #$line =~ s/\t+/ /g;
 	        $line =~ s/\s+/ /g;
 		my @B=split(/ /,$line);
 		my $DIR=$B[0];
@@ -282,9 +287,10 @@ sub printdashed
 
 sub checkalreadyexists
 {
+	my ($filen)=@_;
 	# check if a file exists and back it up, if so.
 	my $maxbu=10;
-	my ($ext) = my $filen =~ /(\.[^.]+)$/;
+	my ($ext) = $filen =~ /(\.[^.]+)$/;
 	if($filen ne "" && -e $filen){
 		for(my $bu=1;$bu<=$maxbu;$bu++){
 			my $buname="$filen.bu$bu";
@@ -320,6 +326,5 @@ sub printcenter
 
 	}
 }
-
 
 1;

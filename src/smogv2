@@ -21,14 +21,8 @@
 # of the License, or (at your option) any later version.
 #########################################################################################
 
-#####################
-## COMPILE HEADERS ##
-#####################
 use strict;
 use warnings FATAL => 'all';
-####################
-## MODULE HEADERS ##
-####################
 &checkForModules;
 use XML::Simple;
 use templateParser;
@@ -43,6 +37,7 @@ use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
 use smog_common;
+
 ######################
 ## GLOBAL VARIABLES ##
 ######################
@@ -50,6 +45,7 @@ my $VERSION="2.3beta";
 my $angToNano = 0.1;
 my $OUTPUT;
 my $help;
+our $gen_map;
 my $inputPDB="molecule.pdb"; 
 my $inputFolder=""; my $bifForSCM;
 my $userProvidedMap=0;
@@ -66,7 +62,13 @@ my $AAdefault = 0;
 my $CAdefault = 0;
 my $AAGdefault = 0; 
 my $CAGdefault = 0;
-my $absolutecontactindex=0;
+my $saveSCMorig=0;
+my $printversion;
+my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
+my $DNAME="smog";
+my $backup="yes";
+my $allowCG = 0;
+
 our %freebonds;
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
@@ -77,10 +79,73 @@ our %presentatomtypes;
 our %foundBtype;
 our %foundAtype;
 our %foundDtype;
-my $printversion;
-my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
-## this is the array that defines how function names are converted to gromacs function types
-our %fTypes = (	'bond_harmonic' => '1',
+our @topFileBuffer;
+our @linesInDirectives;
+our @linesInDirectivesWithContent;
+our $inputArguments=join(' ',@ARGV);
+our %Btypespresent;
+our %NBtypespresent;
+our %PAIRtypespresent;
+our %pairtypesused;
+our %fTypes;
+our %directives;
+our @directivesList;
+
+#######END GLOBAL DEFS#######
+
+
+#######MAIN PROGRAM####### 
+
+quit_init();
+
+setglobals();
+
+header();
+
+parse_args();
+
+print "Parsing templates files...\n";
+parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
+if($CGenabled == 0) {
+	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
+} elsif ($CGenabled == 1 && $userProvidedMap == 0) { #CG but we still need full .top to make a map
+	print "Creating topology for contact calculation.....\n";
+	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
+}
+
+# generate contact map
+if($userProvidedMap == 0) { #use SCM.jar if user doesn't provide a map
+	printTop($topFile);
+	generateContactMap($groFile,$ndxFile,$shadowFile,$topFile);
+}
+
+# do CGing, if needed
+if($CGenabled == 1) { #Coarse graining, do everything over with new templates
+    	clearBifMemory();clearPDBMemory();
+	undef %presentatomtypes;
+	$allowCG = 1;
+	print "\nParsing templates for coarse graining... ";
+	$inputFolder = $coarseFolder;
+	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
+	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
+}
+
+appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
+
+printTop($topFile);
+print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$ndxFile\n";
+	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
+	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
+	printCitation();
+
+warnsummary();
+
+###### END OF MAIN PROGRAM ######
+
+######SUBROUTINES######
+sub setglobals {
+	## this is the array that defines how function names are converted to gromacs function types
+	%fTypes = ('bond_harmonic' => '1',
 		'bond_bytype' => '-1',
 		'bond_type6' => '6',
 		'bond_free' => '0',
@@ -97,24 +162,189 @@ our %fTypes = (	'bond_harmonic' => '1',
 		'contact_gaussian'=>'6'
 		);
 
-## this is the topfile buffer stuff
-our %directives = ("comments",1,"defaults",2,"atomtypes",3,"bondtypes",4,"angletypes",5,"dihedraltypes",6,"nonbond_params",7,"moleculetype",8,"atoms",9,"bonds",10,"angles",11,"dihedrals",12,"pairs",13,"exclusions",14,"position_restraints",15,"system",16,"molecules",17);
-our @directivesList=("comments","defaults","atomtypes","bondtypes","angletypes","dihedraltypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
-our @topFileBuffer;
-our @linesInDirectives;
-our @linesInDirectivesWithContent;
-our $inputArguments=join(' ',@ARGV);
-our %Btypespresent;
-our %NBtypespresent;
-our %PAIRtypespresent;
-our %pairtypesused;
-quit_init();
+	## this is the topfile buffer stuff
+	%directives = ("comments",1,"defaults",2,"atomtypes",3,"bondtypes",4,"angletypes",5,"dihedraltypes",6,"nonbond_params",7,"moleculetype",8,"atoms",9,"bonds",10,"angles",11,"dihedrals",12,"pairs",13,"exclusions",14,"position_restraints",15,"system",16,"molecules",17);
+	@directivesList=("comments","defaults","atomtypes","bondtypes","angletypes","dihedraltypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
+}
 
-checkForModules();
+sub parse_args {
+	## parse command line options ##
+	# -o output top file name, default is smog.top
+	usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
+		'c=s' => \$ContactFile, 'SCMorig' => \$saveSCMorig, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,  'gen_map=s' => \$gen_map,
+		 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warn=i' => \$maxwarn, 
+	         'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
+	         'rescaleCD=s' => \$rescaleCD, '<>' => \&usage, 'v' => \$printversion)
+	          or defined $help 
+	          or !defined $inputPDB 
+	          or (!defined $inputFolder  && !defined $coarseFolder));
+	
+	if($printversion){
+		print "Version $VERSION\n";
+		exit;
+	}
+	
+	unless ($rescaleCD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
+		smog_quit("$rescaleCD is not a valid value for -rescaleCD.  Must be an integer, or decimal.");
+	}
+	
+	warninfo();
+	
+	if($coarseFolder ne "" and $inputFolder eq ""){
+		smog_quit("When using a CG model with -tCG, you must also specify the model to be used when calculating the contact map by invoking the option -t. Check -help for usage information. ");
+	}
+	
+	my $numdefaults=$CAdefault+$AAdefault+$AAGdefault+$CAGdefault;
+	if($inputFolder eq "" && $numdefaults==0){
+		smog_quit("No model specified. You must use either -t, -AA, or -CA. Try -help for usage information.");
+	}
+	
+	if($coarseFolder ne "") { $CGenabled = 1; }
+	
+	if($backup ne "yes" and $backup ne "no"){
+		smog_quit("Can not understand -backup flag. Usage -backup [yes/no]");
+	}elsif($backup eq "no"){
+		print "-backup no issued.  Will overwrite any existing output files.\n";
+	}
+	
+	if($numdefaults > 1){
+		smog_quit('Can not select more than one default model at a time.');
+	}
+	if($CAdefault == 1 and defined $ContactFile){
+		smog_quit('Can not use -c and -CA options at the same time.');
+	}
+	if(defined $ContactFile and $CGenabled == 1){
+		smog_quit('Can not use -tCG and -c options at the same time.');
+	}
+	if($CAdefault == 1 and $CGenabled == 1){
+		smog_quit('Can not use -tCG and -CA options at the same time.');
+	}
+	if($CAGdefault == 1 and $CGenabled == 1){
+		smog_quit('Can not use -tCG and -CAgaussian options at the same time.');
+	}
+	if($CAdefault == 1 and $inputFolder ne ""){
+		smog_quit('Can not use -CA and -t options at the same time.');
+	}
+	if($CAGdefault == 1 and $inputFolder ne ""){
+		smog_quit('Can not use -CAgaussian and -t options at the same time.');
+	}
+	
+	if($AAdefault == 1 and $inputFolder ne ""){
+		smog_quit('Can not use -AA and -t options at the same time.');
+	}
+	if($AAGdefault == 1 and $inputFolder ne ""){
+		smog_quit('Can not use -AAgaussian and -t options at the same time.');
+	}
+	if($numdefaults and $coarseFolder ne ""){
+		smog_quit('Can not use a default model with -tCG.');
+	}
+	
+	if($CAdefault == 1){
+		print "\n -CA given. Will use the default Calpha SMOG model provided with the distribution.\n";
+		my $SMOGDIR=$ENV{'SMOG_PATH'};
+		$inputFolder="$SMOGDIR/SBM_AA";
+		$coarseFolder="$SMOGDIR/SBM_calpha";
+		print "Will try to use templates found in \n$inputFolder\n and\n$coarseFolder\n\n";
+		if(! -d $inputFolder){
+			smog_quit("$inputFolder is not a valid template directory.");
+		}
+		if(! -d $coarseFolder){
+			smog_quit("$coarseFolder is not a valid template directory.");
+		}
+		$CGenabled=1;
+	}
+	if($AAdefault == 1){
+		print "\n-AA given. Will use the default All-Atom SMOG model provided with the distribution.\n";
+		my $SMOGDIR=$ENV{'SMOG_PATH'};
+		$inputFolder="$SMOGDIR/SBM_AA";
+		print "Will try to use templates found in \n$inputFolder\n\n";
+		if(! -d $inputFolder){
+			smog_quit("$inputFolder is not a valid template directory.");
+		}
+	}
+	
+	if($CAGdefault == 1){
+		print "\n -CAgaussian given. Will use the default Calpha SMOG model with gaussian contacts, as provided with the distribution.\n";
+		my $SMOGDIR=$ENV{'SMOG_PATH'};
+		$inputFolder="$SMOGDIR/SBM_AA";
+		$coarseFolder="$SMOGDIR/SBM_calpha+gaussian";
+		print "Will try to use templates found in \n$inputFolder\n and\n$coarseFolder\n\n";
+		if(! -d $inputFolder){
+			smog_quit("$inputFolder is not a valid template directory.");
+		}
+		if(! -d $coarseFolder){
+			smog_quit("$coarseFolder is not a valid template directory.");
+		}
+		$CGenabled=1;
+	}
+	if($AAGdefault == 1){
+		print "\n-AAgaussian given. Will use the default All-Atom SMOG model with gaussian contacts, as provided with the distribution.\n";
+		my $SMOGDIR=$ENV{'SMOG_PATH'};
+		$inputFolder="$SMOGDIR/SBM_AA+gaussian";
+		print "Will try to use templates found in \n$inputFolder\n\n";
+		if(! -d $inputFolder){
+			smog_quit("$inputFolder is not a valid template directory.");
+		}
+	}
+	
+	if(defined $gen_map) {
+		# read the bif, generate a map file and exit
+		if (-e $gen_map) {
+			smog_quit("$gen_map exists, will not overwrite");
+		}
+		parseTemplatesAndPDB($inputFolder,$inputPDB,0);
+	}
+	
+	# if a contact file is provided, then don't calculate contacts
+	if(defined $ContactFile){
+		$userProvidedMap=1;
+	}
+	
+	## Ensure we only write out files with gromacs-compatible suffices
+	if($topFile eq ""){$topFile=$DNAME};
+	if($groFile eq ""){$groFile=$DNAME};
+	if($shadowFile eq ""){$shadowFile=$DNAME};
+	if($ndxFile eq ""){$ndxFile=$DNAME};
+	
+	$topFile=checksuffix($topFile,".top");
+	$groFile=checksuffix($groFile,".gro");
+	$shadowFile=checksuffix($shadowFile,".contacts");
+	$ndxFile=checksuffix($ndxFile,".ndx");
+	
+	
+	## check if files exist
+	# things we don't want to overwrite
+	if($backup eq "yes"){
+		foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile){
+			checkalreadyexists($filen);
+		}
+	}
+	 
+	# files we will read
+	foreach my $filen($inputPDB,$ContactFile){
+		if(defined $filen  && ! -f $filen){
+			smog_quit("Can't find file $filen !! ");
+		}
+	}
+	
+	# directories we will access
+	foreach my $filen($inputFolder,$coarseFolder){
+		if($filen ne "" && ! -d $filen){
+			smog_quit ("Can't find directory $filen !! ");
+		}
+	}
 
-####################
-## OUTPUT TOPFILE ##
-####################
+	if($CGenabled == 0) {
+		print "\n*****************************************************\n";
+		print   "******* ALL-ATOM SMOG MODEL WILL BE GENERATED *******";
+		print "\n*****************************************************\n";
+	} else {
+		print "\n*****************************************************\n";
+		print   "**** COARSE-GRAINED SMOG MODEL WILL BE GENERATED ****";
+		print "\n*****************************************************\n";
+	}
+}
+
 sub printTop {
 	my ($topFile) = @_;
 	open($OUTPUT, ">$topFile");
@@ -139,7 +369,7 @@ sub initializeDirectives {
 		#need this because we are going to output a top without pairs but want it to not die when it is not initialized
 		push @{$topFileBuffer[$directives{$_}][$linesInDirectives[$directives{$_}]++]}, ""; 
 	}
-	addToTop("comments", "; Structure-based \"SMOG\" model for use with GROMACS, NAMD, or AMBER\n");
+	addToTop("comments", "; Structure-based \"SMOG\" model for use with GROMACS, NAMD, or openMM\n");
 	addToTop("comments", "; Generated by the SMOG tool version $VERSION\n");
 	addToTop("comments", "; Called with PDB: $inputPDB\n");
 	addToTop("comments", "; Created using templates found in directory: $inputFolder\n");
@@ -341,7 +571,6 @@ sub addExtras {
 	}
 }
 
-
 sub checkExtras {
 	my ($filename) = @_;
 	open(EXTRA,"$filename");
@@ -364,13 +593,6 @@ sub checkExtras {
 	}
 }
 
-
-#####################
-## CALCULATE BONDS ##
-#####################
-
-##
-
 # Combined bond calculation,sorting, and printing
 sub printOrderedBonds
 {
@@ -391,7 +613,6 @@ sub printOrderedBonds
 	}
 }
 
-##
 # call  calculateBondsHelper1() for each residue defined in templates
 sub calculateBonds1
 {
@@ -402,8 +623,6 @@ sub calculateBonds1
 	}
 }
 
-
-##
 #call connCalculateBondsHelper() for each chain in PDB
 sub calculateBonds2
 {
@@ -461,8 +680,6 @@ sub calculateBondsHelper2
 	}
 }
 
-
-##
 # Convert internal bond function format to gromacs function format,
 sub bondOutput
 {
@@ -481,8 +698,6 @@ sub bondOutput
 		($fType,@paramArr) = bondFuncParser($fun);
 		## $paramArr[0] is bond length
 		if($fType != 0){
-	       
-			
 			if($fType == -1){
 				# this mean bond_bytype was used
 				# don't write distances or strengths. Make gromacs use bondtype
@@ -590,7 +805,6 @@ sub checkangletype
 	}
 }
 
-
 sub checkdihedraltype
 {
 	my ($i,$j,$k,,$l,$allatoms)=@_;
@@ -623,8 +837,6 @@ sub checkdihedraltype
 	}
 }
 
-
-##
 # Given a user defined function, parse values
 sub bondFuncParser
 {
@@ -637,15 +849,9 @@ sub bondFuncParser
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "bonds"){smog_quit ("$funcName is not a valid bonds function");}
  	@paramArr = split(",",$params); ## Parse all parameters
- 	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
 }
 
-######################
-## CALCULATE ANGLES ##
-######################
-
-##
 # Combined bond calculation,sorting, and printing
 sub printOrderedAngles
 {
@@ -664,9 +870,6 @@ sub printOrderedAngles
 	}
 }
 
-##
-
-##
 # CalculateAnglesHelper() calculates the angles for each chain
 sub CalculateAngles
 {
@@ -677,7 +880,6 @@ sub CalculateAngles
 	}
 }
 
-##
 sub CalculateAnglesHelper
 {
 	my($angleArr,$inputPDL,$angleCache,$indexhandle,$allatoms) = @_;
@@ -705,7 +907,6 @@ sub CalculateAnglesHelper
 	}
 }
 
-## 
 # Convert internal angle function format to gromacs function format
 sub angleOutput
 {
@@ -764,7 +965,6 @@ sub angleOutput
 	return $outputString; 
 }
 
-##
 # Given a user defined angle function parse values
 sub angleFuncParser
 {
@@ -777,15 +977,9 @@ sub angleFuncParser
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "angles"){smog_quit ("$funcName is not a valid angles function");}
  	@paramArr = split(",",$params); ## Parse all parameters
- 	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
 }
 
-#########################
-## CALCULATE DIHEDRALS ##
-#########################
-
-##
 # Combined dihedral calculation,sorting, and printing
 sub printOrderedDihedrals
 {
@@ -803,7 +997,6 @@ sub printOrderedDihedrals
 	addToTop("dihedrals","\n");
 }
 
-##
 # Setup the calculation of dihedral angles of all combined residues,
 sub CalculateDihedrals
 {
@@ -945,9 +1138,8 @@ sub dihedralOutput
 		}
 	}
 		return $outputString;
- }
+}
  
-##
 # Given a user defined dihedral function, parse values
 sub diheFuncParser
 {
@@ -960,14 +1152,8 @@ sub diheFuncParser
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "dihedrals"){smog_quit ("$funcName is not a valid dihedrals function");}
 	@paramArr = split(",",$params); ## Parse all parameters;
-	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,@paramArr);
 }
-
-
-########################
-## CALCULATE CONTACTS ##
-########################
 
 sub calculateContacts
 {
@@ -1093,7 +1279,6 @@ sub calculateContacts
 	}
 }
 
-##
 # Convert internal contact function format to gromacs function format,
 # internal format is f()+g()
 sub contactOutput
@@ -1147,7 +1332,6 @@ sub contactOutput
 	return ($directive,$addExclusions,$outputString.$addNewline);
 }
 
-##
 # Parse LJ NM sigma eps usage
 sub contactParseNM1
 {
@@ -1254,8 +1438,6 @@ sub contactParseNM2
 	shift @{$paramArr};
 }
 
-
-##
 # Parse Gaussian Params
 sub contactParseGaussian
 {
@@ -1299,7 +1481,7 @@ sub contactParseGaussian
 	@{$paramArr}=($A,$r0,$sigma_G,$a);
 
 }
-##
+
 # Parse Bond type 6
 sub contactParseBond6
 {
@@ -1326,7 +1508,6 @@ my $k;
 
 }
 
-##
 # Given a user defined contact function parse values
 sub contactFuncParser
 {
@@ -1339,16 +1520,8 @@ sub contactFuncParser
 	($fType,$directive,$addExclusions) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "pairs" && $directive ne "bonds"){smog_quit ("$funcName is a contact type function and should only go into pairs or bonds directives");}
  	@paramArr = split(",",$params); ## Parse all parameters
- 	foreach $params(@paramArr){$params =~ s/^\s+|\s+$//g;}
 	return ($fType,$funcName,$directive,$addExclusions,@paramArr);
 }
-
-
-
-##########################
-## CALCULATE EXCLUSIONS ##
-##########################
-
 
 sub calculateAtomTypes
 {
@@ -1469,7 +1642,6 @@ sub readAtoms
 	return(%reflist);
 }
 
-##
 # Convert PDB to GRO
 # Store chain info to ndx file
 sub convertPDBToGroNdx
@@ -1676,7 +1848,6 @@ sub parseInputFolder
 	
 }
 
-
 sub header
 {
 	my $header="******* ******* ******* ******* ******* SMOG v$VERSION ******* ******* ******* ******* *******";
@@ -1705,8 +1876,14 @@ EOT
 
 	printcenter($headw,$tmpstring);
 	printdashed($headw);
-
+	print "\nSMOG 2 called with the command:\n";
+	print "smog2 ";
+	foreach my $filen(@ARGV){
+		print "$filen ";
+	}	
+	print "\n";
 }
+
 sub usage
 {
   print <<EOT;
@@ -1714,29 +1891,29 @@ sub usage
 usage: smog2 .. options ..
 
    Options
-	-i [molecule.pdb]	: input PDB to generate Hamiltonian
-	-AA			: use default All-atom model
-	-AAgaussian		: use default All-atom model with gaussian contacts
-	-CA			: use default Calpha protein model
-	-CAgaussian		: use default Calpha protein model with gaussian contacts
-	-t [templateFolder]	: folder containing templates of molecular and interaction definitions. Required when defaults are not used.
-	-tCG [templateFolder]	: folder containing templates Coarse Graining. Indicates that the program should coarse grain.
-	-g [smog.gro]		: output .gro file name
-	-o [smog.top]		: output .top file name
-	-s [smog.contacts]	: output .contacts file name
-	-n [smog.ndx]		: output .ndx file name
-	-c [contacts.txt]	: input contact map file
-	-c_global 		: Use global numbering for input contact map (atoms start with 1)
-	-dname [smog]		: default name to use for all output files
-	-backup [yes]		: back up any pre-existing output files
-	-warn [0]		: convert the first N fatal errors to warnings.  
-					Convert all errors if N=-1 (Caution: Consult manual 
-					before using this option)
-	-limitbondlength	: if a bond length is outside of the allowable range, set it to limiting value
-	-limitcontactlength	: if a contact length is too short, set it to the minimal value
-	-ignH			: ignore any atoms with name starting with 'H' in the internal contact algorithm
-	-rescaleCD [1.0]	: override total energy normalization and rescale all contacts/dihedrals by a factor
-	-help 			: show options 
+	-i [molecule.pdb]       : input PDB to generate Hamiltonian
+	-AA                     : use default All-atom model
+	-AAgaussian             : use default All-atom model with gaussian contacts
+	-CA                     : use default Calpha protein model
+	-CAgaussian             : use default Calpha protein model with gaussian contacts
+	-t [templateFolder]     : folder containing templates of molecular and interaction definitions. required when defaults are not used
+	-tCG [templateFolder]   : folder containing templates Coarse Graining. indicates that the program should coarse grain
+	-g [smog.gro]           : output .gro file name
+	-o [smog.top]           : output .top file name
+	-s [smog.contacts]      : output .contacts file name
+	-n [smog.ndx]           : output .ndx file name
+	-c [contacts.txt]       : input contact map file
+	-SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  useful for debugging
+	-dname [smog]           : default name to use for all output files
+	-backup [yes]           : back up any pre-existing output files
+	-warn [0]               : convert the first N fatal errors to warnings  
+					Convert all if N=-1 (Caution: Consult manual before using this option)
+	-limitbondlength        : if a bond length is outside of the allowable range, set it to limiting value
+	-limitcontactlength     : if a contact length is too short, set it to the minimal value
+	-ignH                   : ignore any atoms with name starting with 'H' in the internal contact algorithm
+	-rescaleCD [1.0]        : override total energy normalization and rescale all contacts/dihedrals by a factor
+	-gen_map <file name>    : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
+	-help                   : show options 
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");
@@ -1812,17 +1989,12 @@ EOT
 
 }
 
-##
-## MEMORY MANAGEMENT ROUTINES
-##
-
 sub freeMemoryForShadow
 {
 	undef %resPDL;undef %bondPDL;
 	undef %AngleData;undef %DihedralData;
 	undef %BondData;undef $contactPDL;undef %foundBtype; undef %foundAtype, undef %foundDtype;
 }
-
 
 sub parseTemplatesAndPDB
 {
@@ -1831,14 +2003,16 @@ sub parseTemplatesAndPDB
     	## TEST IF SMOG PATH EXISTS ##
     	if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
 	$| = 1;
-	## OPEN .top handle ## don't do this here since we buffered the output now
-	#open($OUTPUT, ">$topFile"); 
-	parseInputFolder($inputFolder); ## PARSE FOLDER --> FILE
+	parseInputFolder($inputFolder); 
 
+	
 	#####################
     	## PARSE TEMPLATES ##
     	#####################
-	initializeDirectives($inputFolder,$inputPDB);
+	if(!defined $gen_map){
+		# no need to initialize these things if we are only making a map file
+		initializeDirectives($inputFolder,$inputPDB);
+	}
 	## parse .sif File ##
 	parseSif();
 	## parse .nb file  ##
@@ -1859,6 +2033,11 @@ sub parseTemplatesAndPDB
 		smog_quit("Cross-comparison of templates failed. See messages below:\n\n$checkmessage");
 	}
 
+	# simply generate a map for adjustPDB and exit
+	if(defined $gen_map){
+		parseBif($inputFolder,$gen_map);
+		exit(0);
+	}
 	print "\nPre-processing templates.\n";
 	## Find Bonds ##
 	createBondFunctionals();
@@ -1936,9 +2115,9 @@ sub generateContactMap {
 }
 
 sub appendContacts {
-	my($fileName,$fileName2,$userProvidedMap,$absolutecontactindex) = @_;
+	my($fileName,$fileName2,$userProvidedMap,$saveSCMorig) = @_;
 	#Parse the contact map, either the generated one or the user provided one
-	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled,$absolutecontactindex);
+	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled,$saveSCMorig);
 	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
 	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
@@ -1957,228 +2136,5 @@ sub appendContacts {
 	addToTop("defaults", "  $nbfunc      $combrule         $genpairs\n");
 }
 
-##################
-## PARSE INPUTS ##
-##################
-
-my $DNAME="smog";
-my $backup="yes";
-
-header();
-print "\nSMOG 2 called with the command:\n";
-print "smog2 ";
-foreach my $filen(@ARGV){
-	print "$filen ";
-}	
-print "\n";
-
-## parse command line options ##
-# -o output top file name, default is smog.top
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
-	'c=s' => \$ContactFile, 'c_global' => \$absolutecontactindex, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,
-	 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warn=i' => \$maxwarn, 
-         'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
-         'rescaleCD=s' => \$rescaleCD, '<>' => \&usage, 'v' => \$printversion)
-          or defined $help 
-          or !defined $inputPDB 
-          or (!defined $inputFolder  && !defined $coarseFolder));
-
-if($printversion){
-	print "Version $VERSION\n";
-	exit;
-}
-
-unless ($rescaleCD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
-	smog_quit("$rescaleCD is not a valid value for -rescaleCD.  Must be an integer, or decimal.");
-}
-
-warninfo();
-
-if($coarseFolder ne "" and $inputFolder eq ""){
-	smog_quit("When using a CG model with -tCG, you must also specify the model to be used when calculating the contact map by invoking the option -t. Check -help for usage information. ");
-}
-
-my $numdefaults=$CAdefault+$AAdefault+$AAGdefault+$CAGdefault;
-if($inputFolder eq "" && $numdefaults==0){
-	smog_quit("No model specified. You must use either -t, -AA, or -CA. Try -help for usage information.");
-}
-
-if($coarseFolder ne "") { $CGenabled = 1; }
-
-if($backup ne "yes" and $backup ne "no"){
-	smog_quit("Can not understand -backup flag. Usage -bu [yes/no]");
-}elsif($backup eq "no"){
-	print "-backup no issued.  Will overwrite any existing output files.\n";
-}
-
-if($numdefaults > 1){
-	smog_quit('Can not select more than one default model at a time.');
-}
-if($CAdefault == 1 and defined $ContactFile){
-	smog_quit('Can not use -c and -CA options at the same time.');
-}
-if(defined $ContactFile and $CGenabled == 1){
-	smog_quit('Can not use -tCG and -c options at the same time.');
-}
-if($CAdefault == 1 and $CGenabled == 1){
-	smog_quit('Can not use -tCG and -CA options at the same time.');
-}
-if($CAGdefault == 1 and $CGenabled == 1){
-	smog_quit('Can not use -tCG and -CAgaussian options at the same time.');
-}
-if($CAdefault == 1 and $inputFolder ne ""){
-	smog_quit('Can not use -CA and -t options at the same time.');
-}
-if($CAGdefault == 1 and $inputFolder ne ""){
-	smog_quit('Can not use -CAgaussian and -t options at the same time.');
-}
-
-if($AAdefault == 1 and $inputFolder ne ""){
-	smog_quit('Can not use -AA and -t options at the same time.');
-}
-if($AAGdefault == 1 and $inputFolder ne ""){
-	smog_quit('Can not use -AAgaussian and -t options at the same time.');
-}
-if($numdefaults and $coarseFolder ne ""){
-	smog_quit('Can not use a default model with -tCG.');
-}
 
 
-if($CAdefault == 1){
-	print "\n -CA given. Will use the default Calpha SMOG model provided with the distribution.\n";
-	my $SMOGDIR=$ENV{'SMOG_PATH'};
-	$inputFolder="$SMOGDIR/SBM_AA";
-	$coarseFolder="$SMOGDIR/SBM_calpha";
-	print "Will try to use templates found in \n$inputFolder\n and\n$coarseFolder\n\n";
-	if(! -d $inputFolder){
-		smog_quit("$inputFolder is not a valid template directory.");
-	}
-	if(! -d $coarseFolder){
-		smog_quit("$coarseFolder is not a valid template directory.");
-	}
-	$CGenabled=1;
-}
-if($AAdefault == 1){
-	print "\n-AA given. Will use the default All-Atom SMOG model provided with the distribution.\n";
-	my $SMOGDIR=$ENV{'SMOG_PATH'};
-	$inputFolder="$SMOGDIR/SBM_AA";
-	print "Will try to use templates found in \n$inputFolder\n\n";
-	if(! -d $inputFolder){
-		smog_quit("$inputFolder is not a valid template directory.");
-	}
-}
-
-if($CAGdefault == 1){
-	print "\n -CAgaussian given. Will use the default Calpha SMOG model with gaussian contacts, as provided with the distribution.\n";
-	my $SMOGDIR=$ENV{'SMOG_PATH'};
-	$inputFolder="$SMOGDIR/SBM_AA";
-	$coarseFolder="$SMOGDIR/SBM_calpha+gaussian";
-	print "Will try to use templates found in \n$inputFolder\n and\n$coarseFolder\n\n";
-	if(! -d $inputFolder){
-		smog_quit("$inputFolder is not a valid template directory.");
-	}
-	if(! -d $coarseFolder){
-		smog_quit("$coarseFolder is not a valid template directory.");
-	}
-	$CGenabled=1;
-}
-if($AAGdefault == 1){
-	print "\n-AAgaussian given. Will use the default All-Atom SMOG model with gaussian contacts, as provided with the distribution.\n";
-	my $SMOGDIR=$ENV{'SMOG_PATH'};
-	$inputFolder="$SMOGDIR/SBM_AA+gaussian";
-	print "Will try to use templates found in \n$inputFolder\n\n";
-	if(! -d $inputFolder){
-		smog_quit("$inputFolder is not a valid template directory.");
-	}
-}
-
-
-# if a contact file is provided, then don't calculate contacts
-if(defined $ContactFile){
-	$userProvidedMap=1;
-}
-
-## Ensure we only write out files with gromacs-compatible suffices
-if($topFile eq ""){$topFile=$DNAME};
-if($groFile eq ""){$groFile=$DNAME};
-if($shadowFile eq ""){$shadowFile=$DNAME};
-if($ndxFile eq ""){$ndxFile=$DNAME};
-
-$topFile=checksuffix($topFile,".top");
-$groFile=checksuffix($groFile,".gro");
-$shadowFile=checksuffix($shadowFile,".contacts");
-$ndxFile=checksuffix($ndxFile,".ndx");
-
-
-## check if files exist
-# things we don't want to overwrite
-if($backup eq "yes"){
-	foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile){
-		checkalreadyexists($filen);
-	}
-}
-
-# files we will read
-foreach my $filen($inputPDB,$ContactFile){
-	if(defined $filen  && ! -f $filen){
-		smog_quit("Can't find file $filen !! ");
-	}
-}
-
-# directories we will access
-foreach my $filen($inputFolder,$coarseFolder){
-	if($filen ne "" && ! -d $filen){
-		smog_quit ("Can't find directory $filen !! ");
-	}
-}
-
-
-####################
-## PROGRAM DRIVER ##
-####################
-
-if($CGenabled == 0) {
-	print "\n*****************************************************\n";
-	print   "******* ALL-ATOM SMOG MODEL WILL BE GENERATED *******";
-	print "\n*****************************************************\n";
-} else {
-	print "\n*****************************************************\n";
-	print   "**** COARSE-GRAINED SMOG MODEL WILL BE GENERATED ****";
-	print "\n*****************************************************\n";
-}
-my $allowCG = 0;
-print "Parsing templates files...\n";
-parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
-if($CGenabled == 0) {
-	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
-} elsif ($CGenabled == 1 && $userProvidedMap == 0) { #CG but we still need full .top to make a map
-	print "Creating topology for contact calculation.....\n";
-	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
-}
-if($userProvidedMap == 0) { #use SCM.jar if user doesn't provide a map
-	printTop($topFile);
-	generateContactMap($groFile,$ndxFile,$shadowFile,$topFile);
-}
-if($CGenabled == 1) { #Coarse graining, do everything over with new templates
-    	clearBifMemory();clearPDBMemory();
-	undef %presentatomtypes;
-	$allowCG = 1;
-	print "\nParsing templates for coarse graining... ";
-	$inputFolder = $coarseFolder;
-	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
-	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
-}
-
-appendContacts($shadowFile,$ContactFile,$userProvidedMap,$absolutecontactindex);
-
-
-printTop($topFile);
-print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$ndxFile\n";
-	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
-	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
-	printCitation();
-
-warnsummary();
-##exit(0);
-
-## END ##

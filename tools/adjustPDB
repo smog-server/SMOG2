@@ -1,8 +1,10 @@
 use strict;
 use warnings FATAL => 'all';
 use smog_common;
+use Getopt::Long;
 ## VARS: ##
 my %map;
+my %altname;
 my $rows;
 my $atomCount;
 my $isHead;
@@ -14,7 +16,6 @@ my @residue;
 my @pArr;
 my $loopInd;
 my $prevResTypeRNA;
-my $noexit=0;
 my $outputPDB="adjusted.pdb";
 my $inputPDB;
 my $insertTER;
@@ -24,12 +25,13 @@ my $default;
 my $renumber;
 my $removeH;
 my $mapOption;
+my $matchexact;
 my $help;
 my $inputArguments=join(' ',@ARGV);
 ## MODULE HEADERS ##
-use Getopt::Long;
 
-	my $tmpstring = <<"EOT";
+# this is called after all subroutines are read in
+my $tmpstring = <<"EOT";
 
                                     smog_adjustPDB                                   
 
@@ -42,41 +44,15 @@ use Getopt::Long;
 
             For questions regarding this script, contact info\@smog-server.org              
 EOT
-
+	
 my $wide=88;
 printdashed($wide);
 printcenter($wide,$tmpstring);
 printdashed($wide);
 
-sub usage
-{
-
-print <<EOS;
-usage: smog_adjustPDB .. options ..
-
-  Options
-	-i <filename>		: input PDB to adjust to smog2 format
-	-default 		: use the default map file provided by smog2 
-	-map <filename>		: specify a user-defined mapping file
-	-o [adjusted.pdb] 	: output pdb file name
-	-renumber 		: ignore any residue numbering inconsistencies and renumber residues sequentially
-	-removeH		: strip the file of any atoms that begin with "H"
-	-insertTER		: Insert "TER" lines between any non-consecutive residue numbers
-	-subALA			: If a residue only has C, CA, N, O, and CB atoms, then rename it ALA 
-	-warn [0] 		: convert first N errors to warnings (-1: convert all errors) 
-	-help 	  		: show options
-EOS
-
-  if ( @_ ){
-   	smog_quit("Command-line argument \"@_\" not recognized.");
-  }else{
-   exit
-  }
-}
-
 checkForModules();
 
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'match' => \$matchexact, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
 
 warninfo();
 
@@ -95,6 +71,10 @@ if (defined $insertTER){
 	print "\nNOTE: the flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.\n";
 }
 
+if (defined $renumber && defined $insertTER) {
+	smog_quit("Can not use -renumber and -insertTER flags together");
+}
+
 if(!defined $inputPDB){
 	smog_quit("No input PDB was specified. Use -i to specify your input pdb file.");
 }else{
@@ -103,11 +83,15 @@ if(!defined $inputPDB){
 }
 
 if (defined $default){
-	print "\n-default selected. Will use the default map file provided for terminal residue names.\n";
+	print "-default selected. Will use the default map file provided for terminal residue names.\n";
 	if(!exists $ENV{"SMOG_PATH"}){
         smog_quit("Environmental Variable SMOG_PATH not set\n");
 	}
-	$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";	
+	if (!defined $matchexact) {
+		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";
+	} else {
+		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMapExact";
+	}	
 }else{
 	if (!defined $mapFile ){
 		smog_quit("No map file was provided. Please choose a map file with -map, or use the default map settings with -default.");
@@ -116,32 +100,46 @@ if (defined $default){
 	}
 }
 
-foreach my $filen($outputPDB){
+foreach my $filen ($outputPDB){
 	checkalreadyexists($filen);
 }
 
 open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
 print "New file will be written: $outputPDB\n";
 
-## CACHE MAP ##
-#Note: Map files has to be in format <residue> <head_name> <tail_name>
-open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
-print "Mapping file $mapOption will be used.\n";
+readmap();	
+adjustInputFile($subALA);
+warnsummary();
+print "\n\tAdjustment of PDB is complete.\n\n";
 
-while(my $line = <MAP>)
+#########SUBROUTINES#########
+
+sub usage
 {
-	## SKIP COMMENT LINE ##
-	my ($A,$B)=checkcomment($line);
-	if($A eq ""){next;}  # skip the line if it is only a comment
-	my @entries = split(/\s+/,$A);
-	#map-->residue-->{head|tail} 
-	if($#entries != 2){
-		my $count=$#entries+1;
-		smog_quit("Looking for 3 fields in $mapOption, but found $count.\n
-						Offending line: $line");
-	}
-	$map{$entries[0]}{"head"} = $entries[1];
-	$map{$entries[0]}{"tail"} = $entries[2];
+
+print <<EOS;
+usage: smog_adjustPDB .. options ..
+
+  Options
+	-i <filename>           : input PDB to adjust to smog2 format
+	-default                : use the default map file provided by smog2 
+	-map <filename>         : specify a user-defined mapping file
+	-match                  : name residues if they have the exact atoms listed in the map file
+                                     Note: Mapping files used for -map and -match are different.  See manual.
+	-o [adjusted.pdb]       : output pdb file name
+	-renumber               : ignore any residue numbering inconsistencies and renumber residues sequentially
+	-removeH                : strip the file of any atoms that begin with "H"
+	-insertTER              : Insert "TER" lines between any non-consecutive residue numbers
+	-subALA                 : If a residue only has C, CA, N, O, and CB atoms, then rename it ALA 
+	-warn [0]               : convert first N errors to warnings (-1: convert all errors) 
+	-help                   : show options
+EOS
+
+  if ( @_ ){
+   	smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit
+  }
 }
 
 ## Returns 1 if a residue is a RNA, else returns zero. ##
@@ -154,6 +152,19 @@ sub isRNA{
 	return 0;
 }
 
+sub renamesummary {
+	my ($string,$chain)=@_;
+	if ($string ne "") {
+		print "Renamed residues in chain index $chain: $string\n";
+	}
+}
+
+sub removesummary {
+	my ($string,$chain)=@_;
+	if($string ne ""){
+		print "\nNote: The following atoms were removed from chain $chain: $string\n";
+	}
+}
 
 sub adjustInputFile{
 	my ($subALA)=@_;	
@@ -173,10 +184,12 @@ sub adjustInputFile{
 	$resInd = 1;
 	$atomCount=0;	
 	my $removestring="";	
+	my $renamedstring="";
 	my $firstresidue=0;
 	my $lastresidue=0;
 	my $lastresName="";
-
+	my $chainindex=1;
+	my $resIDorig;
 	# identify all TER and END lines.
 	my $k = 0;
 	my %isTEREND;
@@ -198,6 +211,10 @@ sub adjustInputFile{
 		## If end of file: ##
 		if ($pArr[$k] =~ m/^END/){
 			print NEWPDB "END\n";
+			renamesummary($renamedstring,$chainindex);
+			removesummary($removestring,$chainindex);
+			$renamedstring="";
+			$removestring="";
 			last;
 		}
 		
@@ -212,6 +229,12 @@ sub adjustInputFile{
 			$atomCount=0;
 			$isHead = 1;
 			$resInd = 1;
+			renamesummary($renamedstring,$chainindex);
+			removesummary($removestring,$chainindex);
+			$renamedstring="";
+			$removestring="";
+
+			$chainindex++;
 		}
 
 		## Exit if there's a BOND line in PDB: ##
@@ -242,7 +265,7 @@ sub adjustInputFile{
 					}
 				}
 			}elsif(!$renumber){
-				smog_quit("Non-integer residue ID found: $resNum.");
+				smog_quit("Residue IDs must be positive integers. Found: $resNum.");
 			}
 	
 			$resName = substr($pArr[$k],17,4);
@@ -266,13 +289,15 @@ sub adjustInputFile{
 				if($loopInd==0){
 					$lastresName=$resNametmp;
 				}elsif($lastresName ne $resNametmp){
-					smog_quit("Atoms within a residue have inconsistent names. See\n$pArr[$k]");
+					smog_quit("Atoms within a residue have inconsistent residue names. See\n$pArr[$k]");
 				}	
 				$residue[$loopInd]->{"atomName"} = $atomName;
 				$residue[$loopInd]->{"atomIndex"} = $atomCount;
 				$residue[$loopInd]->{"x"} = substr($pArr[$k],30,8);   
 				$residue[$loopInd]->{"y"} = substr($pArr[$k],38,8);  
 				$residue[$loopInd]->{"z"} = substr($pArr[$k],46,8);  
+				$resIDorig = substr($pArr[$k],22,5);
+				$resIDorig =~ s/\s+//g;  
 				
 				$k++;
 				
@@ -292,86 +317,199 @@ sub adjustInputFile{
 			}
 			$lastresidue=$resNum;
 
-			if(!exists $map{$resName}{"head"} || !exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
-			## Adjust Tail\Head names ##
-			if($isHead && $isTail){
-				if("$map{$resName}{\"tail\"}" eq "$map{$resName}{\"head\"}"){
-					# if definitions are the same, just call it head
-					$isTail=0;
-				}else{
-					smog_quit("Encountered a single-residue chain. Unclear whether to treat this as a head, or tail...");
+			if (!defined $matchexact) {
+				# conventional head/tail adjustments
+				if(!exists $map{$resName}{"head"} || !exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
+				## Adjust Tail\Head names ##
+				if($isHead && $isTail){
+					if("$map{$resName}{\"tail\"}" eq "$map{$resName}{\"head\"}"){
+						# if definitions are the same, just call it head
+						$isTail=0;
+					}else{
+						smog_quit("Encountered a single-residue chain. Unclear whether to treat this as a head, or tail...");
+					}
 				}
-			}
-			if ($isHead){
-				my $newResName = $map{$resName}{"head"};
-				$resName = $newResName;
-			}
-			if ($isTail){
-					my $newResName = $map{$resName}{"tail"};
-					$resName = 	$newResName;
-			}
-			
-			# check if subALA
-			if(defined $subALA && $resName ne "ALA" && $resName ne "ALAT"){
-				# only check to sub if turned on, and not already ALA
-				my %atomsin;
+				if ($isHead){
+					my $newResName = $map{$resName}{"head"};
+					$resName = $newResName;
+				}
+				if ($isTail){
+						my $newResName = $map{$resName}{"tail"};
+						$resName = 	$newResName;
+				}
+				
+				# check if subALA
+				if(defined $subALA && $resName ne "ALA" && $resName ne "ALAT"){
+					# only check to sub if turned on, and not already ALA
+					my %atomsin;
+					for(my $i=0; $i<=$loopInd; $i++){
+						my $aName = $residue[$i]->{"atomName"};
+						$atomsin{$aName}=1;
+					}
+					if($loopInd == 4){
+						if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} ){
+							$resName="ALA"
+						}
+					}
+					if($loopInd == 5){
+						if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} && exists $atomsin{"OXT"} ){
+							$resName="ALAT"
+						}
+					}
+				}
 				for(my $i=0; $i<=$loopInd; $i++){
 					my $aName = $residue[$i]->{"atomName"};
-					$atomsin{$aName}=1;
-				}
-				if($loopInd == 4){
-					if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} ){
-						$resName="ALA"
+					$aName =~ s/'/*/g;
+					if ($aName eq "OP1"){$aName="O1P"};
+					if ($aName eq "OP2"){$aName="O2P"};
+					if ($aName eq "OP3"){$aName="O3P"};
+					if (($resName eq "ILE" || $resName eq "ILET") &&  $aName eq "CD"){$aName="CD1"};
+					my $ind = $residue[$i]->{"atomIndex"};
+					my $x = $residue[$i]->{"x"};
+					my $y = $residue[$i]->{"y"};
+					my $z = $residue[$i]->{"z"};
+					if(defined $removeH && $aName =~ m/^H/){
+						$removestring .= "$resName$resInd-$aName ";
+					}else{
+					    printf NEWPDB "ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$resName,$chainName,$resInd,$x,$y,$z;
 					}
 				}
-				if($loopInd == 5){
-					if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} && exists $atomsin{"OXT"} ){
-						$resName="ALAT"
+
+				#LEAVE CURRENT RESIDUE AND UPDATE FLAGS#
+				$isHead = 0;
+				$isTail = 0;
+			} elsif (defined $matchexact) {
+				# get and sort atom names. We can update this with regexes later for more complex matching
+				my @tmparr;
+				for(my $i=0; $i<=$loopInd; $i++){
+					my $aName = $residue[$i]->{"atomName"};
+					if(exists $altname{"$resName-$aName"}){
+						my $tn=$aName;
+						$aName=$altname{"$resName-$aName"};
+						$renamedstring .="$resName$resIDorig-$tn->$aName ";
+					} elsif (exists $altname{"*-$aName"}){
+						# if no exact replacement found, see if there is a wildcard match
+						my $tn=$aName;
+						$aName=$altname{"*-$aName"};
+						$renamedstring .="$resName$resIDorig-$tn->$aName ";
+					} 
+					$aName =~ s/'/*/g;
+					$tmparr[$i]=$aName;
+				}
+				my $str="";
+				foreach my $I(sort @tmparr) {
+					unless(defined $removeH && $I =~ m/^H/){
+						$str.="$I ";
+					}
+				}
+				my $nres;
+				if (!exists $map{$str}) {
+					smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]");
+				} else {
+					$nres=$map{$str};
+					if ($resName ne $nres) {
+						$renamedstring .="$resName$resIDorig->$nres$resInd "; 
+					}
+				}
+				for(my $i=0; $i<=$loopInd; $i++){
+					my $ind = $residue[$i]->{"atomIndex"};
+					my $x = $residue[$i]->{"x"};
+					my $y = $residue[$i]->{"y"};
+					my $z = $residue[$i]->{"z"};
+					my $aName = $tmparr[$i];
+					if(defined $removeH && $aName =~ m/^H/){
+						$removestring .= "$resName$resInd-$aName ";
+					}else{
+					    printf NEWPDB "ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$nres,$chainName,$resInd,$x,$y,$z;
 					}
 				}
 
-
-			}
-			for(my $i=0; $i<=$loopInd; $i++){
-				my $aName = $residue[$i]->{"atomName"};
-				if ($aName =~ /'/){
-					chop($aName);
-					$aName .= "*";
-				}
-				if ($aName eq "OP1"){$aName="O1P"};
-				if ($aName eq "OP2"){$aName="O2P"};
-				if ($aName eq "OP3"){$aName="O3P"};
-				if (($resName eq "ILE" || $resName eq "ILET") &&  $aName eq "CD"){$aName="CD1"};
-				my $ind = $residue[$i]->{"atomIndex"};
-				my $x = $residue[$i]->{"x"};
-				my $y = $residue[$i]->{"y"};
-				my $z = $residue[$i]->{"z"};
-				if(defined $removeH && $aName =~ m/^H/){
-					$removestring .= "$resName$resInd-$aName ";
-				}else{
-				    printf NEWPDB "ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$resName,$chainName,$resInd,$x,$y,$z;
-				}
+			} else {
+				smog_quit("internal error 1");
 			}
 
-			#LEAVE CURRENT RESIDUE AND UPDATE FLAGS#
-			$isHead = 0;
-			$isTail = 0;
 			$resInd++;
 			$prevResTypeRNA = isRNA($resName);
 			undef @residue; 
 		}
-		
 		## If the line is niether ATOM, BOND, COMMENT, TER or END - exit. ##
 		else{
 			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM, HETATM, TER, BOND, COMMENT, END");
 		}
 	}
-	if($removestring ne ""){
-		print "\nNote: The following atoms were removed: $removestring\n";
-	}
 	close NEWPDB;
 }
 
-adjustInputFile($subALA);
-warnsummary();
-print "\n\tAdjustment of PDB is complete.\n\n";
+sub readmap {
+	## CACHE MAP ##
+	#Note: Map files has to be in format <residue> <head_name> <tail_name>
+	open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
+	print "Mapping file $mapOption will be read.\n";
+	
+	if (! defined $matchexact) {
+		# use the old head/tail convention for renaming
+		while(my $line = <MAP>)
+		{
+			## SKIP COMMENT LINE ##
+			my ($A,$B)=checkcomment($line);
+			if($A eq ""){next;}  # skip the line if it is only a comment
+			my @entries = split(/\s+/,$A);
+			#map-->residue-->{head|tail} 
+			if($#entries != 2){
+				my $count=$#entries+1;
+				smog_quit("Looking for 3 fields in $mapOption, but found $count. Offending line:\n$line");
+			}
+			$map{$entries[0]}{"head"} = $entries[1];
+			$map{$entries[0]}{"tail"} = $entries[2];
+		}
+	} else {
+		# rename residues based one exact matches, only
+		while(my $line = <MAP>)
+		{
+			## SKIP COMMENT LINE ##
+			my ($A,$B)=checkcomment($line);
+			if($A eq ""){next;}  # skip the line if it is only a comment
+			my @entries = split(/\s+/,$A);
+			my @tmparr;
+			#map-->residue-->{head|tail} 
+			if($#entries < 1){
+				my $count=$#entries+1;
+				smog_quit("Looking for at least 2 fields in $mapOption, but found $count. Offending line:\n$line");
+			}
+	
+			if($entries[0] =~ /[Aa][Ll][Tt][Nn][Aa][Mm][Ee]/) {
+				if($#entries < 3){
+					my $count=$#entries+1;
+					smog_quit("When giving ALTNAME in map file, must have at least 4 fields (ALTNAME <RES> <TARGET NAME> <ALTERNATE NAMES>). Offending line:\n$line");
+				}
+	
+				for( my $I=3;$I<=$#entries;$I++){
+					#save with key "resname-target name"
+					if(exists $altname{"$entries[1]-$entries[$I]"}){
+						smog_quit("Repeated altname entry in mapping file. Offending line:\n$line");
+					}
+					$altname{"$entries[1]-$entries[$I]"}=$entries[2];
+				}
+				
+			}
+			for( my $I=1;$I<=$#entries;$I++){
+				$tmparr[$I-1]=$entries[$I];
+			}
+			my $str="";
+			foreach my $I (sort @tmparr) {
+				$str.="$I ";
+			}
+			# key is the list of atoms
+			if(!exists $map{$str}) {
+				$map{$str}=$entries[0];
+			} else {
+				smog_quit("Mapping file ($mapOption) defines two residues as having the same atoms: $map{$str}, $entries[0]");
+			}
+		}
+	
+	}
+
+}
+
+# END OF SUBROUTINES
+

@@ -30,34 +30,6 @@ print <<EOT;
 
 EOT
 
-sub usage
-{
-  print <<EOT;
-
-usage: smog_extract  .. options ..
-
-   Optional flags 
-	-f [smog.top]		: input SMOG forcefield file
-	-g [smog.gro]		: input SMOG configuration file
-	-n [smog.ndx]		: index file to define extracted group
-	-of [extracted.top]	: output SMOG forcefield file for extracted system
-	-og [extracted.gro]	: output SMOG configuration file for extracted system
-	-om [atomindex.map]	: output file with old-to-new atom index mapping
-	-orm [restrained.map]	: output file with old-to-new atom index mapping for restrained atoms
-	-restraints <float>	: generate restraints with a specific strength for atoms 
-                                  that have interactions removed during extraction
-	-ndxorder		: Order the top and gro atoms in the order provided in the ndx file. 
-				  Default is to preserve the original ordering. 
-	-warn [0]		: convert the first N errors into warnings
-	-nogro			: do not extract a gro file. Only extract a .top
-	-help			: show options
-EOT
-  if ( @_ ){
-   smog_quit("Command-line argument \"@_\" not recognized.");
-  }else{
-   exit(1);
-  }
-}
 
 my $inputTOP="smog.top";
 my $inputGRO="smog.gro";
@@ -583,6 +555,37 @@ warnsummary();
 
 print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
 exit(0);
+
+
+##############SUBROUTINES##########################3
+sub usage
+{
+  print <<EOT;
+
+usage: smog_extract  .. options ..
+
+   Optional flags 
+	-f [smog.top]		: input SMOG forcefield file
+	-g [smog.gro]		: input SMOG configuration file
+	-n [smog.ndx]		: index file to define extracted group
+	-of [extracted.top]	: output SMOG forcefield file for extracted system
+	-og [extracted.gro]	: output SMOG configuration file for extracted system
+	-om [atomindex.map]	: output file with old-to-new atom index mapping
+	-orm [restrained.map]	: output file with old-to-new atom index mapping for restrained atoms
+	-restraints <float>	: generate restraints with a specific strength for atoms 
+                                  that have interactions removed during extraction
+	-ndxorder		: Order the top and gro atoms in the order provided in the ndx file. 
+				  Default is to preserve the original ordering. 
+	-warn [0]		: convert the first N errors into warnings
+	-nogro			: do not extract a gro file. Only extract a .top
+	-help			: show options
+EOT
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit(1);
+  }
+}
 
 
 sub gettypes
