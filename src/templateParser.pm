@@ -314,6 +314,10 @@ sub parseBif {
 			foreach my $ll(sort keys %list){
 				$mstring[$ti] .= " $ll";
 			}
+			if(defined $residueHandle->{$res}->{"meta"}){
+				$mstring[$ti] .= " %";
+				$mstring[$ti] .= $residueHandle->{$res}->{"meta"};
+			}
 			$mstring[$ti] .= "\n";
 			$ti++;
 		}
@@ -438,7 +442,8 @@ sub parseBif {
 		      "energyGroups" => \%energyGroups,
 		      "atomCount" => $residueHandle->{$res}->{"atomCount"},
 		      "totalcharge" => $residueHandle->{$res}->{"totalcharge"},
-		      "connect" => $residueHandle->{$res}->{"connect"}
+		      "connect" => $residueHandle->{$res}->{"connect"},
+		      "meta" => $residueHandle->{$res}->{"meta"}
 		      };
 		$residues{$res} = $interRes;
 	  
