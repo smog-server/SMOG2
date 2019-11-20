@@ -410,7 +410,7 @@ sub adjustInputFile{
 				} elsif (exists $map{$str}) {
 					$nres=$map{$str};
 				} else {
-					smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]");
+					smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]: $str");
 				} 
 
 
