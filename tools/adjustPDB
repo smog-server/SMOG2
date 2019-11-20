@@ -5,6 +5,7 @@ use Getopt::Long;
 ## VARS: ##
 my %map;
 my %altname;
+my %ignorename;
 my $rows;
 my $atomCount;
 my $isHead;
@@ -400,20 +401,26 @@ sub adjustInputFile{
 					}
 				}
 				my $nres;
-				if ($isHead == 1 && exists $map{"$str first"}) {
-					$nres=$map{"$str first"};
-				} elsif ($isTail == 1 && exists $map{"$str last"}) {
-					$nres=$map{"$str last"};
-				} elsif (exists $map{$str}) {
-					$nres=$map{$str};
+				if(!exists $ignorename{$resName}) {
+					if ($isHead == 1 && exists $map{"$str first"}) {
+						$nres=$map{"$str first"};
+					} elsif ($isTail == 1 && exists $map{"$str last"}) {
+						$nres=$map{"$str last"};
+					} elsif (exists $map{$str}) {
+						$nres=$map{$str};
+					} else {
+						smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]: $str");
+					} 
+
+					if ($resName ne $nres) {
+						$renamedstring .="$resName$resIDorig->$nres$resInd "; 
+					}
+
 				} else {
-					smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]: $str");
-				} 
-
-
-				if ($resName ne $nres) {
-					$renamedstring .="$resName$resIDorig->$nres$resInd "; 
+					#ignoring renaming of this residue	
+					$nres=$resName;
 				}
+
 				for(my $i=0; $i<=$loopInd; $i++){
 					my $ind = $residue[$i]->{"atomIndex"};
 					my $x = $residue[$i]->{"x"};
@@ -485,7 +492,7 @@ sub readmap {
 				smog_quit("Looking for at least 2 fields in $mapOption, but found $count. Offending line:\n$line");
 			}
 	
-			if($entries[0] =~ /[Aa][Ll][Tt][Nn][Aa][Mm][Ee]/) {
+			if($entries[0] =~ /^[Aa][Ll][Tt][Nn][Aa][Mm][Ee]$/) {
 				if($#entries < 3){
 					my $count=$#entries+1;
 					smog_quit("When giving ALTNAME in map file, must have at least 4 fields (ALTNAME <RES> <TARGET NAME> <ALTERNATE NAMES>). Offending line:\n$line");
@@ -500,6 +507,23 @@ sub readmap {
 				}
 				
 			}
+
+			if($entries[0] =~ /^[Ii][Gg][Nn][Oo][Rr][Ee][Rr][Ee][Ss]$/) {
+				if($#entries != 1 ){
+					my $count=$#entries+1;
+					smog_quit("When giving IgnoreRes in map file, must have 2 fields (IgnoreRes <RESNAME>). Offending line:\n$line");
+				}
+	
+				#save with key "resname-target name"
+				if(exists $ignorename{"$entries[1]"}){
+					smog_quit("Repeated IgnoreRes entry in mapping file. Offending line:\n$line");
+				}
+				$ignorename{"$entries[1]"}=0;
+				print "Note: Will not rename $entries[1] residues\n"
+			}
+
+
+
 			for( my $I=1;$I<=$#entries;$I++){
 				$tmparr[$I-1]=$entries[$I];
 			}
