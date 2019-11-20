@@ -375,9 +375,6 @@ sub adjustInputFile{
 					}
 				}
 
-				#LEAVE CURRENT RESIDUE AND UPDATE FLAGS#
-				$isHead = 0;
-				$isTail = 0;
 			} elsif (defined $matchexact) {
 				# get and sort atom names. We can update this with regexes later for more complex matching
 				my @tmparr;
@@ -433,6 +430,11 @@ sub adjustInputFile{
 			} else {
 				smog_quit("internal error 1");
 			}
+
+
+				#LEAVE CURRENT RESIDUE AND UPDATE FLAGS#
+				$isHead = 0;
+				$isTail = 0;
 
 			$resInd++;
 			$prevResTypeRNA = isRNA($resName);
