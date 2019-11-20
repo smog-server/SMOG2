@@ -1916,7 +1916,7 @@ usage: smog2 .. options ..
 	-help                   : show options 
 EOT
   if ( @_ ){
-   smog_quit("Command-line argument \"@_\" not recognized.");
+   smog_quit("Flag \"@_\" not recognized, or is missing arguments.");
   }else{
    exit(0);
   }
