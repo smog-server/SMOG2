@@ -506,7 +506,7 @@ sub readmap {
 			foreach my $I (sort @tmparr) {
 				if($I =~ m/^%/){
 					$I =~ s/%//g;
-					$flag="$I";
+					$flag=" $I";
 				}else{
 					$str.="$I ";
 				}
