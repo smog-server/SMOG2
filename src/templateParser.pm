@@ -1083,20 +1083,28 @@ sub getContactFunctionals
 			$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{"*"};
 			$assigned++;
 		}
-		
-		## If typeB matches and TypeA matches a wildcard ##
-		if((exists $interactions->{"contacts"}->{"func"}->{$typeB}) &&
-				exists $interactions->{"contacts"}->{"func"}->{$typeB}->{"*"})
-		{
-			$funct = $interactions->{"contacts"}->{"func"}->{$typeB}->{"*"};
-			$cG = $interactions->{"contacts"}->{"contactGroup"}->{$typeB}->{"*"};
-			$assigned++;
-		}
-		## if types are the same, then it is ok that we had matched the same interaction twice
-		if($assigned ==2 && $typeB eq $typeA){
-			$assigned=1;
-		}
+		if($typeB ne $typeA){
+			# only check typeB if it is different from typeA
 	
+			## If typeB matches and TypeA matches a wildcard ##
+			if((exists $interactions->{"contacts"}->{"func"}->{$typeB}) &&
+					exists $interactions->{"contacts"}->{"func"}->{$typeB}->{"*"})
+			{
+				my $functB = $interactions->{"contacts"}->{"func"}->{$typeB}->{"*"};
+				my $cGB = $interactions->{"contacts"}->{"contactGroup"}->{$typeB}->{"*"};
+				if($assigned ==0) {
+					#typeA did not match earlier, so set B.
+					$cG=$cGB;
+					$funct=$functB;
+					$assigned++;
+				}else{
+					#already matched typeA, and now typeB.  If the interactions are identical, there is no ambiguity.  If they are different function types, or groups, then give an error.
+					if($cG ne $cGB || $funct ne $functB){
+						smog_quit("Can\'t unambiguously assign a contact interaction between atoms of type $typeA and $typeB. Matched the following definitions equally well:\n\nfunc contactGroup\n$funct $cG\n$functB $cGB\n\nSee .nb for contact group definitions.\n");
+					}
+				}
+			}
+		}	
 		## If nothing has matched, and double wildcard interaction is defined ## 
 		if($assigned==0 && exists $interactions->{"contacts"}->{"func"}->{"*"}->{"*"}){
 
@@ -1109,7 +1117,7 @@ sub getContactFunctionals
 	if($assigned ==0){
 		smog_quit("Can\'t find a contact interaction that matches atomtype pair $typeA and $typeB.  See .nb for contact group definitions.\n");
 	}elsif($assigned >1){
-		smog_quit("Can\'t unambiguously assign a contact interaction between atoms of type $typeA and $typeB.  See .nb for contact group definitions.\n");
+		smog_quit("Internal Error 10. Please contact SMOG team to report.")
 	}
 
 	return ($funct,$cG);
