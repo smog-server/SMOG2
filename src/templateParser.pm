@@ -1255,28 +1255,28 @@ sub createDihedralAngleFunctionals {
 					|| ($b !~ /\Q$bM\E/ && $bM !~ /\Q*\E/)
 					|| ($c !~ /\Q$cM\E/ && $cM !~ /\Q*\E/)
 					|| ($d !~ /\Q$dM\E/ && $dM !~ /\Q*\E/)){
-				if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
-				if($matchScore >= $saveScore){
+					if($a =~ /\Q$aM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+					if($b =~ /\Q$bM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+					if($c =~ /\Q$cM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+					if($d =~ /\Q$dM\E/) {$matchScore+=2;} else {$matchScore+=1;}
+					if($matchScore >= $saveScore){
 	
-					if(($aM eq $dM and $bM eq $cM) || ($aM eq $bM and $bM eq $cM and $cM eq $dM)){
-						$symmatch=1;
-					}else{
-						$symmatch=0;
-					}
-					## this to make sure that the highest scoring angle is unique
-					if($matchScore == $saveScore){
-						if($saveScore != 0){
-						$matchScoreCount++;
+						if(($aM eq $dM and $bM eq $cM) || ($aM eq $bM and $bM eq $cM and $cM eq $dM)){
+							$symmatch=1;
+						}else{
+							$symmatch=0;
 						}
-					}else{
-						$matchScoreCount=0;
+						## this to make sure that the highest scoring angle is unique
+						if($matchScore == $saveScore){
+							if($saveScore != 0){
+							$matchScoreCount++;
+							}
+						}else{
+							$matchScoreCount=0;
+						}
+						$saveScore = $matchScore;$funct = $diheHandle->{$eG}->{$matches};
 					}
-					$saveScore = $matchScore;$funct = $diheHandle->{$eG}->{$matches};
 				}
-			    }
 			}
 	
 			if($Nd ==0){
