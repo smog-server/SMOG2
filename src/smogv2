@@ -68,7 +68,7 @@ my $ignoreHydrogen=0; #variable that is set when you don't want contact map gene
 my $DNAME="smog";
 my $backup="yes";
 my $allowCG = 0;
-
+my $nocheck = "no";
 our %freebonds;
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
@@ -170,11 +170,12 @@ sub setglobals {
 sub parse_args {
 	## parse command line options ##
 	# -o output top file name, default is smog.top
+	my $tempcheckoff;
 	usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
 		'c=s' => \$ContactFile, 'SCMorig' => \$saveSCMorig, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,  'gen_map=s' => \$gen_map,
 		 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warn=i' => \$maxwarn, 
 	         'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
-	         'rescaleCD=s' => \$rescaleCD, '<>' => \&usage, 'v' => \$printversion)
+	         'rescaleCD=s' => \$rescaleCD, 'nocheck'=> \$tempcheckoff,'<>' => \&usage, 'v' => \$printversion)
 	          or defined $help 
 	          or !defined $inputPDB 
 	          or (!defined $inputFolder  && !defined $coarseFolder));
@@ -189,6 +190,10 @@ sub parse_args {
 	}
 	
 	warninfo();
+	if(defined $tempcheckoff){
+		print "\n\nNOTE: -nocheck was issued. Will not cross the templates for consistency in energetics declarations. Use this option at your own risk...\n\n";
+		$nocheck="yes";
+	}
 	
 	if($coarseFolder ne "" and $inputFolder eq ""){
 		smog_quit("When using a CG model with -tCG, you must also specify the model to be used when calculating the contact map by invoking the option -t. Check -help for usage information. ");
@@ -1913,6 +1918,8 @@ usage: smog2 .. options ..
 	-ignH                   : ignore any atoms with name starting with 'H' in the internal contact algorithm
 	-rescaleCD [1.0]        : override total energy normalization and rescale all contacts/dihedrals by a factor
 	-gen_map <file name>    : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
+	-nocheck                : turn off template cross-validation checks.  This can be useful
+                                        when using old templates with new versions of SMOG
 	-help                   : show options 
 EOT
   if ( @_ ){
@@ -2023,14 +2030,16 @@ sub parseTemplatesAndPDB
 	parseBif();
 	print "\nDone parsing templates.\n";
 
-    	print "\nChecking template definitions for consistency.\n";
-	my $checkmessage=checkenergygroups();
-	$checkmessage.=checkNONBONDnames();
-	$checkmessage.=checkBONDnames();
-	$checkmessage.=checkPAIRnames();
-	$checkmessage.=checkREScharges();
-	if($checkmessage ne ""){
-		smog_quit("Cross-comparison of templates failed. See messages below:\n\n$checkmessage");
+	unless($nocheck eq "yes"){ 
+	    	print "\nChecking template definitions for consistency.\n";
+		my $checkmessage=checkenergygroups();
+		$checkmessage.=checkNONBONDnames();
+		$checkmessage.=checkBONDnames();
+		$checkmessage.=checkPAIRnames();
+		$checkmessage.=checkREScharges();
+		if($checkmessage ne ""){
+			smog_quit("Cross-comparison of templates failed. See messages below:\n\n$checkmessage");
+		}
 	}
 
 	# simply generate a map for adjustPDB and exit
