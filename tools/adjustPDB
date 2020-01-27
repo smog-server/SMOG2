@@ -26,7 +26,7 @@ my $default;
 my $renumber;
 my $removeH;
 my $mapOption;
-my $matchexact;
+my $legacymatch;
 my $help;
 my $inputArguments=join(' ',@ARGV);
 ## MODULE HEADERS ##
@@ -53,7 +53,7 @@ printdashed($wide);
 
 checkForModules();
 
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'match' => \$matchexact, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
 
 warninfo();
 
@@ -88,7 +88,7 @@ if (defined $default){
 	if(!exists $ENV{"SMOG_PATH"}){
         smog_quit("Environmental Variable SMOG_PATH not set\n");
 	}
-	if (!defined $matchexact) {
+	if (defined $legacymatch) {
 		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";
 	} else {
 		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMapExact";
@@ -125,14 +125,20 @@ usage: smog_adjustPDB .. options ..
 	-i <filename>           : input PDB to adjust to smog2 format
 	-default                : use the default map file provided by smog2 
 	-map <filename>         : specify a user-defined mapping file
-	-match                  : name residues if they have the exact atoms listed in the map file. Used in conjunction with -map
-                                     Note: Mapping files used for -map and -match are different.  See manual.
+	-legacy                 : Use legacy (version < 2.3) non-matching routine 
+                                     for mapping name residues. 
+                                     Must be used in conjunction with -map
+                                     Different mapping files used with -nomatch
 	-o [adjusted.pdb]       : output pdb file name
-	-renumber               : ignore any residue numbering inconsistencies and renumber residues sequentially
+	-renumber               : ignore any residue numbering inconsistencies 
+                                     and renumber residues sequentially
 	-removeH                : strip the file of any atoms that begin with "H"
-	-insertTER              : Insert "TER" lines between any non-consecutive residue numbers
-	-subALA                 : If a residue only has C, CA, N, O, and CB atoms, then rename it ALA 
-	-warn [0]               : convert first N errors to warnings (-1: convert all errors) 
+	-insertTER              : Insert "TER" lines between any non-consecutive 
+                                     residue numbers
+	-subALA                 : If a residue only has C, CA, N, O, and CB atoms, 
+                                     then rename it ALA 
+	-warn [0]               : convert first N errors to warnings (-1: convert 
+                                     all errors) 
 	-help                   : show options
 EOS
 
@@ -318,7 +324,7 @@ sub adjustInputFile{
 			}
 			$lastresidue=$resNum;
 
-			if (!defined $matchexact) {
+			if (defined $legacymatch) {
 				# conventional head/tail adjustments
 				if(!exists $map{$resName}{"head"} || !exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
 				## Adjust Tail\Head names ##
@@ -376,7 +382,7 @@ sub adjustInputFile{
 					}
 				}
 
-			} elsif (defined $matchexact) {
+			} elsif (!defined $legacymatch) {
 				# get and sort atom names. We can update this with regexes later for more complex matching
 				my @tmparr;
 				for(my $i=0; $i<=$loopInd; $i++){
@@ -461,7 +467,7 @@ sub readmap {
 	open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
 	print "Mapping file $mapOption will be read.\n";
 	
-	if (! defined $matchexact) {
+	if (defined $legacymatch) {
 		# use the old head/tail convention for renaming
 		while(my $line = <MAP>)
 		{
