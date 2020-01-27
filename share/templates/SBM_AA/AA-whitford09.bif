@@ -3,7 +3,7 @@
 	<residues>
 					<!-- LIGANDS -->
 <!--AMP-->
-		<residue name="AMP" residueType="ligand" atomCount="0">
+		<residue name="AMP" residueType="ligand" atomCount="0" meta="last">
 			<atoms>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">PA</atom>
 				<atom bType="B_1" nbType="NB_1" pairType="P_1">O1A</atom>
