@@ -1,7 +1,17 @@
 altName * O1P OP1
 altName * O2P OP2
 altName * O3P OP3
-A C1* C2 C2* C3* C4 C4* C5 C5* C6 C8 N1 N3 N6 N7 N9 O1P O2* O2P O3* O4* O5* P
+altName * C1* C1'
+altName * C2* C2'
+altName * C3* C3'
+altName * C4* C4'
+altName * C5* C5'
+altName * O1* O1'
+altName * O2* O2'
+altName * O3* O3'
+altName * O4* O4'
+altName * O5* O5'
+A (C1* C1') C2 C2* C3* C4 C4* C5 C5* C6 C8 N1 N3 N6 N7 N9 O1P O2* O2P O3* O4* O5* P
 A0P C1* C2 C2* C3* C4 C4* C5 C5* C6 C8 N1 N3 N6 N7 N9 O2* O3* O4* O5*
 A5 C1* C2 C2* C3* C4 C4* C5 C5* C6 C8 N1 N3 N6 N7 N9 O1P O2* O2P O3* O3P O4* O5* P
 ADP C1* C2 C2* C3* C4 C4* C5 C5* C6 C8 N1 N3 N6 N7 N9 O1A O1B O2* O2A O2B O3* O3A O3B O4* O5* PA PB
