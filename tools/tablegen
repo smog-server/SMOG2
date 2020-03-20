@@ -120,7 +120,7 @@ print OUTFILE<<EOF;
 # For electrostatics:
 #    	switching distance=$r1 nm
 #	cutoff distance=$rc nm
-#	ion concetration=$conc M
+#	ion concentration=$conc M
 EOF
 
 
@@ -196,7 +196,7 @@ usage: smog_tablegen  .. options ..
    Optional flags 
 	-N [6]   		: exponent of attractive non-bonded interaction
 	-M [12]  		: exponent of repulsive non-bonded interaction
-	-ic [0]  		: effective monovalent ion concetration (Molar) for DH interaction
+	-ic [0]  		: effective monovalent ion concentration (Molar) for DH interaction
 	-sd [1.0]		: distance (nm) to start switching function for electrostatics
 	-sc [1.5]		: distance (nm) at which switching function enforces elec. interactions go to zero
 	-tl [5]  		: length (nm) of table
