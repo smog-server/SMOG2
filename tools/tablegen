@@ -182,6 +182,12 @@ DESCRIPTION:
  table. If you would like to use a Debye-Huckel potential to describe screened
  electrostatic interactions, then you should use this script. Parameters for the DH
  potential are decsribed in Givaty and Levy (2009) J. Mol. Biol., 385, pp 1087-1097.
+ Note: The generated table will assume units of kCal/Mol.  However, one typically use
+ kJ/Mol in Gromacs, so it is necessary to rescale the values by 4.18.  Also, as described
+ in Noel and Whitford, Nature Comm, 13314 (2016), one typically rescales the 
+ electrostatic interactions by (simulated temperature, in Gromacs units)/300. Such 
+ rescaling can be achieved by modifying the table file, or by settings epsilon_r in the 
+ .mdp file.   
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
