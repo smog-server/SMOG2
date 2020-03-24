@@ -708,7 +708,7 @@ sub bondOutput
 				# don't write distances or strengths. Make gromacs use bondtype
 				# since we are not writing a distance, let's check and make sure this pair has a bondtype provided
 				&checkbondtype($i,$j,$allatoms); 
-				$formattedString = sprintf("%d\t%d\t%d",$i,$j,$paramArr[0]);
+				$formattedString = sprintf("%d\t%d",$i,$j);
 				$outputString = "$outputString$formattedString\n";
 			}else{
 	        		if($paramArr[0] =~ /\?/){
@@ -931,9 +931,9 @@ sub angleOutput
 		($fType,@paramArr) = angleFuncParser($fun);
 
 		if($fType ==-1){
-			 ## don't write distance. Make gromacs use angletype
+			 ## don't write angle and constant. Make gromacs use angletype
 			&checkangletype($i,$j,$k,$allatoms); 
-			$formattedString = sprintf("%d\t%d\t%d\t%d",$i,$j,$k,$paramArr[0]);
+			$formattedString = sprintf("%d\t%d\t%d",$i,$j,$k);
 			$outputString = "$outputString$formattedString\n";
 		}else{
 
