@@ -947,7 +947,7 @@ sub angleOutput
 					my $i1=$reflist{$i};
 					my $j1=$reflist{$j};
 					my $k1=$reflist{$k};
-					smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilites.",1);
+					smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilities.",1);
 				}
 		 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
 					my $THETA=int($paramArr[0]*100)/100.0;
