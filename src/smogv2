@@ -1917,7 +1917,7 @@ usage: smog2 .. options ..
 	-limitcontactlength     : if a contact length is too short, set it to the minimal value
 	-ignH                   : ignore any atoms with name starting with 'H' in the internal contact algorithm
 	-rescaleCD [1.0]        : override total energy normalization and rescale all contacts/dihedrals by a factor
-	-gen_map <file name>    : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
+	-gen_map <out map file> : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
 	-nocheck                : turn off template cross-validation checks.  This can be useful
                                         when using old templates with new versions of SMOG
 	-help                   : show options 
