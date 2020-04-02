@@ -323,72 +323,17 @@ sub adjustInputFile{
 				}  	
 			}
 			$lastresidue=$resNum;
-			my $printthis;
+
+			my $printresidue;
 			if (defined $legacymatch) {
 				# conventional head/tail adjustments
-				($printthis,$removestring)=legacymatching($resName,$resInd,$chainName,$isFirst,$isLast,$removestring);
+				($printresidue,$removestring)=legacymatching($resName,$resInd,$chainName,$isFirst,$isLast,$removestring);
 			} elsif (!defined $legacymatch) {
-				# get and sort atom names. We can update this with regexes later for more complex matching
-				my @tmparr;
-				for(my $i=0; $i<=$loopInd; $i++){
-					my $aName = $residue[$i]->{"atomName"};
-					if(exists $altname{"$resName-$aName"}){
-						my $tn=$aName;
-						$aName=$altname{"$resName-$aName"};
-						$renamedstring .="$resName$resIDorig-$tn->$aName ";
-					} elsif (exists $altname{"*-$aName"}){
-						# if no exact replacement found, see if there is a wildcard match
-						my $tn=$aName;
-						$aName=$altname{"*-$aName"};
-						$renamedstring .="$resName$resIDorig-$tn->$aName ";
-					} 
-					$aName =~ s/'/*/g;
-					$tmparr[$i]=$aName;
-				}
-				my $str="";
-				foreach my $I(sort @tmparr) {
-					unless(defined $removeH && $I =~ m/^H/){
-						$str.="$I ";
-					}
-				}
-				my $nres;
-				if(!exists $ignorename{$resName}) {
-					if ($isFirst == 1 && exists $map{"$str first"}) {
-						$nres=$map{"$str first"};
-					} elsif ($isLast == 1 && exists $map{"$str last"}) {
-						$nres=$map{"$str last"};
-					} elsif (exists $map{$str}) {
-						$nres=$map{$str};
-					} else {
-						smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]: $str");
-					} 
-
-					if ($resName ne $nres) {
-						$renamedstring .="$resName$resIDorig->$nres$resInd "; 
-					}
-
-				} else {
-					#ignoring renaming of this residue	
-					$nres=$resName;
-				}
-
-				for(my $i=0; $i<=$loopInd; $i++){
-					my $ind = $residue[$i]->{"atomIndex"};
-					my $x = $residue[$i]->{"x"};
-					my $y = $residue[$i]->{"y"};
-					my $z = $residue[$i]->{"z"};
-					my $aName = $tmparr[$i];
-					if(defined $removeH && $aName =~ m/^H/){
-						$removestring .= "$resName$resInd-$aName ";
-					}else{
-					    printf NEWPDB "ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$nres,$chainName,$resInd,$x,$y,$z;
-					}
-				}
-
+				($printresidue,$removestring,$renamedstring)=exactmatching($k,$resName,$resInd,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring);
 			} else {
 				smog_quit("internal error 1");
 			}
-			print NEWPDB $printthis;
+			print NEWPDB $printresidue;
 
 			#LEAVE CURRENT RESIDUE AND UPDATE FLAGS#
 			$isFirst = 0;
@@ -397,9 +342,9 @@ sub adjustInputFile{
 			$resInd++;
 			$prevResTypeRNA = isRNA($resName);
 			undef @residue; 
-		}
+
 		## If the line is niether ATOM, BOND, COMMENT, TER or END - exit. ##
-		else{
+		}else{
 			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM, HETATM, TER, BOND, COMMENT, END");
 		}
 	}
@@ -564,6 +509,69 @@ sub legacymatching
 		}
 	}
 	return($printthis,$removestring);
+}
+
+sub exactmatching
+{
+	my ($k,$resName,$resInd,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring) = @_;
+
+	# get and sort atom names. We can update this with regexes later for more complex matching
+	my @tmparr;
+	for(my $i=0; $i<=$loopInd; $i++){
+		my $aName = $residue[$i]->{"atomName"};
+		if(exists $altname{"$resName-$aName"}){
+			my $tn=$aName;
+			$aName=$altname{"$resName-$aName"};
+			$renamedstring .="$resName$resIDorig-$tn->$aName ";
+		} elsif (exists $altname{"*-$aName"}){
+			# if no exact replacement found, see if there is a wildcard match
+			my $tn=$aName;
+			$aName=$altname{"*-$aName"};
+			$renamedstring .="$resName$resIDorig-$tn->$aName ";
+		} 
+		$aName =~ s/'/*/g;
+		$tmparr[$i]=$aName;
+	}
+	my $str="";
+	foreach my $I(sort @tmparr) {
+		unless(defined $removeH && $I =~ m/^H/){
+			$str.="$I ";
+		}
+	}
+	my $nres;
+	if(!exists $ignorename{$resName}) {
+		if ($isFirst == 1 && exists $map{"$str first"}) {
+			$nres=$map{"$str first"};
+		} elsif ($isLast == 1 && exists $map{"$str last"}) {
+			$nres=$map{"$str last"};
+		} elsif (exists $map{$str}) {
+			$nres=$map{$str};
+		} else {
+			smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]\n Found the following atoms and conditions in the PDB\n\t $str");
+		} 
+
+		if ($resName ne $nres) {
+			$renamedstring .="$resName$resIDorig->$nres$resInd "; 
+		}
+
+	} else {
+		#ignoring renaming of this residue	
+		$nres=$resName;
+	}
+	my $printthis="";
+	for(my $i=0; $i<=$loopInd; $i++){
+		my $ind = $residue[$i]->{"atomIndex"};
+		my $x = $residue[$i]->{"x"};
+		my $y = $residue[$i]->{"y"};
+		my $z = $residue[$i]->{"z"};
+		my $aName = $tmparr[$i];
+		if(defined $removeH && $aName =~ m/^H/){
+			$removestring .= "$resName$resInd-$aName ";
+		}else{
+		    	$printthis.=sprintf("ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$nres,$chainName,$resInd,$x,$y,$z);
+		}
+	}
+	return($printthis,$removestring,$renamedstring);
 }
 
 
