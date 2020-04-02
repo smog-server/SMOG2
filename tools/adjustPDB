@@ -388,8 +388,14 @@ sub readlegacymap
 sub readexactmap
 {
 	open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
-
-	while(my $line = <MAP>){
+	my @content;
+	my $cindex=0;
+	while($content[$cindex] = <MAP>){
+		$cindex++;
+	}
+	
+	for(my $linen=0;$linen<$cindex;$linen++){
+		my $line=$content[$linen];
 		## SKIP COMMENT LINE ##
 		my ($A,$B)=checkcomment($line);
 		if($A eq ""){next;}  # skip the line if it is only a comment
