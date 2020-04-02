@@ -106,7 +106,7 @@ foreach my $filen ($outputPDB){
 }
 
 open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
-print "New file will be written: $outputPDB\n";
+print "New file will be written: $outputPDB\n\n";
 
 readmap();	
 adjustInputFile($subALA);
@@ -355,7 +355,7 @@ sub readmap {
 	## CACHE MAP ##
 	#Note: Map files has to be in format <residue> <head_name> <tail_name>
 	open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
-	print "Mapping file $mapOption will be read.\n";
+	print "Mapping file \"$mapOption\" will be read.\n\n";
 	
 	if (defined $legacymatch) {
 		# use the old head/tail convention for renaming
@@ -547,7 +547,7 @@ sub exactmatching
 		} elsif (exists $map{$str}) {
 			$nres=$map{$str};
 		} else {
-			smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]\n Found the following atoms and conditions in the PDB\n\t $str");
+			smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]\n Found the following atoms and conditions in the PDB for this residue:\n\t $str");
 		} 
 
 		if ($resName ne $nres) {
