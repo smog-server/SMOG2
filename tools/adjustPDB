@@ -80,7 +80,7 @@ if(!defined $inputPDB){
 	smog_quit("No input PDB was specified. Use -i to specify your input pdb file.");
 }else{
 	open(OLDPDB,"$inputPDB") or smog_quit("Can't open PDB file $inputPDB.");
-	print "Will reformat the PDB file: $inputPDB\n";	
+	print "\nWill reformat the PDB file: $inputPDB\n\n";	
 }
 
 if (defined $default){
@@ -393,26 +393,40 @@ sub readexactmap
 	while($content[$cindex] = <MAP>){
 		$cindex++;
 	}
-	
+
+	# check for ignoreRes lines
 	for(my $linen=0;$linen<$cindex;$linen++){
 		my $line=$content[$linen];
 		## SKIP COMMENT LINE ##
 		my ($A,$B)=checkcomment($line);
 		if($A eq ""){next;}  # skip the line if it is only a comment
 		my @entries = split(/\s+/,$A);
-		my @tmparr;
-		#map-->residue-->{head|tail} 
-		if($#entries < 1){
-			my $count=$#entries+1;
-			smog_quit("Looking for at least 2 fields in $mapOption, but found $count. Offending line:\n$line");
+		if($entries[0] =~ /^[Ii][Gg][Nn][Oo][Rr][Ee][Rr][Ee][Ss]$/) {
+			if($#entries != 1 ){
+				my $count=$#entries+1;
+				smog_quit("When giving IgnoreRes in map file, must have 2 fields (IgnoreRes <RESNAME>). Offending line:\n$line");
+			}
+			#save with key "resname-target name"
+			if(exists $ignorename{"$entries[1]"}){
+				smog_quit("Repeated IgnoreRes entry in mapping file. Offending line:\n$line");
+			}
+			$ignorename{"$entries[1]"}=0;
+			print "Note: Will not rename $entries[1] residues\n"
 		}
+	}
 
+	# check for altName lines
+	for(my $linen=0;$linen<$cindex;$linen++){
+		my $line=$content[$linen];
+		## SKIP COMMENT LINE ##
+		my ($A,$B)=checkcomment($line);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+		my @entries = split(/\s+/,$A);
 		if($entries[0] =~ /^[Aa][Ll][Tt][Nn][Aa][Mm][Ee]$/) {
 			if($#entries < 3){
 				my $count=$#entries+1;
 				smog_quit("When giving ALTNAME in map file, must have at least 4 fields (ALTNAME <RES> <TARGET NAME> <ALTERNATE NAMES>). Offending line:\n$line");
 			}
-
 			for( my $I=3;$I<=$#entries;$I++){
 				#save with key "resname-target name"
 				if(exists $altname{"$entries[1]-$entries[$I]"}){
@@ -420,21 +434,27 @@ sub readexactmap
 				}
 				$altname{"$entries[1]-$entries[$I]"}=$entries[2];
 			}
-			
+		}
+	}
+	
+	for(my $linen=0;$linen<$cindex;$linen++){
+		my $line=$content[$linen];
+		## SKIP COMMENT LINE ##
+		my ($A,$B)=checkcomment($line);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+		my @entries = split(/\s+/,$A);
+		if($entries[0] =~ /^[Ii][Gg][Nn][Oo][Rr][Ee][Rr][Ee][Ss]$/ || $entries[0] =~ /^[Aa][Ll][Tt][Nn][Aa][Mm][Ee]$/) {
+			next;
+		}
+		my @tmparr;
+		if($#entries < 1){
+			my $count=$#entries+1;
+			smog_quit("Looking for at least 2 fields in $mapOption, but found $count. Offending line:\n$line");
 		}
 
-		if($entries[0] =~ /^[Ii][Gg][Nn][Oo][Rr][Ee][Rr][Ee][Ss]$/) {
-			if($#entries != 1 ){
-				my $count=$#entries+1;
-				smog_quit("When giving IgnoreRes in map file, must have 2 fields (IgnoreRes <RESNAME>). Offending line:\n$line");
-			}
-
-			#save with key "resname-target name"
-			if(exists $ignorename{"$entries[1]"}){
-				smog_quit("Repeated IgnoreRes entry in mapping file. Offending line:\n$line");
-			}
-			$ignorename{"$entries[1]"}=0;
-			print "Note: Will not rename $entries[1] residues\n"
+		my $rn=$entries[0];
+		if(exists $ignorename{$rn}){
+			smog_quit("Atoms in residue \"$rn\" listed in map file, but the same residue is also listed under ignoreRes.");
 		}
 
 		for( my $I=1;$I<=$#entries;$I++){
@@ -460,9 +480,6 @@ sub readexactmap
 	}
 	# check that no ignoreRes residues were also given atoms
 	foreach my $resname (values %map){
-		if(exists $ignorename{$resname}){
-			smog_quit("Residue \"$resname\" listed in map file with atoms, and also listed under ignoreRes");
-		}
 	}
 	close MAP;
 }
