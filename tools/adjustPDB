@@ -323,65 +323,10 @@ sub adjustInputFile{
 				}  	
 			}
 			$lastresidue=$resNum;
-
+			my $printthis;
 			if (defined $legacymatch) {
 				# conventional head/tail adjustments
-				if(!exists $map{$resName}{"head"} || !exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
-				## Adjust Tail\Head names ##
-				if($isFirst && $isLast){
-					if("$map{$resName}{\"tail\"}" eq "$map{$resName}{\"head\"}"){
-						# if definitions are the same, just call it head
-						$isLast=0;
-					}else{
-						smog_quit("Encountered a single-residue chain. Unclear whether to treat this as a head, or tail...");
-					}
-				}
-				if ($isFirst){
-					my $newResName = $map{$resName}{"head"};
-					$resName = $newResName;
-				}
-				if ($isLast){
-						my $newResName = $map{$resName}{"tail"};
-						$resName = 	$newResName;
-				}
-				
-				# check if subALA
-				if(defined $subALA && $resName ne "ALA" && $resName ne "ALAT"){
-					# only check to sub if turned on, and not already ALA
-					my %atomsin;
-					for(my $i=0; $i<=$loopInd; $i++){
-						my $aName = $residue[$i]->{"atomName"};
-						$atomsin{$aName}=1;
-					}
-					if($loopInd == 4){
-						if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} ){
-							$resName="ALA"
-						}
-					}
-					if($loopInd == 5){
-						if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} && exists $atomsin{"OXT"} ){
-							$resName="ALAT"
-						}
-					}
-				}
-				for(my $i=0; $i<=$loopInd; $i++){
-					my $aName = $residue[$i]->{"atomName"};
-					$aName =~ s/'/*/g;
-					if ($aName eq "OP1"){$aName="O1P"};
-					if ($aName eq "OP2"){$aName="O2P"};
-					if ($aName eq "OP3"){$aName="O3P"};
-					if (($resName eq "ILE" || $resName eq "ILET") &&  $aName eq "CD"){$aName="CD1"};
-					my $ind = $residue[$i]->{"atomIndex"};
-					my $x = $residue[$i]->{"x"};
-					my $y = $residue[$i]->{"y"};
-					my $z = $residue[$i]->{"z"};
-					if(defined $removeH && $aName =~ m/^H/){
-						$removestring .= "$resName$resInd-$aName ";
-					}else{
-					    printf NEWPDB "ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$resName,$chainName,$resInd,$x,$y,$z;
-					}
-				}
-
+				($printthis,$removestring)=legacymatching($resName,$resInd,$chainName,$isFirst,$isLast,$removestring);
 			} elsif (!defined $legacymatch) {
 				# get and sort atom names. We can update this with regexes later for more complex matching
 				my @tmparr;
@@ -443,7 +388,7 @@ sub adjustInputFile{
 			} else {
 				smog_quit("internal error 1");
 			}
-
+			print NEWPDB $printthis;
 
 			#LEAVE CURRENT RESIDUE AND UPDATE FLAGS#
 			$isFirst = 0;
@@ -557,6 +502,70 @@ sub readmap {
 		}
 	}
 }
+
+sub legacymatching
+{
+	my ($resName,$resInd,$chainName,$isFirst,$isLast,$removestring) = @_;
+
+	if(!exists $map{$resName}{"head"} || !exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
+	## Adjust Tail\Head names ##
+	if($isFirst && $isLast){
+		if("$map{$resName}{\"tail\"}" eq "$map{$resName}{\"head\"}"){
+			# if definitions are the same, just call it head
+			$isLast=0;
+		}else{
+			smog_quit("Encountered a single-residue chain. Unclear whether to treat this as a head, or tail...");
+		}
+	}
+	if ($isFirst){
+		my $newResName = $map{$resName}{"head"};
+		$resName = $newResName;
+	}
+	if ($isLast){
+			my $newResName = $map{$resName}{"tail"};
+			$resName = 	$newResName;
+	}
+	
+	# check if subALA
+	if(defined $subALA && $resName ne "ALA" && $resName ne "ALAT"){
+		# only check to sub if turned on, and not already ALA
+		my %atomsin;
+		for(my $i=0; $i<=$loopInd; $i++){
+			my $aName = $residue[$i]->{"atomName"};
+			$atomsin{$aName}=1;
+		}
+		if($loopInd == 4){
+			if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} ){
+				$resName="ALA"
+			}
+		}
+		if($loopInd == 5){
+			if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} && exists $atomsin{"OXT"} ){
+				$resName="ALAT"
+			}
+		}
+	}
+	my $printthis="";
+	for(my $i=0; $i<=$loopInd; $i++){
+		my $aName = $residue[$i]->{"atomName"};
+		$aName =~ s/'/*/g;
+		if ($aName eq "OP1"){$aName="O1P"};
+		if ($aName eq "OP2"){$aName="O2P"};
+		if ($aName eq "OP3"){$aName="O3P"};
+		if (($resName eq "ILE" || $resName eq "ILET") &&  $aName eq "CD"){$aName="CD1"};
+		my $ind = $residue[$i]->{"atomIndex"};
+		my $x = $residue[$i]->{"x"};
+		my $y = $residue[$i]->{"y"};
+		my $z = $residue[$i]->{"z"};
+		if(defined $removeH && $aName =~ m/^H/){
+			$removestring .= "$resName$resInd-$aName ";
+		}else{
+			$printthis.=sprintf("ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$resName,$chainName,$resInd,$x,$y,$z);
+		}
+	}
+	return($printthis,$removestring);
+}
+
 
 # END OF SUBROUTINES
 
