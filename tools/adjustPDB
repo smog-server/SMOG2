@@ -4,7 +4,7 @@ use smog_common;
 use Getopt::Long;
 ## VARS: ##
 my %map;
-my %altname;
+my %rename;
 my %ignorename;
 my $rows;
 my $atomCount;
@@ -363,6 +363,7 @@ sub readmap {
 	} else {
 		# rename residues based one exact matches, only
 		readexactmap();	
+		addAltNames();
 	}
 }
 
@@ -391,7 +392,16 @@ sub readexactmap
 	my @content;
 	my $cindex=0;
 	while($content[$cindex] = <MAP>){
-		$cindex++;
+		## SKIP COMMENT LINE ##
+		my ($A,$B)=checkcomment($content[$cindex]);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+		my @entries = split(/\s+/,$A);
+		if($entries[0] =~ /^[Ii][Gg][Nn][Oo][Rr][Ee][Rr][Ee][Ss]$/ || $entries[0] =~ /^[Rr][Ee][Nn][Aa][Mm][Ee]$/ || $entries[0] =~ /^[Rr][Ee][Ss][Ii][Dd][Uu][Ee]$/ ) {
+			$cindex++;
+		}else{
+			smog_quit("Exact map file only supports IgnoreRes, Residue and Rename line. Offending line:\n$content[$cindex]");
+		}		
+
 	}
 
 	# check for ignoreRes lines
@@ -422,18 +432,16 @@ sub readexactmap
 		my ($A,$B)=checkcomment($line);
 		if($A eq ""){next;}  # skip the line if it is only a comment
 		my @entries = split(/\s+/,$A);
-		if($entries[0] =~ /^[Aa][Ll][Tt][Nn][Aa][Mm][Ee]$/) {
-			if($#entries < 3){
+		if($entries[0] =~ /^[Rr][Ee][Nn][Aa][Mm][Ee]$/) {
+			if($#entries != 2){
 				my $count=$#entries+1;
-				smog_quit("When giving ALTNAME in map file, must have at least 4 fields (ALTNAME <RES> <TARGET NAME> <ALTERNATE NAMES>). Offending line:\n$line");
+				smog_quit("When giving RENAME in map file, must have 3 fields (RENAME <ALTERNATE NAMES> <TARGET NAME>). Offending line:\n$line");
 			}
-			for( my $I=3;$I<=$#entries;$I++){
 				#save with key "resname-target name"
-				if(exists $altname{"$entries[1]-$entries[$I]"}){
-					smog_quit("Repeated altname entry in mapping file. Offending line:\n$line");
+				if(exists $rename{"$entries[1]"}){
+					smog_quit("Repeated rename entry in mapping file. Offending line:\n$line");
 				}
-				$altname{"$entries[1]-$entries[$I]"}=$entries[2];
-			}
+				$rename{"$entries[1]"}=$entries[2];
 		}
 	}
 	
@@ -443,22 +451,22 @@ sub readexactmap
 		my ($A,$B)=checkcomment($line);
 		if($A eq ""){next;}  # skip the line if it is only a comment
 		my @entries = split(/\s+/,$A);
-		if($entries[0] =~ /^[Ii][Gg][Nn][Oo][Rr][Ee][Rr][Ee][Ss]$/ || $entries[0] =~ /^[Aa][Ll][Tt][Nn][Aa][Mm][Ee]$/) {
+		if( $entries[0] !~ /^[Rr][Ee][Ss][Ii][Dd][Uu][Ee]$/) {
 			next;
 		}
 		my @tmparr;
-		if($#entries < 1){
+		if($#entries < 2){
 			my $count=$#entries+1;
-			smog_quit("Looking for at least 2 fields in $mapOption, but found $count. Offending line:\n$line");
+			smog_quit("Looking for at least 3 fields in $mapOption, but found $count. Offending line:\n$line");
 		}
 
-		my $rn=$entries[0];
+		my $rn=$entries[1];
 		if(exists $ignorename{$rn}){
 			smog_quit("Atoms in residue \"$rn\" listed in map file, but the same residue is also listed under ignoreRes.");
 		}
 
-		for( my $I=1;$I<=$#entries;$I++){
-			$tmparr[$I-1]=$entries[$I];
+		for( my $I=2;$I<=$#entries;$I++){
+			$tmparr[$I-2]=$entries[$I];
 		}
 		my $str="";
 		my $flag="";
@@ -473,15 +481,17 @@ sub readexactmap
 		$str.="$flag";
 		# key is the list of atoms
 		if(!exists $map{$str}) {
-			$map{$str}=$entries[0];
+			$map{$str}=$entries[1];
 		} else {
 			smog_quit("Mapping file ($mapOption) defines two residues as having the same atoms: $map{$str}, $entries[0]");
 		}
 	}
-	# check that no ignoreRes residues were also given atoms
-	foreach my $resname (values %map){
-	}
 	close MAP;
+}
+
+sub addAltNames
+{
+
 }
 
 sub legacymatching
@@ -555,17 +565,11 @@ sub exactmatching
 	my @tmparr;
 	for(my $i=0; $i<=$loopInd; $i++){
 		my $aName = $residue[$i]->{"atomName"};
-		if(exists $altname{"$resName-$aName"}){
+		if(exists $rename{"$aName"}){
 			my $tn=$aName;
-			$aName=$altname{"$resName-$aName"};
-			$renamedstring .="$resName$resIDorig-$tn->$aName ";
-		} elsif (exists $altname{"*-$aName"}){
-			# if no exact replacement found, see if there is a wildcard match
-			my $tn=$aName;
-			$aName=$altname{"*-$aName"};
+			$aName=$rename{"$aName"};
 			$renamedstring .="$resName$resIDorig-$tn->$aName ";
 		} 
-		$aName =~ s/'/*/g;
 		$tmparr[$i]=$aName;
 	}
 	my $str="";
