@@ -363,7 +363,6 @@ sub readmap {
 	} else {
 		# rename residues based one exact matches, only
 		readexactmap();	
-		addAltNames();
 	}
 }
 
@@ -425,7 +424,7 @@ sub readexactmap
 		}
 	}
 
-	# check for altName lines
+	# check for rename lines
 	for(my $linen=0;$linen<$cindex;$linen++){
 		my $line=$content[$linen];
 		## SKIP COMMENT LINE ##
@@ -487,11 +486,6 @@ sub readexactmap
 		}
 	}
 	close MAP;
-}
-
-sub addAltNames
-{
-
 }
 
 sub legacymatching
