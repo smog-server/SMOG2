@@ -720,7 +720,7 @@ sub bondOutput
 					}
 					my $i1=$reflist{$i};
 					my $j1=$reflist{$j};
-					print("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range, which typically means there is something strange about the input structure. However, bondtypes are being used for this interaction, so the distance can be corrected through energy minimization.");
+					smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range, which typically means there is something strange about the input structure. However, bondtypes are being used for this interaction, so the distance can be corrected through energy minimization.",1);
 	        		}	
 
 
@@ -951,13 +951,13 @@ sub angleOutput
 			&checkangletype($i,$j,$k,$allatoms); 
 			$formattedString = sprintf("%d\t%d\t%d",$i,$j,$k);
 			$outputString = "$outputString$formattedString\n";
-			if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
+			if($values < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
 				my $THETA=int($paramArr[0]*100)/100.0;
 				my %reflist=%{$indexhandle};
 				my $i1=$reflist{$i};
 				my $j1=$reflist{$j};
 				my $k1=$reflist{$k};
-				print("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tThis may mean your input structure has issues. However, angletype will be used for this interaction, so energy minimization may be enough to fix the structure.");
+				smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tThis may mean your input structure has issues. However, angletype will be used for this interaction, so energy minimization may be enough to fix the structure.",1);
 			}
 
 
