@@ -81,7 +81,7 @@ EOS
 		do
 			echo Creating wrapper $smog2dir/bin/smog_$tool
 			cat $smog2dir/header > $smog2dir/bin/smog_$tool 
-			echo $perl4smog $smog2dir/tools/$tool \"\$\@\" >> $smog2dir/bin/smog_$tool
+			echo $perl4smog $smog2dir/src/tools/$tool \"\$\@\" >> $smog2dir/bin/smog_$tool
 			chmod 755 $smog2dir/bin/smog_$tool
 		done
 	else
@@ -97,12 +97,12 @@ EOS
 		fi
 		for tool in adjustPDB tablegen optim extract scale-energies ions
 		do
-			LN=`grep "$perl4smog $smog2dir/tools/$tool" $smog2dir/bin/smog_$tool | wc -l`
+			LN=`grep "$perl4smog $smog2dir/src/tools/$tool" $smog2dir/bin/smog_$tool | wc -l`
 			LN=$[$LN*$force]
 			if (( $LN == 0 )); then
 				echo Updating wrapper $smog2dir/bin/smog_$tool
 				cat $smog2dir/header > $smog2dir/bin/smog_$tool 
-				echo $perl4smog $smog2dir/tools/$tool \"\$\@\" >> $smog2dir/bin/smog_$tool
+				echo $perl4smog $smog2dir/src/tools/$tool \"\$\@\" >> $smog2dir/bin/smog_$tool
 				chmod 755 $smog2dir/bin/smog_$tool
 			fi
 		done
