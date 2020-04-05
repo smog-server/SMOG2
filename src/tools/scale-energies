@@ -1,0 +1,358 @@
+use strict;
+use warnings FATAL => 'all';
+use List::Util qw(max);
+use Getopt::Long;
+use smog_common;
+my $inputArguments=join(' ',@ARGV);
+
+my $tmpstring = <<EOT;
+
+                                      smog_scale-energies
+
+      	smog_scale-energies is part of the SMOG 2 distribution, available at smog-server.org
+
+        This tool uses a SMOG .top file, along with an index file to 
+	generate a SMOG model in which contacts and/or dihedrals weights are modified.
+	This is a common task when using SMOG models, and we provide this script as a 
+	convenience. 
+
+	In this script, a dihedral is rescaled if all four atoms are within the designated
+	index group.  Similarly, a contact weight is rescaled if the atoms are in the two
+	designated groups.
+
+        For usage information, issue flag -help, or see the SMOG manual.
+
+        For questions regarding this script, contact info\@smog-server.org
+
+EOT
+my $wide=88;
+printdashed($wide);
+printcenter($wide,$tmpstring);
+printdashed($wide);
+
+
+our $Ngrps=0;
+our @grpnms;
+my $groupD;
+my $groupC1;
+my $groupC2;
+my $inputTOP="smog.top";
+my $indexFile="smog.ndx";
+my $outputTOP="smog.rescaled.top";
+my $rescaleC=1.0;
+my $rescaleD=1.0;
+my $help;
+our %supported_directives = ( 'defaults' => '1',
+        'atomtypes' => '1',
+        'moleculetype' => '1',
+        'nonbond_params' => '2',
+        'atoms' => '1',
+        'bonds' => '1',
+        'angles' => '1',
+        'dihedrals' => '1',
+        'pairs' => '1',
+        'exclusions' => '1',
+        'system' => '1',
+        'molecules' => '1',
+        'position_restraints' => '2'
+        );
+
+quit_init();
+checkForModules();
+
+
+
+usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
+        'of=s' => \$outputTOP, 'rc=f' => \$rescaleC, 'rd=f' => \$rescaleD, 'warn=i' => \$maxwarn, 
+        '<>' => \&usage)
+        or defined $help); 
+
+if($rescaleC < 0){
+	smog_quit("negative may not be provided with -rc.")
+}
+if($rescaleD < 0){
+	smog_quit("negative may not be provided with -rd.")
+}
+$inputTOP=checksuffix($inputTOP,".top");
+$outputTOP=checksuffix($outputTOP,".top");
+$indexFile=checksuffix($indexFile,".ndx");
+
+if($rescaleD == 1.0 && $rescaleC == 1.0){
+	smog_quit("-rc and -rd given values of 1.  There is nothing to do, besides quit.\n\nNo .top file generated.");
+}
+
+warninfo();
+
+# back up files if they exist
+checkalreadyexists($outputTOP);
+
+### read in the index file
+my $atomgroup;
+my $modgrp;
+my $groupname;
+my $groupnames;
+my $grpnms;
+
+($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
+
+@grpnms=@{$grpnms};
+my %groupnames=%{$groupnames};
+my %atomgroup=%{$atomgroup};
+
+## find out what groups we want to rescale
+if($Ngrps==0){
+	smog_quit("no atom groups given in ndx file.");
+}elsif($Ngrps>0){
+	# if we have groups, then select which ones are used for C and D rescaling
+
+	if($rescaleD != 1.0){
+		listgroups();
+		print "Select the index of the group for dihedral rescaling?\n";
+		$groupD=selectgroup();
+		$groupD=$grpnms[$groupD];
+	}
+	if($rescaleC != 1.0){
+		listgroups();
+		print "Select the index of the first group for contact rescaling?\n";
+		$groupC1=selectgroup();
+		print "Select the index of the second group for contact rescaling?\n";
+		$groupC2=selectgroup();
+		$groupC1=$grpnms[$groupC1];
+		$groupC2=$grpnms[$groupC2];
+	}
+}
+
+print "\nUsing $inputTOP and $indexFile to generate $outputTOP.\n";
+my $topbuff="";
+if($rescaleC != 1.0 && $rescaleC != 0.0){
+	print "Will rescale weights of contacts between atom groups \"$groupC1\" and \"$groupC2\" by $rescaleC.\n";
+	$topbuff .= ";Contact groups selected \"$groupC1\" and \"$groupC2\"\n";
+}elsif($rescaleC == 0){
+	print "Will remove contacts between atom groups \"$groupC1\" and \"$groupC2\".\n";
+	$topbuff .= ";Contact groups selected \"$groupC1\" and \"$groupC2\"\n";
+}
+
+if($rescaleD != 1.0 && $rescaleD != 0.0){
+	print "Will rescale weights of dihedrals for atom group \"$groupD\" by $rescaleD.\n";
+	$topbuff .= ";Dihedral group selected \"$groupD\"\n";
+}elsif($rescaleD == 0){
+	print "Will remove dihedrals for atom group \"$groupD\".\n";
+	$topbuff .= ";Dihedral group selected \"$groupD\"\n";
+}
+
+$topbuff .="; Below are the comments that were in the top file provided to scale-energies\n";
+print "\nReading top file $inputTOP\n";
+
+my $string=loadfile($inputTOP);
+
+my ($DATA,$DIRLIST)=checkdirectives($string);
+my %DIRLIST=%{$DIRLIST};
+my @DATA=@{$DATA};
+
+# Go through the directives, in order, and write out information for the subsystem
+open(TOPOUT,">$outputTOP") or smog_quit("Can\'t open $outputTOP for writing.");
+#copy header
+
+print TOPOUT "; This is a top file generated with smog_scale-energies using the command:\n;";
+print TOPOUT "   smog_scale-energies $inputArguments\n";
+print TOPOUT "$topbuff";
+print TOPOUT "$DATA[0]\n";
+
+foreach my $DIR("defaults","atomtypes","nonbond_params","moleculetype","atoms","bonds","angles")
+{
+	if(exists $DIRLIST{"$DIR"}){
+		print TOPOUT "[";
+		print TOPOUT $DATA[$DIRLIST{"$DIR"}]; 
+		print TOPOUT "\n";	
+	}
+}
+
+if($rescaleD == 1.0){
+	if(exists $DIRLIST{"dihedrals"}){
+                print TOPOUT "[";
+		print TOPOUT $DATA[$DIRLIST{"dihedrals"}];
+		print TOPOUT "\n";	
+        }
+}else{
+	my @C = split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
+	if($#C<1){
+		smog_quit("No dihedrals found listed under dihedrals directive\n");
+	}
+
+	print TOPOUT "[ dihedrals ]\n";
+
+	for(my $JJ=1;$JJ<=$#C;$JJ++){
+		my ($A, $B)=checkcomment($C[$JJ]);
+		if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			my $rescale=0;
+			for (my $K=0;$K<4;$K++){
+				if($D[4] == 1 && exists $atomgroup{$groupD}{$D[$K]}){
+					$rescale++;
+				}
+			}
+
+			if($rescale == 4){
+				if($rescaleD ==0){
+					next;
+				}
+				$D[6] *= $rescaleD;	
+				for(my $J=0;$J<=$#D;$J++){
+					print TOPOUT "$D[$J]\t";
+				}
+				print TOPOUT "$B\n";
+			}else{
+				print TOPOUT "$C[$JJ]\n";
+			}
+		}
+	}
+}
+
+
+if($rescaleC == 1.0){
+	if(exists $DIRLIST{"pairs"}){
+		print TOPOUT "[";
+		print TOPOUT $DATA[$DIRLIST{"pairs"}];
+		print TOPOUT "\n";	
+        }
+}else{
+	print TOPOUT "[ pairs ]\n";
+	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
+
+	for(my $JJ=1;$JJ<=$#C;$JJ++){
+		my ($A, $B)=checkcomment($C[$JJ]);
+		if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			my $rescale=dorescaleC(\%atomgroup,$groupC1,$groupC2,$D[0],$D[1]);
+
+			if($rescale==1){
+				if($rescaleC == 0){
+					#remove the contact
+					next;
+				}
+				$D[3] *= $rescaleC;	
+				$D[4] *= $rescaleC;	
+				for(my $J=0;$J<=$#D;$J++){
+					print TOPOUT "$D[$J]\t";
+				}
+				print TOPOUT "$B\n";
+			}else{
+				print TOPOUT "$C[$JJ]\n";
+			}
+		}
+	}
+}
+
+
+if($rescaleC !=0){
+	if(exists $DIRLIST{"exclusions"}){
+		print TOPOUT "[";
+		print TOPOUT $DATA[$DIRLIST{"exclusions"}];
+		print TOPOUT "\n";	
+        }
+}else{
+	print TOPOUT "[ exclusions ]\n";
+	my @C=split(/\n/,$DATA[$DIRLIST{"exclusions"}]);
+
+	for(my $JJ=1;$JJ<=$#C;$JJ++){
+		my ($A, $B)=checkcomment($C[$JJ]);
+		if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			my $rescale=dorescaleC(\%atomgroup,$groupC1,$groupC2,$D[0],$D[1]);
+
+			if($rescale==1 && $rescaleC == 0){
+				next;
+			}else{
+				print TOPOUT "$C[$JJ]\n";
+			}
+		}
+	}
+}
+
+
+
+foreach my $DIR("position_restraints","system","molecules")
+{
+	if(exists $DIRLIST{"$DIR"}){
+		print TOPOUT "[";
+		print TOPOUT $DATA[$DIRLIST{"$DIR"}];	
+		print TOPOUT "\n";	
+	}
+}
+
+warnsummary();
+
+print "\n\tSUCCESS: Interactions rescaled.\n\n";
+exit(0);
+
+
+##########SUBROUTINES##########
+
+sub usage
+{
+  print <<EOT;
+
+usage: smog_scale-energies  .. options ..
+
+   Options
+	-f [smog.top]		: input SMOG forcefield file
+	-n [smog.ndx]		: index file
+        -of [smog.rescaled.top]	: output SMOG forcefield file with rescaled energies
+	-rc [1.0]		: rescale contact weights by factor (0 means interactions will be removed) 
+	-rd [1.0]		: rescale dihedral weights by factor (0 means interactions will be removed)
+	-help    		: show supported options
+EOT
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit(1);
+  }
+}
+
+sub listgroups
+{
+	print "index\t:\tgroup name\n";
+	for(my $I=0;$I<$Ngrps;$I++){
+		print "$I\t:\t$grpnms[$I]\n";
+	}
+}
+
+sub selectgroup
+{
+	my $tmp=<STDIN>;
+	chomp($tmp);
+	unless($tmp =~ m/^\d+$/){
+		smog_quit("$tmp is an invalid selection");
+	}
+	if($tmp <0 or $tmp >=$Ngrps){
+		smog_quit("selection must be positive and less than or $Ngrps");
+	}
+	return $tmp;
+}
+
+sub dorescaleC
+{
+	my ($atomgroup,$groupC1,$groupC2,$A,$B) = @_;
+	my %atomgroup = %{$atomgroup};
+	if(exists $atomgroup{$groupC1}{$A} && exists $atomgroup{$groupC2}{$B} ){
+		return 1;
+	}
+	if(exists $atomgroup{$groupC1}{$B} && exists $atomgroup{$groupC2}{$A} ){
+		return 1;
+	}
+
+	return 0;
+}
+

@@ -1,0 +1,982 @@
+use strict;
+use warnings FATAL => 'all';
+use List::Util qw(max);
+use smog_common;
+my $tmpstring = <<EOT;
+                                        smog_optim
+
+
+SMOG_OPTIM IS STILL EXPERIMENTAL, THOUGH IT IS PROVIDED, IN CASE YOU WOULD LIKE TO TEST IT.
+
+
+       smog_optim is part of the SMOG 2 distribution, available at smog-server.org     
+
+         This tool uses a SMOG .top and .gro file to generate OPTIM input files.         
+			  This tool is to be run interactively. 
+
+                        See the SMOG manual for usage guidelines.
+
+            For questions regarding this script, contact info\@smog-server.org
+
+EOT
+my $wide=88;
+printdashed($wide);
+printcenter($wide,$tmpstring);
+printdashed($wide);
+
+
+my $GROFILE;
+my $TOPFILE;
+my $PI=3.1415926;
+my $twoPI=2.0*$PI;
+my $DEG2RAD=$PI/180.0;
+my @X;
+
+sub remainder {
+    my ($a, $b) = @_;
+    return 0 unless $b && $a;
+    return $a / $b - int($a / $b);
+}
+
+### read the options
+
+print "\nWould you like to convert a .top and .gro file to make input for OPTIM? [Y/N]\n";
+my $TMP;
+$TMP=<STDIN>;
+$TMP =~ s/^\s+|\s+$//g;
+
+until($TMP=~ m/^[YN]$/){
+	print "Please answer Y, or N.\n";
+	$TMP=<STDIN>;
+	chomp($TMP);
+        $TMP =~ s/^\s+|\s+$//g;
+}
+
+my $SBMINPON=$TMP;
+
+print "\nWould you like to generate files necessary for rigidification code in OPTIM? [Y/N]\n";
+$TMP=<STDIN>;
+
+until($TMP=~ m/^[YN]$/ ){
+	print "Please answer Y, or N.\n";
+	$TMP=<STDIN>;
+	chomp($TMP);
+        $TMP =~ s/^\s+|\s+$//g;
+}
+
+my $RIGIDON=$TMP;
+if($RIGIDON =~ m/^N$/  && $SBMINPON =~ m/^N$/){
+	smog_quit("No optim input and no rigid body generation selection.  Quitting.");
+}
+
+my $CONTTYPE;
+if($SBMINPON =~ m/^Y$/){
+	print "\nWhat is the name of the input .top file?\n";
+	$TOPFILE=<STDIN>;
+        $TOPFILE =~ s/^\s+|\s+$//g;
+	my ($ext)=$TOPFILE =~ /(\.[^.]+)$/;
+
+	until(defined $ext && $ext eq ".top"){
+		print "\n\tForcefield file must have suffix .top. Please provide valid .top file name.\n";
+		$TOPFILE=<STDIN>;
+		$TOPFILE =~ s/^\s+|\s+$//g;
+		($ext)=$TOPFILE =~ /(\.[^.]+)$/;
+	}
+
+	until(-e "$TOPFILE"){
+		print "\n\tForcefield file $TOPFILE not found. Please provide valid .top file name.\n";
+		$TOPFILE=<STDIN>;
+        	$TOPFILE =~ s/^\s+|\s+$//g;
+		($ext)=$TOPFILE =~ /(\.[^.]+)$/;
+		until(defined $ext && $ext eq ".top"){
+			print "\n\tForcefield file must have suffix .top. Please provide valid .top file name.\n";
+			$TOPFILE=<STDIN>;
+			$TOPFILE =~ s/^\s+|\s+$//g;
+			($ext)=$TOPFILE =~ /(\.[^.]+)$/;
+		}
+	}
+
+
+	print "\nAre the contacts of type 1 modeled with 10-12, or 6-12 interactions? [10/6]\n";
+	my $TMP;
+	$TMP=<STDIN>;
+        $TMP =~ s/^\s+|\s+$//g;
+	until($TMP=~ m/^10$/  || $TMP=~ m/^6$/ ){
+		print "Please answer 6, or 10.\n";
+		$TMP=<STDIN>;
+        	$TMP =~ s/^\s+|\s+$//g;
+	}
+
+	if($TMP=~ m/^6$/){
+		$CONTTYPE = 6;
+	}elsif($TMP=~ m/^10$/){
+		$CONTTYPE = 10;
+	}
+
+}
+
+print "\nWhat is the name of input .gro file\n";
+$GROFILE=<STDIN>;
+$GROFILE =~ s/^\s+|\s+$//g;
+my ($ext)=$GROFILE =~ /(\.[^.]+)$/;
+
+until(defined $ext && $ext eq ".gro"){
+	print "\n\tCoordinate file must have suffix .gro. Please provide valid .gro file name.\n";
+	$GROFILE=<STDIN>;
+	$GROFILE =~ s/^\s+|\s+$//g;
+	($ext)=$GROFILE =~ /(\.[^.]+)$/;
+}
+
+until(-e "$GROFILE"){
+	print "\n\tCoordinate file $GROFILE not found. Please provide valid .gro file name.\n";
+	$GROFILE=<STDIN>;
+	$GROFILE =~ s/^\s+|\s+$//g;
+	($ext)=$GROFILE =~ /(\.[^.]+)$/;
+	until(defined $ext && $ext eq ".gro"){
+		print "\n\tCoordinate file must have suffix .gro. Please provide valid .gro file name.\n";
+		$GROFILE=<STDIN>;
+		$GROFILE =~ s/^\s+|\s+$//g;
+		($ext)=$GROFILE =~ /(\.[^.]+)$/;
+	}
+}
+
+## Generate rigidification files
+
+my %GROUPS;
+my %RESCOUNT;
+my %ATOMSINRES;
+my %rigidified;
+my %excludedlist;
+
+if($RIGIDON =~ m/^Y$/){
+	print "\n\nUsing $GROFILE to generate rbodyconfig and coordsinrigid for OPTIM....\n\n";
+
+	print "Would you like to provide an index file that defines the rigid atoms [F], use the defaults [D], or both [B]?\n";
+
+	$TMP=<STDIN>;
+
+	until($TMP=~ m/^[FD]$/){
+		print "Please answer F (file), or D (default).\n";
+		$TMP=<STDIN>;
+        	$TMP =~ s/^\s+|\s+$//g;
+	}
+	my $RDEF=$TMP;
+	my $NATOMS;
+	my $RIGIDINDEX=0;
+	my $RBDOF=0; # count the number of degrees of freedom that are moved by rigid bodies
+	if($RDEF =~ m/^[FB]$/){
+		# using file
+		print "What file should be read for defining the rigid groups?\n";
+		my $RGFILE=<STDIN>;
+		open(RGFILE,"$RGFILE") or die "Can\'t open $RGFILE.\n";
+		open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";
+		while(<RGFILE>){
+
+			my $LINE=$_;
+			chomp($LINE);
+			$LINE =~ s/\t/ /g; 
+			$LINE =~ s/^\s+|\s+$//g;
+			$LINE =~ s/\s+/ /g;
+			my @A=split(/ /,$LINE);
+			unless($A[0] eq "GROUP"){
+				smog_quit("ERROR: Each line of the rigid group file must start with GROUP. ");
+			}
+			my $PRINTBUFF ="";
+			for (my $J=1;$J<=$#A;$J++){
+				if(exists $rigidified{$A[$J]}){
+					smog_quit("atom index $A[$J] appeared in two groups.");
+                                }else{
+					$rigidified{$A[$J]}=$RIGIDINDEX;
+					$PRINTBUFF .= "$A[$J]\n";
+					# remember that this atom is of a specific rigid group
+				}
+			}
+
+			if($#A>3){
+				$RBDOF+=($#A)*3-6;
+				print RIGIDOUT "GROUP $#A\n";
+				print RIGIDOUT "$PRINTBUFF";
+			}else{
+				print "Only found $#A atoms in group $RIGIDINDEX. Not adding as rigid group\n";
+			}
+			$RIGIDINDEX++;
+		}
+		if($RDEF =~ m/^F$/){
+			# make coordsinrigid file, since we are not going to repeat later 
+			if(-e "coordsinrigid"){print "coordsinrigid already exists. Will move to coordsinrigid.bu.\n"; `mv coordsinrigid coordsinrigid.bu`;}
+			open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open coordsinirigid for writing\n";
+			open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
+			$TMP=<GROFILE>;
+			$TMP=<GROFILE>;
+			chomp($TMP);
+			$TMP =~ s/\t/ /g; 
+			$TMP =~ s/^\s+|\s+$//g;
+			$TMP =~ s/\s+/ /g;
+			my @A=split(/\s+/,$TMP);
+			$NATOMS=$A[0];
+			for(my $I=0;$I<$NATOMS;$I++){
+				my $LINE=<GROFILE>;
+				my $COORDS=substr($LINE,20,24);
+				$COORDS =~ s/\t/ /g; 
+				$COORDS =~ s/^\s+|\s+$//g;
+				$COORDS =~ s/ +/ /g;
+				my @E=split(/ /,$COORDS);
+				$E[0]*=10.0;
+				$E[1]*=10.0;
+				$E[2]*=10.0;
+				$X[$I+1][0]=$E[0];
+				$X[$I+1][1]=$E[1];
+				$X[$I+1][2]=$E[2];
+				print RIGIDCOORDS "$E[0] $E[1] $E[2]\n";
+			}
+			close(RIGIDCOORDS);
+		}
+
+	}elsif($RDEF =~ m/^[DB]$/){
+		# using defaults
+
+		open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
+		
+		## for now, always use a default generic definitions for rigid groups
+		## format: <RESIDUE NAME> <LIST OF ATOM NAMES IN GROUP>
+		
+		open(MAPFILE,"$ENV{SMOG_PATH}/share/mapfiles/rigidmap") or die "Can\'t open rigidmap file\n";
+		if(-e "rbodyconfig"){print "rbodyconfig already exists.  Will move to rbodyconfig.bu.\n"; `mv rbodyconfig rbodyconfig.bu`;}
+		if(-e "coordsinrigid"){print "coordsinrigid already exists.  Will move to coordsinrigid.bu.\n"; `mv coordsinrigid coordsinrigid.bu`;}
+		open(RIGIDOUT,">rbodyconfig") or die "Can\'t open rbodyconfig for writing\n";
+		open(RIGIDCOORDS,">coordsinirigid") or die "Can\'t open coordsinrigid for writing\n";
+		
+		while(<MAPFILE>){
+			my $LINE=$_;
+			chomp($LINE);
+			my @A=split(/\s+/,$LINE);
+			my $A1=$A[0];
+			if(exists $RESCOUNT{$A1}){
+				$RESCOUNT{$A1}=eval($RESCOUNT{$A1})+1;
+			}else{
+				$RESCOUNT{$A1}=1;
+			}
+				$A1=$A1 . "-" . $RESCOUNT{$A1};
+			for(my $I=1;$I<=$#A;$I++){
+				$GROUPS{$A1}->[$I-1]=$A[$I];
+			}
+		
+			$ATOMSINRES{$A1}=$#A;
+		
+			if($ATOMSINRES{$A1}<3){
+				smog_quit("Rigid group definition $A1 only has $ATOMSINRES{$A1} atoms. Must have at least 3.");
+			}
+		
+		}
+		
+		my $GROUPS=%GROUPS;
+		
+		# add a check to make sure that atoms don't appear in two different group
+		
+		$TMP=<GROFILE>;
+		$TMP=<GROFILE>;
+		chomp($TMP);
+		$TMP =~ s/\t/ /g; 
+		$TMP =~ s/^\s+|\s+$//g;
+		$TMP =~ s/ +/ /g;
+		my @A=split(/\s+/,$TMP);
+
+		$NATOMS=$A[0];
+		my %ATOMNUM;
+		my $LINE=<GROFILE>;
+		
+		my $LASTRESNUM=substr($LINE,0,5);
+		$LASTRESNUM =~ s/^\s+|\s+$//g;
+		
+		my $ATOMNAME=substr($LINE,10,5);
+		$ATOMNAME =~ s/^\s+|\s+$//g;
+		
+		$ATOMNUM{$ATOMNAME}= 1;
+		
+		my $LASTRESNAME=substr($LINE,5,5);
+		$LASTRESNAME =~ s/^\s+|\s+$//g;
+		my $COORDS=substr($LINE,20,24);
+
+		$COORDS =~ s/\t/ /g; 
+		$COORDS =~ s/^\s+|\s+$//g;
+		$COORDS =~ s/ +/ /g;
+		my @E=split(/ /,$COORDS);
+		$E[0]*=10.0;
+		$E[1]*=10.0;
+		$E[2]*=10.0;
+		$X[1][0]=$E[0];
+		$X[1][1]=$E[1];
+		$X[1][2]=$E[2];
+
+		print RIGIDCOORDS "$E[0] $E[1] $E[2]\n";
+		for(my $I=1;$I<$NATOMS;$I++){
+		# read a line
+		# parse using fixed formatting
+			my $LINE=<GROFILE>;
+			my $RESNUM=substr($LINE,0,5);
+			$RESNUM =~ s/^\s+|\s+$//g;
+			my $ATOMNAME=substr($LINE,10,5);
+			$ATOMNAME =~ s/^\s+|\s+$//g;
+			my $ATOMNUMT  =$I+1;
+			my $RESNAME=substr($LINE,5,5);
+			$RESNAME =~ s/^\s+|\s+$//g;
+			my $COORDS=substr($LINE,20,24);
+			$COORDS =~ s/\t/ /g; 
+			$COORDS =~ s/^\s+|\s+$//g;
+			$COORDS =~ s/ +/ /g;
+			my @E=split(/ /,$COORDS);
+			$E[0]*=10.0;
+			$E[1]*=10.0;
+			$E[2]*=10.0;
+			$X[$I+1][0]=$E[0];
+			$X[$I+1][1]=$E[1];
+			$X[$I+1][2]=$E[2];
+
+			print RIGIDCOORDS "$E[0] $E[1] $E[2]\n";
+
+			# Once done reading a residue, create the rigid groups
+			if($RESNUM != $LASTRESNUM && exists $RESCOUNT{$LASTRESNAME}){
+				# go through the rigid groups for that residue
+				for (my $J=1;$J<=eval($RESCOUNT{$LASTRESNAME});$J++){
+					my $GROUPSIZE=0;
+					my $PRINTBUFF = "";;
+			                my $A1=$LASTRESNAME . "-" . $J ;
+					my %rgroup;
+					for (my $K=0;$K<$ATOMSINRES{$A1};$K++){
+						if( !exists $ATOMNUM{$GROUPS{$A1}->[$K]}){
+							print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
+						}else{
+							if(exists $rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}){
+								smog_quit("atom index $ATOMNUM{$GROUPS{$A1}->[$K]} ($LASTRESNAME$LASTRESNUM:$GROUPS{$A1}->[$K]) appeared in two groups.");
+							}else{
+								$rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}=$RIGIDINDEX;
+								# remember that this atom is of a specific rigid group
+							}
+							$PRINTBUFF = $PRINTBUFF."$ATOMNUM{$GROUPS{$A1}->[$K]}\n";
+							$GROUPSIZE++;
+						}
+					}
+		
+					if($GROUPSIZE>2){
+						$RBDOF+=($GROUPSIZE)*3-6;
+						print RIGIDOUT "GROUP $GROUPSIZE\n";
+						print RIGIDOUT "$PRINTBUFF";
+					}elsif($GROUPSIZE==1 || $GROUPSIZE==2){
+						print "Only found $GROUPSIZE atoms in group $J of $LASTRESNAME$LASTRESNUM. Not adding as rigid group\n";
+					}
+
+
+					for (my $K1=0;$K1<$ATOMSINRES{$A1};$K1++){
+						for (my $K2=0;$K2<$ATOMSINRES{$A1};$K2++){
+
+							if( exists $ATOMNUM{$GROUPS{$A1}->[$K1]} && exists $ATOMNUM{$GROUPS{$A1}->[$K2]} ){
+								if( $ATOMNUM{$GROUPS{$A1}->[$K1]} < $ATOMNUM{$GROUPS{$A1}->[$K2]}){
+									$excludedlist{"$ATOMNUM{$GROUPS{$A1}->[$K1]}-$ATOMNUM{$GROUPS{$A1}->[$K2]}"}=1;
+								}elsif($ATOMNUM{$GROUPS{$A1}->[$K1]} !=  $ATOMNUM{$GROUPS{$A1}->[$K2]}){
+									$excludedlist{"$ATOMNUM{$GROUPS{$A1}->[$K2]}-$ATOMNUM{$GROUPS{$A1}->[$K1]}"}=1;
+								}
+							}
+						}
+					}
+					$RIGIDINDEX++;
+				}
+				undef %ATOMNUM;
+			}
+		
+		
+			$LASTRESNAME=$RESNAME;
+			$LASTRESNUM=$RESNUM;
+			$ATOMNUM{$ATOMNAME}= $ATOMNUMT;
+		
+		}
+		# check last residue
+		
+		# go through the rigid groups for that residue
+		
+		if( exists $RESCOUNT{$LASTRESNAME}){
+			for (my $J=1;$J<=eval($RESCOUNT{$LASTRESNAME});$J++){
+				my $GROUPSIZE=0;
+				my $PRINTBUFF = "";;
+			        my $A1=$LASTRESNAME . "-" . $J ;
+				for (my $K=0;$K<$ATOMSINRES{$A1};$K++){
+					if( !exists $ATOMNUM{$GROUPS{$A1}->[$K]}){
+						print "Warning: $GROUPS{$A1}->[$K] atom not found in residue $LASTRESNAME$LASTRESNUM\n";
+					}else{
+						if(exists $rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}){
+							smog_quit("atom index $ATOMNUM{$GROUPS{$A1}->[$K]} ($LASTRESNAME$LASTRESNUM) appeared in two groups.");
+						}else{
+							$rigidified{$ATOMNUM{$GROUPS{$A1}->[$K]}}=$RIGIDINDEX;
+							# remember that this atom is of a specific rigid group
+						}
+	
+						$PRINTBUFF = $PRINTBUFF . "$ATOMNUM{$GROUPS{$A1}->[$K]}\n";
+						$GROUPSIZE++;
+					}
+				}
+				if($GROUPSIZE>0){
+					$RBDOF+=($GROUPSIZE)*3-6;
+					print RIGIDOUT "GROUP $GROUPSIZE\n";
+					print RIGIDOUT "$PRINTBUFF";
+				}
+				$RIGIDINDEX++;
+			}
+			undef %ATOMNUM;
+		}
+		close(GROFILE);
+	}
+	$RBDOF=$NATOMS*3-$RBDOF;
+	print "When using rigidification routines in PATHSAMPLE, make sure to indicate the number of degrees of freedom, after rigidification.\nFor this system, there are $RBDOF degrees of freedom.\n";
+	
+}
+
+## Generate SBM.INP
+
+if($SBMINPON =~ m/^Y$/){
+	print "\n\nUsing $TOPFILE and $GROFILE to generate SBM.INP and odata for OPTIM...\n\n";
+
+	my %supported_directives = ( 'defaults' => '0',
+                'atomtypes' => '1',
+                'moleculetype' => '0',
+                'atoms' => '1',
+                'bonds' => '1',
+                'angles' => '1',
+                'dihedrals' => '1',
+                'pairs' => '1',
+                'exclusions' => '1',
+                'system' => '1',
+                'molecules' => '1',
+                'position_restraints' => '1'
+                );
+
+
+	#read in the top file, with comments stripped
+
+	open(FILE, "$TOPFILE") or die "Can not open $TOPFILE\n"; 
+	my $string = "";
+	while (<FILE>){
+		my $LINE = $_;
+		chomp($LINE);
+		$LINE =~ s/;.*$//g; 
+		$LINE =~ s/\t/ /g; 
+		$LINE =~ s/^\s+|\s+$//g;
+		$LINE =~ s/ +/ /g;
+		if( $LINE =~ m/[#!\^\$]/ ){
+			smog_quit("Special characters not recognized in .top file\nOffending line: $LINE");
+		}
+		# remove comments
+		if($LINE ne ""){ 
+		## remove blank lines
+			 $string .= "$LINE\n";
+		}
+	}
+	
+	# read in the top file and check that only supported directives are included.
+	my %DIRLIST;
+	my @DATA=split(/\[/,$string);
+	for (my $I=1;$I<=$#DATA;$I++){
+		my $string1 = $DATA[$I];
+		open my($fh), "<", \$string1 or die ; # reading from the data in $string
+		my $first_line = <$fh>; 
+		$first_line =~  s/^\s//g;
+		close $fh;
+		my @B=split(/ /,$first_line);
+		my $DIR=$B[0];
+		chomp($DIR);
+		$DIR =~ s/\]$//g;
+			
+		if(!exists $supported_directives{$DIR}){
+			smog_quit("Directive \"$DIR \" not supported");
+		}else{
+			$DIRLIST{$DIR}=$I;
+		}
+	}
+	
+	my $PREFACTOR=332.0;
+ 	my $DC=80;
+	my $CONCENTRATION=0.1;
+	my $DHswitch=12;
+	my $DHcut=15;
+	
+	my $MASS;	
+	# write out odata
+
+	if(-e "odata"){print "odata already exists. Moving to odata.bu.\n"; `mv odata odata.bu`;}
+	open(ODATA,">odata") or die "Can not open odata\n";
+	print ODATA "STEPS 100000000\nBFGSMIN 0.000001\n";
+
+	if($RIGIDON =~ m/^Y$/){
+		print ODATA "RIGIDINIT\nSLERP\n";
+	}
+		print ODATA "POINTS\n";
+
+	open(GROFILE,"$GROFILE") or die "Can\'t open GRO file \"$GROFILE\"\n";
+	$TMP=<GROFILE>;
+	$TMP=<GROFILE>;
+	chomp($TMP);
+	$TMP =~ s/\t/ /g; 
+	$TMP =~ s/^\s+|\s+$//g;
+	$TMP =~ s/ +/ /g;
+	my @A=split(/\s+/,$TMP);
+	my $NATOMS=$A[0];
+	unless($NATOMS =~ m/^\d+$/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.");}
+
+	for(my $I=0;$I<$NATOMS;$I++){
+		# read a line
+		my $LINE=<GROFILE>;
+		my $COORDS=substr($LINE,20,24);
+
+		$COORDS =~ s/\t/ /g; 
+		$COORDS =~ s/^\s+|\s+$//g;
+		$COORDS =~ s/ +/ /g;
+		my @E=split(/ /,$COORDS);
+		$E[0]*=10.0;
+		$E[1]*=10.0;
+		$E[2]*=10.0;
+                $X[$I+1][0]=$E[0];
+                $X[$I+1][1]=$E[1];
+                $X[$I+1][2]=$E[2];
+
+		print ODATA "SB $E[0] $E[1] $E[2]\n";
+	}
+	close(GROFILE);
+
+	# Write out SBM.INP
+	if(-e "SBM.INP"){print "SBM.INP already exists. Moving to SBM.INP.bu.\n"; `mv SBM.INP SBM.INP.bu`;}
+	open(OPTIMTOP,">SBM.INP") or die "Can not open SBM.INP\n";
+	
+	print OPTIMTOP "Structure-based topology file for use with OPTIM.  Generated by smog_optim, as part of the SMOG 2 distrubution\n";
+	print OPTIMTOP "Debye-Huckel Parameters: PREFACTOR, Dielectric Constant, Monovalent Ion Concentration, DH switching distance, DH cutoff distance\n";
+	printf (OPTIMTOP "%8.3f %8.3f %8.3f %8.3f %8.3f\n", $PREFACTOR, $DC, $CONCENTRATION, $DHswitch, $DHcut);
+	print OPTIMTOP  "nonbonded switching distance, truncate distance\n";
+
+	# Go through the directives, in order
+
+	if(!exists $DIRLIST{"defaults"}){
+		smog_quit("\"defaults\" does not appear in .top file.");
+	}else{
+		my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
+		if($#C != 1){
+			my $NN=$#C;
+			print "ERROR: Must have one line in the \"defaults\" directive. Found $NN\n";
+		        exit;	
+		}
+		my @D=split(/ /,$C[1]);
+		if($#D != 2){
+			print "ERROR: Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n";
+			exit;
+		}
+		if($D[0] != 1){
+			print "ERROR: Only nbfunc value of 1 is supported by smog_optim\n";
+			exit;
+		}	
+		if($D[1] != 1){
+			print "ERROR: Only comb-rule value of 1 is supported by smog_optim\n";
+			exit;
+		}	
+		unless( $D[2] =~ m/^[nN][oO]$/){
+			print "ERROR: only gen-pairs \"no\" supported by smog_optim\n";
+			exit;
+		}
+	}
+
+	if(!exists $DIRLIST{"moleculetype"}){
+		print "ERROR: \"moleculetype\" does not appear in .top file.\n";
+		exit;
+	}else{
+		my @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
+		if($#C != 1){
+			my $NN=$#C;
+			print "ERROR: Must have one line in the \"moleculetype\" directive. Found $NN\n";
+		        exit;	
+		}
+		my @D=split(/ /,$C[1]);
+		if($#D != 1){
+			print "ERROR: Improperly formatted moleculetype line. Must provide name and nrexcl value.\n";
+			exit;
+		}
+		print "\nNOTE: nrexcl value will not be used.  Exclusions will be determined solely by bonds, angles, dihedrals and contacts.\n";
+	}
+
+
+
+	
+	# start with atomtypes
+	my %massbytype;
+	my %chargebytype;
+	my %c6bytype;
+	my %c12bytype;
+	my $CFL=0;
+	my $typeindex=0;
+	my %indexbytype;
+	if(!exists $DIRLIST{"atomtypes"}){
+		print "ERROR: \"atomtypes\" does not appear in .top file.\n";
+		exit;
+	}else{
+		my @indextotype;
+		my $typeindex=0;
+		my @C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
+		for(my $II=1;$II<=$#C;$II++){
+			my @D=split(/ /,$C[$II]);
+			if($#D != 5){
+				print "ERROR: Wrong number of arguments in atomtypes declaration.\n";
+				print "Offending line:\n$C[$II]\n";
+				exit;
+			}
+			if($D[2] != 0 && $CFL==0){
+				print "\nNOTE: Found charges in atomtypes section.  Debye-Huckel parameters will be assigned.  You may want to double check the output.\n";
+				$CFL=1;
+			}
+			if($D[4] != 0){
+				print "ERROR: Non-zero c6 values not supported by smog_optim.\n";
+				exit;
+			}
+			# check if a previous atomtype has identical parameters
+			my $matchedtype=-1;
+			 
+			foreach my $key(keys %massbytype){
+				if($c6bytype{$key} == $D[4] &&  $c12bytype{$key} == $D[5]){
+					$matchedtype=$indexbytype{$key};
+				}
+			}
+			# is not -1, then it matched.
+			if($matchedtype != -1){
+				$indexbytype{$D[0]}=$matchedtype;
+			}else{
+				$indexbytype{$D[0]}=$typeindex;
+				$indextotype[$typeindex]=$D[0];
+				$typeindex++;
+			}
+
+			$massbytype{$D[0]}=$D[1];
+			$chargebytype{$D[0]}=$D[2];
+			$c6bytype{$D[0]}=$D[4];
+			$c12bytype{$D[0]}=$D[5];
+		}
+		# check largest values to find the switching distances
+		my $EPSILON=1.0;
+		my $SIGMAMAX=-1;
+		foreach my $key(keys %massbytype){
+			$SIGMAMAX=max $SIGMAMAX, 10.0*($c12bytype{$key}/$EPSILON)**(1.0/12);
+		}
+
+		# set the switching distance to the distance where the potential is equal to 0.5**12~0.0002
+		my $SWITCHD=2*$SIGMAMAX*($EPSILON**(1.0/12.0));
+		my $CUTD=$SWITCHD+1.0;
+		# print out the number of types first
+		printf (OPTIMTOP "%f %f\n", $SWITCHD, $CUTD);
+		printf (OPTIMTOP "%i atomtypes\n", $typeindex);
+		my $I;
+		for ($I=0;$I<$typeindex;$I++){
+			my $tmptype=$indextotype[$I];
+			my $sigma=10.0*($c12bytype{$tmptype}/$EPSILON)**(1.0/12);
+			my $J=$I+1;
+			printf (OPTIMTOP "%i %f %f\n", $J, $sigma,$EPSILON);
+
+		}
+	}
+
+	# provide information about the atoms 
+	if(!exists $DIRLIST{"atoms"}){
+		print "ERROR: \"atoms\" does not appear in .top file.\n";
+		exit;
+	}else{
+		my @C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
+		if($#C<1){
+			print "ERROR: There must be at least 1 atom listed under the atoms directive\n";
+			exit;
+		}
+		printf (OPTIMTOP "%i atoms (atomnum, atomtype, resnum, resname, atomname, charge, mass)\n",$#C);
+		for (my $K=1;$K<=$#C;$K++){
+			my @D=split(/ /,$C[$K]);
+			my $AT;
+			if(!exists $indexbytype{$D[1]}){
+				print "ERROR: atomtype $D[1] used in atoms declaration, but not found in atomtypes\n";
+				exit;
+			}else{
+				$AT=$indexbytype{$D[1]}+1;
+			}
+			if($#D == 7){
+				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$AT,$D[2],$D[3],$D[4],$D[6],$D[7]);
+			}elsif($#D == 6){
+				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$AT,$D[2],$D[3],$D[4],$D[6],$massbytype{$D[1]});
+			}elsif($#D == 5){
+				printf (OPTIMTOP "%5i %5s %4i %5s %5s %8.5f %8.5f\n", $D[0],$AT,$D[2],$D[3],$D[4],$chargebytype{"$D[1]"},$massbytype{$D[1]});
+			}else{
+				print "ERROR: Insufficient number of fields in atom definition\n";
+				exit;
+			}
+		}
+	}
+
+	print OPTIMTOP "\n";
+
+
+	# provide information about the contacts 
+	if(!exists $DIRLIST{"pairs"}){
+		print "ERROR: \"pairs\" does not appear in .top file.\n";
+		exit;
+	}else{
+
+
+		my @C= split(/\n/,$DATA[$DIRLIST{"pairs"}]);
+		if($#C<1){
+			print "ERROR: There must be at least 1 contact listed under the pairs directive\n";
+			exit;
+		}
+		
+		my $CT=0;
+		my $TEMPSTRING = "";
+		for (my $K=1;$K<=$#C;$K++){
+			my @D=split(/ /,$C[$K]);
+			my $sigma;
+			my $epsilon;
+			my $CSTRING;
+			if($D[2] != 1 && $D[2] != 5 && $D[2] != 6 && $D[2] != 7){
+				print "ERROR: Only contacts of type 1,5,6,7 are supported. Quitting.\n";
+				exit;
+			}else{
+				if($D[2] == 1 && $CONTTYPE == 10){
+					if($#D != 4){
+						print "ERROR: Wrong number of arguments for a pair of type 1\n$C[$K]";
+						exit;
+					}
+					$sigma=(6.0/5.0*$D[4]/$D[3])**(0.5);
+					$epsilon=$D[3]/(6.0*$sigma**10);
+					$sigma*=10.0;
+					$CSTRING=sprintf ("%5i %5i %1i %9.5f %8.5e\n", $D[0],$D[1],2,$sigma,$epsilon);
+				}elsif($D[2] == 1 && $CONTTYPE == 6){
+					if($#D != 4){
+						print "ERROR: Wrong number of arguments for a pair of type 1\n$C[$K]";
+						exit;
+					}
+					$sigma=(2.0*$D[4]/$D[3])**(1.0/6.0);
+					$epsilon=$D[3]**2/(4.0*$D[4]);
+					$sigma*=10.0;
+					$CSTRING=sprintf ("%5i %5i %1i %9.5f %8.5e\n", $D[0],$D[1],1,$sigma,$epsilon);
+				}elsif($D[2] == 5){
+					if($#D != 5){
+						print "ERROR: Wrong number of arguments for a pair of type 5 (single-well gaussian)\n$C[$K]";
+						exit;
+					}
+					$D[4]*=10.0;
+					$D[5]*=10.0;
+					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f\n     %9.5f\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5]);
+				}elsif($D[2] == 6){
+					if($#D != 6){
+						print "ERROR: Wrong number of arguments for a pair of type 6 (single-well gaussian w excluded volume)\n$C[$K]";
+						exit;
+					}
+					$D[4]*=10.0;
+					$D[5]*=10.0;
+					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f\n     %9.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6]);
+
+				}elsif($D[2] == 7){
+					if($#D != 8){
+						print "ERROR: Wrong number of arguments for a pair of type 7 (dual-basin gaussian)\n$C[$K]";
+						exit;
+					}
+					$D[4]*=10.0;
+					$D[5]*=10.0;
+					$D[6]*=10.0;
+					$D[7]*=10.0;
+					$CSTRING=sprintf ("%5i %5i %1i %8.5e %9.5f\n     %9.5f %9.5f %9.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D[5],$D[6],$D[7],$D[8]);
+				}else{ 
+					print "Internal error 1: Please contact info\@smog-server.org for help.\n"; 
+					exit;
+				}
+			}
+
+			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
+				$TEMPSTRING .= $CSTRING;
+				$CT++;
+			}else{
+				unless ($rigidified{$D[0]} == $rigidified{$D[1]}){
+					$TEMPSTRING .= $CSTRING;
+					$CT++;
+				}
+			}
+		}
+
+		printf (OPTIMTOP "%i contacts\n",$CT);	
+		print OPTIMTOP "$TEMPSTRING\n";
+	}
+
+
+
+	# provide information about the bonds 
+	if(!exists $DIRLIST{"bonds"}){
+		print "ERROR: \"bonds\" does not appear in .top file.\n";
+		exit;
+	}else{
+		my @C= split(/\n/,$DATA[$DIRLIST{"bonds"}]);
+		if($#C<1){
+			print "ERROR: There must be at least 1 bond listed under the bonds directive\n";
+			exit;
+		}
+
+
+		my $CT=0;
+		my $TEMPSTRING = "";
+		for (my $K=1;$K<=$#C;$K++){
+			my @D=split(/ /,$C[$K]);
+			$D[3]*=10;
+			$D[4]*=0.01;
+			if($D[2] != 1 && $D[2] != 6){
+				print "ERROR: Only bonds of type 1 and 6 are supported. Quitting.\n";
+				exit;
+			}
+			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} ){
+				$TEMPSTRING .= sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4]);
+				$CT++;
+			}else{
+				unless ($rigidified{$D[0]} == $rigidified{$D[1]}){
+					$TEMPSTRING .= sprintf ("%5i %5i %1i %8.5f %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4]);
+					$CT++;
+				}
+			}
+		}
+
+		printf (OPTIMTOP "%i bonds\n",$CT);	
+		print OPTIMTOP "$TEMPSTRING\n";
+
+	}
+
+
+	# provide information about the angles 
+	if(!exists $DIRLIST{"angles"}){
+		print "ERROR: \"angles\" does not appear in .top file.\n";
+		exit;
+	}else{
+		my @C= split(/\n/,$DATA[$DIRLIST{"angles"}]);
+		if($#C<1){
+			print "ERROR: There must be at least 1 angle listed under the angles directive\n";
+			exit;
+		}
+
+		my $CT=0;
+		my $TEMPSTRING = "";
+		for (my $K=1;$K<=$#C;$K++){
+			my @D=split(/ /,$C[$K]);
+			$D[4]*=$DEG2RAD;
+			if($D[3] != 1 ){
+				print "ERROR: Only angles of type 1 are supported. Quitting.\n";
+				exit;
+			}
+			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} || !exists $rigidified{$D[2]} ){
+				$TEMPSTRING .= sprintf ("%5i %5i %5i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[4],$D[5]);
+				$CT++;
+			}else{
+				unless (($rigidified{$D[0]} == $rigidified{$D[1]}) && ($rigidified{$D[1]} == $rigidified{$D[2]})   ){
+					$TEMPSTRING .= sprintf ("%5i %5i %5i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[4],$D[5]);
+					$CT++;
+				}
+			}
+		}
+		printf (OPTIMTOP "%i angles\n",$CT);
+		print OPTIMTOP "$TEMPSTRING\n";
+	}
+
+
+
+	# provide information about the dihedrals 
+	if(!exists $DIRLIST{"dihedrals"}){
+		print "ERROR: \"dihedrals\" does not appear in .top file.\n";
+		exit;
+	}else{
+		my @LAST;
+		my @C= split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
+		if($#C<1){
+			print "ERROR: There must be at least 1 dihedral listed under the dihedrals directive\n";
+			exit;
+		}
+		my $CT=0;
+		my $TEMPSTRING = "";
+		for (my $K=1;$K<=$#C;$K++){
+			my @D=split(/ /,$C[$K]);
+			$D[5]*=$DEG2RAD;
+			my $D5;
+			if($D[4] ==1){
+				$D5=$D[5]-$PI;
+			}else{
+				$D5=$D[5];
+			}
+			if($D[4] !=1 && $D[4] !=2 ){
+				print "ERROR: Only dihedrals of type 1 and 2 are supported. Quitting.\n";
+				exit;
+			}
+			if(exists $D[7] && $D[7] == 3){
+			# if N=3, it must immediately follow an N=1 dihedral
+				my $DD = remainder($LAST[5]*3.0,$twoPI)- remainder($D[5],  $twoPI);
+				if($DD > 0.001 || $DD < -0.001){
+					print "ERROR: N=3 dihedral has wrong angle, relative to N=1 dihedral.\n";
+					print "See: $C[$K]\n";
+					exit;
+				}
+				$DD=($D[6]/$LAST[6]-0.5);
+				if($DD > 0.01 || $DD < -0.01){
+					print "ERROR: N=3 dihedral has wrong weight, relative to N=1 dihedral.\n";
+					print "See: $C[$K]\n";
+					exit;
+				}
+				if($D[0] != $LAST[0] || $D[1] != $LAST[1] || $D[2] != $LAST[2] || $D[3] != $LAST[3]){
+					print "ERROR: N=3 dihedral has wrong atoms, relative to N=1 dihedral.\n";
+					print "See: $C[$K]\n";
+					exit;
+				}
+				# if type 3, don't write it again, since it is handles inside OPTIM
+				next; 
+			}
+			$D[4]= $D[4] % $PI;
+
+			if(!exists $rigidified{$D[0]} || !exists $rigidified{$D[1]} || !exists $rigidified{$D[2]} || !exists $rigidified{$D[3]} ){
+				$TEMPSTRING .= sprintf ("%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D5,$D[6]);
+				$CT++;
+			}else{
+				unless (($rigidified{$D[0]} == $rigidified{$D[1]}) && ($rigidified{$D[1]} == $rigidified{$D[2]})   ){
+					$TEMPSTRING .= sprintf ("%5i %5i %5i %5i %1i %8.5e %8.5e\n", $D[0],$D[1],$D[2],$D[3],$D[4],$D5,$D[6]);
+					$CT++;
+				}
+			}
+		@LAST=@D;
+		}
+		printf (OPTIMTOP "%i dihedrals\n",$CT);
+		print OPTIMTOP "$TEMPSTRING\n";
+	}
+	my $NEXC=scalar keys %excludedlist;
+	print OPTIMTOP "$NEXC exclusions\n";
+	for my $exc (keys %excludedlist){
+		my @A=split(/-/,$exc);
+		print OPTIMTOP "$A[0] $A[1]\n";
+	}
+	print OPTIMTOP "\n";
+
+
+	# provide information about the restraints 
+	if(!exists $DIRLIST{"position_restraints"}){
+		print "\nNOTE: \"position_restraints\" does not appear in .top file.\n";
+		print OPTIMTOP "0 position restraints\n";
+	}else{
+		my @C= split(/\n/,$DATA[$DIRLIST{"position_restraints"}]);
+		if($#C<1){
+			print "ERROR: \"position_restraints\" found in .top file, but there are not restraints listed.\n";
+			exit;
+		}
+		printf (OPTIMTOP "%i position restraints\n",$#C);
+		for (my $K=1;$K<=$#C;$K++){
+			my @D=split(/ /,$C[$K]);
+			if($#D !=4){
+				print "ERROR: Wrong number of fields in position restaint.  Offending line:\n$C[$K]\n";
+			}
+			if($D[1] != 1){print "ERROR: Only restraints of type 1 are supported\n Quitting.\n"; exit;} 
+			# printing atom number, 6 position restraint contacts and 3 coordinates.  Restraints are xx, yy, zz, xy, xz, yz, though cross terms not yet supported.
+			$D[2]=$D[2]/100;
+			$D[3]=$D[3]/100;
+			$D[4]=$D[4]/100;
+			printf (OPTIMTOP "%5i %8.5e %8.5e %8.5e %8.5e %8.5e %8.5e %8.3f %8.3f %8.3f\n", $D[0],$D[2],$D[3],$D[4],0,0,0,$X[$D[0]][0],$X[$D[0]][1],$X[$D[0]][2]);
+		}
+	}
+}
+
+print "\n\n\t\tSUCCESS: OPTIM files generated without errors.\n\n";
+
+

@@ -1,0 +1,611 @@
+use strict;
+use warnings FATAL => 'all';
+use smog_common;
+use List::Util qw(max);
+use Getopt::Long;
+
+our @ISA = 'Exporter';
+our @EXPORT = qw(%supported_directives);
+my $inputArguments=join(' ',@ARGV);
+
+print <<EOT;
+********************************************************************************************
+
+                                      smog_extract
+
+      	smog_extract is part of the SMOG 2 distribution, available at smog-server.org
+
+        This tool uses a SMOG .top and .gro file, along with an atomlist file to 
+	generate a SMOG model that only includes a subset of the original atoms. This 
+	allows one to generate a SMOG model for a large system, and then simulate the 
+	subset of atoms using identical interactions. In addition, the module will 
+	optionally generate atomic restraints for any atom that has interactions 
+	removed during the truncation step.
+
+        For usage information, issue flag -help, or see the SMOG manual.
+
+        For questions regarding this script, contact info\@smog-server.org
+
+********************************************************************************************
+
+EOT
+
+
+my $inputTOP="smog.top";
+my $inputGRO="smog.gro";
+my $indexFile="smog.ndx";
+my $outputtop="extracted.top";
+my $outputgro="extracted.gro";
+my $outputmap="atomindex.map";
+my $restrainedmap="restrained.map";
+my $help;
+my $nogro;
+my $ndxorder;
+my $gen_restraints="null";
+# in supported_directives, a value of 1 means is it required, 0 is not supported. >1 means optional
+our %supported_directives = ( 'defaults' => '1',
+        'atomtypes' => '1',
+        'moleculetype' => '1',
+        'nonbond_params' => '2',
+        'atoms' => '1',
+        'bonds' => '1',
+        'angles' => '1',
+        'dihedrals' => '1',
+        'pairs' => '1',
+        'exclusions' => '1',
+        'system' => '1',
+        'molecules' => '1',
+        'position_restraints' => '0'
+        );
+
+quit_init();
+checkForModules();
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'orm=s' => \$restrainedmap, 'restraints=s' => \$gen_restraints, 'ndxorder' => \$ndxorder,  'warn=i' => \$maxwarn, 
+        '<>' => \&usage, 'nogro' => \$nogro)
+        or defined $help); 
+
+warninfo();
+
+unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen_restraints eq "null"){
+	smog_quit("-restraints given with a non-numerical value: $gen_restraints");
+}
+
+if($gen_restraints ne "null" && $gen_restraints <=0){
+	smog_quit("-restraints called with a negative (or zero) value");
+}
+
+### read in the list of atoms that we want to keep
+my %keepatoms;
+my $KEEPN=0;
+my @keepatoms2;
+
+#check and add file name extensions, if missing
+$outputgro=checksuffix($outputgro,".gro");
+$outputtop=checksuffix($outputtop,".top");
+$outputmap=checksuffix($outputmap,".map");
+$restrainedmap=checksuffix($restrainedmap,".map");
+$indexFile=checksuffix($indexFile,".ndx");
+
+foreach my $filen($outputgro, $outputtop, $outputmap,$restrainedmap){
+	checkalreadyexists($filen);
+}
+
+open(MAPPING,">$outputmap") or smog_quit("Can\'t open $outputmap.");
+print MAPPING "This file contains the corresponding atom indices for the new (left column) and old (right column) systems.\n";
+
+### read in the list of atoms that we want to keep
+my $groupname;
+my $extgrp;
+
+my ($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
+
+my @grpnms=@{$grpnms};
+my %groupnames=%{$groupnames};
+my %atomgroup=%{$atomgroup};
+
+
+if($Ngrps==0){
+	smog_quit("no atom groups found in ndx file.");
+
+}elsif($Ngrps>1){
+	print "Select the index of the group you would like to extract?\n";
+	print "index\t:\tgroup name\n";
+	for(my $I=0;$I<$Ngrps;$I++){
+		print "$I\t:\t$grpnms[$I]\n";
+	}
+	my $tmp=<STDIN>;
+	chomp($tmp);
+	unless($tmp =~ m/^\d+$/){
+		smog_quit("$tmp is an invalid index");
+	}
+	if($tmp <0 or $tmp >=$Ngrps){
+		smog_quit("index must be positive and less than $Ngrps");
+	}
+	$extgrp=$grpnms[$tmp];
+	print "Will extract atom group $extgrp (index $tmp)\n";
+}else{
+	$extgrp=$grpnms[0];	
+}
+
+
+my @A;
+my $tkeep;
+my %maphash;
+my %tmphash=%{$atomgroup{$extgrp}};
+for my $atom ( sort {$a<=>$b} keys %tmphash ) {
+	$KEEPN++;
+	if(defined $ndxorder){
+		$tkeep=$tmphash{$atom}+1;
+	}else{
+		$tkeep=$KEEPN;
+	}
+	$keepatoms2[$tkeep-1]=$atom;
+	$keepatoms{$atom}=$tkeep;
+	$maphash{$tkeep}=$atom;
+}
+
+for my $finalindex ( sort {$a<=>$b} keys %maphash ) {
+	print MAPPING "$finalindex $maphash{$finalindex}\n";
+}
+
+if(defined $ndxorder){
+	print "Note: New files will order atoms exactly as listed in .ndx file.\n";
+}
+### extract the atoms and make a new gro file 
+if(defined $nogro){
+	print "Note: -nogro give. Will not extract a gro file.\n";
+
+}else{
+	open(GROFILE,"$inputGRO") or smog_quit("Can\'t open GRO file $inputGRO");
+	my $groheader=<GROFILE>;
+	chomp($groheader);
+	
+	my $TMP=<GROFILE>;
+	chomp($TMP);
+	$TMP =~ s/\t/ /g; 
+	$TMP =~ s/^\s+|\s+$//g;
+	$TMP =~ s/ +/ /g;
+	@A=split(/\s+/,$TMP);
+	my $NATOMS=$A[0];
+	my @GRODATA;
+	unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
+	
+	print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted system...\n\n";
+	
+	print "Processing gro file\n";
+	for(my $I=0;$I<$NATOMS;$I++){
+		# store gro data
+		my $LINE=<GROFILE>;
+		chomp($LINE);
+		$GRODATA[$I+1]=$LINE;
+	}
+	my $grodim=<GROFILE>;
+	chomp($grodim);
+	close(GROFILE);
+	
+	open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
+	print GROFILE "$groheader\n";
+	print GROFILE "$KEEPN\n";
+	for(my $I=0;$I<$KEEPN;$I++){
+		if(!exists $GRODATA[$keepatoms2[$I]]){
+			smog_quit("Atom index $I given in index file, but not found in $inputGRO");
+		}
+		print GROFILE "$GRODATA[$keepatoms2[$I]]\n";
+	}
+	print GROFILE "$grodim\n";
+	close(GROFILE);
+}
+
+my %atoms2restrain;
+#read in the top file
+print "Reading in top file\n";
+my $string=loadfile($inputTOP);
+
+my ($DATA,$DIRLIST)=checkdirectives($string);
+my %DIRLIST=%{$DIRLIST};
+my @DATA=@{$DATA};
+
+print "Writing new top file\n";
+# Go through the directives, in order, and write out information for the subsystem
+open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing.");
+#copy header
+
+print TOPOUT "; This is a top file generated with smog_extract, using the command:\n;";
+print TOPOUT "   smog_extract $inputArguments\n;";
+print TOPOUT "; Selected group: $extgrp\n ";
+print TOPOUT "$DATA[0]\n";
+
+print TOPOUT "[ defaults ]\n";
+
+my @C= split(/\n/,$DATA[$DIRLIST{"defaults"}]);
+for(my $JJ=1;$JJ<=$#C;$JJ++){
+	my ($A, $B)=checkcomment($C[$JJ]);
+	if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
+	if($A eq ""){
+		print TOPOUT "$B\n";
+		next;
+	}else{
+		my @D=split(/ /,$A);
+		if($#D != 2){
+			smog_quit("Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n");
+		}
+		print TOPOUT "$A";
+		if($B ne ""){
+			print TOPOUT " $B\n";
+		}else{
+			print TOPOUT "\n";
+		}
+	}
+}
+my $types=gettypes(\@DATA,\%DIRLIST,\%keepatoms);
+my %typesinsystem=%{$types};
+
+# start with atomtypes
+@C= split(/\n/,$DATA[$DIRLIST{"atomtypes"}]);
+print TOPOUT "[ atomtypes ]\n";
+for(my $II=1;$II<=$#C;$II++){
+	my ($A, $B)=checkcomment($C[$II]);
+	if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
+	if($A eq ""){
+		print TOPOUT "$C[$II]\n";
+	}else{
+		my @D=split(/\s+/,$A);
+		if(exists $typesinsystem{$D[0]}){
+			print TOPOUT "$C[$II]\n";
+		}
+	}
+}
+print TOPOUT "\n";
+
+
+# start with nonbond_params
+if(exists $DIRLIST{"nonbond_params"}){
+	@C= split(/\n/,$DATA[$DIRLIST{"nonbond_params"}]);
+	print TOPOUT "[ nonbond_params ]\n";
+	for(my $II=1;$II<=$#C;$II++){
+		my ($A, $B)=checkcomment($C[$II]);
+		if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
+		if($A eq ""){
+			print TOPOUT "$C[$II]\n";
+		}else{
+			my @D=split(/\s+/,$A);
+			if(exists $typesinsystem{$D[0]} && exists $typesinsystem{$D[1]}){
+				print TOPOUT "$C[$II]\n";
+			}
+		}
+	}
+	print TOPOUT "\n";
+}
+
+
+print TOPOUT "[ moleculetype ]\n";
+@C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
+
+for(my $JJ=1;$JJ<=$#C;$JJ++){
+	my ($A, $B)=checkcomment($C[$JJ]);
+	if(checkforinclude($C[$JJ],$A,*TOPOUT)){next;};
+	print TOPOUT "$C[$JJ]\n";
+}
+print TOPOUT "\n";
+
+# information about the atoms 
+@C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
+print TOPOUT "[ atoms ]\n";
+
+my %atomshash;
+
+for(my $I=1;$I<=$#C;$I++){
+	my ($A, $B)=checkcomment($C[$I]);
+	if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
+	if($A eq ""){
+		print TOPOUT "$B\n";
+		next;
+	}else{
+		my @D=split(/ /,$A);
+		my $NUM=$D[0];
+		if(exists $keepatoms{$NUM}){
+			if(defined $ndxorder){
+				$atomshash{$keepatoms{$NUM}}="$keepatoms{$NUM}\t$D[1]\t$D[2]\t$D[3]\t$D[4]\t$keepatoms{$NUM}";
+				for(my $K=6;$K<=$#D;$K++){
+					$atomshash{$keepatoms{$NUM}} .= "\t$D[$K]";
+				}
+				if($B ne ""){
+					$atomshash{$keepatoms{$NUM}} .=  "\t$B\n";
+				}else{
+					$atomshash{$keepatoms{$NUM}} .= "\n";
+				}
+
+			}else{
+				print TOPOUT "$keepatoms{$NUM}\t$D[1]\t$D[2]\t$D[3]\t$D[4]\t$keepatoms{$NUM}";
+				for(my $K=6;$K<=$#D;$K++){
+					print TOPOUT "\t$D[$K]";
+				}
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+			}
+		}
+	}
+}
+# if we want to preserve ndx ordering, we need to make sure the new indices are in order
+if(defined $ndxorder){
+	foreach my $atomn(sort {$a<=>$b} keys %atomshash){
+		print TOPOUT "$atomshash{$atomn}";
+	}
+}
+print TOPOUT "\n";
+
+
+# information about the bonds 
+if(exists $DIRLIST{"bonds"}){
+	my @C= split(/\n/,$DATA[$DIRLIST{"bonds"}]);
+	if($#C<1){
+		smog_quit("There must be at least 1 bond listed under the bonds directive\n");
+	}
+
+	print TOPOUT "[ bonds ]\n";
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				print TOPOUT "$keepatoms{$D[0]}\t$keepatoms{$D[1]} ";
+				for(my $J=2;$J<=$#D;$J++){
+					print TOPOUT "\t$D[$J]";
+				}
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+
+			}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[0]}}=1;
+			}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[1]}}=1;
+			}
+		}
+	}
+	print TOPOUT "\n";
+}
+
+# information about the angles 
+if(exists $DIRLIST{"angles"}){
+	my @C= split(/\n/,$DATA[$DIRLIST{"angles"}]);
+	if($#C<1){
+		smog_quit("There must be at least 1 angle listed under the angles directive\n");
+	}
+	print TOPOUT "[ angles ]\n";
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} ){
+				print TOPOUT "$keepatoms{$D[0]}\t$keepatoms{$D[1]}\t$keepatoms{$D[2]} ";
+				for(my $J=3;$J<=$#D;$J++){
+					print TOPOUT "\t$D[$J]";
+				}
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+
+			}elsif(exists $keepatoms{$D[0]} || exists $keepatoms{$D[1]} || exists $keepatoms{$D[2]}){
+				for(my $M=0;$M<3;$M++){
+					if(exists $keepatoms{$D[$M]}){
+						$atoms2restrain{$keepatoms{$D[$M]}}=1;
+					}
+				}
+			}
+		}
+	}
+	print TOPOUT "\n";
+}
+
+# information about the dihedrals 
+if(exists $DIRLIST{"dihedrals"}){
+	my @C= split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
+	if($#C<1){
+		smog_quit("There must be at least 1 dihedral listed under the dihedrals directive\n");
+	}
+
+	print TOPOUT "[ dihedrals ]\n";
+
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]} && exists $keepatoms{$D[2]} && exists $keepatoms{$D[3]} ){
+				print TOPOUT "$keepatoms{$D[0]}\t$keepatoms{$D[1]}\t$keepatoms{$D[2]}\t$keepatoms{$D[3]}";
+				for(my $J=4;$J<=$#D;$J++){
+					print TOPOUT "\t$D[$J]";
+				}
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+			}elsif(exists $keepatoms{$D[0]} || exists $keepatoms{$D[1]} || exists $keepatoms{$D[2]} || exists $keepatoms{$D[3]}){
+				for(my $M=0;$M<4;$M++){
+					if(exists $keepatoms{$D[$M]}){
+						$atoms2restrain{$keepatoms{$D[$M]}}=1;
+					}
+				}
+			}
+		}
+	}
+	print TOPOUT "\n";
+}
+
+# information about the contacts 
+if(exists $DIRLIST{"pairs"}){
+	print TOPOUT "[ pairs ]\n";
+	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
+
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				print TOPOUT "$keepatoms{$D[0]}\t$keepatoms{$D[1]} ";
+				for(my $J=2;$J<=$#D;$J++){
+					print TOPOUT "\t$D[$J]";
+				}
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+
+			}elsif(exists $keepatoms{$D[0]} && !exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[0]}}=1;
+			}elsif(!exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				$atoms2restrain{$keepatoms{$D[1]}}=1;
+			}
+		}
+	}
+	print TOPOUT "\n";
+}
+
+# information about the exclusions 
+if(exists $DIRLIST{"exclusions"}){
+	my @C= split(/\n/,$DATA[$DIRLIST{"exclusions"}]);
+	if($#C<1){
+		smog_quit("There must be at least 1 bond listed under the bonds directive\n");
+	}
+
+	print TOPOUT "[ exclusions ]\n";
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if(checkforinclude($C[$I],$A,*TOPOUT)){next;};
+
+		if($A eq ""){
+			print TOPOUT "$B\n";
+			next;
+		}else{
+			my @D=split(/ /,$A);
+			if(exists $keepatoms{$D[0]} && exists $keepatoms{$D[1]}){
+				print TOPOUT "$keepatoms{$D[0]}\t$keepatoms{$D[1]} ";
+				if($B ne ""){
+					print TOPOUT "\t$B\n";
+				}else{
+					print TOPOUT "\n";
+				}
+			}
+		}
+	}
+	print TOPOUT "\n";
+}
+
+# information about the restraints 
+if($gen_restraints ne "null"){
+ 	open(RESMAPPING,">$restrainedmap") or smog_quit("Can\'t open $restrainedmap.");
+	print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
+	print RESMAPPING "The following atoms are restrained (new and old numbering)\n";
+	print TOPOUT "[ position_restraints ]\n";
+	foreach my $res(sort {$a<=>$b} keys %atoms2restrain){
+		print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";
+		print RESMAPPING "$res $keepatoms2[$res-1]\n";
+	}
+	close(RESMAPPING);
+}
+print TOPOUT "\n";
+
+@C= split(/\n/,$DATA[$DIRLIST{"system"}]);
+print TOPOUT "[ system ]\n";
+for(my $II=1;$II<=$#C;$II++){
+	print TOPOUT "$C[$II]\n";
+}
+print TOPOUT "\n";
+
+@C= split(/\n/,$DATA[$DIRLIST{"molecules"}]);
+print TOPOUT "[ molecules ]\n";
+for(my $II=1;$II<=$#C;$II++){
+	print TOPOUT "$C[$II]\n";
+}
+print TOPOUT "\n";
+close(MAPPING);
+close(TOPOUT);
+warnsummary();
+
+print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
+exit(0);
+
+
+##############SUBROUTINES##########################3
+sub usage
+{
+  print <<EOT;
+
+usage: smog_extract  .. options ..
+
+   Optional flags 
+	-f [smog.top]		: input SMOG forcefield file
+	-g [smog.gro]		: input SMOG configuration file
+	-n [smog.ndx]		: index file to define extracted group
+	-of [extracted.top]	: output SMOG forcefield file for extracted system
+	-og [extracted.gro]	: output SMOG configuration file for extracted system
+	-om [atomindex.map]	: output file with old-to-new atom index mapping
+	-orm [restrained.map]	: output file with old-to-new atom index mapping for restrained atoms
+	-restraints <float>	: generate restraints with a specific strength for atoms 
+                                  that have interactions removed during extraction
+	-ndxorder		: Order the top and gro atoms in the order provided in the ndx file. 
+				  Default is to preserve the original ordering. 
+	-warn [0]		: convert the first N errors into warnings
+	-nogro			: do not extract a gro file. Only extract a .top
+	-help			: show options
+EOT
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit(1);
+  }
+}
+
+
+sub gettypes
+{
+	my ($DATA,$DIRLIST,$keepatoms)=@_;
+	my @DATA=@{$DATA};
+	my %DIRLIST=%{$DIRLIST};
+	my %keepatoms=%{$keepatoms};
+	my %types;
+	my @C= split(/\n/,$DATA[$DIRLIST{"atoms"}]);
+	
+	for(my $I=1;$I<=$#C;$I++){
+		my ($A, $B)=checkcomment($C[$I]);
+		if($A =~ m/^#/ || $A eq ""){next;};
+		my @D=split(/ /,$A);
+		my $NUM=$D[0];
+		if(exists $keepatoms{$NUM}){
+			$types{$D[1]}=1;
+		}
+	}
+	return \%types;
+}
