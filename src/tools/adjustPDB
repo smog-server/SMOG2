@@ -5,6 +5,7 @@ use Getopt::Long;
 ## VARS: ##
 my %map;
 my %altname;
+my %rename;
 my %ignorename;
 my $rows;
 my $atomCount;
@@ -80,7 +81,7 @@ if(!defined $inputPDB){
 	smog_quit("No input PDB was specified. Use -i to specify your input pdb file.");
 }else{
 	open(OLDPDB,"$inputPDB") or smog_quit("Can't open PDB file $inputPDB.");
-	print "Will reformat the PDB file: $inputPDB\n";	
+	print "\nWill reformat the PDB file: $inputPDB\n\n";	
 }
 
 if (defined $default){
@@ -106,7 +107,7 @@ foreach my $filen ($outputPDB){
 }
 
 open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
-print "New file will be written: $outputPDB\n";
+print "New file will be written: $outputPDB\n\n";
 
 readmap();	
 adjustInputFile($subALA);
@@ -324,126 +325,16 @@ sub adjustInputFile{
 			}
 			$lastresidue=$resNum;
 
+			my $printresidue;
 			if (defined $legacymatch) {
 				# conventional head/tail adjustments
-				if(!exists $map{$resName}{"head"} || !exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
-				## Adjust Tail\Head names ##
-				if($isFirst && $isLast){
-					if("$map{$resName}{\"tail\"}" eq "$map{$resName}{\"head\"}"){
-						# if definitions are the same, just call it head
-						$isLast=0;
-					}else{
-						smog_quit("Encountered a single-residue chain. Unclear whether to treat this as a head, or tail...");
-					}
-				}
-				if ($isFirst){
-					my $newResName = $map{$resName}{"head"};
-					$resName = $newResName;
-				}
-				if ($isLast){
-						my $newResName = $map{$resName}{"tail"};
-						$resName = 	$newResName;
-				}
-				
-				# check if subALA
-				if(defined $subALA && $resName ne "ALA" && $resName ne "ALAT"){
-					# only check to sub if turned on, and not already ALA
-					my %atomsin;
-					for(my $i=0; $i<=$loopInd; $i++){
-						my $aName = $residue[$i]->{"atomName"};
-						$atomsin{$aName}=1;
-					}
-					if($loopInd == 4){
-						if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} ){
-							$resName="ALA"
-						}
-					}
-					if($loopInd == 5){
-						if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} && exists $atomsin{"OXT"} ){
-							$resName="ALAT"
-						}
-					}
-				}
-				for(my $i=0; $i<=$loopInd; $i++){
-					my $aName = $residue[$i]->{"atomName"};
-					$aName =~ s/'/*/g;
-					if ($aName eq "OP1"){$aName="O1P"};
-					if ($aName eq "OP2"){$aName="O2P"};
-					if ($aName eq "OP3"){$aName="O3P"};
-					if (($resName eq "ILE" || $resName eq "ILET") &&  $aName eq "CD"){$aName="CD1"};
-					my $ind = $residue[$i]->{"atomIndex"};
-					my $x = $residue[$i]->{"x"};
-					my $y = $residue[$i]->{"y"};
-					my $z = $residue[$i]->{"z"};
-					if(defined $removeH && $aName =~ m/^H/){
-						$removestring .= "$resName$resInd-$aName ";
-					}else{
-					    printf NEWPDB "ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$resName,$chainName,$resInd,$x,$y,$z;
-					}
-				}
-
+				($printresidue,$removestring)=legacymatching($resName,$resInd,$chainName,$isFirst,$isLast,$removestring);
 			} elsif (!defined $legacymatch) {
-				# get and sort atom names. We can update this with regexes later for more complex matching
-				my @tmparr;
-				for(my $i=0; $i<=$loopInd; $i++){
-					my $aName = $residue[$i]->{"atomName"};
-					if(exists $altname{"$resName-$aName"}){
-						my $tn=$aName;
-						$aName=$altname{"$resName-$aName"};
-						$renamedstring .="$resName$resIDorig-$tn->$aName ";
-					} elsif (exists $altname{"*-$aName"}){
-						# if no exact replacement found, see if there is a wildcard match
-						my $tn=$aName;
-						$aName=$altname{"*-$aName"};
-						$renamedstring .="$resName$resIDorig-$tn->$aName ";
-					} 
-					$aName =~ s/'/*/g;
-					$tmparr[$i]=$aName;
-				}
-				my $str="";
-				foreach my $I(sort @tmparr) {
-					unless(defined $removeH && $I =~ m/^H/){
-						$str.="$I ";
-					}
-				}
-				my $nres;
-				if(!exists $ignorename{$resName}) {
-					if ($isFirst == 1 && exists $map{"$str first"}) {
-						$nres=$map{"$str first"};
-					} elsif ($isLast == 1 && exists $map{"$str last"}) {
-						$nres=$map{"$str last"};
-					} elsif (exists $map{$str}) {
-						$nres=$map{$str};
-					} else {
-						smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]: $str");
-					} 
-
-					if ($resName ne $nres) {
-						$renamedstring .="$resName$resIDorig->$nres$resInd "; 
-					}
-
-				} else {
-					#ignoring renaming of this residue	
-					$nres=$resName;
-				}
-
-				for(my $i=0; $i<=$loopInd; $i++){
-					my $ind = $residue[$i]->{"atomIndex"};
-					my $x = $residue[$i]->{"x"};
-					my $y = $residue[$i]->{"y"};
-					my $z = $residue[$i]->{"z"};
-					my $aName = $tmparr[$i];
-					if(defined $removeH && $aName =~ m/^H/){
-						$removestring .= "$resName$resInd-$aName ";
-					}else{
-					    printf NEWPDB "ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$nres,$chainName,$resInd,$x,$y,$z;
-					}
-				}
-
+				($printresidue,$removestring,$renamedstring)=exactmatching($k,$resName,$resInd,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring);
 			} else {
 				smog_quit("internal error 1");
 			}
-
+			print NEWPDB $printresidue;
 
 			#LEAVE CURRENT RESIDUE AND UPDATE FLAGS#
 			$isFirst = 0;
@@ -452,9 +343,9 @@ sub adjustInputFile{
 			$resInd++;
 			$prevResTypeRNA = isRNA($resName);
 			undef @residue; 
-		}
+
 		## If the line is niether ATOM, BOND, COMMENT, TER or END - exit. ##
-		else{
+		}else{
 			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM, HETATM, TER, BOND, COMMENT, END");
 		}
 	}
@@ -465,98 +356,340 @@ sub readmap {
 	## CACHE MAP ##
 	#Note: Map files has to be in format <residue> <head_name> <tail_name>
 	open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
-	print "Mapping file $mapOption will be read.\n";
+	print "Mapping file \"$mapOption\" will be read.\n\n";
 	
 	if (defined $legacymatch) {
 		# use the old head/tail convention for renaming
-		while(my $line = <MAP>)
-		{
-			## SKIP COMMENT LINE ##
-			my ($A,$B)=checkcomment($line);
-			if($A eq ""){next;}  # skip the line if it is only a comment
-			my @entries = split(/\s+/,$A);
-			#map-->residue-->{head|tail} 
-			if($#entries != 2){
-				my $count=$#entries+1;
-				smog_quit("Looking for 3 fields in $mapOption, but found $count. Offending line:\n$line");
-			}
-			$map{$entries[0]}{"head"} = $entries[1];
-			$map{$entries[0]}{"tail"} = $entries[2];
-		}
+		readlegacymap();
 	} else {
 		# rename residues based one exact matches, only
-		while(my $line = <MAP>)
-		{
-			## SKIP COMMENT LINE ##
-			my ($A,$B)=checkcomment($line);
-			if($A eq ""){next;}  # skip the line if it is only a comment
-			my @entries = split(/\s+/,$A);
-			my @tmparr;
-			#map-->residue-->{head|tail} 
-			if($#entries < 1){
+		readexactmap();	
+	}
+}
+
+sub readlegacymap
+{
+	open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
+	while(my $line = <MAP>){
+		## SKIP COMMENT LINE ##
+		my ($A,$B)=checkcomment($line);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+		my @entries = split(/\s+/,$A);
+		#map-->residue-->{head|tail} 
+		if($#entries != 2){
+			my $count=$#entries+1;
+			smog_quit("Looking for 3 fields in $mapOption, but found $count. Offending line:\n$line");
+		}
+		$map{$entries[0]}{"head"} = $entries[1];
+		$map{$entries[0]}{"tail"} = $entries[2];
+	}
+	close MAP;
+}
+
+sub readexactmap
+{
+	open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
+	my @content;
+	my $cindex=0;
+	while($content[$cindex] = <MAP>){
+		## SKIP COMMENT LINE ##
+		my ($A,$B)=checkcomment($content[$cindex]);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+		my @entries = split(/\s+/,$A);
+		if($entries[0] =~ /^[Ii][Gg][Nn][Oo][Rr][Ee][Rr][Ee][Ss]$/ || $entries[0] =~ /^[Rr][Ee][Nn][Aa][Mm][Ee]$/ || $entries[0] =~ /^[Rr][Ee][Ss][Ii][Dd][Uu][Ee]$/ ) {
+			$cindex++;
+		}else{
+			smog_quit("Exact map file only supports IgnoreRes, Residue and Rename line. Offending line:\n$content[$cindex]");
+		}		
+
+	}
+
+	# check for ignoreRes lines
+	for(my $linen=0;$linen<$cindex;$linen++){
+		my $line=$content[$linen];
+		## SKIP COMMENT LINE ##
+		my ($A,$B)=checkcomment($line);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+		my @entries = split(/\s+/,$A);
+		if($entries[0] =~ /^[Ii][Gg][Nn][Oo][Rr][Ee][Rr][Ee][Ss]$/) {
+			if($#entries != 1 ){
 				my $count=$#entries+1;
-				smog_quit("Looking for at least 2 fields in $mapOption, but found $count. Offending line:\n$line");
+				smog_quit("When giving IgnoreRes in map file, must have 2 fields (IgnoreRes <RESNAME>). Offending line:\n$line");
 			}
-	
-			if($entries[0] =~ /^[Aa][Ll][Tt][Nn][Aa][Mm][Ee]$/) {
-				if($#entries < 3){
-					my $count=$#entries+1;
-					smog_quit("When giving ALTNAME in map file, must have at least 4 fields (ALTNAME <RES> <TARGET NAME> <ALTERNATE NAMES>). Offending line:\n$line");
-				}
-	
-				for( my $I=3;$I<=$#entries;$I++){
-					#save with key "resname-target name"
-					if(exists $altname{"$entries[1]-$entries[$I]"}){
-						smog_quit("Repeated altname entry in mapping file. Offending line:\n$line");
-					}
-					$altname{"$entries[1]-$entries[$I]"}=$entries[2];
-				}
-				
+			#save with key "resname-target name"
+			if(exists $ignorename{"$entries[1]"}){
+				smog_quit("Repeated IgnoreRes entry in mapping file. Offending line:\n$line");
 			}
+			$ignorename{"$entries[1]"}=0;
+			print "Note: Will not rename $entries[1] residues\n"
+		}
+	}
 
-			if($entries[0] =~ /^[Ii][Gg][Nn][Oo][Rr][Ee][Rr][Ee][Ss]$/) {
-				if($#entries != 1 ){
-					my $count=$#entries+1;
-					smog_quit("When giving IgnoreRes in map file, must have 2 fields (IgnoreRes <RESNAME>). Offending line:\n$line");
-				}
-	
+	# check for rename lines
+	for(my $linen=0;$linen<$cindex;$linen++){
+		my $line=$content[$linen];
+		## SKIP COMMENT LINE ##
+		my ($A,$B)=checkcomment($line);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+		my @entries = split(/\s+/,$A);
+		if($entries[0] =~ /^[Rr][Ee][Nn][Aa][Mm][Ee]$/) {
+			if($#entries != 2){
+				my $count=$#entries+1;
+				smog_quit("When giving RENAME in map file, must have 3 fields (RENAME <ALTERNATE NAMES> <TARGET NAME>). Offending line:\n$line");
+			}
 				#save with key "resname-target name"
-				if(exists $ignorename{"$entries[1]"}){
-					smog_quit("Repeated IgnoreRes entry in mapping file. Offending line:\n$line");
+				if(exists $rename{"$entries[1]"}){
+					smog_quit("Repeated rename entry in mapping file. Offending line:\n$line");
 				}
-				$ignorename{"$entries[1]"}=0;
-				print "Note: Will not rename $entries[1] residues\n"
-			}
+				$rename{"$entries[1]"}=$entries[2];
+		}
+	}
 
-			for( my $I=1;$I<=$#entries;$I++){
-				$tmparr[$I-1]=$entries[$I];
-			}
-			my $str="";
-			my $flag="";
-			foreach my $I (sort @tmparr) {
-				if($I =~ m/^%/){
-					$I =~ s/%//g;
-					$flag=" $I";
-				}else{
-					$str.="$I ";
+	# read residue lines
+	for(my $linen=0;$linen<$cindex;$linen++){
+		my $line=$content[$linen];
+		## SKIP COMMENT LINE ##
+		my ($A,$B)=checkcomment($line);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+		# padding is added, so that splitting can identify alternate names
+		$A =~ s/\(/ \( /g;
+		$A =~ s/\)/ \) /g;
+		my @entries = split(/\s+/,$A);
+		if( $entries[0] !~ /^[Rr][Ee][Ss][Ii][Dd][Uu][Ee]$/) {
+			next;
+		}
+		my @tmparr;
+		if($#entries < 2){
+			my $count=$#entries+1;
+			smog_quit("Looking for at least 3 fields in $mapOption, but found $count. Offending line:\n$line");
+		}
+
+		my $rn=$entries[1];
+		if(exists $ignorename{$rn}){
+			smog_quit("Atoms in residue \"$rn\" listed in map file, but the same residue is also listed under ignoreRes.");
+		}
+		# add residue definition to map hash.  Also, add all permutations of alternate atom names
+		checkDupGetAlt(\@entries,$line);
+	}
+	close MAP;
+}
+
+sub checkDupGetAlt
+{
+	# check that each entry on a residue line is unique
+	my ($entries,$line)=@_;
+	my @entries=@{$entries};
+	my %tfound;
+	my $altsets=0;
+	my @altnames;
+	my @strippedlist;
+	my $strippedindex=0;
+	for( my $I=2;$I<=$#entries;$I++){
+
+		if($entries[$I] =~ m/\(/ ){
+			$I++;
+			until($entries[$I] =~ m/\)/ ){
+				$altnames[$altsets] .= "$entries[$I] ";
+				$I++;
+				if($I>$#entries || $entries[$I] =~ m/\(/){
+					smog_quit("Mapping file missing closing \")\" on line:\n\t$line");
 				}
+				$tfound{$entries[$I]}=atomfound(\%tfound,$entries[$I],$line);
 			}
-			$str.="$flag";
-			# key is the list of atoms
-			if(!exists $map{$str}) {
-				$map{$str}=$entries[0];
-			} else {
-				smog_quit("Mapping file ($mapOption) defines two residues as having the same atoms: $map{$str}, $entries[0]");
+			$altsets++;
+
+		}elsif($entries[$I] !~ m/\)/ ){
+			$strippedlist[$strippedindex]=$entries[$I];
+			$strippedindex++;
+		}
+	
+		# if not seen, atomfound returns 0.  If found, smog_quit
+		$tfound{$entries[$I]}=atomfound(\%tfound,$entries[$I],$line);
+	}
+
+	for( my $I=0;$I<$altsets;$I++){
+		$altnames[$I] =~ s/^\s+//g;
+		$altnames[$I] =~ s/\s+$//g;
+	}
+
+	makesubs($entries[1],\@strippedlist,\@altnames,0,"");
+
+}
+
+sub makesubs
+{
+	my ($resname,$list,$alts,$altindex,$string)=@_;
+
+	my @alts=@{$alts};
+
+
+	if($altindex <= $#alts){
+		my @altlist=split(/\s+/,$alts[$altindex]);
+		foreach my $enter(@altlist){
+			my $newstring=$string . "$enter ";
+			$altname{"$resname-$enter"}=$altlist[0];
+			makesubs($resname,$list,\@alts,$altindex+1,"$newstring");
+		}
+	}else{
+		my @add=split(/\s+/,$string);
+		my @tmparr=@{$list};
+		push(@tmparr,@add);
+		# we get here because we have completed our list
+		my $str="";
+		my $flag="";
+		foreach my $I (sort @tmparr) {
+			if($I =~ m/^%/){
+				$I =~ s/%//g;
+				$flag=" $I";
+			}else{
+				$str.="$I ";
 			}
 		}
-		# check that no ignoreRes residues were also given atoms
-		foreach my $resname (values %map){
-			if(exists $ignorename{$resname}){
-				smog_quit("Residue \"$resname\" listed in map file with atoms, and also listed under ignoreRes");
-			}
+		$str.="$flag";
+		if(!exists $map{$str}) {
+		        $map{$str}=$resname;
+		} else {
+		        smog_quit("Mapping file ($mapOption) defines two residues as having the same atoms: $map{$str}, $resname");
 		}
 	}
 }
+
+sub atomfound
+{
+	my ($tfound,$entry,$line)=@_;
+
+	if(exists ${$tfound}{$entry} && $entry !~ m/\(/ && $entry !~ m/\)/){
+		smog_quit("Mapping file: Duplicate atom ($entry) defined residue on line:\n\t $line");
+	}
+	return 0;
+}
+
+sub legacymatching
+{
+	my ($resName,$resInd,$chainName,$isFirst,$isLast,$removestring) = @_;
+
+	if(!exists $map{$resName}{"head"} || !exists $map{$resName}{"tail"}){smog_quit("Issue with residue $resName - please check the map file to make sure the residue name is defined.");}
+	## Adjust Tail\Head names ##
+	if($isFirst && $isLast){
+		if("$map{$resName}{\"tail\"}" eq "$map{$resName}{\"head\"}"){
+			# if definitions are the same, just call it head
+			$isLast=0;
+		}else{
+			smog_quit("Encountered a single-residue chain. Unclear whether to treat this as a head, or tail...");
+		}
+	}
+	if ($isFirst){
+		my $newResName = $map{$resName}{"head"};
+		$resName = $newResName;
+	}
+	if ($isLast){
+			my $newResName = $map{$resName}{"tail"};
+			$resName = 	$newResName;
+	}
+	
+	# check if subALA
+	if(defined $subALA && $resName ne "ALA" && $resName ne "ALAT"){
+		# only check to sub if turned on, and not already ALA
+		my %atomsin;
+		for(my $i=0; $i<=$loopInd; $i++){
+			my $aName = $residue[$i]->{"atomName"};
+			$atomsin{$aName}=1;
+		}
+		if($loopInd == 4){
+			if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} ){
+				$resName="ALA"
+			}
+		}
+		if($loopInd == 5){
+			if(exists $atomsin{"C"} && exists $atomsin{"CA"} && exists $atomsin{"N"} && exists $atomsin{"O"} && exists $atomsin{"CB"} && exists $atomsin{"OXT"} ){
+				$resName="ALAT"
+			}
+		}
+	}
+	my $printthis="";
+	for(my $i=0; $i<=$loopInd; $i++){
+		my $aName = $residue[$i]->{"atomName"};
+		$aName =~ s/'/*/g;
+		if ($aName eq "OP1"){$aName="O1P"};
+		if ($aName eq "OP2"){$aName="O2P"};
+		if ($aName eq "OP3"){$aName="O3P"};
+		if (($resName eq "ILE" || $resName eq "ILET") &&  $aName eq "CD"){$aName="CD1"};
+		my $ind = $residue[$i]->{"atomIndex"};
+		my $x = $residue[$i]->{"x"};
+		my $y = $residue[$i]->{"y"};
+		my $z = $residue[$i]->{"z"};
+		if(defined $removeH && $aName =~ m/^H/){
+			$removestring .= "$resName$resInd-$aName ";
+		}else{
+			$printthis.=sprintf("ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$resName,$chainName,$resInd,$x,$y,$z);
+		}
+	}
+	return($printthis,$removestring);
+}
+
+sub exactmatching
+{
+	my ($k,$resName,$resInd,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring) = @_;
+
+	# get and sort atom names. We can update this with regexes later for more complex matching
+
+	# first, replace atom names globally
+	my @tmparr;
+	for(my $i=0; $i<=$loopInd; $i++){
+		my $aName = $residue[$i]->{"atomName"};
+		if(exists $rename{"$aName"}){
+			my $tn=$aName;
+			$aName=$rename{"$aName"};
+			$renamedstring .="$resName$resIDorig-$tn->$aName ";
+		} 
+		$tmparr[$i]=$aName;
+	}
+	my $str="";
+	foreach my $I(sort @tmparr) {
+		unless(defined $removeH && $I =~ m/^H/){
+			$str.="$I ";
+		}
+	}
+	my $nres;
+	if(!exists $ignorename{$resName}) {
+		if ($isFirst == 1 && exists $map{"$str first"}) {
+			$nres=$map{"$str first"};
+		} elsif ($isLast == 1 && exists $map{"$str last"}) {
+			$nres=$map{"$str last"};
+		} elsif (exists $map{$str}) {
+			$nres=$map{$str};
+		} else {
+			smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]\n Found the following atoms and conditions in the PDB for this residue:\n\t $str");
+		} 
+
+		if ($resName ne $nres) {
+			$renamedstring .="$resName$resIDorig->$nres$resInd "; 
+		}
+
+	} else {
+		#ignoring renaming of this residue	
+		$nres=$resName;
+	}
+	my $printthis="";
+	for(my $i=0; $i<=$loopInd; $i++){
+		my $ind = $residue[$i]->{"atomIndex"};
+		my $x = $residue[$i]->{"x"};
+		my $y = $residue[$i]->{"y"};
+		my $z = $residue[$i]->{"z"};
+		my $aName = $tmparr[$i];
+		
+		if(exists $altname{"$nres-$aName"} && !exists $ignorename{$resName}){
+			$aName=$altname{"$nres-$aName"};
+		}
+		if(defined $removeH && $aName =~ m/^H/){
+			$removestring .= "$resName$resInd-$aName ";
+		}else{
+		    	$printthis.=sprintf("ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$nres,$chainName,$resInd,$x,$y,$z);
+		}
+	}
+	return($printthis,$removestring,$renamedstring);
+}
+
 
 # END OF SUBROUTINES
 

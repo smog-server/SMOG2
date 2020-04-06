@@ -1426,8 +1426,6 @@ sub connWildcardMatchDihes
 	return $funct;
 }
 
-
-
 sub GenAnglesDihedrals
 {
 	my($connect,$chainlength,$chid) = @_;

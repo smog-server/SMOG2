@@ -303,7 +303,7 @@ sub parseBif {
 		my $ti=0;
 		foreach my $res ( keys %{$residueHandle} )
 		{
-			$mstring[$ti] = "$res";
+			$mstring[$ti] = "residue $res";
 			my @atomHandle = @{$residueHandle->{$res}->{"atoms"}->[0]->{"atom"}};
 			my %list;
 			foreach my $atom(@atomHandle)
