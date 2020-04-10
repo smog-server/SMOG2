@@ -1117,16 +1117,11 @@ sub dihedralOutput
 
 	 		if($fType !=0 && !exists $freeangles{"$ai-$aj-$ak"} && !exists $freeangles{"$ak-$aj-$ai"} && !exists $freeangles{"$aj-$ak-$al"} && !exists $freeangles{"$al-$ak-$aj"}  ){
 				# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
-				if($paramArr[0] =~ /\?/){
-			         # replace ? with native angles
-			   	 $paramArr[0] =~ s/\?/$values/g;
-				 # evaluate
-				 $paramArr[0] = eval($paramArr[0]);
-				 }
-				 if( $fType == 1){
-			            # Angle will be scaled by multiplicity factor n, if they are cosine functions
-			            $paramArr[0] *= $paramArr[2];
-				 }
+				$paramArr[0]=evalsub($paramArr[0],$values);
+				if( $fType == 1){
+			            	# Angle will be scaled by multiplicity factor n, if they are cosine functions
+			        	$paramArr[0] *= $paramArr[2];
+				}
 			
 	
 				# Perform checks of dihedral parameters (only do this once, then set funtypechecked)
@@ -1385,9 +1380,7 @@ sub contactParseNM1
 	$B=-1.0/($M/$N-1.0);
 	$A=$M/$N*$B;
 	# replace ? with native distance expression
-	$paramArr->[2] =~ s/\?/$r0/g;
-	#Eval expression
-	$r0 = eval($paramArr->[2]);
+        $r0=evalsub($paramArr->[2],$r0);
 	   
 	$A *= $epsilon*$r0**$N;
 	$B *= $epsilon*$r0**$M;
@@ -1425,24 +1418,21 @@ sub contactParseNM2
 	##r0 is native distance##
 	#
 	my $A; my $B;
-	my $F; my $G;
-	$F=$paramArr->[1];
-	$G=$paramArr->[0];
+#       my $F; my $G;
+#       $F=$paramArr->[1];
+#       $G=$paramArr->[0];
 	my $length=scalar @{$paramArr};
 
 	if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_2. Expecting 4, found $length."); }
 	
 	# replace ? with native distance expression
-	$paramArr->[2] =~ s/\?/$r0/g;
-	$paramArr->[2] = eval($paramArr->[2]);
+	$paramArr->[2]=evalsub($paramArr->[2],$r0);
 	
 	# substitute value of r into f(r) and g(r)
-	$F =~ s/\?/$paramArr->[2]/g;
-	$G =~ s/\?/$paramArr->[2]/g;
-	
-	#Eval expression
-	$A = eval($F);
-	$B = eval($G);
+	$A=evalsub($paramArr->[1],$paramArr->[2]);	
+	$B=evalsub($paramArr->[0],$paramArr->[2]);	
+
+
 	$A *= $epsilon; 
 	$B *= $epsilon; 
 	
@@ -1502,10 +1492,9 @@ sub contactParseGaussian
 	## Check if sigma_G has r0 dependency ##
 	if($paramArr->[2] =~ /\?/)
 	{
-		#Replace ? with $r0 
-		$paramArr->[2] =~ s/\?/$r0/g;
+		#Replace ? with $r0
+		$paramArr->[2] = evalsub($paramArr->[2],$r0); 
 		#Eval expression
-		$paramArr->[2] = eval($paramArr->[2]);
 	}
 	if($paramArr->[3] =~ /^?$/){$paramArr->[3]=$r0;}
 	
@@ -1527,13 +1516,14 @@ my $k;
 	$paramArr->[1] = eval($paramArr->[1]);
 	
 	## r ##
-	if($paramArr->[0] =~ /\?/)
-	{
-		#Replace ? with $r0 
-		$paramArr->[0] =~ s/\?/$r0/g;
-	}
-	#Eval expression
-	$paramArr->[0] = eval($paramArr->[0]);
+	$paramArr->[0] = evalsub($paramArr->[0],$r0);
+#	if($paramArr->[0] =~ /\?/)
+#	{
+#		#Replace ? with $r0 
+#		$paramArr->[0] =~ s/\?/$r0/g;
+#	}
+#	#Eval expression
+#	$paramArr->[0] = eval($paramArr->[0]);
 	
 	($r0,$k) = ($paramArr->[0],$paramArr->[1]);
 	@{$paramArr}=($r0,$k);
@@ -1790,6 +1780,14 @@ sub convertPDBToGroNdx
 	       print NDX "\n";
 	}
 	close(NDX);
+}
+
+sub evalsub
+{
+	my ($expression,$value)=@_;
+	$expression =~ s/\?/$value/g;
+	$expression = eval($expression);
+	return $expression;
 }
 
 sub validateTemplate

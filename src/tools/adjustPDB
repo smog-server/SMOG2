@@ -268,7 +268,7 @@ sub adjustInputFile{
 					if(!$renumber && !$insertTER){
 						smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (near line $k).");
 					}elsif($insertTER){
-						print "Non-consecutive residue numbering detected.  -insertTER used.  TER will be inserted after:$line\n";
+						print "Non-consecutive residue numbering detected.  -insertTER used.  TER will be inserted before:$line\n";
 						print NEWPDB "TER\n";
 					}
 				}
@@ -355,7 +355,7 @@ sub adjustInputFile{
 sub readmap {
 	## CACHE MAP ##
 	#Note: Map files has to be in format <residue> <head_name> <tail_name>
-	open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
+	open(MAP,$mapOption) || smog_quit("Cannot open map file $mapOption\n");
 	print "Mapping file \"$mapOption\" will be read.\n\n";
 	
 	if (defined $legacymatch) {
@@ -388,7 +388,7 @@ sub readlegacymap
 
 sub readexactmap
 {
-	open(MAP,$mapOption) || smog_quit("Cannot open Map file $mapOption\n");
+	open(MAP,$mapOption) || smog_quit("Cannot open map file $mapOption\n");
 	my @content;
 	my $cindex=0;
 	while($content[$cindex] = <MAP>){
@@ -549,7 +549,7 @@ sub makesubs
 		if(!exists $map{$str}) {
 		        $map{$str}=$resname;
 		} else {
-		        smog_quit("Mapping file ($mapOption) defines two residues as having the same atoms: $map{$str}, $resname");
+		        smog_quit("Mapping file ($mapOption) defines two residues as having the same atoms: \"$map{$str}\" and \"$resname\"");
 		}
 	}
 }
@@ -559,7 +559,7 @@ sub atomfound
 	my ($tfound,$entry,$line)=@_;
 
 	if(exists ${$tfound}{$entry} && $entry !~ m/\(/ && $entry !~ m/\)/){
-		smog_quit("Mapping file: Duplicate atom ($entry) defined residue on line:\n\t $line");
+		smog_quit("Mapping file: Duplicate atom ($entry) defined in residue on line:\n\t $line");
 	}
 	return 0;
 }
