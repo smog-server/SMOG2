@@ -1587,7 +1587,7 @@ sub saveAtomTypes
 				smog_quit("Non-bonded parameters for atomtype $nbtype are defined in the .nb and extras file");
 			}
 			$tmptype=$nbtype;
-		}if(exists $extraatomtypes{$nbtype}){
+		}elsif(exists $extraatomtypes{$nbtype}){
 			# dump the extras information.  Don't match to a wild card, below
 			addToTop("atomtypes",$extraatomtypes{$nbtype}."\n");
 			next;
