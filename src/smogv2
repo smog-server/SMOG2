@@ -90,7 +90,7 @@ our %pairtypesused;
 our %fTypes;
 our %directives;
 our @directivesList;
-
+our %extraatomtypes;
 #######END GLOBAL DEFS#######
 
 
@@ -440,6 +440,24 @@ sub addExtras {
 			$stuff = $tokens[1];
 			$stuff =~ s/^\s+|\s+$//g;
 			# check that nonbonded params are only added if the atom types are present
+
+			if($directive eq "atomtypes"){
+		    		my @ltokens = split('<',$A);
+				if(@ltokens ==1){
+					# if it is just a comment, save.
+					addToTop($directive,$stuff."\n");
+					next;	
+				}
+				my $lstuff=$ltokens[1];
+				$lstuff =~ s/^\s+|\s+$//g;
+				my @entries = split(/\s+/,$lstuff);
+				if(defined $presentatomtypes{$entries[0]} ){
+					# this atomtype is found in the system. store the extra info
+					$extraatomtypes{$entries[0]}=$lstuff;
+				}
+				next;
+			}
+
 			if($directive eq "nonbond_params"){
 		    		my @ltokens = split('<',$A);
 				if(@ltokens ==1){
@@ -552,9 +570,6 @@ sub addExtras {
 				$foundDtype{"$tarray[0]-$tarray[1]-$tarray[2]-$tarray[3]"}=1;
 				$foundDtype{"$tarray[3]-$tarray[2]-$tarray[1]-$tarray[0]"}=1;
 			}
-
-
-
 			addToTop($directive,$stuff."\n");
 		}
 	}
@@ -1418,9 +1433,6 @@ sub contactParseNM2
 	##r0 is native distance##
 	#
 	my $A; my $B;
-#       my $F; my $G;
-#       $F=$paramArr->[1];
-#       $G=$paramArr->[0];
 	my $length=scalar @{$paramArr};
 
 	if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_2. Expecting 4, found $length."); }
@@ -1545,14 +1557,12 @@ sub contactFuncParser
 	return ($fType,$funcName,$directive,$addExclusions,@paramArr);
 }
 
-sub calculateAtomTypes
+sub getAtomTypes
 {
 	my($uniqueHandle) = @_;
-	my $formattedString = "";	
 	
 	## OBTAIN UNIQUE ATOM TYPES ##
 	my $nbtype ="";
-	my $c12;my $c6;my $ptype;my $charge;my $mass;
 	
 	foreach my $atoms(sort { $a <=> $b } keys %{$uniqueHandle})
 	{
@@ -1561,15 +1571,31 @@ sub calculateAtomTypes
         	{
           		smog_quit("Atom $atoms has no nbType");
         	}
+		$presentatomtypes{$nbtype}=1;
+	}
+}
+
+sub saveAtomTypes
+{
+	my $formattedString = "";	
+	my $c12;my $c6;my $ptype;my $charge;my $mass;
+	 
+	foreach my $nbtype(sort keys %presentatomtypes){
 		my $tmptype;
 		if(exists $interactions->{"nonbonds"}->{$nbtype}){
+			if(exists $extraatomtypes{$nbtype}){
+				smog_quit("Non-bonded parameters for atomtype $nbtype are defined in the .nb and extras file");
+			}
 			$tmptype=$nbtype;
+		}if(exists $extraatomtypes{$nbtype}){
+			# dump the extras information.  Don't match to a wild card, below
+			addToTop("atomtypes",$extraatomtypes{$nbtype}."\n");
+			next;
 		}elsif(exists $interactions->{"nonbonds"}->{"*"}){
 			$tmptype="*";
 		}else{
 			smog_quit("No matching nb parameters found for nbtype $nbtype");
 		}
-		if(exists $presentatomtypes{$nbtype}){next;}
 		$c6 = $interactions->{"nonbonds"}->{$tmptype}->{"c6"};
 		$c12 = $interactions->{"nonbonds"}->{$tmptype}->{"c12"};
 		$ptype = $interactions->{"nonbonds"}->{$tmptype}->{"ptype"};
@@ -1578,7 +1604,6 @@ sub calculateAtomTypes
 		
 		$formattedString = sprintf(" %-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
 		addToTop("atomtypes",$formattedString."\n");
-		$presentatomtypes{$nbtype}=1;
 	}
 }
 
@@ -2100,9 +2125,10 @@ sub printBondedTopOutput {
 	print "Setting energetic ratios\n";
 	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms,$rescaleCD);
 	print "Processing atoms\n";
-	calculateAtomTypes(\%allAtoms);
+	getAtomTypes(\%allAtoms);
  	# adding extras at this point is a bit out of place.  but, it is important, in order to verify that all bonds have bondtypes, etc.
 	addExtras();
+	saveAtomTypes();
 	my %atomIndex2Line=readAtoms($inputPDB);
 
 	## CALCULATE BONDS/CONNECTED BONDS ##
