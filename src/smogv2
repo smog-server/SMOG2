@@ -171,11 +171,31 @@ sub parse_args {
 	## parse command line options ##
 	# -o output top file name, default is smog.top
 	my $tempcheckoff;
-	usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$topFile, 't=s' => \$inputFolder, 'i=s' => \$inputPDB, 'g=s' => \$groFile,
-		'c=s' => \$ContactFile, 'SCMorig' => \$saveSCMorig, 's=s' => \$shadowFile, 'n=s' => \$ndxFile, 'ignH' => \$ignoreHydrogen,  'gen_map=s' => \$gen_map,
-		 'tCG=s' => \$coarseFolder, 'CA'=> \$CAdefault, 'AA' => \$AAdefault, 'CAgaussian'=> \$CAGdefault, 'AAgaussian' => \$AAGdefault, 'dname=s' => \$DNAME, 'warn=i' => \$maxwarn, 
-	         'backup=s' => \$backup, 'limitbondlength' => \$setBondtoLimit, 'limitcontactlength' => \$setContacttoLimit, 
-	         'rescaleCD=s' => \$rescaleCD, 'nocheck'=> \$tempcheckoff,'<>' => \&usage, 'v' => \$printversion)
+	usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 
+		'o=s' => \$topFile, 
+		't=s' => \$inputFolder, 
+		'i=s' => \$inputPDB, 
+		'g=s' => \$groFile,
+		'c=s' => \$ContactFile, 
+		'SCMorig' => \$saveSCMorig, 
+		's=s' => \$shadowFile, 
+		'n=s' => \$ndxFile, 
+		'ignH' => \$ignoreHydrogen,  
+		'gen_map=s' => \$gen_map,
+		'tCG=s' => \$coarseFolder, 
+		'CA'=> \$CAdefault, 
+		'AA' => \$AAdefault, 
+		'CAgaussian'=> \$CAGdefault, 
+		'AAgaussian' => \$AAGdefault, 
+		'dname=s' => \$DNAME, 
+		'warn=i' => \$maxwarn, 
+		'backup=s' => \$backup, 
+		'limitbondlength' => \$setBondtoLimit, 
+		'limitcontactlength' => \$setContacttoLimit, 
+		'rescaleCD=s' => \$rescaleCD, 
+		'nocheck'=> \$tempcheckoff,
+		'<>' => \&usage, 
+		'v' => \$printversion)
 	          or defined $help 
 	          or !defined $inputPDB 
 	          or (!defined $inputFolder  && !defined $coarseFolder));
