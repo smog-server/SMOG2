@@ -397,7 +397,11 @@ sub initializeDirectives {
 	addToTop("angletypes","\n[ angletypes ] \n");
 	addToTop("dihedraltypes","\n[ dihedraltypes ] \n");
 	addToTop("nonbond_params","\n[ nonbond_params ]\n");
-	addToTop("nonbond_params",";ai     aj    func    c6       c12\n");
+	if($interactions->{"gmx-combination-rule"}==1){
+		addToTop("nonbond_params",";ai     aj    func    c6       c12\n");
+	}elsif($interactions->{"gmx-combination-rule"}==2){
+		addToTop("nonbond_params",";ai     aj    func    sigma       epsilon\n");
+	}
 	addToTop("position_restraints","\n[ position_restraints ]\n");
 	addToTop("position_restraints",";ai    func    kx    ky   kz\n");
 	addToTop("atoms","\n[ atoms ]\n");
@@ -1612,7 +1616,7 @@ sub getAtomTypes
 sub saveAtomTypes
 {
 	my $formattedString = "";	
-	my $c12;my $c6;my $ptype;my $charge;my $mass;
+	my $c2;my $c1;my $sigma;my $epsilon;my $ptype;my $charge;my $mass;
 	 
 	foreach my $nbtype(sort keys %presentatomtypes){
 		my $tmptype;
@@ -1630,13 +1634,18 @@ sub saveAtomTypes
 		}else{
 			smog_quit("No matching nb parameters found for nbtype $nbtype");
 		}
-		$c6 = $interactions->{"nonbonds"}->{$tmptype}->{"c6"};
-		$c12 = $interactions->{"nonbonds"}->{$tmptype}->{"c12"};
-		$ptype = $interactions->{"nonbonds"}->{$tmptype}->{"ptype"};
-		$mass = $interactions->{"nonbonds"}->{$tmptype}->{"mass"};
-		$charge = $interactions->{"nonbonds"}->{$tmptype}->{"charge"};
-		
-		$formattedString = sprintf(" %-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c6,$c12);
+		if($interactions->{"gmx-combination-rule"}==1){ 
+			$c1 = $interactions->{"nonbonds"}->{$tmptype}->{"c6"};
+			$c2 = $interactions->{"nonbonds"}->{$tmptype}->{"c12"};
+		}elsif($interactions->{"gmx-combination-rule"}==2){
+			$c1 = $interactions->{"nonbonds"}->{$tmptype}->{"sigma"};
+			$c2 = $interactions->{"nonbonds"}->{$tmptype}->{"epsilon"};
+		}
+			$ptype = $interactions->{"nonbonds"}->{$tmptype}->{"ptype"};
+			$mass = $interactions->{"nonbonds"}->{$tmptype}->{"mass"};
+			$charge = $interactions->{"nonbonds"}->{$tmptype}->{"charge"};
+			
+			$formattedString = sprintf(" %-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c1,$c2);
 		addToTop("atomtypes",$formattedString."\n");
 	}
 }
@@ -2100,10 +2109,6 @@ sub parseTemplatesAndPDB
 	#####################
     	## PARSE TEMPLATES ##
     	#####################
-	if(!defined $gen_map){
-		# no need to initialize these things if we are only making a map file
-		initializeDirectives($inputFolder,$inputPDB);
-	}
 	## parse .sif File ##
 	parseSif();
 	## parse .nb file  ##
@@ -2130,7 +2135,11 @@ sub parseTemplatesAndPDB
 	if(defined $gen_map){
 		parseBif($inputFolder,$gen_map);
 		exit(0);
+	}else{
+		# no need to initialize these things if we are only making a map file
+		initializeDirectives($inputFolder,$inputPDB);
 	}
+
 	print "\nPre-processing templates.\n";
 	## Find Bonds ##
 	createBondFunctionals();

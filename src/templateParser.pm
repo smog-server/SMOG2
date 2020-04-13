@@ -924,12 +924,27 @@ sub parseNonBonds {
 	foreach my $inter(@interHandle)
 	{
 		my $typeA = $inter->{"nbType"}->[0];
+		my $func;
 		if($inter->{"mass"} <=0){
 			my $M=$inter->{"mass"};
 			smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
 		}
-		my $func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
-		"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
+		if(exists $inter->{"c6"} && exists $inter->{"c12"}){
+			if(exists $inter->{"sigma"} || exists $inter->{"epsilon"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. Can not specify c6, c12, sigma and epsilon for the same nbType. Check .nb file.");
+			}	
+			$func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
+			"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
+		}elsif(exists $inter->{"sigma"} && exists $inter->{"epsilon"}){
+			if(exists $inter->{"c6"} || exists $inter->{"c12"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. Can not specify c6, c12, sigma and epsilon for the same nbType. Check .nb file.");
+			}	
+			$func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
+			"ptype"=>$inter->{"ptype"},"sigma"=>$inter->{"sigma"},"epsilon"=>$inter->{"epsilon"}};
+		}else{
+			smog_quit ("nonbonded parameters incomplete for nbType $typeA. Must specify c6 and c12, or sigma and epsilon. Check .nb file.");
+		}
+
 		if(exists $interactions->{"nonbonds"}->{$typeA}){
 			smog_quit ("nonbonded parameters defined multiple times for nbType $typeA. Check .nb file.");
 		}
