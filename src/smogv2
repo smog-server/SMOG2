@@ -1391,34 +1391,64 @@ sub contactParseNM1
 	if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_1. Expecting 4, found $length."); }
 	if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
 	if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller.")}
+
+	if($interactions->{"gmx-combination-rule"}==1){
 	
-	$B=-1.0/($M/$N-1.0);
-	$A=$M/$N*$B;
-	# replace ? with native distance expression
-        $r0=evalsub($paramArr->[2],$r0);
-	   
-	$A *= $epsilon*$r0**$N;
-	$B *= $epsilon*$r0**$M;
-	
-	## normalized option used
-	if($paramArr->[3] =~ /^\?$/)
-	{
-		if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
-		$paramArr->[3]=$A;
-		$paramArr->[2]=$B;
+		$B=-1.0/($M/$N-1.0);
+		$A=$M/$N*$B;
+		# replace ? with native distance expression
+        	$r0=evalsub($paramArr->[2],$r0);
+		   
+		$A *= $epsilon*$r0**$N;
+		$B *= $epsilon*$r0**$M;
+		
+		## normalized option used
+		if($paramArr->[3] =~ /^\?$/)
+		{
+			if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
+			$paramArr->[3]=$A;
+			$paramArr->[2]=$B;
+		}
+		## additional rescaling used
+		elsif($paramArr->[3] =~ /\?/)
+		{
+			smog_quit("Epsilon value used in contact_1 interaction can not be an expression that includes ?.\n");
+		}
+		else{
+			if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
+			$A *= $paramArr->[3];
+			$B *= $paramArr->[3];
+			$paramArr->[3]=$A;
+			$paramArr->[2]=$B;
+		} 
+	}elsif($interactions->{"gmx-combination-rule"}==2){
+
+		# replace ? with native distance expression
+        	$paramArr->[2]=evalsub($paramArr->[2],$r0);
+		   
+		$A *= $epsilon*$r0**$N;
+		$B *= $epsilon*$r0**$M;
+		
+		## normalized option used
+		if($paramArr->[3] =~ /^\?$/)
+		{
+			if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
+			# extra 1/4 is due to form of LJ in gromacs.
+			$paramArr->[3]=$epsilon/4.0;
+		}
+		## additional rescaling used
+		elsif($paramArr->[3] =~ /\?/){
+			smog_quit("Epsilon value used in contact_1 interaction can not be an expression that includes ?.\n");
+		}else{
+			if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
+		} 
+
+
+	}else{
+		smog_quit("Only gmx-combination-rule equal to 1 or 2 is supposed with contact_1");
 	}
-	## additional rescaling used
-	elsif($paramArr->[3] =~ /\?/)
-	{
-		smog_quit("Epsilon value used in contact_1 interaction can not be an expression that includes ?.\n");
-	}
-	else{
-		if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
-		$A *= $paramArr->[3];
-		$B *= $paramArr->[3];
-		$paramArr->[3]=$A;
-		$paramArr->[2]=$B;
-	} 
+
+
 	## Shift first value off ##
 	shift @{$paramArr};
 	shift @{$paramArr};
@@ -1432,6 +1462,10 @@ sub contactParseNM2
 	##epsilon  
 	##r0 is native distance##
 	#
+	if($interactions->{"gmx-combination-rule"}==2){
+		# the reason for this error is that contact_1 and contact_2 have identical behavior with combrule 2
+		smog_quit("contact_2 not supported with gmx-combination-rule=2.");
+	}
 	my $A; my $B;
 	my $length=scalar @{$paramArr};
 
