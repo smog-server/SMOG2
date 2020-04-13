@@ -1429,16 +1429,12 @@ sub contactParseNM1
 
 		# replace ? with native distance expression
         	$paramArr->[2]=evalsub($paramArr->[2],$r0);
-		   
-		$A *= $epsilon*$r0**$N;
-		$B *= $epsilon*$r0**$M;
-		
+		$paramArr->[2] /= (2.0)**(1.0/6.0);   
 		## normalized option used
 		if($paramArr->[3] =~ /^\?$/)
 		{
 			if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
-			# extra 1/4 is due to form of LJ in gromacs.
-			$paramArr->[3]=$epsilon/4.0;
+			$paramArr->[3]=$epsilon;
 		}
 		## additional rescaling used
 		elsif($paramArr->[3] =~ /\?/){
@@ -1639,6 +1635,7 @@ sub saveAtomTypes
 			$c2 = $interactions->{"nonbonds"}->{$tmptype}->{"c12"};
 		}elsif($interactions->{"gmx-combination-rule"}==2){
 			$c1 = $interactions->{"nonbonds"}->{$tmptype}->{"sigma"};
+			$c1 /= (2.0)**(1.0/6.0);
 			$c2 = $interactions->{"nonbonds"}->{$tmptype}->{"epsilon"};
 		}
 			$ptype = $interactions->{"nonbonds"}->{$tmptype}->{"ptype"};
