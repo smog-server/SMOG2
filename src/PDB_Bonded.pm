@@ -1639,15 +1639,20 @@ sub parseCONTACT
 				$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
 				$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
 				$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
-				if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
+				my $mindist=$interactionThreshold->{"contacts"}->{"shortContacts"};
+				if($dist < $mindist)
 				{
-				  if($main::setContacttoLimit){
-				    $dist=$interactionThreshold->{"contacts"}->{"shortContacts"};
-	                            print "NOTE: Contact between atoms $contact1 $contact2 below threshold with value $dist\n";
-				    print "-limitcontactlength is being used, will set distance of contact to $dist\n\n";
-				  }else{
-	                            smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");
-	 			  }
+					if($main::setContacttoLimit){
+	                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
+						print "-limitcontactlength is being used, will set distance of contact to $mindist\n\n";
+						$dist=$mindist;
+					}elsif($main::DeleteShortContact){
+	                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
+						print "-deleteshortcontact is being used, will exclude this contact.\n\n";
+						next;
+					}else{
+	                            		smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");
+	 			  	}
 				}
 				push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
 				$numContacts++;
@@ -1733,17 +1738,23 @@ sub parseCONTACT
 			$dist = $dist * $angToNano;
 			if(!exists $allAtoms{$contact1}){smog_quit("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if(!exists $allAtoms{$contact2}){smog_quit("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
-			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
-			{
 
+			my $mindist=$interactionThreshold->{"contacts"}->{"shortContacts"};
+			if($dist < $mindist)
+			{
 				if($main::setContacttoLimit){
-			    		$dist=$interactionThreshold->{"contacts"}->{"shortContacts"};
-                            		print "CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist\n";
-			    		print "-limitcontactlength is being used, will set distance of contact to $dist\n\n";
-			  	}else{
-                            		smog_quit("CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist");
+                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
+					print "-limitcontactlength is being used, will set distance of contact to $mindist\n\n";
+					$dist=$mindist;
+				}elsif($main::DeleteShortContact){
+                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
+					print "-deleteshortcontact is being used, will exclude this contact.\n\n";
+					next;
+				}else{
+                            		smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");
  			  	}
-		        }
+			}
+
 			push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
 			$numContacts++;
 		}

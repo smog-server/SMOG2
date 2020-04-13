@@ -73,7 +73,8 @@ our %freebonds;
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
-our $setContacttoLimit=0;
+our $setContacttoLimit;
+our $DeleteShortContact;
 our %funtypechecked;
 our %presentatomtypes;
 our %foundBtype;
@@ -192,6 +193,7 @@ sub parse_args {
 		'backup=s' => \$backup, 
 		'limitbondlength' => \$setBondtoLimit, 
 		'limitcontactlength' => \$setContacttoLimit, 
+		'deleteshortcontacts' => \$DeleteShortContact, 
 		'rescaleCD=s' => \$rescaleCD, 
 		'nocheck'=> \$tempcheckoff,
 		'<>' => \&usage, 
@@ -213,6 +215,18 @@ sub parse_args {
 	if(defined $tempcheckoff){
 		print "\n\nNOTE: -nocheck was issued. Will not cross check the templates for consistency in energetics declarations. Use this option at your own risk...\n\n";
 		$nocheck="yes";
+	}
+
+	if(defined $setContacttoLimit && defined $DeleteShortContact){
+		smog_quit("Can not use -limitcontactlength and -deleteshortcontacts at the same time.");
+	}
+
+	
+	if(!defined $setContacttoLimit){
+		$setContacttoLimit=0;
+	}
+	if(!defined $DeleteShortContact){
+		$DeleteShortContact=0;
 	}
 	
 	if($coarseFolder ne "" and $inputFolder eq ""){
@@ -750,21 +764,6 @@ sub bondOutput
 				$formattedString = sprintf("%d\t%d",$i,$j);
 				$outputString = "$outputString$formattedString\n";
 
-	        		if($values < $interactionThreshold->{"bonds"}->{"shortBond"}
-	        		|| $values > $interactionThreshold->{"bonds"}->{"longBond"}){
-					my $DIST=int($values*100)/100.0;
-					my %reflist=%{$indexhandle};
-					if(!exists $reflist{$i} || !exists $reflist{$j}){
-						smog_quit("Internal error 3.  Please inform smog team");
-					}
-					my $i1=$reflist{$i};
-					my $j1=$reflist{$j};
-					smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range, which typically means there is something strange about the input structure. However, bondtypes are being used for this interaction, so the distance can be corrected through energy minimization.",1);
-	        		}	
-
-
-
-
 			}else{
 	        		if($paramArr[0] =~ /\?/){
 					$paramArr[0]=$values; # native option used
@@ -990,15 +989,6 @@ sub angleOutput
 			&checkangletype($i,$j,$k,$allatoms); 
 			$formattedString = sprintf("%d\t%d\t%d",$i,$j,$k);
 			$outputString = "$outputString$formattedString\n";
-			if($values < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
-				my $THETA=int($paramArr[0]*100)/100.0;
-				my %reflist=%{$indexhandle};
-				my $i1=$reflist{$i};
-				my $j1=$reflist{$j};
-				my $k1=$reflist{$k};
-				smog_quit("Angle between atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tThis may mean your input structure has issues. However, angletype will be used for this interaction, so energy minimization may be enough to fix the structure.",1);
-			}
-
 
 		}else{
 
@@ -2025,6 +2015,7 @@ usage: smog2 .. options ..
 					Convert all if N=-1 (Caution: Consult manual before using this option)
 	-limitbondlength        : if a bond length is outside of the allowable range, set it to limiting value
 	-limitcontactlength     : if a contact length is too short, set it to the minimal value
+	-deleteshortcontact     : if a contact length is too short, don't include it in the model
 	-ignH                   : ignore any atoms with name starting with 'H' in the internal contact algorithm
 	-rescaleCD [1.0]        : override total energy normalization and rescale all contacts/dihedrals by a factor
 	-gen_map <out map file> : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
