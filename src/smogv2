@@ -2185,14 +2185,11 @@ sub appendContacts {
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
 	#print defaults
-	my $nbfunc=1;my $combrule = 1; my $genpairs = "no";
-	if(exists $interactions->{"gmx-combination-rule"}) { 
-		$combrule = $interactions->{"gmx-combination-rule"};
-	}
-	if(exists $interactions->{"nbfunc"}) { 
-		$nbfunc = $interactions->{"nbfunc"};
-	}
-	if(exists $interactions->{"gen-pairs"} && $interactions->{"gen-pairs"} == 1) { $genpairs = "yes"; }
+
+	my $combrule = $interactions->{"gmx-combination-rule"};
+	my $nbfunc = $interactions->{"nbfunc"};
+	my $genpairs = $interactions->{"gen-pairs"};
+
 	addToTop("defaults", "  $nbfunc      $combrule         $genpairs\n");
 }
 

@@ -974,13 +974,27 @@ sub parseNonBonds {
 		smog_quit ("default declaration is given multiple times. Check .nb file.");
 	}
 	if(exists $interHandle[0]->{"gen-pairs"}) {
-		$interactions->{"gen-pairs"} = $interHandle[0]->{"gen-pairs"};
+		if($interHandle[0]->{"gen-pairs"}==0){
+			$interactions->{"gen-pairs"}="no";
+		}else{
+			$interactions->{"gen-pairs"}="yes";
+		}
+	}else{
+		print "gen-pairs not defined in templates.  Will assume no.\n";
+		$interactions->{"gen-pairs"}="no";
 	}
+
 	if(exists $interHandle[0]->{"nbfunc"}) {
 		$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
+	}else{
+		print "nbfunc not defined in templates.  Will assume a value of 1.\n";
+		$interactions->{"nbfunc"}=1;
 	}
 	if(exists $interHandle[0]->{"gmx-combination-rule"}) {
 		$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
+	}else{
+		print "gmx-combination-rule not defined in templates.  Will assume a value of 1.\n";
+		$interactions->{"gmx-combination-rule"}=1;
 	}
 
 }
