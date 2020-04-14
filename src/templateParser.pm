@@ -917,8 +917,34 @@ sub parseBonds {
 ## PARSE NONBOND FILE ##
 sub parseNonBonds {
 	$data = $xml->XMLin($nbondxml,KeyAttr => ['name'],ForceArray=>1);
-	
-	my @interHandle = @{$data->{"nonbond"}};
+
+	## Obtain default options ##
+	my @interHandle = @{$data->{"defaults"}};
+	if(exists $interHandle[0]->{"gen-pairs"}) {
+		if($interHandle[0]->{"gen-pairs"}==0){
+			$interactions->{"gen-pairs"}="no";
+		}else{
+			$interactions->{"gen-pairs"}="yes";
+		}
+	}else{
+		print "gen-pairs not defined in templates.  Will assume no.\n";
+		$interactions->{"gen-pairs"}="no";
+	}
+
+	if(exists $interHandle[0]->{"nbfunc"}) {
+		$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
+	}else{
+		print "nbfunc not defined in templates.  Will assume a value of 1.\n";
+		$interactions->{"nbfunc"}=1;
+	}
+	if(exists $interHandle[0]->{"gmx-combination-rule"}) {
+		$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
+	}else{
+		print "gmx-combination-rule not defined in templates.  Will assume a value of 1.\n";
+		$interactions->{"gmx-combination-rule"}=1;
+	}
+
+	@interHandle = @{$data->{"nonbond"}};
 	## Loop over nonbonds, save in $interaction{nonbonds}{typeA} = func info.
 	my $counter = 0;
 	foreach my $inter(@interHandle)
@@ -929,20 +955,27 @@ sub parseNonBonds {
 			my $M=$inter->{"mass"};
 			smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
 		}
-		if(exists $inter->{"c6"} && exists $inter->{"c12"}){
+
+		if($interactions->{"gmx-combination-rule"}==1){
+			if(!exists $inter->{"c6"} || !exists $inter->{"c12"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. c6, c12 must be provided when using gmx-combination-rule=1. Check .nb file.");
+			}
 			if(exists $inter->{"sigma"} || exists $inter->{"epsilon"}){
-				smog_quit ("nonbonded parameters issue for nbType $typeA. Can not specify c6, c12, sigma and epsilon for the same nbType. Check .nb file.");
+				smog_quit ("nonbonded parameters issue for nbType $typeA. sigma and epsilon can not be provided when using gmx-combination-rule=1. Check .nb file.");
 			}	
 			$func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
 			"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
-		}elsif(exists $inter->{"sigma"} && exists $inter->{"epsilon"}){
+		}
+
+		if($interactions->{"gmx-combination-rule"}==2){
+			if(!exists $inter->{"sigma"} || !exists $inter->{"epsilon"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. sigma and epsilon must be provided when using gmx-combination-rule=2. Check .nb file.");
+			}
 			if(exists $inter->{"c6"} || exists $inter->{"c12"}){
-				smog_quit ("nonbonded parameters issue for nbType $typeA. Can not specify c6, c12, sigma and epsilon for the same nbType. Check .nb file.");
+				smog_quit ("nonbonded parameters issue for nbType $typeA. c6, c12 sigma and epsilon can not be provided when using gmx-combination-rule=2. Check .nb file.");
 			}	
 			$func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
 			"ptype"=>$inter->{"ptype"},"sigma"=>$inter->{"sigma"},"epsilon"=>$inter->{"epsilon"}};
-		}else{
-			smog_quit ("nonbonded parameters incomplete for nbType $typeA. Must specify c6 and c12, or sigma and epsilon. Check .nb file.");
 		}
 
 		if(exists $interactions->{"nonbonds"}->{$typeA}){
@@ -983,34 +1016,6 @@ sub parseNonBonds {
 	}
 	
 	
-	## Obtain default options (ONLY FOR GEN PAIRS) ##
-	@interHandle = @{$data->{"defaults"}};
-	if(exists $interactions->{"gen-pairs"}){
-		smog_quit ("default declaration is given multiple times. Check .nb file.");
-	}
-	if(exists $interHandle[0]->{"gen-pairs"}) {
-		if($interHandle[0]->{"gen-pairs"}==0){
-			$interactions->{"gen-pairs"}="no";
-		}else{
-			$interactions->{"gen-pairs"}="yes";
-		}
-	}else{
-		print "gen-pairs not defined in templates.  Will assume no.\n";
-		$interactions->{"gen-pairs"}="no";
-	}
-
-	if(exists $interHandle[0]->{"nbfunc"}) {
-		$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
-	}else{
-		print "nbfunc not defined in templates.  Will assume a value of 1.\n";
-		$interactions->{"nbfunc"}=1;
-	}
-	if(exists $interHandle[0]->{"gmx-combination-rule"}) {
-		$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
-	}else{
-		print "gmx-combination-rule not defined in templates.  Will assume a value of 1.\n";
-		$interactions->{"gmx-combination-rule"}=1;
-	}
 
 }
 
