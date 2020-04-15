@@ -2167,10 +2167,10 @@ sub printBondedTopOutput {
 
 	my ($inputPDB,$groFile,$ndxFile) = @_;
         if($countDihedrals){
-	 print "Counting dihedrals\n";
-	 getSetDiheCounts(\%DihedralData,\%bondPDL);
+		print "Counting dihedrals\n";
+		getSetDiheCounts(\%DihedralData,\%bondPDL);
         }else{
-         print "Will not count/rescale dihedrals with common middle bonds.";
+        	print "Will not count/rescale dihedrals with common middle bonds.";
         }
 	## SET DIHEDRAL RATIOS ##
 	print "Setting energetic ratios\n";
