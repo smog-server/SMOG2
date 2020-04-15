@@ -1163,13 +1163,13 @@ sub dihedralOutput
 					}
 			
 					if($funci == 0){
-					  $fTypei[0]= $fType;
+						$fTypei[0]= $fType;
 			
-					  if($fType==1 and $paramArr[1] != 1 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
-					   smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
-					  }
+						if($fType==1 and $paramArr[1] != 1 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
+					   		smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
+						}
 					}elsif($funci != 0 and $fTypei[0] != $fType){
-			        	  smog_quit ("Sums of dihedrals of different types is not supported.");
+			        	  	smog_quit ("Sums of dihedrals of different types is not supported.");
 					}
 				}
 				# end of consistency checks
