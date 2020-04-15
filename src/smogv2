@@ -422,19 +422,21 @@ sub initializeDirectives {
   	addToTop("dihedrals","\n[ dihedrals ]\n");
   	addToTop("dihedrals",";ai\taj\tak\tal\tfunc\t phi0(deg)       Kd              mult\n");
 	addToTop("pairs","\n[ pairs ]\n");
-	addToTop("pairs",";ai\taj\ttype\t A               B\n");
 	addToTop("exclusions","\n[ exclusions ]\n");
 	addToTop("exclusions",";ai	aj\n");
 	addToTop("atomtypes","\n[ atomtypes ] \n");
-	addToTop("atomtypes","; name  mass     charge    ptype c6            c12\n");
 	addToTop("bondtypes","\n[ bondtypes ] \n");
 	addToTop("angletypes","\n[ angletypes ] \n");
 	addToTop("dihedraltypes","\n[ dihedraltypes ] \n");
 	addToTop("nonbond_params","\n[ nonbond_params ]\n");
 	if($interactions->{"gmx-combination-rule"}==1){
 		addToTop("nonbond_params",";ai     aj    func    c6       c12\n");
+		addToTop("atomtypes","; name  mass     charge    ptype c6            c12\n");
+		addToTop("pairs",";ai\taj\ttype\t A               B\n");
 	}elsif($interactions->{"gmx-combination-rule"}==2){
 		addToTop("nonbond_params",";ai     aj    func    sigma       epsilon\n");
+		addToTop("atomtypes","; name  mass     charge    ptype  sigma   epsilon\n");
+		addToTop("pairs",";ai\taj\ttype\tsigma\tepsilon               B\n");
 	}
 	addToTop("position_restraints","\n[ position_restraints ]\n");
 	addToTop("position_restraints",";ai    func    kx    ky   kz\n");
