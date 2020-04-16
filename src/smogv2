@@ -158,7 +158,6 @@ sub setglobals {
 		'angle_bytype' => '-1',
 		'angle_free' => '0',
 		'dihedral_cosine'=>'1',
-		'dihedral_13'=>'1',
 		'dihedral_harmonic' => '2',
 		'dihedral_bytype' => '-1',
 		'dihedral_free' => '0',
