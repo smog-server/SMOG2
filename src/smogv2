@@ -158,6 +158,7 @@ sub setglobals {
 		'angle_bytype' => '-1',
 		'angle_free' => '0',
 		'dihedral_cosine'=>'1',
+		'dihedral_cosine4'=>'4',
 		'dihedral_harmonic' => '2',
 		'dihedral_bytype' => '-1',
 		'dihedral_free' => '0',
@@ -1167,7 +1168,7 @@ sub dihedralOutput
 	 		if($fType !=0 && !exists $freeangles{"$ai-$aj-$ak"} && !exists $freeangles{"$ak-$aj-$ai"} && !exists $freeangles{"$aj-$ak-$al"} && !exists $freeangles{"$al-$ak-$aj"}  ){
 				# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
 				$paramArr[0]=evalsub($paramArr[0],$values);
-				if( $fType == 1){
+				if( $fType == 1 || $fType == 4){
 			            	# Angle will be scaled by multiplicity factor n, if they are cosine functions
 			        	$paramArr[0] *= $paramArr[2];
 					$paramArr[0] += 180;
@@ -1203,7 +1204,7 @@ sub dihedralOutput
 			 	for(my $I=0;$I<=$#paramArr;$I++){$paramFormat="$paramFormat %12.9e";}
 			 	#foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 
-				if($fType == 1) {
+				if($fType == 1 || $fType == 4) {
 					$paramFormat=" %12.9e %12.9e %u";
 				}elsif($fType == 2){    
                                ### CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
