@@ -92,6 +92,10 @@ our %fTypes;
 our %directives;
 our @directivesList;
 our %extraatomtypes;
+our %bondParseSeen;
+our %angleParseSeen;
+our %dihParseSeen;
+our %contactParseSeen;
 #######END GLOBAL DEFS#######
 
 
@@ -154,6 +158,7 @@ sub setglobals {
 		'angle_bytype' => '-1',
 		'angle_free' => '0',
 		'dihedral_cosine'=>'1',
+		'dihedral_13'=>'1',
 		'dihedral_harmonic' => '2',
 		'dihedral_bytype' => '-1',
 		'dihedral_free' => '0',
@@ -904,12 +909,19 @@ sub bondFuncParser
 	my($bondFunc) = @_;
 	my $fType;my @paramArr;my $directive;
 	my $funcName = ""; my $params = "";
+	if(exists $bondParseSeen{$bondFunc}{"fType"}){
+		# if we have parsed this before, just write it.  Don't mess with everything else.
+		return ($bondParseSeen{$bondFunc}{"fType"},@{$bondParseSeen{$bondFunc}{"paramArr"}});
+	}
+
  	($bondFunc =~ m/(.*)\((.*)\)/);
 	$funcName = $1;
 	$params = $2;
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "bonds"){smog_quit ("$funcName is not a valid bonds function");}
  	@paramArr = split(",",$params); ## Parse all parameters
+	$bondParseSeen{$bondFunc}{"fType"}=$fType;
+	$bondParseSeen{$bondFunc}{"paramArr"}=\@paramArr;
 	return ($fType,@paramArr);
 }
 
@@ -1034,12 +1046,19 @@ sub angleFuncParser
 	my($angFunc) = @_;
 	my $fType;my @paramArr;my $directive;
 	my $funcName = ""; my $params = "";
+
+	if(exists $angleParseSeen{$angFunc}{"fType"}){
+		# if we have parsed this before, just write it.  Don't mess with everything else.
+		return ($angleParseSeen{$angFunc}{"fType"},@{$angleParseSeen{$angFunc}{"paramArr"}});
+	}
  	($angFunc =~ m/(.*)\((.*)\)/);
 	$funcName = $1;
 	$params = $2;
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "angles"){smog_quit ("$funcName is not a valid angles function");}
  	@paramArr = split(",",$params); ## Parse all parameters
+	$angleParseSeen{$angFunc}{"fType"}=$fType;
+	$angleParseSeen{$angFunc}{"paramArr"}=\@paramArr;
 	return ($fType,@paramArr);
 }
 
@@ -1202,6 +1221,10 @@ sub dihedralOutput
 sub diheFuncParser
 {
 	my($diheFunc) = @_;
+	if(exists $dihParseSeen{$diheFunc}{"fType"}){
+		# if we have parsed this before, just write it.  Don't mess with everything else.
+		return ($dihParseSeen{$diheFunc}{"fType"},@{$dihParseSeen{$diheFunc}{"paramArr"}});
+	}
  	my $fType;my @paramArr; my $directive;
 	my $funcName = "";my $params = "";
 	($diheFunc =~ m/(.*)\((.*)\)/);
@@ -1210,6 +1233,8 @@ sub diheFuncParser
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "dihedrals"){smog_quit ("$funcName is not a valid dihedrals function");}
 	@paramArr = split(",",$params); ## Parse all parameters;
+	$dihParseSeen{$diheFunc}{"fType"}=$fType;
+	$dihParseSeen{$diheFunc}{"paramArr"}=\@paramArr;
 	return ($fType,@paramArr);
 }
 
@@ -1594,12 +1619,28 @@ sub contactFuncParser
 	my($contactFunc) = @_;
 	my $fType;my @paramArr;my $directive;my $addExclusions;
 	my $funcName = ""; my $params = "";
+
+	if(exists $contactParseSeen{$contactFunc}{"fType"}){
+		# if we have parsed this before, just write it.  Don't mess with everything else.
+		return ($contactParseSeen{$contactFunc}{"fType"},
+			$contactParseSeen{$contactFunc}{"funcName"},
+			$contactParseSeen{$contactFunc}{"directive"},
+			$contactParseSeen{$contactFunc}{"addExclusions"},
+			@{$contactParseSeen{$contactFunc}{"paramArr"}});
+	}
  	($contactFunc =~ /^([^(]+)\((.*)\)$/);
  	$funcName = $1;
 	$params = $2;
 	($fType,$directive,$addExclusions) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "pairs" && $directive ne "bonds"){smog_quit ("$funcName is a contact type function and should only go into pairs or bonds directives");}
  	@paramArr = split(",",$params); ## Parse all parameters
+
+	$contactParseSeen{$contactFunc}{"fType"}=$fType;
+	$contactParseSeen{$contactFunc}{"funcName"}=$funcName;
+	$contactParseSeen{$contactFunc}{"directive"}=$directive;
+	$contactParseSeen{$contactFunc}{"addExclusions"}=$addExclusions;
+	$contactParseSeen{$contactFunc}{"paramArr"}=\@paramArr;
+
 	return ($fType,$funcName,$directive,$addExclusions,@paramArr);
 }
 

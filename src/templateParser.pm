@@ -568,10 +568,6 @@ sub parseSif {
 		smog_quit('Issue in .sif. Normalization only turned on for ContactGroups, or EnergyGroups. Normalization must be off, or on, for both.');
 	}
 	
-	
-	
-	
-	
 	## NOTE:Contact Type is Global ##
 	## Sum of contact scalings ##
 	
@@ -821,6 +817,7 @@ sub parseBonds {
 
 		my $func = $inter->{"func"};
 		&checkFunction($func);
+
 		my $eG;
 		if(exists $inter->{"energyGroup"})
 		{	
