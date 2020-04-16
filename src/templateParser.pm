@@ -239,28 +239,28 @@ sub checkenergygroups
 	my $string="It appears that dihedrals energy groups are only partially defined. Since dihedrals energy groups must be defined in the .bif (residue->bonds), .sif (energyGroup) and .b (bonds) files, in order for the interaction to be applied, a partial declaration is probably unintentional.  Specific issues listed below:\n\n";
 	foreach my $II (sort keys %{$interactions->{"dihedrals"}}){
 		if(! exists $EGinBif{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .b file, but is not used in .bif file.\n";
 		}
 		if(! exists $EGinSif{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .b file, but is not used in .sif file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .b file, but is not used in .sif file.\n";
 		}
 	}
 
 	foreach my $II (sort keys %EGinBif){
 		if(! exists $interactions->{"dihedrals"}->{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .bif file, but is not used in .b file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .bif file, but is not used in .b file.\n";
 		}
 		if(! exists $EGinSif{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .bif file, but is not used in .sif file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .bif file, but is not used in .sif file.\n";
 		}
 	}
 
 	foreach my $II (sort keys %EGinSif){
 		if(! exists $interactions->{"dihedrals"}->{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .sif file, but is not used in .b file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .sif file, but is not used in .b file. \n";
 		}
 		if(! exists $EGinBif{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .sif file, but is not used in .bif file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .sif file, but is not used in .bif file.\n";
 		}
 	}
 
