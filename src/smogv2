@@ -1111,10 +1111,10 @@ sub CalculateDihedralsHelper
 			my $m1 = crossp($n1,norm($b2));
 		
 			my $cos = atan2(inner($m1,$n2),inner($n1,$n2));
-			my $negcos = $cos;#$cos->where($cos < 0);
-	
-			$negcos*=-1;$negcos+=mathFunctions::pi();
-			my $acos = sclr(mathFunctions::rad_to_deg($cos));
+                        my $negcos = $cos;#$cos->where($cos < 0);
+       
+                        $negcos*=-1;$negcos+=mathFunctions::pi();
+			my $acos = sclr(mathFunctions::rad_to_deg($cos))+180;
 		
 			my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
 			my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
@@ -1170,6 +1170,7 @@ sub dihedralOutput
 				if( $fType == 1){
 			            	# Angle will be scaled by multiplicity factor n, if they are cosine functions
 			        	$paramArr[0] *= $paramArr[2];
+					$paramArr[0] += 180;
 				}
 			
 	
@@ -1204,10 +1205,7 @@ sub dihedralOutput
 
 				if($fType == 1) {
 					$paramFormat=" %12.9e %12.9e %u";
-				}elsif($fType == 2){	
-				### CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
-					if($paramArr[0]>180){$paramArr[0]-=180;}else{$paramArr[0]+=180;}
-				}	
+				}
 				$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
 				$outputString = "$outputString$formattedString\n";
 			}
