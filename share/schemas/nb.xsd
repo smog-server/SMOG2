@@ -4,13 +4,19 @@
 <!-- BOOLEAN TYPE -->
 <xs:simpleType name="booleanType">
     <xs:restriction base="xs:integer">
-    <xs:pattern value="^1$|^0$"/>
+    <xs:pattern value="^[01]$"/>
     </xs:restriction>
 </xs:simpleType>
 
 <xs:simpleType name="gmxType">
     <xs:restriction base="xs:integer">
-    <xs:pattern value="^3$|^2$|^1$"/>
+    <xs:pattern value="^[123]$"/>
+    </xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="gmxTypeComb">
+    <xs:restriction base="xs:integer">
+    <xs:pattern value="^[12]$"/>
     </xs:restriction>
 </xs:simpleType>
 
@@ -62,7 +68,7 @@
 
 <!--defauts TYPE -->
 <xs:complexType name="defaultsType">
-    <xs:attribute name="gmx-combination-rule" type="gmxType" use="optional"/>
+    <xs:attribute name="gmx-combination-rule" type="gmxTypeComb" use="optional"/>
     <xs:attribute name="nbfunc" type="gmxType" use="optional"/>
     <xs:attribute name="gen-pairs" type="booleanType" use="optional"/>
 </xs:complexType>
