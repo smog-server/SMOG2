@@ -69,7 +69,6 @@ my $DNAME="smog";
 my $backup="yes";
 my $allowCG = 0;
 my $nocheck = "no";
-our %freebonds;
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
@@ -153,7 +152,6 @@ sub setglobals {
 	%fTypes = ('bond_harmonic' => '1',
 		'bond_bytype' => '-1',
 		'bond_type6' => '6',
-		'bond_free' => '0',
 		'angle_harmonic' => '1',
 		'angle_bytype' => '-1',
 		'angle_free' => '0',
@@ -762,57 +760,53 @@ sub bondOutput
 		my $paramFormat="";
 		($fType,@paramArr) = bondFuncParser($fun);
 		## $paramArr[0] is bond length
-		if($fType != 0){
-			if($fType == -1){
-				# this mean bond_bytype was used
-				# don't write distances or strengths. Make gromacs use bondtype
-				# since we are not writing a distance, let's check and make sure this pair has a bondtype provided
-				&checkbondtype($i,$j,$allatoms); 
-				$formattedString = sprintf("%d\t%d",$i,$j);
-				$outputString = "$outputString$formattedString\n";
+		if($fType == -1){
+			# this mean bond_bytype was used
+			# don't write distances or strengths. Make gromacs use bondtype
+			# since we are not writing a distance, let's check and make sure this pair has a bondtype provided
+			&checkbondtype($i,$j,$allatoms); 
+			$formattedString = sprintf("%d\t%d",$i,$j);
+			$outputString = "$outputString$formattedString\n";
 
-			}else{
-	        		if($paramArr[0] =~ /\?/){
-					$paramArr[0]=$values; # native option used
-				} 
-	        		## Check bonds threshold ##
-	        		if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
-	        		|| $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
-					my $DIST=int($paramArr[0]*100)/100.0;
-					my %reflist=%{$indexhandle};
-					if($setBondtoLimit){
-						if(!exists $reflist{$i} || !exists $reflist{$j}){
-							smog_quit("Internal error 2.  Please inform smog team");
-						}
-						my $i1=$reflist{$i};
-						my $j1=$reflist{$j};
-						print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.\n\n");
-						print "-limitbondlength is being used, will set length to ";
-		 				if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
-		  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
-		  					print "$paramArr[0] nm\n\n";
-		 				}elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
-		  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
-		  					print "$paramArr[0] nm\n\n";
-		 				}
-					}else{
-						if(!exists $reflist{$i} || !exists $reflist{$j}){
-							smog_quit("Internal error 3.  Please inform smog team");
-						}
-						my $i1=$reflist{$i};
-						my $j1=$reflist{$j};
-						smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
-					}
-	        		}	
-	## Format output <i j function p1 p2 ... pn>
-				foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-				$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
-				$outputString = "$outputString$formattedString\n";
-	       		}
 		}else{
-			$freebonds{"$i-$j"}=1;
-			$freebonds{"$j-$i"}=1;
-		}
+        		if($paramArr[0] =~ /\?/){
+				$paramArr[0]=$values; # native option used
+			} 
+        		## Check bonds threshold ##
+        		if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}
+        		|| $paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
+				my $DIST=int($paramArr[0]*100)/100.0;
+				my %reflist=%{$indexhandle};
+				if($setBondtoLimit){
+					if(!exists $reflist{$i} || !exists $reflist{$j}){
+						smog_quit("Internal error 2.  Please inform smog team");
+					}
+					my $i1=$reflist{$i};
+					my $j1=$reflist{$j};
+					print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.\n\n");
+					print "-limitbondlength is being used, will set length to ";
+	 				if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
+	  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
+	  					print "$paramArr[0] nm\n\n";
+	 				}elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
+	  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
+	  					print "$paramArr[0] nm\n\n";
+	 				}
+				}else{
+					if(!exists $reflist{$i} || !exists $reflist{$j}){
+						smog_quit("Internal error 3.  Please inform smog team");
+					}
+					my $i1=$reflist{$i};
+					my $j1=$reflist{$j};
+					smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
+				}
+        		}	
+## Format output <i j function p1 p2 ... pn>
+			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
+			$outputString = "$outputString$formattedString\n";
+       		}
+
 	}
 	return $outputString;
 }
@@ -1006,7 +1000,7 @@ sub angleOutput
 
 		}else{
 
-			if($fType != 0 && !exists $freebonds{"$i-$j"} && !exists $freebonds{"$j-$i"} && !exists $freebonds{"$k-$j"} && !exists $freebonds{"$j-$k"}){
+			if($fType != 0){
 				if($paramArr[0] =~ /\?/){$paramArr[0]=$values;} 
 				## non-native option used
 		
