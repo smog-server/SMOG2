@@ -1,7 +1,12 @@
 <?xml version='1.0'?>
 <sif>
+
+<!-- templates compatible with SMOG version: -->
+<version min="2.3"/>
+
 <!-- FUNCTION DEFINITIONS -->
 <!-- NOTE: Function definitions should only be changed if you modify the source code.-->
+
 <functions>
 	<function name="bond_harmonic" directive="bonds"/>
     	<function name="bond_type6" directive="bonds"/>

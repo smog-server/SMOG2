@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
+<!--version TYPE -->
+<xs:complexType name="versionType">
+    <xs:attribute name="min" type="xs:string" use="optional"/>
+</xs:complexType>
+
+
 <!-- energyGroup TYPE -->
 <xs:complexType name="energyGroupType">
     <xs:attribute name="residueType" type="xs:string" use="required"/>
@@ -128,6 +134,7 @@
 <!-- SIF TYPE -->
 <xs:complexType name="sifType">
   <xs:sequence>
+    <xs:element name="version" type="versionType" minOccurs="0" maxOccurs="1" />
     <xs:element name="functions" type="functionsType"/>
     <xs:element name="settings" type="settingsType"/>
   </xs:sequence>
