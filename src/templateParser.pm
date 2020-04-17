@@ -38,7 +38,7 @@ use String::Util 'trim';
 use Storable qw(dclone);
 use smog_common;
 
-## DECLEARATION TO SHARE DATA STRUCTURES ##
+## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
 qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges round);
@@ -47,7 +47,12 @@ qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedr
 ## GLOBAL VARIABLES ##
 ######################
 
-
+my %SMOGversions;
+my $smi=0;
+foreach my $ver(2.0, 2.0.1, 2.0.2, 2.0.3, 2.1, 2.2, 2.3){
+ $SMOGversions{$ver}=$smi;
+ $smi++; 
+}
 #########################
 ## XML PARSED VARIBLES ##
 #########################
@@ -476,6 +481,14 @@ sub parseSif {
 
 	## Read .sif file ##
 	$data = $xml->XMLin($sif,KeyAttr => ['name'],ForceArray=>1);
+	if(!exists $data->{"version"}->[0]->{"min"}){
+		smog_quit("Minimum required SMOG version is not defined in .sif file. This check is intended to ensure that one does not use new templates with an old version of SMOG.  However, newer version of SMOG should always work with old templates.  Accordingly, if you are using the newest release of SMOG, you can probably ignore this warning.",0);
+	}else{
+		my $minver=$data->{"version"}->[0]->{"min"};
+		if(!exists $SMOGversions{$minver}){
+			smog_quit("The minimum required version of SMOG, as defined in the .sif (v$minver), is not supported by this version of SMOG.");
+		}
+	}
 	## Parse function data
 	$functions = $data->{"functions"}->[0]->{"function"};
 	foreach my $funcName(keys %{$functions}){
