@@ -2969,19 +2969,19 @@
 					<atom>O</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="pr_a">
+				<bond energyGroup="pro_a">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="pr_a">
+				<bond energyGroup="pro_a">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="pr_a">
+				<bond energyGroup="pro_a">
 					<atom>CG</atom>
 					<atom>CD</atom>
 				</bond>
-				<bond energyGroup="pr_a">
+				<bond energyGroup="pro_a">
 					<atom>CD</atom>
 					<atom>N</atom>
 				</bond>
@@ -3026,19 +3026,19 @@
 					<atom>OXT</atom>
 				</bond>
 	<!--FUNCTIONAL GROUP-->
-				<bond energyGroup="pr_a">
+				<bond energyGroup="pro_a">
 					<atom>CA</atom>
 					<atom>CB</atom>
 				</bond>
-				<bond energyGroup="pr_a">
+				<bond energyGroup="pro_a">
 					<atom>CB</atom>
 					<atom>CG</atom>
 				</bond>
-				<bond energyGroup="pr_a">
+				<bond energyGroup="pro_a">
 					<atom>CG</atom>
 					<atom>CD</atom>
 				</bond>
-				<bond energyGroup="pr_a">
+				<bond energyGroup="pro_a">
 					<atom>CD</atom>
 					<atom>N</atom>
 				</bond>
