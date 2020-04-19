@@ -49,7 +49,7 @@ qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedr
 
 my %SMOGversions;
 my $smi=0;
-foreach my $ver(2.0, 2.0.1, 2.0.2, 2.0.3, 2.1, 2.2, 2.3){
+foreach my $ver("2.0", "2.0.1", "2.0.2", "2.0.3", "2.1", "2.2", "2.3"){
  $SMOGversions{$ver}=$smi;
  $smi++; 
 }
@@ -485,8 +485,8 @@ sub parseSif {
 		smog_quit("Minimum required SMOG version is not defined in .sif file. This check is intended to ensure that one does not use new templates with an old version of SMOG.  However, newer version of SMOG should always work with old templates.  Accordingly, if you are using the newest release of SMOG, you can probably ignore this warning.",0);
 	}else{
 		my $minver=$data->{"version"}->[0]->{"min"};
-		if(!exists $SMOGversions{$minver}){
-			smog_quit("The minimum required version of SMOG, as defined in the .sif (v$minver), is not supported by this version of SMOG.");
+		if(!exists $SMOGversions{"$minver"}){
+			smog_quit("These templates require SMOG v$minver, or newer (defined in .sif file).");
 		}
 	}
 	## Parse function data
