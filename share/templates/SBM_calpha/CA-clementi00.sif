@@ -2,7 +2,7 @@
 <sif>
 
 <!-- templates compatible with SMOG version: -->
-<version min="2.0"/>
+<version min="2.3"/>
 
 <!-- FUNCTION DEFINITIONS -->
 <!-- NOTE: Function definitions should only be changed if you modify the source code.-->
