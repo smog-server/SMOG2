@@ -288,7 +288,8 @@ sub adjustInputFile{
 			## Loop through the resdiue ##
 			$loopInd = 0;
 			while ($newResNum eq $resNum){
-				$atomCount++;	
+				$atomCount++;
+				$atomCount = $atomCount%100000;	
 				## Obtain atom information ##
 				my $atomName = substr($pArr[$k],12,4);
 				$atomName =~ s/^\s+|\s+$//g;
@@ -326,11 +327,12 @@ sub adjustInputFile{
 			$lastresidue=$resNum;
 
 			my $printresidue;
+			my $resIndMod= $resInd%10000;
 			if (defined $legacymatch) {
 				# conventional head/tail adjustments
-				($printresidue,$removestring)=legacymatching($resName,$resInd,$chainName,$isFirst,$isLast,$removestring);
+				($printresidue,$removestring)=legacymatching($resName,$resIndMod,$chainName,$isFirst,$isLast,$removestring);
 			} elsif (!defined $legacymatch) {
-				($printresidue,$removestring,$renamedstring)=exactmatching($k,$resName,$resInd,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring);
+				($printresidue,$removestring,$renamedstring)=exactmatching($k,$resName,$resIndMod,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring);
 			} else {
 				smog_quit("internal error 1");
 			}
