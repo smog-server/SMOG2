@@ -118,6 +118,7 @@ sub checkPDB
 	my $lastchainstart=0;
 	my $endfound=0;
 	my $residueSerial=0;
+	my $largebase=0;
 	## OPEN .PDB FILE ##
 
 	unless (open(PDBFILE, $fileName)) {
@@ -136,6 +137,17 @@ sub checkPDB
 			next;
 		# make sure BOND appears after END
 		}
+
+		if($record =~ m/^LARGE/){
+			# large-base numbering will be used
+			$largebase=1;
+			&InitLargeBase;
+			my $B=$smog_common::BaseN;
+			print "PDB is using large numbers (expecting base $B)\n";
+			next;
+		}
+
+
 		if($record !~ m/^BOND/ && $endfound ==1){
 			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$record\"\n");
 		}
@@ -162,7 +174,7 @@ sub checkPDB
 		chomp($lng);
 		$lng =~ s/\s+//g;	
 		$lng =~ s/\t+//g;	
-		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $lng eq ""){
+		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $record =~ m/^LARGE/ || $lng eq ""){
 			next;
 		# make sure BOND appears after END
 		}elsif($record !~ m/^BOND/ && $endfound ==1){
@@ -261,8 +273,17 @@ sub checkPDB
 		 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 			my $resname=$residue;
 	        	my $resindex = substr($record,22,5);
-			if ($lastresindex ne "null" && $resindex-$lastresindex != 1 && $resindex-$lastresindex != 0){
-				smog_quit("Non-sequential residue numbers ($lastresindex,$resindex) appear at line $lineNumber.");
+			if ($lastresindex ne "null"){
+				my $resiConv=$resindex;
+				my $lastresiConv=$lastresindex;
+				if($largebase==1){
+					$resiConv=BaseLargetoTen($resiConv);
+					$lastresiConv=BaseLargetoTen($lastresiConv);
+				}
+
+				if($resiConv-$lastresiConv != 1 && $resiConv-$lastresiConv != 0){
+					smog_quit("Non-sequential residue numbers ($lastresindex,$resindex) appear at line $lineNumber.");
+				}
 			}
 			$lastresindex=$resindex;
 			my %uniqueAtom;
@@ -274,17 +295,17 @@ sub checkPDB
 				if($record =~ m/^ATOM|^HETATM/)
 				{
 	
-				$interiorResidue = substr($record,17,4);
-				$interiorResidue =~ s/^\s+|\s+$//g;
-		   		$residue = substr($record,17,4);
-	        	        $residue =~ s/^\s+|\s+$//g;
-		   		my $altlocator = substr($record,16,1);
-				if($altlocator ne " "){
-					smog_quit("Alternate location indicator found at line $lineNumber.  Alt. Loc. Indic. not supported by SMOG.");
-				}
+					$interiorResidue = substr($record,17,4);
+					$interiorResidue =~ s/^\s+|\s+$//g;
+		   			$residue = substr($record,17,4);
+	        	        	$residue =~ s/^\s+|\s+$//g;
+		   			my $altlocator = substr($record,16,1);
+					if($altlocator ne " "){
+						smog_quit("Alternate location indicator found at line $lineNumber.  Alt. Loc. Indic. not supported by SMOG.");
+					}
 	
-		        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
-	            		$interiorPdbResidueIndex = substr($record,22,5); 
+		        		if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
+	            			$interiorPdbResidueIndex = substr($record,22,5); 
 				} 
 				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex or  $record !~ m/^ATOM|^HETATM/){
 					my $linetemp=$lineNumber-1;
@@ -311,7 +332,7 @@ sub checkPDB
 				}
 	
 				$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
-				unless($interiorPdbResidueIndex =~ /^\d+$/){;
+				unless($interiorPdbResidueIndex =~ /^\d+$/ ||  $largebase ==1){;
 					smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
 				}
 	
