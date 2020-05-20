@@ -7,8 +7,11 @@ use Exporter;
 #####################
 our $maxwarn;
 our $warncount;
+our @convarray;
+our %reverthash;
+our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen);
 our %supported_directives;
 
 #####################
@@ -326,5 +329,64 @@ sub printcenter
 
 	}
 }
+
+sub InitLargeBase {
+        # this is only done once.
+        @convarray = (0..9,"a".."z","A".."Z");
+	$BaseN=$#convarray+1;
+        my $J=0;
+        foreach my $I(@convarray){
+                $reverthash{$I}=$J;
+                $J++;
+        }
+}
+
+sub BaseTentoLarge {
+        my ($base10,$digits)=@_;
+        my $baselarge="";
+
+        my $val=$base10;
+        for (my $I=0;$I<$digits;$I++){
+                my $rem=$val % $BaseN;
+                $val=int($val/$BaseN);
+                $rem=$convarray[$rem];
+                $baselarge = $rem . $baselarge;
+        }
+
+	if($val != 0) {
+
+		my $N=length(@convarray)-1;
+		$N=$convarray[$N];
+		my $maxV="";
+        	for (my $I=0;$I<$digits;$I++){
+			$maxV .= "$N";
+		}
+		my $max10=BaseLargetoTen($maxV);
+		smog_quit("Using base-$BaseN numbering for atoms/residues and hit maximum defined value of $maxV ($max10)");
+
+	}
+
+        return $baselarge;
+}
+
+sub BaseLargetoTen {
+        my ($baselarge)=@_;
+        my $baselarge="";
+	# remove any space
+	$baselarge =~ s/\s+//g;
+	my $length=length $baselarge;
+
+        my $base10=0;
+	my $power=0;
+        for (my $I=$length-1;$I>=0;$I--){
+		my $char=substr($baselarge,$I,1);
+		$base10+=$reverthash{$char}*$BaseN**$power;
+		$power++;
+        }
+
+        return $base10;
+}
+
+
 
 1;

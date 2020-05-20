@@ -24,6 +24,7 @@ my $insertTER;
 my $subALA;
 my $mapFile;
 my $default;
+my $large;
 my $renumber;
 my $removeH;
 my $mapOption;
@@ -54,7 +55,7 @@ printdashed($wide);
 
 checkForModules();
 
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, '<>' => \&usage) or !defined $inputPDB or defined $help); 
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'large' => \$large,'<>' => \&usage) or !defined $inputPDB or defined $help); 
 
 warninfo();
 
@@ -82,6 +83,10 @@ if(!defined $inputPDB){
 }else{
 	open(OLDPDB,"$inputPDB") or smog_quit("Can't open PDB file $inputPDB.");
 	print "\nWill reformat the PDB file: $inputPDB\n\n";	
+}
+
+if (defined $large){
+	&InitLargeBase;
 }
 
 if (defined $default){
@@ -134,6 +139,9 @@ usage: smog_adjustPDB .. options ..
 	-renumber               : ignore any residue numbering inconsistencies 
                                      and renumber residues sequentially
 	-removeH                : strip the file of any atoms that begin with "H"
+	-large                  : use base-N (N>10) for indexing atom and residues
+                                     Necessary if a single chain has more than 
+                                     9999 residues of 99999 atoms.
 	-insertTER              : Insert "TER" lines between any non-consecutive 
                                      residue numbers
 	-subALA                 : If a residue only has C, CA, N, O, and CB atoms, 
@@ -208,7 +216,15 @@ sub adjustInputFile{
 		$k++;
 	}
 
+	my $hostname=`hostname`;
+	chomp($hostname);
+	my $date=`date`;
+	chomp($date);
 	print NEWPDB "COMMENT File generated with: smog_adjustPDB $inputArguments\n";
+	print NEWPDB "COMMENT Generated on $date. Hostname: $hostname\n";
+	if(defined $large){
+		print NEWPDB "LARGE - Use large base for res/atom numbering (don\'t delete, or smog2 will crash)\n";
+	}
 	## Loops through all PDB rows ##
 	$k = 0;
 	while($k<$rows){
@@ -285,11 +301,19 @@ sub adjustInputFile{
 			
 			$chainName = substr($pArr[$k],21,1);
 			
-			## Loop through the resdiue ##
+			## Loop through the residue ##
 			$loopInd = 0;
 			while ($newResNum eq $resNum){
 				$atomCount++;
-				$atomCount = $atomCount%100000;	
+				my $atomCountBaseN;
+				if(defined $large){
+					$atomCountBaseN=BaseTentoLarge($atomCount,5);
+				}else{
+					if($atomCount == 100000){
+						smog_quit("Too many atoms in a single chain (max of 99999).  Try -large option.");
+					}	
+					$atomCountBaseN=$atomCount;
+				}
 				## Obtain atom information ##
 				my $atomName = substr($pArr[$k],12,4);
 				$atomName =~ s/^\s+|\s+$//g;
@@ -301,7 +325,7 @@ sub adjustInputFile{
 					smog_quit("Atoms within a residue have inconsistent residue names. See\n$pArr[$k]");
 				}	
 				$residue[$loopInd]->{"atomName"} = $atomName;
-				$residue[$loopInd]->{"atomIndex"} = $atomCount;
+				$residue[$loopInd]->{"atomIndex"} = $atomCountBaseN;
 				$residue[$loopInd]->{"x"} = substr($pArr[$k],30,8);   
 				$residue[$loopInd]->{"y"} = substr($pArr[$k],38,8);  
 				$residue[$loopInd]->{"z"} = substr($pArr[$k],46,8);  
@@ -327,12 +351,22 @@ sub adjustInputFile{
 			$lastresidue=$resNum;
 
 			my $printresidue;
-			my $resIndMod= $resInd%10000;
+			my $resIndBaseN;
+			if(defined $large){
+				$resIndBaseN=BaseTentoLarge($resInd,4);
+			}else{
+				if($atomCount == 10000){
+					smog_quit("Too many residues in a single chain (max of 9999).  Try -large option.");
+				}	
+				$resIndBaseN=$resInd;
+			}
+
+
 			if (defined $legacymatch) {
 				# conventional head/tail adjustments
-				($printresidue,$removestring)=legacymatching($resName,$resIndMod,$chainName,$isFirst,$isLast,$removestring);
+				($printresidue,$removestring)=legacymatching($resName,$resIndBaseN,$chainName,$isFirst,$isLast,$removestring);
 			} elsif (!defined $legacymatch) {
-				($printresidue,$removestring,$renamedstring)=exactmatching($k,$resName,$resIndMod,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring);
+				($printresidue,$removestring,$renamedstring)=exactmatching($k,$resName,$resIndBaseN,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring);
 			} else {
 				smog_quit("internal error 1");
 			}
@@ -686,7 +720,7 @@ sub exactmatching
 		if(defined $removeH && $aName =~ m/^H/){
 			$removestring .= "$resName$resInd-$aName ";
 		}else{
-		    	$printthis.=sprintf("ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$nres,$chainName,$resInd,$x,$y,$z);
+		    	$printthis.=sprintf("ATOM  %5s %4s %-4s%s%4s    %8.3f%8.3f%8.3f\n",$ind,$aName,$nres,$chainName,$resInd,$x,$y,$z);
 		}
 	}
 	return($printthis,$removestring,$renamedstring);
