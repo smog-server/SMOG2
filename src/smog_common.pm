@@ -11,7 +11,7 @@ our @convarray;
 our %reverthash;
 our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate);
 our %supported_directives;
 
 #####################
@@ -386,6 +386,13 @@ sub BaseLargetoTen {
         return $base10;
 }
 
+sub printhostdate {
 
+	my $date=`date`;
+	my $hostname=`hostname`;
+
+	my $string = "; date: $date\n;hostname: $hostname\n";
+	return $string;
+}
 
 1;
