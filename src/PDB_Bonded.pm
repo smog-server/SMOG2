@@ -274,14 +274,14 @@ sub checkPDB
 			my $resname=$residue;
 	        	my $resindex = substr($record,22,5);
 			if ($lastresindex ne "null"){
-				my $resiConv=$resindex;
-				my $lastresiConv=$lastresindex;
+				my $diff;
 				if($largebase==1){
-					$resiConv=BaseLargetoTen($resiConv);
-					$lastresiConv=BaseLargetoTen($lastresiConv);
+					$diff=BaseLargetoTen($resindex)-BaseLargetoTen($lastresindex);
+				}else{
+					$diff=$resindex-$lastresindex;
 				}
 
-				if($resiConv-$lastresiConv != 1 && $resiConv-$lastresiConv != 0){
+				if($diff != 1 && $resindex ne $lastresindex){
 					smog_quit("Non-sequential residue numbers ($lastresindex,$resindex) appear at line $lineNumber.");
 				}
 			}
@@ -445,7 +445,7 @@ sub parsePDBATOMS
 			$endfound=1;
 			next;
 		}
-		if($lng eq "" || $record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/){
+		if($lng eq "" || $record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $record =~ m/^LARGE/){
 			next;
 		# make sure BOND appears after END
 		}
@@ -468,7 +468,7 @@ sub parsePDBATOMS
 		chomp($lng);
 		$lng =~ s/\s+//g;	
 		$lng =~ s/\t+//g;	
-		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $lng eq ""){
+		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $lng eq "" || $record =~ m/^LARGE/ ){
 			next;
 		# make sure BOND appears after END
 		}

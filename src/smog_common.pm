@@ -371,10 +371,9 @@ sub BaseTentoLarge {
 
 sub BaseLargetoTen {
         my ($baselarge)=@_;
-        my $baselarge="";
 	# remove any space
 	$baselarge =~ s/\s+//g;
-	my $length=length $baselarge;
+	my $length=length($baselarge);
 
         my $base10=0;
 	my $power=0;
