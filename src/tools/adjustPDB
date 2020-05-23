@@ -75,10 +75,6 @@ if (defined $insertTER){
 	print "\nNOTE: the flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.\n";
 }
 
-if (defined $renumber && defined $insertTER) {
-	smog_quit("Can not use -renumber and -insertTER flags together");
-}
-
 if(!defined $inputPDB){
 	smog_quit("No input PDB was specified. Use -i to specify your input pdb file.");
 }else{
@@ -93,7 +89,7 @@ if (defined $large){
 if (defined $default){
 	print "-default selected. Will use the default map file provided for terminal residue names.\n";
 	if(!exists $ENV{"SMOG_PATH"}){
-        smog_quit("Environmental Variable SMOG_PATH not set\n");
+        smog_quit("Environmental Variable SMOG_PATH not set. You may need to run the configure.smog2 script.\n");
 	}
 	if (defined $legacymatch) {
 		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";
