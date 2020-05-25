@@ -279,8 +279,9 @@ sub adjustInputFile{
 			my $newResNum = $resNum;
 			if($resNum =~ /^\d+$|^-\d+$/ && $lastresidue =~ /^\d+$|^-\d+$/){
 				if(($resNum-$lastresidue > 1 || $resNum-$lastresidue < 0) && $firstresidue !=1){
+					my $chain=substr($pArr[$k],21,1);
 					if(!$renumber && !$insertTER){
-						smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (near line $k).");
+						smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (chain $chain, near line $k).");
 					}elsif($insertTER){
 						print "Non-consecutive residue numbering detected.  -insertTER used.  TER will be inserted before:$line\n";
 						print NEWPDB "TER\n";

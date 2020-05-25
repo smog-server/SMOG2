@@ -44,6 +44,8 @@ my $rescaleD=1.0;
 my $help;
 our %supported_directives = ( 'defaults' => '1',
         'atomtypes' => '1',
+        'bondtypes' => '2',
+        'angletypes' => '2',
         'moleculetype' => '1',
         'nonbond_params' => '2',
         'atoms' => '1',
@@ -158,7 +160,7 @@ print TOPOUT "   smog_scale-energies $inputArguments\n";
 print TOPOUT "$topbuff";
 print TOPOUT "$DATA[0]\n";
 
-foreach my $DIR("defaults","atomtypes","nonbond_params","moleculetype","atoms","bonds","angles")
+foreach my $DIR("defaults","atomtypes","bondtypes","angletypes","nonbond_params","moleculetype","atoms","bonds","angles")
 {
 	if(exists $DIRLIST{"$DIR"}){
 		print TOPOUT "[";
