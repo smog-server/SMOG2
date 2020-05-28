@@ -1262,14 +1262,22 @@ sub calculateContacts
 	my $epsilon;my $cG;my $funct;
  	my $totalStrength; 
 	my $contactIntraScale;
-	my $count;
+	my $count=0;
 
+	my @funct_array;
+	my @normalize_array;
+	my @atoma_array;
+	my @atomb_array;
+	my @dist_array;
+	my @epsilon_array;
 
 	## Sum all initial contact strengths ##	
 	my %conttypeseen;
 	for(my $i=0;$i<$numCon;$i++)
 	{
 		my $normalize;
+		my $deltaMin=-1;my $scale=-1;my $deltaMax=-1;
+		my $resIdxA=0;my $resIdxB=0;
 		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
 		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
 		$pairtypea = $atomTypes->{$atoma}->[10];
@@ -1282,40 +1290,13 @@ sub calculateContacts
 		$conttypeseen{$funct}=1;
 		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");}
 		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
-		if(!$normalize){next;}		
-		$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
+	
+		$funct_array[$i] = $funct;
+		$normalize_array[$i] = $normalize;
+		$atoma_array[$i] = $atoma;
+		$atomb_array[$i] = $atomb;
+		$dist_array[$i]	=  sclr(slice($contactPDL,"3:3,$i:$i"));
 
-		my ($fType,$fname,$directive,$addExclusions,@paramArr) = contactFuncParser($funct);
-		unless($residues{$resnamea}->{'atomCount'}==0 || $residues{$resnameb}->{'atomCount'}==0){
-			$count+=$contactIntraScale;
-		}
-	}
-	if(scalar keys %conttypeseen >1){
-		my $L;
-		foreach my $CT(keys %conttypeseen){
-			$L .= $CT;
-			$L .= " ";
-		}
-		smog_quit("More than one type of contact being used at the same time. Not all combinations of contacts are supported by Gromacs. List of used contact types: $L",1);
- 	}
-	## Adjust ratio ##
-	for(my $i=0;$i<$numCon;$i++){
-		my $contactLeftOver;my $diheTotal; my $normalize;
-		my $deltaMin=-1;my $scale=-1;my $deltaMax=-1;
-		my $resIdxA=0;my $resIdxB=0;
-		my $atomA="";my $atomB="";
-		my $outputString;
-		my $directive;my $addExclusions;
-		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
-		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-		$pairtypea = $atomTypes->{$atoma}->[10];
-		$pairtypeb = $atomTypes->{$atomb}->[10];
-		$resTypea = $atomTypes->{$atoma}->[1];
-		$resTypeb = $atomTypes->{$atomb}->[1];
-		($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
-		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");} 
-		
-		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 		## Stacking scaling ##
 		$epsilon = 1;
 		if(exists $contactSettings->{"contactScaling"}->{$resTypea}
@@ -1329,8 +1310,8 @@ sub calculateContacts
 			$resIdxA = $allAtoms{$atoma}->[2];
 			$resIdxB = $allAtoms{$atomb}->[2];
 			
-			$atomA = $allAtoms{$atoma}->[3];
-			$atomB = $allAtoms{$atomb}->[3];
+			my $atomA = $allAtoms{$atoma}->[3];
+			my $atomB = $allAtoms{$atomb}->[3];
 			##Atom to boolean##
 			$atomA = exists($contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"atomList"}->{$atomA});
 			$atomB = exists($contactSettings->{"contactScaling"}->{$resTypea}->{$resTypeb}->{"atomList"}->{$atomB});
@@ -1340,39 +1321,62 @@ sub calculateContacts
 			&& abs($resIdxB-$resIdxA)<=$deltaMax
 			&& $atomA && $atomB){
 				$epsilon*=$scale;
-			}else{
-				$epsilon=1;
 			}
 		}
 
-		## Non-normalize option for contacts ##
-		if(!$normalize) {
-			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
-			$c0=$dist;
-			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon,$normalize);
-			addToTop($directive,$outputString);
-			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
-		}else{	
-			## DIHE TO CONTACT SCALING ##
-			## DIHEDRAL TO CONTACT RATIO IS GLOBAL IRREGARDLESS OF RESIDE TYPE ##
-			$totalStrength = $termRatios->{"interRelativeTotal"};
-			$diheTotal = $termRatios->{"energyRelative"};
-			$contactLeftOver = $numAtom - $numAtom*($diheTotal/$totalStrength);
-			$contactLeftOver = $contactLeftOver/$count;
-	   		$multFactor = $contactLeftOver;
-	
-			## CONTACT TO CONTACT SCALING ##			
-			$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
-			$multFactor = $multFactor*$contactIntraScale;
-	
-			$epsilon = $epsilon*$multFactor*$rescaleCD;
-			$dist = sclr(slice($contactPDL,"3:3,$i:$i"));
-			$c0=$dist;
-			($directive,$addExclusions,$outputString) = contactOutput($funct,$atoma,$atomb,$c0,$epsilon,$normalize);
-			addToTop($directive,$outputString);
-			if($addExclusions) { addToTop("exclusions",$atoma."	".$atomb."\n"); }
+		$epsilon_array[$i] =$epsilon;
+
+		if(!$normalize){next;}
+		
+		$contactIntraScale = $termRatios->{"contactGroup"}->{$cG}->{"intraRelativeStrength"};
+		$epsilon_array[$i] *= $contactIntraScale;
+
+		unless($residues{$resnamea}->{'atomCount'}==0 || $residues{$resnameb}->{'atomCount'}==0){
+			$count+=$epsilon_array[$i];
 		}
 	}
+
+	# determine any global energy redistribution
+
+	if(defined $termRatios->{"interRelativeTotal"} && defined $termRatios->{"energyRelative"}){
+       		my $totalStrength = $termRatios->{"interRelativeTotal"};
+       		my $diheTotal = $termRatios->{"energyRelative"};
+       		my $contactLeftOver = $numAtom - $numAtom*($diheTotal/$totalStrength);
+		if($count != 0 ){
+       			$contactLeftOver = $contactLeftOver/$count;
+			$multFactor = $contactLeftOver;
+		}
+	}
+
+	# print everything
+
+	for(my $i=0;$i<$numCon;$i++){
+		my $outputString;
+		my $directive;my $addExclusions;
+		my $normalize=$normalize_array[$i];	
+		## Non-normalize option for contacts ##
+		if(!$normalize) {
+			($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
+			addToTop($directive,$outputString);
+			if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
+		}else{	
+			## DIHE TO CONTACT SCALING ##
+	
+			$epsilon_array[$i] *= $multFactor*$rescaleCD;
+			($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
+			addToTop($directive,$outputString);
+			if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
+		}
+	}
+
+	if(scalar keys %conttypeseen >1){
+		my $L;
+		foreach my $CT(keys %conttypeseen){
+			$L .= $CT;
+			$L .= " ";
+		}
+		smog_quit("More than one type of contact being used at the same time. Not all combinations of contacts are supported by Gromacs. List of used contact types: $L",1);
+ 	}
 }
 
 # Convert internal contact function format to gromacs function format,
