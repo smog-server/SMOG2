@@ -1088,7 +1088,6 @@ sub printOrderedDihedrals
 	foreach my $p(@diheCache){
 		addToTop("dihedrals",$p->{"v"});
 	}
-	addToTop("dihedrals","\n");
 }
 
 # Setup the calculation of dihedral angles of all combined residues,
