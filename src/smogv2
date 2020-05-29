@@ -1319,7 +1319,7 @@ sub calculateContacts
 			
 			if(abs($resIdxB-$resIdxA)>=$deltaMin 
 			&& abs($resIdxB-$resIdxA)<=$deltaMax
-			&& $atomA && $atomB){
+			&& $atomA && $atomB && $allAtoms{$atoma}[4]==$allAtoms{$atomb}[4]){
 				$epsilon*=$scale;
 			}
 		}
