@@ -390,8 +390,9 @@ sub printhostdate {
 
 	my $date=`date`;
 	my $hostname=`hostname`;
-
-	my $string = "; date: $date\n;hostname: $hostname\n";
+	chomp($date);
+	chomp($hostname);
+	my $string = "; date: $date\n; hostname: $hostname\n";
 	return $string;
 }
 
