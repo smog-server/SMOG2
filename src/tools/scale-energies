@@ -151,6 +151,37 @@ my ($DATA,$DIRLIST)=checkdirectives($string);
 my %DIRLIST=%{$DIRLIST};
 my @DATA=@{$DATA};
 
+#make sure that the nbfunc and comb-rule is supported
+my @C=split(/\n/,$DATA[$DIRLIST{"defaults"}]);
+
+my $combrule=-1;
+my $onedefault=0;
+for(my $JJ=1;$JJ<=$#C;$JJ++){
+	my ($A, $B)=checkcomment($C[$JJ]);
+	if($A ne ""){
+		if($onedefault !=0){
+			smog_quit("\"defaults\" can only have a single non-comment line with nbfunc, comb-rule and genpairs values")
+		}
+		$A =~ s/^\s+//g;
+		my @array=split(/\s+/,$A);
+		if($#array != 2){
+			smog_quit("\"defaults\" can only have a single non-comment line with nbfunc, comb-rule and genpairs values.  Found $A");
+		}
+		if($array[0] != 1){
+			smog_quit("Only nbfunc=1 supported by smog_scale-energies. Found $array[0]");
+		}
+		if($array[1] !~ m/^[12]$/ ){
+			smog_quit("Only gen-pairs=1 or 2 supported by smog_scale-energies. Found $array[1]");
+		}
+		$combrule=$array[1];
+		$onedefault++;
+	}
+}
+
+if($combrule == -1){
+	smog_quit("No value for gen-pairs found in .top file.");
+}
+
 # Go through the directives, in order, and write out information for the subsystem
 open(TOPOUT,">$outputTOP") or smog_quit("Can\'t open $outputTOP for writing.");
 #copy header
@@ -206,12 +237,13 @@ if($rescaleD == 1.0){
 				for(my $J=0;$J<=$#D;$J++){
 					print TOPOUT "$D[$J]\t";
 				}
-				print TOPOUT "$B\n";
+				print TOPOUT "$B ; scaled by $rescaleC\n";
 			}else{
 				print TOPOUT "$C[$JJ]\n";
 			}
 		}
 	}
+	print TOPOUT "\n";	
 }
 
 
@@ -240,17 +272,21 @@ if($rescaleC == 1.0){
 					#remove the contact
 					next;
 				}
-				$D[3] *= $rescaleC;	
+				if($combrule == 1){
+					# if combrule is 1, then scale c6 and c12.  Otherwise, just scale epsilon
+					$D[3] *= $rescaleC;
+				}	
 				$D[4] *= $rescaleC;	
 				for(my $J=0;$J<=$#D;$J++){
 					print TOPOUT "$D[$J]\t";
 				}
-				print TOPOUT "$B\n";
+				print TOPOUT "$B ; scaled by $rescaleC\n";
 			}else{
 				print TOPOUT "$C[$JJ]\n";
 			}
 		}
 	}
+	print TOPOUT "\n";	
 }
 
 
