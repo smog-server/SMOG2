@@ -1495,12 +1495,9 @@ sub contactParseNM1
 		}else{
 			if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
 		} 
-
-
 	}else{
-		smog_quit("Only gmx-combination-rule equal to 1 or 2 is supposed with contact_1");
+		smog_quit("Only gmx-combination-rule equal to 1 or 2 is supported with contact_1");
 	}
-
 
 	## Shift first value off ##
 	shift @{$paramArr};
