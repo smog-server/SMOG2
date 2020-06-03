@@ -208,6 +208,16 @@ sub checkBONDnames
 			$string .="bType $name appears in .b file, but doesn't appear anywhere in .bif.  Likely a typo in your .b file.\n";
 		}
 	}
+
+	foreach my $name(keys %Btypespresent){
+		unless($name =~ /^[a-zA-Z0-9_]+$/){
+			$string .="Only letters, numbers or _ can be used in a bType definition of a residue. bType \"$name\" encountered\n";
+		}
+		if(!defined $bondtypesused{$name} && !defined $bondtypesused{"*"}){	
+			$string .="bType $name appears in .bif file, but doesn't appear to have parameters defined in the .b file.\n";
+		}
+	}
+
 	return $string;
 }
 
@@ -222,6 +232,17 @@ sub checkNONBONDnames
 			$string .="nbType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.\n";
 		}
 	}
+
+	foreach my $name(keys %NBtypespresent){
+		unless($name =~ /^[a-zA-Z0-9_]+$/){
+			$string .="Only letters, numbers or _ can appear in nbType name within a residue. nbType \"$name\" encountered\n";
+		}
+		if(!defined ${$interactions->{"nonbonds"}}{$name} && !defined ${$interactions->{"nonbonds"}}{"*"}){	
+			$string .="nbType $name appears in .bif file, but parameters are not defined in the .nb file. \n";
+		}
+	}
+
+
 	return $string;
 }
 
@@ -236,6 +257,17 @@ sub checkPAIRnames
 			$string .="pairType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.\n";
 		}
 	}
+
+	foreach my $name(keys %PAIRtypespresent){
+		unless($name =~ /^[a-zA-Z0-9_]+$/){
+			$string.="Only letters, numbers or _ can appear in pairType names within a residue definition. pairType \"$name\" encountered\n";
+		}
+		if( !defined $pairtypesused{$name} && !defined $pairtypesused{"*"} ){	
+			$string .="pairType $name appears in .bif file, but parameters are not defined in the .nb file.\n";
+		}
+	}
+
+	return $string;
 }
 
 sub checkenergygroups
