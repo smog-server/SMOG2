@@ -554,7 +554,6 @@ sub parseSif {
 	foreach my $egName(keys %{$contactGroups})
 	{
 		$numCGs++;
-		if($numCGs > 1){smog_quit("Currently, use of multiple contactGroups is not supported.")}
 		$intraRelativeStrength = $contactGroups->{$egName}->{"intraRelativeStrength"};
 		$normalize = $contactGroups->{$egName}->{"normalize"};
 		$termRatios->{"contactGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
