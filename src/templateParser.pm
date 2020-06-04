@@ -129,6 +129,11 @@ sub clearBifMemory {
 	undef %dihedralAdjList;
 	undef @topFileBuffer;
 	undef @linesInDirectives;
+        undef %NBtypespresent;
+        undef %Btypespresent;
+        undef %PAIRtypespresent;
+	undef %pairtypesused;
+	undef %bondtypesused;
 }
 
 ########################
