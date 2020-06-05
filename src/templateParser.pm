@@ -1128,7 +1128,6 @@ foreach my $res (keys %residues)
 		
 		push(@{$adjList{$atomA}},$atomB);
 		push(@{$adjList{$atomB}},$atomA);
-		
 	   }
 	$bondFunctionals{$res} = {"bonds"=>\@inputString, "functions"=>\@functionString}; 
 	$dihedralAdjList{$res} = \%adjList;
@@ -1217,7 +1216,6 @@ sub adjListTraversalHelper
 {
 	my($listHandle,$atomParent,$visitedString,$diheStringList,$angleStringList,$visitedList,$counter) = @_;
 	my $limitCounter = $counter;
- 
  	## End reached don't need to search further
  	if($counter >=4){return;}
  	## Given an atom loop through all the atoms it is bonded to
@@ -1227,16 +1225,12 @@ sub adjListTraversalHelper
 		if(exists($visitedList->{$atomIn})){next;}
 		## Stitch dihedral string with atomIn
 		my $visitedStringNew = "$visitedString-$atomIn";
-	
 		## Update counters, visitedList hash
-		#my $counterNew = $counter;$counterNew++;
-		$counter++;
-		$visitedList->{$atomIn} = 1;
+		$counter=$limitCounter+1;
 		my %sendHash = %{$visitedList};
-	
+		$sendHash{$atomIn} = 1;	
 		## Traverse through the child of atomIn
 		adjListTraversalHelper($listHandle,$atomIn,$visitedStringNew,$diheStringList,$angleStringList,\%sendHash,$counter);
-		if($limitCounter < 2) {$counter--;}
 	
 		## 3 atom count is reached, creating an angle
 		## add to angleStringList; continue
@@ -1262,7 +1256,8 @@ sub adjListTraversal
 	## Loop through all the atoms in the residue
 	foreach my $atomOut(keys(%{$listHandle}))
 	{
-       		my %visitedList; my $visitedString;
+       		my %visitedList;
+		my $visitedString;
    		## Add the current atom as the first atom in the dihedral
        		$visitedString="$atomOut";
        		$visitedList{$visitedString}=1; ## Set visited flag
@@ -1270,29 +1265,32 @@ sub adjListTraversal
 	}
 
 	## Remove duplicate dihedrals and angles
- 	my @combined = (@diheStringList,@angleStringList);
- 	my @uniqueD = ();my %seen  = ();
- 	my @uniqueA = (); my @uniqueOF;
- 	foreach my $elem (@combined)
+ 	my @uniqueD = ();
+	my %seen  = ();
+ 	my @uniqueA = ();
+ 	foreach my $elem (@angleStringList)
  	{
     		my @orgsplit = split('-', $elem);
     		my $testKey = join('-', reverse(@orgsplit));
     		if(exists $seen{$testKey}){next;}
         	$seen{$elem} = 1;
-       
-        	if(scalar(@orgsplit) == 3) ## ANGLES
-       		{push (@uniqueA,$elem);}
-        	else ## DIHEDRALS & 1-4 ##
-       		{
-       			push (@uniqueD,$elem);
-       			push(@uniqueOF,"$orgsplit[0]-$orgsplit[3]");
-		}
+       		push (@uniqueA,$elem)
  	}
+	%seen  = ();
+
+ 	foreach my $elem (@diheStringList)
+ 	{
+    		my @orgsplit = split('-', $elem);
+    		my $testKey = join('-', reverse(@orgsplit));
+    		if(exists $seen{$testKey}){next;}
+        	$seen{$elem} = 1;
+       		push (@uniqueD,$elem);
+ 	}
+
  	## Reset diheStringList, angleStringList after removing duplicates
  	@diheStringList = @uniqueD;
  	@angleStringList = @uniqueA;
- 	@oneFourStringList = @uniqueOF;
- 	return (\@diheStringList,\@angleStringList,\@oneFourStringList);
+ 	return (\@diheStringList,\@angleStringList);
 }
 
 sub createDihedralAngleFunctionals {
