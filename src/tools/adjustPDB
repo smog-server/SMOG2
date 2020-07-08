@@ -71,6 +71,15 @@ if (defined $renumber){
 	print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";
 }
 
+if (defined $sort){
+	print "\nNOTE: the flag -sort was selected. Will order atoms in each residue by name.\n";
+}
+
+if (defined $removeH){
+	print "\nNOTE: the flag -removeH was selected. Will remove all H atoms.\n";
+}
+
+
 if (defined $insertTER){
 	print "\nNOTE: the flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.\n";
 }
@@ -238,10 +247,7 @@ sub adjustInputFile{
 			$renamedstring="";
 			$removestring="";
 			last;
-		}
-		
-		## If TER line: ##
-		elsif($pArr[$k] =~ m/^TER/){
+		}elsif($pArr[$k] =~ m/^TER/){
 			# if the next line has a TER, or END, then don't write the current TER.
 			$k++;
 			if(exists $isTEREND{$k}){
@@ -257,21 +263,20 @@ sub adjustInputFile{
 			$removestring="";
 
 			$chainindex++;
-		}
 
-		## Exit if there's a BOND line in PDB: ##
-		elsif($pArr[$k] =~ /^BOND/){
-			smog_quit("Issue at line $k: BOND lines in the input PDB file are not supported by adjustPDB in this Smog version.");
-		}
-
-		elsif ($pArr[$k] =~ /^COMMENT/){
+		}elsif($pArr[$k] =~ /^BOND/){
 			print NEWPDB "$pArr[$k]\n";
 			$k++;
 			next;
-		}
-		
+			if (defined $sort || defined $renumber || defined $removeH ){
+				smog_quit("Issue at line $k: BOND lines can not be used in conjunction with -removeH, -sort, or -renumber, since the new atom numbers may differ from the input file.");
+			}
+		}elsif ($pArr[$k] =~ /^COMMENT/){
+			print NEWPDB "$pArr[$k]\n";
+			$k++;
+			next;
+		}elsif ($pArr[$k] =~ /^ATOM/ || $pArr[$k] =~ /^HETATM/){
 		## If atom line: ##
-		elsif ($pArr[$k] =~ /^ATOM/ || $pArr[$k] =~ /^HETATM/){
 
 			$firstresidue++;
 			my $resNum = substr($pArr[$k],22,5);
