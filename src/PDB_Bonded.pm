@@ -1034,10 +1034,17 @@ my($map,$connect,$bondMapHashRev,$tempArr,$union) = @_;
 my $connHandle;
 my %bondMapHashRev=%{$bondMapHashRev};
 #loop through the residues in the chain
-	for(my $resIndA=0;$resIndA<=$#$connect;$resIndA++){
+# don't loop through the last residue, since the loop always checks the current, plus next
+	for(my $resIndA=0;$resIndA<$#$connect;$resIndA++){
+
 		my $resA=$connect->[$resIndA];
 		my $resAIp = $residues{"$resA"}->{"impropers"};
-		# if not terminal, then also check the next residue
+
+	 	if($resIndA == 0) {
+			doimps($map,$connect,$bondMapHashRev,$tempArr,$union,$resAIp,$resIndA);	 
+		}
+
+		# if not the final residue, then also check the next residue
 		if($resIndA != $#$connect){
 			my $resIndB=$resIndA+1;
 			my $resB=$connect->[$resIndB];
@@ -1045,7 +1052,9 @@ my %bondMapHashRev=%{$bondMapHashRev};
 	   		## WORK RESIDUE B ##
 	   		foreach my $ips(@{$resBIp})
 	   		{
-	      			if(! (defined $ips) ) {next;}
+	      			if(! (defined $ips) ) {
+					next;
+				}
 	  
 	  			my $ia;my $ib;my $ic;my $id;
 	  			my $ta;my $tb;my $tc;my $td;
@@ -1059,7 +1068,6 @@ my %bondMapHashRev=%{$bondMapHashRev};
 	   			$b=$bondMapHashRev{"$b-$resIndB"};
 	   			$c=$bondMapHashRev{"$c-$resIndB"};
 	   			$d=$bondMapHashRev{"$d-$resIndB"};
-	  
 	  			my $IMPFLAG1=0;
 	  			my $IMPFLAG2=0;
 	  			my @TMPARR2 = ($a,$b,$c,$d);
@@ -1076,12 +1084,17 @@ my %bondMapHashRev=%{$bondMapHashRev};
 	  
 	  			##[AtomName,ResidueIndex,prevSize]##
 	  			$na = $map->{$a}->[0];
+	   			$nb = $map->{$b}->[0];
+	  			$nc = $map->{$c}->[0];
+	  			$nd = $map->{$d}->[0];
 	  			$ra = $connect->[$map->{$a}->[1]];
-	   			$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
-	  			$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
-	  			$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
-	  			$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
-	  			$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
+				$rb = $connect->[$map->{$b}->[1]];
+				$rc = $connect->[$map->{$c}->[1]];
+				$rd = $connect->[$map->{$d}->[1]];
+	  			$sizeA=$map->{$a}->[2];
+				$sizeB=$map->{$b}->[2];
+	  			$sizeC=$map->{$c}->[2];
+				$sizeD=$map->{$d}->[2];
 	  
 	  			($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
 	  			($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
@@ -1198,59 +1211,69 @@ my %bondMapHashRev=%{$bondMapHashRev};
 			}	
 	 	}
 	
-	 	if($resIndA != 0) {next;}
-	 
-	 	## WORK RESIDUE A ##
-	 	foreach my $ips(@{$resAIp})
-	 	{
-	    		if(! (defined $ips) ) {next;}
-	
-			my $ia;my $ib;my $ic;my $id;
-			my $ta;my $tb;my $tc;my $td;
-	                my $na;my $nb;my $nc;my $nd;
-			my $ra;my $rb;my $rc;my $rd;
-			my $sizeA; my $sizeB;my $sizeC;my $sizeD;
-			my($a,$b,$c,$d) = @{$ips};
-	 		$a=$bondMapHashRev{"$a-$resIndA"};
-	 		$b=$bondMapHashRev{"$b-$resIndA"};
-	 		$c=$bondMapHashRev{"$c-$resIndA"};
-	 		$d=$bondMapHashRev{"$d-$resIndA"};
-			my $IMPFLAG1=0;
-			my $IMPFLAG2=0;
-			my @TMPARR2 = ($a,$b,$c,$d);
-			for(my $I=0;$I<4;$I++){
-				foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
-					if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
-						$IMPFLAG1++;
-					}
-				}
-				if($IMPFLAG1==3){$IMPFLAG2=1;}
-				$IMPFLAG1=0;
-			}
-	
-			##[AtomName,ResidueIndex,prevSize]##
-			$na = $map->{$a}->[0];
-			$ra = $connect->[$map->{$a}->[1]];
-	 		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
-			$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
-			$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
-			$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
-			$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
-	
-			($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
-			($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
-			($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
-			($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
-	         	if($IMPFLAG2==0){
-				smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
-			}
-	       	
-			## Adjust args for getEnergyGroup() ##
-	        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
-			my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
-			push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
-		}
 	}
+}
+
+sub doimps
+{
+	my ($map,$connect,$bondMapHashRev,$tempArr,$union,$curres,$resInd)=@_;
+        my %bondMapHashRev=%{$bondMapHashRev};
+
+	foreach my $ips(@{$curres})
+	{
+		if(! (defined $ips) ) {next;}
+
+		my $ia;my $ib;my $ic;my $id;
+		my $ta;my $tb;my $tc;my $td;
+	        my $na;my $nb;my $nc;my $nd;
+		my $ra;my $rb;my $rc;my $rd;
+		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
+		my($a,$b,$c,$d) = @{$ips};
+		$a=$bondMapHashRev{"$a-$resInd"};
+		$b=$bondMapHashRev{"$b-$resInd"};
+		$c=$bondMapHashRev{"$c-$resInd"};
+		$d=$bondMapHashRev{"$d-$resInd"};
+		my $IMPFLAG1=0;
+		my $IMPFLAG2=0;
+		my @TMPARR2 = ($a,$b,$c,$d);
+		for(my $I=0;$I<4;$I++){
+			foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
+				if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
+					$IMPFLAG1++;
+				}
+			}
+			if($IMPFLAG1==3){$IMPFLAG2=1;}
+			$IMPFLAG1=0;
+		}
+
+		##[AtomName,ResidueIndex,prevSize]##
+		$na = $map->{$a}->[0];
+		$nb = $map->{$b}->[0];
+		$nc = $map->{$c}->[0];
+		$nd = $map->{$d}->[0];
+		$ra = $connect->[$map->{$a}->[1]];
+		$rb = $connect->[$map->{$b}->[1]];
+		$rc = $connect->[$map->{$c}->[1]];
+		$rd = $connect->[$map->{$d}->[1]];
+		$sizeA=$map->{$a}->[2];
+		$sizeB=$map->{$b}->[2];
+		$sizeC=$map->{$c}->[2];
+		$sizeD=$map->{$d}->[2];
+		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
+		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
+		($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
+		($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
+	 	if($IMPFLAG2==0){
+			smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
+		}
+	
+		## Adjust args for getEnergyGroup() ##
+		($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
+		push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
+	}
+
+
 }
 
 sub connWildcardMatchAngles
