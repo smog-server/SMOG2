@@ -1049,67 +1049,7 @@ my %bondMapHashRev=%{$bondMapHashRev};
 			my $resIndB=$resIndA+1;
 			my $resB=$connect->[$resIndB];
 			my $resBIp = $residues{"$resB"}->{"impropers"};
-	   		## WORK RESIDUE B ##
-	   		foreach my $ips(@{$resBIp})
-	   		{
-	      			if(! (defined $ips) ) {
-					next;
-				}
-	  
-	  			my $ia;my $ib;my $ic;my $id;
-	  			my $ta;my $tb;my $tc;my $td;
-	        	        my $na;my $nb;my $nc;my $nd;
-	  			my $ra;my $rb;my $rc;my $rd;
-	  			my $sizeA; my $sizeB;my $sizeC;my $sizeD;
-	  			my($a,$b,$c,$d) = @{$ips};
-	  
-	  
-	   			$a=$bondMapHashRev{"$a-$resIndB"};
-	   			$b=$bondMapHashRev{"$b-$resIndB"};
-	   			$c=$bondMapHashRev{"$c-$resIndB"};
-	   			$d=$bondMapHashRev{"$d-$resIndB"};
-	  			my $IMPFLAG1=0;
-	  			my $IMPFLAG2=0;
-	  			my @TMPARR2 = ($a,$b,$c,$d);
-	  			# checking that one of the atoms is bonded to the other three
-	  			for(my $I=0;$I<4;$I++){
-	  				foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
-	  					if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
-	  						$IMPFLAG1++;
-	  					}
-	  				}
-	  				if($IMPFLAG1==3){$IMPFLAG2=1;}
-	  				$IMPFLAG1=0;
-	  			}
-	  
-	  			##[AtomName,ResidueIndex,prevSize]##
-	  			$na = $map->{$a}->[0];
-	   			$nb = $map->{$b}->[0];
-	  			$nc = $map->{$c}->[0];
-	  			$nd = $map->{$d}->[0];
-	  			$ra = $connect->[$map->{$a}->[1]];
-				$rb = $connect->[$map->{$b}->[1]];
-				$rc = $connect->[$map->{$c}->[1]];
-				$rd = $connect->[$map->{$d}->[1]];
-	  			$sizeA=$map->{$a}->[2];
-				$sizeB=$map->{$b}->[2];
-	  			$sizeC=$map->{$c}->[2];
-				$sizeD=$map->{$d}->[2];
-	  
-	  			($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
-	  			($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
-	  			($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
-	  			($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
-	        	  	if($IMPFLAG2==0){
-	  				smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
-	  			}
-	  
-	  		
-	  			## Adjust args for getEnergyGroup() ##
-	        	  	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
-	  			my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
-	  			push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
-	   		}
+			doimps($map,$connect,$bondMapHashRev,$tempArr,$union,$resBIp,$resIndB);	 
 	  
 	  
 	   		## WORK ON INTER-RESIDUAL IMPROPERS ##
