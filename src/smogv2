@@ -474,7 +474,6 @@ sub addExtras {
 		my $directive;my $stuff;my @tokens;
 		while($line = <EXTRA>)
 		{
-			chomp($line);
 			my ($A,$B)=checkcomment($line);
 			if($A eq ""){next;}  # skip the line if it is only a comment
 		    	@tokens = split('<',$line);
@@ -641,7 +640,6 @@ sub checkExtras {
 	my $directive;my $stuff;my @tokens;
 	while($line = <EXTRA>)
 	{
-		chomp($line);
 		my ($A,$B)=checkcomment($line);
 		if($A eq ""){next;}  # skip the line if it is only a comment
 	    	@tokens = split('<',$line);

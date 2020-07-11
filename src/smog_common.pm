@@ -90,6 +90,7 @@ sub checkForModules {
 sub checkcomment
 {
 	my ($LINE) = @_;
+	chomp($LINE);
 	my $comment;
 	if($LINE =~ m/(;.*)/){
 		$comment=$1;
@@ -101,9 +102,7 @@ sub checkcomment
 	$LINE =~ s/\t/ /g; 
 	$LINE =~ s/^\s+|\s+$//g;
 	$LINE =~ s/ +/ /g;
-	if( $LINE =~ m/^#/ ){
-		print "preprocessing line found in .top file\n";
-	}elsif( $LINE =~ m/[#!\^\$]/ ){
+	if( $LINE =~ m/[#!\^\$]/ ){
 		smog_quit("Special characters not recognized\n  Offending line: $LINE\n");
 	}
 	return ($LINE,$comment);

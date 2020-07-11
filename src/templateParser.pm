@@ -418,24 +418,20 @@ sub parseBif {
 		{
 		  ## [[A,B,C,D],[E,F,G,H],...]
 		      	if(!exists $improper->{"atom"}->[0]){smog_quit("Declaration of residue $res has an improper that lacks atoms\n")};
-				my %seenAtom;
+			my %seenAtom;
 		      	my $atomstring=$improper->{"atom"}->[0];
+		      	my $atomstringRev=$improper->{"atom"}->[0];
 		      	for(my $I=1;$I<4;$I++){
 		      		my $T=$improper->{"atom"}->[$I];
 		      		$atomstring=$atomstring . "-" . $T;
+		      		$atomstringRev=$T . "-" . $atomstring;
+	        		if($T =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in \"connection\" atom names: $T found.")};
 		      		if(exists $seenAtom{"$T"}){
 		      			smog_quit("Error in .bif.  Duplicate declaration of atom $T in improper dihedral for residue $res.");
 		      		}else{
 		      			$seenAtom{"$T"}=1;
 		      		}
 		      	}
-		
-		      	my $atomstringRev=$improper->{"atom"}->[3];
-		      	for(my $I=2;$I>=0;$I--){
-		      		my $T=$improper->{"atom"}->[$I];
-		      		$atomstringRev=$atomstringRev . "-". $T;
-		      	}
-		
 		
 		      	if(exists $seenIMP{"$atomstring"} or exists $seenIMP{"$atomstringRev"}){
 		      		smog_quit("Error in .bif.  Duplicate declaration of improper dihedral $atomstring for residue $res.");
