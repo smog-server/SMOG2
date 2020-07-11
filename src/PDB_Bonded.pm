@@ -1035,13 +1035,13 @@ sub appendImpropers
 	my %bondMapHashRev=%{$bondMapHashRev};
 	#loop through the residues in the chain
 	# don't loop through the last residue, since the loop always checks the current, plus next
-	for(my $resIndA=0;$resIndA<$#$connect;$resIndA++){
+	for(my $resIndA=0;$resIndA<=$#$connect;$resIndA++){
 
 		my $resA=$connect->[$resIndA];
 		my $resAIp = $residues{"$resA"}->{"impropers"};
 
 	 	if($resIndA == 0) {
-			DoResidueImpropers($map,$connect,$bondMapHashRev,$tempArr,$union,$resAIp,$resIndA,"no","nohandle");	 
+			DoImproperSet($map,$connect,$bondMapHashRev,$tempArr,$union,$resAIp,$resIndA,"no","nohandle");	 
 		}
 
 		# if not the final residue, then also check the next residue
@@ -1049,15 +1049,15 @@ sub appendImpropers
 			my $resIndB=$resIndA+1;
 			my $resB=$connect->[$resIndB];
 			my $resBIp = $residues{"$resB"}->{"impropers"};
-			DoResidueImpropers($map,$connect,$bondMapHashRev,$tempArr,$union,$resBIp,$resIndB,"no","nohandle");	 
+			DoImproperSet($map,$connect,$bondMapHashRev,$tempArr,$union,$resBIp,$resIndB,"no","nohandle");	 
 	   		# check for connection-associated impropers
 	   		$connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}}->{"improper"};
-			DoResidueImpropers($map,$connect,$bondMapHashRev,$tempArr,$union,$resAIp,$resIndA,$resIndB,$connHandle);	 
+			DoImproperSet($map,$connect,$bondMapHashRev,$tempArr,$union,$resAIp,$resIndA,$resIndB,$connHandle);	 
 	 	}
 	}
 }
 
-sub DoResidueImpropers
+sub DoImproperSet
 {
 	my ($map,$connect,$bondMapHashRev,$tempArr,$union,$curres,$resInd,$resInd2,$connecthandle)=@_;
         my %bondMapHashRev=%{$bondMapHashRev};
@@ -1091,8 +1091,7 @@ sub DoResidueImpropers
 			$d=$bondMapHashRev{"$d-$resInd"};
 		}else{
 			# do a connection improper
-			($a,$b,$c,$d) = @{$ips->{"atom"}};
-			($a,$b,$c,$d)=splitconnectionatoms($a,$b,$c,$d,$bondMapHashRev,$resInd,$resInd2);
+			($a,$b,$c,$d)=splitconnectionatoms($ips->{"atom"},$bondMapHashRev,$resInd,$resInd2);
 		}
 		# later, this check of impropers should be moved to template validation, except for those involving connections.  For connections, we don't if the connected residues can form a valid improper, since only some of the possible combinations may be ever used.
 		my $IMPFLAG1=0;
@@ -1147,47 +1146,25 @@ sub DoResidueImpropers
 sub splitconnectionatoms
 {
 	# this determines if the atoms in a connection improper are in the first, or second residue
-	my ($a,$b,$c,$d,$bondMapHashRev,$resIndA,$resIndB)=@_;
+	my ($atomshandle,$bondMapHashRev,$resIndA,$resIndB)=@_;
+	my @atoms = @{$atomshandle};
         my %bondMapHashRev=%{$bondMapHashRev};
-	my $atomname;
-	if( $a =~ s/\+$//g ){
-		$atomname=$a;
-		$a=$bondMapHashRev{"$a-$resIndB"};
-		if(!defined $a){smog_quit("Improper dihedral has unknown atom: $atomname not found in definition for residue $resIndB");}
-	}else{
-		$atomname=$a;
-		$a=$bondMapHashRev{"$a-$resIndA"};
-		if(!defined $a){smog_quit("Improper dihedral has unknown atom: $atomname not found in definition for residue $resIndA");}
-	}
 
-	if( $b =~ s/\+$//g ){
-		$atomname=$b;
-		$b=$bondMapHashRev{"$b-$resIndB"};
-		if(!defined $b){smog_quit("Improper dihedral has unknown atom: $atomname not found in definition for residue $resIndB");}
-	}else{
-		$atomname=$b;
-		$b=$bondMapHashRev{"$b-$resIndA"};
-		if(!defined $b){smog_quit("Improper dihedral has unknown atom: $atomname not found in definition for residue $resIndA");}
+	for(my $I=0;$I<4;$I++){
+		my $atomname;
+		my $a=$atoms[$I];
+		if( $a =~ s/\+$//g ){
+			$atomname=$a;
+			$a=$bondMapHashRev{"$a-$resIndB"};
+			if(!defined $a){smog_quit("Connection improper dihedral has unknown atom: $atomname not found in definition for residue $resIndB");}
+		}else{
+			$atomname=$a;
+			$a=$bondMapHashRev{"$a-$resIndA"};
+			if(!defined $a){smog_quit("Connection improper dihedral has unknown atom: $atomname not found in definition for residue $resIndA");}
+		}
+		$atoms[$I]=$a;
 	}
-	if( $c =~ s/\+$//g ){
-		$atomname=$c;
-		$c=$bondMapHashRev{"$c-$resIndB"};
-		if(!defined $c){smog_quit("Improper dihedral has unknown atom: $atomname not found in definition for residue $resIndB");}
-	}else{
-		$atomname=$c;
-		$c=$bondMapHashRev{"$c-$resIndA"};
-		if(!defined $c){smog_quit("Improper dihedral has unknown atom: $atomname not found in definition for residue $resIndA");}
-	}
-	if( $d =~ s/\+$//g ){
-		$atomname=$d;
-		$d=$bondMapHashRev{"$d-$resIndB"};
-		if(!defined $d){smog_quit("Improper dihedral has unknown atom: $atomname not found in definition for residue $resIndB");}
-	}else{
-		$atomname=$d;
-		$d=$bondMapHashRev{"$d-$resIndA"};
-		if(!defined $d){smog_quit("Improper dihedral has unknown atom: $atomname not found in definition for residue $resIndA");}
-	}
-	return ($a,$b,$c,$d);
+	return @atoms;
 }
 
 sub connWildcardMatchAngles
