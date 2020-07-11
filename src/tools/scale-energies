@@ -142,7 +142,7 @@ if($rescaleD != 1.0 && $rescaleD != 0.0){
 	$topbuff .= ";Dihedral group selected \"$groupD\"\n";
 }
 
-$topbuff .="; Below are the comments that were in the top file provided to scale-energies\n";
+$topbuff .="; Below are any comments that were in the top file provided to scale-energies\n";
 print "\nReading top file $inputTOP\n";
 
 my $string=loadfile($inputTOP);
@@ -188,6 +188,8 @@ open(TOPOUT,">$outputTOP") or smog_quit("Can\'t open $outputTOP for writing.");
 
 print TOPOUT "; This is a top file generated with smog_scale-energies using the command:\n;";
 print TOPOUT "   smog_scale-energies $inputArguments\n";
+my $date=printhostdate();
+print TOPOUT "$date";
 print TOPOUT "$topbuff";
 print TOPOUT "$DATA[0]\n";
 
