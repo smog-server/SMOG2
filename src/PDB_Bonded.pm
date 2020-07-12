@@ -1093,19 +1093,6 @@ sub DoImproperSet
 			# do a connection improper
 			($a,$b,$c,$d)=splitconnectionatoms($ips->{"atom"},$bondMapHashRev,$resInd,$resInd2);
 		}
-		# later, this check of impropers should be moved to template validation, except for those involving connections.  For connections, we don't if the connected residues can form a valid improper, since only some of the possible combinations may be ever used.
-		my $IMPFLAG1=0;
-		my $IMPFLAG2=0;
-		my @TMPARR2 = ($a,$b,$c,$d);
-		for(my $I=0;$I<4;$I++){
-			foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
-				if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
-					$IMPFLAG1++;
-				}
-			}
-			if($IMPFLAG1==3){$IMPFLAG2=1;}
-			$IMPFLAG1=0;
-		}
 
 		##[AtomName,ResidueIndex,prevSize]##
 		$na = $map->{$a}->[0];
@@ -1116,18 +1103,6 @@ sub DoImproperSet
 		$rb = $connect->[$map->{$b}->[1]];
 		$rc = $connect->[$map->{$c}->[1]];
 		$rd = $connect->[$map->{$d}->[1]];
-
-	 	if($IMPFLAG2==0){
-			if($isconnection eq "no"){
-				my $rr=$resInd+1;
-				smog_quit("There is an incorrectly formed improper dihedral in $ra (residue $rr, index starting at 1). Three atoms must be bonded to a central atom. Improper defined by atoms $na-$nb-$nc-$nd.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
-			}else{
-				my $rr=$resInd+1;
-				my $rr2=$resInd2+1;
-				smog_quit("There is an incorrectly formed improper between residues $rr and $rr2 (index starting at 1). Three atoms must be bonded to a central atom. Improper defined by atoms $na-$nb-$nc-$nd.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
-			}
-		}
-
 		$sizeA=$map->{$a}->[2];
 		$sizeB=$map->{$b}->[2];
 		$sizeC=$map->{$c}->[2];

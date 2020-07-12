@@ -41,7 +41,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges round);
+qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -196,6 +196,60 @@ sub checkREScharges
 			if(abs($charge - round($charge)) >0.001){
 				my $t=round($charge);
 				$string .="Residue defined in .bif, $res, has non-integer total charge of $charge\n";
+			}
+		}
+	}
+	return $string;
+}
+
+sub checkRESimpropers
+{
+	my $string="";
+	foreach my $res(keys %residues){
+		# handle for bonds in residue $res
+		my $bondshandle=$residues{$res}->{"bonds"};
+		my @improperHandle = @{$residues{$res}->{"impropers"}};
+               	foreach my $improper(@improperHandle){
+			my @IMPARR;
+			for(my $I=0;$I<4;$I++){
+				$IMPARR[$I]=$improper->[$I]
+			}
+			my $passed=0;
+			my @ips=@IMPARR;
+			for(my $I=0;$I<4;$I++){
+				my %blist;
+				my $centeratom=$IMPARR[0];
+				# shift so that we always check the first three
+				$IMPARR[0]=$IMPARR[1];
+				$IMPARR[1]=$IMPARR[2];
+				$IMPARR[2]=$IMPARR[3];
+				$IMPARR[3]=$centeratom;
+				# make list of atoms that are bonded to $I
+				foreach my $tb(keys %{$bondshandle}){
+					my @B=split(/-/,$tb);
+					if("$B[0]" eq "$centeratom"){
+						$blist{$B[1]}=1;
+					}
+					if("$B[1]" eq "$centeratom"){
+						$blist{$B[0]}=1;
+					}
+				}
+			
+				# check bond list and see if the other three atoms are bonded to the possible center atom
+				my @found=(0,0,0);
+				foreach my $ba(keys %blist){
+					for(my $I=0;$I<3;$I++){
+						if("$ba" eq "$IMPARR[$I]"){
+							$found[$I]=1;
+						}
+					}
+				}
+				if($found[0]==1 && $found[1]==1 && $found[2]==1){
+					$passed=1;
+				}
+			}
+			if($passed == 0){
+				$string  .= "Improper in residue $res, defined by atoms @ips, is not defined by three atoms bonded to a central atom.  May be missing bonds in .bif file.\n";
 			}
 		}
 	}
