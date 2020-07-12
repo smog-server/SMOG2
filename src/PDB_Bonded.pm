@@ -1111,10 +1111,39 @@ sub DoImproperSet
 		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
 		($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
 		($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
-	
+
+		if($isconnection ne "no"){
+			# we only check for connections, since impropers within a 
+			# dihedral are checked during template validation
+			checkimproperdefined($union,$a,$b,$c,$d,$na,$nb,$nc,$nd,$resInd,$resInd2);
+		}
+
 		($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
 		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
 		push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
+	}
+}
+
+sub checkimproperdefined
+{
+	my ($union,$a,$b,$c,$d,$na,$nb,$nc,$nd,$resInd,$resInd2)=@_;
+	my $IMPFLAG1=0;
+	my $IMPFLAG2=0;
+	my @TMPARR2 = ($a,$b,$c,$d);
+	for(my $I=0;$I<4;$I++){
+		foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
+			if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
+				$IMPFLAG1++;
+			}
+		}
+		if($IMPFLAG1==3){$IMPFLAG2=1;}
+		$IMPFLAG1=0;
+	}
+
+ 	if($IMPFLAG2==0){
+		my $rr=$resInd+1;
+		my $rr2=$resInd2+1;
+		smog_quit("There is an incorrectly formed improper dihedral defined between residues $rr and $rr2 (index starting at 1). Three atoms must be bonded to a central atom. Improper defined by atoms $na-$nb-$nc-$nd.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
 	}
 }
 
