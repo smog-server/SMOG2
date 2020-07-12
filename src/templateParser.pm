@@ -249,7 +249,7 @@ sub checkRESimpropers
 				}
 			}
 			if($passed == 0){
-				$string  .= "Improper in residue $res, defined by atoms @ips, is not defined by three atoms bonded to a central atom.  May be missing bonds in .bif file.\n";
+				$string  .= "Improper dihedral in residue $res, defined by atoms @ips, is not defined by three atoms bonded to a central atom.  There may be missing bonds, or an incorrectly-defined improper, in the .bif file.\n";
 			}
 		}
 	}
