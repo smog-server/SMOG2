@@ -508,6 +508,7 @@ sub parsePDBATOMS
 			## Check if improper directive is present ##
 			if($record =~ m/^IMPROPER/)
 			{
+			# you can never reach this point in the code.  We should either remove the feature, or fix it.
 				my($left,$right) = split(/IMPROPER/,$record);
 				$right =~ s/^\s+|\s+$//g;
 				@impAtoms = split(/\s+/,$right);
