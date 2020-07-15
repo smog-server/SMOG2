@@ -1033,7 +1033,6 @@ sub appendImpropers
 {
 	my($map,$connect,$bondMapHashRev,$tempArr,$union) = @_;
 	my $connHandle;
-	my %bondMapHashRev=%{$bondMapHashRev};
 	#loop through the residues in the chain
 	# don't loop through the last residue, since the loop always checks the current, plus next
 	for(my $resIndA=0;$resIndA<=$#$connect;$resIndA++){
