@@ -10,13 +10,13 @@
 	
 <!-- CONTACTS -->
 <contact func="contact_gaussian(?,5.96046e-9,sqrt(((?)**2)/(34.66)),?)" contactGroup="c">
-	<contactType>*</contactType>
-	<contactType>*</contactType>
+	<pairType>*</pairType>
+	<pairType>*</pairType>
 </contact>
 
 <contact func="bond_type6(?,200)" contactGroup="c">
-	<contactType>BMG</contactType>
-	<contactType>*</contactType>
+	<pairType>BMG</pairType>
+	<pairType>*</pairType>
 </contact>
 
 </nb>

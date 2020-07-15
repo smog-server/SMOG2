@@ -85,8 +85,8 @@ our @linesInDirectivesWithContent;
 our $inputArguments=join(' ',@ARGV);
 our %Btypespresent;
 our %NBtypespresent;
-our %CONTACTtypespresent;
-our %contacttypesused;
+our %PAIRtypespresent;
+our %pairtypesused;
 our %fTypes;
 our %directives;
 our @directivesList;
@@ -1267,7 +1267,7 @@ sub calculateContacts
 {
 	my($contactPDL,$inputPDL,$atomTypes,$numCon,$numAtom) = @_;
 	my $atoma; my $atomb; my $dist;
-	my $contacttypea; my $contacttypeb;
+	my $pairtypea; my $pairtypeb;
 	my $resTypea; my $resTypeb;
 	my $multFactor = 1;
 	my $c0;  
@@ -1292,15 +1292,15 @@ sub calculateContacts
 		my $resIdxA=0;my $resIdxB=0;
 		$atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
 		$atomb = sclr(slice($contactPDL,"2:2,$i:$i"));
-		$contacttypea = $atomTypes->{$atoma}->[10];
-		$contacttypeb = $atomTypes->{$atomb}->[10];
+		$pairtypea = $atomTypes->{$atoma}->[10];
+		$pairtypeb = $atomTypes->{$atomb}->[10];
 		$resTypea = $atomTypes->{$atoma}->[1];
 		$resTypeb = $atomTypes->{$atomb}->[1];
 		my $resnamea = $atomTypes->{$atoma}->[5];
 		my $resnameb = $atomTypes->{$atomb}->[5];
-		($funct,$cG) = getContactFunctionals($contacttypea,$contacttypeb);
+		($funct,$cG) = getContactFunctionals($pairtypea,$pairtypeb);
 		$conttypeseen{$funct}=1;
-		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $contacttypea-$contacttypeb");}
+		if(!$funct || !$cG){smog_quit("No contact Function defined for nbType contacts $pairtypea-$pairtypeb");}
 		$normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 	
 		$funct_array[$i] = $funct;

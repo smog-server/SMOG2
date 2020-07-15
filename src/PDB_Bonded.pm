@@ -108,7 +108,7 @@ sub checkPDB
 	my $atomsInRes; 
 	my $i; my $putIndex=0; 
 	my $headFlag=1;my $outLength;
-	$totalAtoms = 0;my $nbType;my $residueType; my $contactType;
+	$totalAtoms = 0;my $nbType;my $residueType; my $pairType;
 	my $atomCounter=0;
 	my $chainNumber = 0;
 	my $residueIndex=1;
@@ -365,7 +365,7 @@ sub checkPDB
 				
 				$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 				$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
-				$contactType = $residues{$residue}->{"atoms"}->{$atom}->{"contactType"};
+				$pairType = $residues{$residue}->{"atoms"}->{$atom}->{"pairType"};
 				$residueType = $residues{$residue}->{"residueType"};
 				my $pdbIndex;
 				if($CGenabled==1){
@@ -379,7 +379,7 @@ sub checkPDB
 				}
 				$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
 				# the atoms are now being stored in checkPDB, not parsePDB	
-				$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$contactType,$pdbIndex];
+				$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType,$pdbIndex];
 			}
 			if($residues{$residue}->{"atomCount"} == -1){
 				$totalAtoms+=$atomsInRes;
@@ -421,7 +421,7 @@ sub parsePDBATOMS
 	my $atomsInRes; 
 	my $i; my $putIndex=0; 
 	my $headFlag=1;my $outLength;
-	$totalAtoms = 0;my $nbType;my $residueType; my $contactType;
+	$totalAtoms = 0;my $nbType;my $residueType; my $pairType;
 	my $atomCounter=0;
 	my $chainNumber = 0;
 	my $residueIndex=1;
@@ -595,7 +595,7 @@ sub parsePDBATOMS
 				
 				$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 				$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
-				$contactType = $residues{$residue}->{"atoms"}->{$atom}->{"contactType"};
+				$pairType = $residues{$residue}->{"atoms"}->{$atom}->{"pairType"};
 				$residueType = $residues{$residue}->{"residueType"};
 				
 				my $pdbIndex;
@@ -1455,7 +1455,7 @@ sub GenAnglesDihedrals
 			my $atomname=$bondMapHash{$I}->[0];
 			my $residue=$bondMapHash{$I}->[1];
 			$residue++;
-			if(defined $residues{$residue}->{"atoms"}->{$atomname}->{"bond"} && $residues{$residue}->{"atoms"}->{$atomname}->{"contactType"} !=0){
+			if(defined $residues{$residue}->{"atoms"}->{$atomname}->{"bond"} && $residues{$residue}->{"atoms"}->{$atomname}->{"pairType"} !=0){
         			smog_quit("No bonds found with atom $atomname in residue $residue. Check .bif definitions.");
 			}
    		}
@@ -1604,7 +1604,7 @@ sub parseCONTACT
 		#here we will delete (or rename) the shadow output and make a new output contact file that is consistent with the input pdb. What does this mean?
 		#It means that instead of using a serial numbering starting from 1 (which is the shadow output), it should have chain and atom number the same as in
 		#the PDB. The conversion between serial and PDB is contained inside the allAtoms array which is indexed by serial and has the pdb number as the 11th column.
-		#$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$contactType,$pdbIndex];
+		#$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType,$pdbIndex];
 		#unlink($fileName);
 		if ($saveSCMorig==1){
 			`mv $fileName $fileName.ShadowOutput`;

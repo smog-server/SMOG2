@@ -37,7 +37,7 @@
 
 
 <!-- Contacts TYPE -->
-<xs:complexType name="contactsType">
+<xs:complexType name="contactType">
     <xs:attribute name="method" type="xs:string" use="required"/>
     <xs:attribute name="contactDistance" type="xs:decimal" use="required"/>
     <xs:attribute name="shadowRadius" type="xs:decimal" use="optional"/>
@@ -117,7 +117,7 @@
 <xs:complexType name="settingsType">
     <xs:sequence>
     <xs:element name="Groups" type="groupsType"/>
-    <xs:element name="Contacts" type="contactsType"/>
+    <xs:element name="Contacts" type="contactType"/>
     <xs:element name="bondsThreshold" type="bondsThresholdType" minOccurs="0" maxOccurs="1"/>
     <xs:element name="anglesThreshold" type="anglesThresholdType" minOccurs="0" maxOccurs="1"/>
     <xs:element name="contactsThreshold" type="contactsThresholdType" minOccurs="0" maxOccurs="1"/>

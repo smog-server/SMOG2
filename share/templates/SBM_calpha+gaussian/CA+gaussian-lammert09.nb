@@ -11,8 +11,8 @@
 	
 <!-- CONTACTS -->
 <contact func="contact_gaussian(1,0.167772160e-04,0.05,?)" contactGroup="c">
-    <contactType>*</contactType>
-    <contactType>*</contactType>
+    <pairType>*</pairType>
+    <pairType>*</pairType>
 </contact>
 
 </nb>
