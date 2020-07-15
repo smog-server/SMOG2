@@ -11,8 +11,8 @@
 	
 <!-- CONTACTS -->
 <contact func="contact_1(10,12,?,1)" contactGroup="c">
-    	<pairType>*</pairType>
-    	<pairType>*</pairType>
+    	<contactType>*</contactType>
+    	<contactType>*</contactType>
 </contact>
 
 </nb>

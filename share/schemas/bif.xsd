@@ -14,7 +14,7 @@
     <xs:extension base="xs:string">
       <xs:attribute name="bType" type="xs:string" use="required"/>
       <xs:attribute name="nbType" type="xs:string" use="required"/>
-      <xs:attribute name="pairType" type="xs:string" use="required"/>
+      <xs:attribute name="contactType" type="xs:string" use="required"/>
       <xs:attribute name="charge" type="xs:decimal" use="optional"/>
       <xs:attribute name="bonds" type="xs:integer" use="optional"/>
     </xs:extension>

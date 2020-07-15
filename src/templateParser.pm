@@ -41,7 +41,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
+qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent CONTACTtypespresent EGinBif checkenergygroups bondtypesused contacttypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -96,10 +96,10 @@ our $nbondxml = "nb.xml";
 
 our %Btypespresent;
 our %NBtypespresent;
-our %PAIRtypespresent;
+our %CONTACTtypespresent;
 our %EGinBif;	
 our %EGinSif;	
-our %pairtypesused;
+our %contacttypesused;
 our %bondtypesused;
 our %fTypes;
 
@@ -131,8 +131,8 @@ sub clearBifMemory {
 	undef @linesInDirectives;
         undef %NBtypespresent;
         undef %Btypespresent;
-        undef %PAIRtypespresent;
-	undef %pairtypesused;
+        undef %CONTACTtypespresent;
+	undef %contacttypesused;
 	undef %bondtypesused;
 }
 
@@ -308,21 +308,21 @@ sub checkNONBONDnames
 sub checkPAIRnames
 {
 	my $string="";
-	foreach my $name(keys %pairtypesused){
+	foreach my $name(keys %contacttypesused){
 		unless($name =~ /^[a-zA-Z0-9_]+$|^\*$/){
-			$string.="Only letters, numbers and _, or a solitary *, can appear in contact definitions. pairType \"$name\" encountered\n";
+			$string.="Only letters, numbers and _, or a solitary *, can appear in contact definitions. contactType \"$name\" encountered\n";
 		}
-		if($name ne "*"  && !defined $PAIRtypespresent{$name}){	
-			$string .="pairType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.\n";
+		if($name ne "*"  && !defined $CONTACTtypespresent{$name}){	
+			$string .="contactType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.\n";
 		}
 	}
 
-	foreach my $name(keys %PAIRtypespresent){
+	foreach my $name(keys %CONTACTtypespresent){
 		unless($name =~ /^[a-zA-Z0-9_]+$/){
-			$string.="Only letters, numbers or _ can appear in pairType names within a residue definition. pairType \"$name\" encountered\n";
+			$string.="Only letters, numbers or _ can appear in contactType names within a residue definition. contactType \"$name\" encountered\n";
 		}
-		if( !defined $pairtypesused{$name} && !defined $pairtypesused{"*"} ){	
-			$string .="pairType $name appears in .bif file, but parameters are not defined in the .nb file.\n";
+		if( !defined $contacttypesused{$name} && !defined $contacttypesused{"*"} ){	
+			$string .="contactType $name appears in .bif file, but parameters are not defined in the .nb file.\n";
 		}
 	}
 
@@ -380,7 +380,7 @@ sub parseBif {
 	## Hash is formatted as below
 	## residue => 
 	##			"residueType" => residue type (ie. amino,rna),
-	##			"atoms" => hash of atoms with nbtype, btype,pairType
+	##			"atoms" => hash of atoms with nbtype, btype,contactType
 	##			"impropers" => list of 4 atom impropers
 	##			"bonds" => hash of bonds info with key as "atomA-atomB"
 	##
@@ -447,16 +447,16 @@ sub parseBif {
 		 		my $T=$atom->{"bType"};
 		 		smog_quit("Only letters, numbers and _ can appear in bType definitions. nbType \"$T\" found in residue $res");
 			}
-			unless($atom->{"pairType"} =~ /^[a-zA-Z0-9_]+$/){
-		 		my $T=$atom->{"pairType"};
-		 		smog_quit("Only letters, numbers and _ can appear in pairType definitions. nbType \"$T\" found in residue $res");
+			unless($atom->{"contactType"} =~ /^[a-zA-Z0-9_]+$/){
+		 		my $T=$atom->{"contactType"};
+		 		smog_quit("Only letters, numbers and _ can appear in contactType definitions. nbType \"$T\" found in residue $res");
 			}
 			$NBtypespresent{$atom->{"nbType"}}=1;
 			$Btypespresent{$atom->{"bType"}}=1;
-			$PAIRtypespresent{$atom->{"pairType"}}=1;
+			$CONTACTtypespresent{$atom->{"contactType"}}=1;
 
 		      	$atoms{$atom->{"content"}} = {"index"=>$index,"nbType" => $atom->{"nbType"},"bType" => $atom->{"bType"},
-		      	"pairType" => $atom->{"pairType"}, "charge" => $atom->{"charge"}};
+		      	"contactType" => $atom->{"contactType"}, "charge" => $atom->{"charge"}};
 		      
 		      	$index++;
 		}
@@ -1084,11 +1084,11 @@ sub parseNonBonds {
 	foreach my $inter(@interHandle)
 	{
 		my $nbtype;my $type;
-	 	$nbtype = $inter->{"pairType"};$type = "pairType";
+	 	$nbtype = $inter->{"contactType"};$type = "contactType";
 		my $typeA = $inter->{$type}->[0];
 		my $typeB = $inter->{$type}->[1];
-	 	$pairtypesused{$typeA}=1;
-	 	$pairtypesused{$typeB}=1;
+	 	$contacttypesused{$typeA}=1;
+	 	$contacttypesused{$typeB}=1;
 		my $func = $inter->{"func"};
 		&checkFunction($func);
 	 	my $cG = $inter->{"contactGroup"};

@@ -33,9 +33,9 @@
     <xs:element name="nbType" value="xs:string"/>
 </xs:complexType>
 
-<!-- pairtype TYPE -->
-<xs:complexType name="pairTypeType">
-    <xs:element name="pairType" value="xs:string"/>
+<!-- contacttype TYPE -->
+<xs:complexType name="contactTypeType">
+    <xs:element name="contactType" value="xs:string"/>
 </xs:complexType>
 
 
@@ -53,15 +53,15 @@
 
 
 <!--contacts TYPE -->
-<xs:complexType name="contactType">
-    <xs:element name="pairType" type="pairTypeType" minOccurs="2" maxOccurs="2"/>
+<xs:complexType name="contactsType">
+    <xs:element name="contactType" type="contactTypeType" minOccurs="2" maxOccurs="2"/>
     <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
     <xs:attribute name="contactGroup" type="xs:string" use="required"/>
 </xs:complexType>
 
 
 <!--pairs TYPE -->
-<xs:complexType name="pairType">
+<xs:complexType name="contactType">
     <xs:element name="nbType" type="nbTypeType" minOccurs="2" maxOccurs="2"/>
     <xs:attribute name="func" type="funcTypeTypeC"/>
 </xs:complexType>
@@ -79,7 +79,7 @@
   <xs:sequence>
     <xs:element name="defaults" type="defaultsType" minOccurs="1" maxOccurs="1" />
     <xs:element name="nonbond" type="nonbondType" maxOccurs="unbounded"/>
-    <xs:element name="contact" type="contactType" maxOccurs="unbounded"/>
+    <xs:element name="contact" type="contactsType" maxOccurs="unbounded"/>
   </xs:sequence>
 </xs:complexType>
 
