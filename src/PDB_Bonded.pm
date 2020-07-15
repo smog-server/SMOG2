@@ -1061,7 +1061,6 @@ sub appendImpropers
 sub DoImproperSet
 {
 	my ($map,$connect,$bondMapHashRev,$tempArr,$union,$curres,$resInd,$resInd2,$connecthandle)=@_;
-        my %bondMapHashRev=%{$bondMapHashRev};
 	my $imphandle;
 	my $isconnection;
 	# check if this is a connection, or single residue
@@ -1086,10 +1085,10 @@ sub DoImproperSet
 		if($isconnection eq "no"){
 			#just process a single residue
 			($a,$b,$c,$d) = @{$ips};
-			$a=$bondMapHashRev{"$a-$resInd"};
-			$b=$bondMapHashRev{"$b-$resInd"};
-			$c=$bondMapHashRev{"$c-$resInd"};
-			$d=$bondMapHashRev{"$d-$resInd"};
+			$a=$bondMapHashRev->{"$a-$resInd"};
+			$b=$bondMapHashRev->{"$b-$resInd"};
+			$c=$bondMapHashRev->{"$c-$resInd"};
+			$d=$bondMapHashRev->{"$d-$resInd"};
 		}else{
 			# do a connection improper
 			($a,$b,$c,$d)=splitconnectionatoms($ips->{"atom"},$bondMapHashRev,$resInd,$resInd2);
@@ -1153,18 +1152,17 @@ sub splitconnectionatoms
 	# this determines if the atoms in a connection improper are in the first, or second residue
 	my ($atomshandle,$bondMapHashRev,$resIndA,$resIndB)=@_;
 	my @atoms = @{$atomshandle};
-        my %bondMapHashRev=%{$bondMapHashRev};
 
 	for(my $I=0;$I<4;$I++){
 		my $atomname;
 		my $a=$atoms[$I];
 		if( $a =~ s/\+$//g ){
 			$atomname=$a;
-			$a=$bondMapHashRev{"$a-$resIndB"};
+			$a=$bondMapHashRev->{"$a-$resIndB"};
 			if(!defined $a){smog_quit("Connection improper dihedral has unknown atom: $atomname not found in definition for residue $resIndB");}
 		}else{
 			$atomname=$a;
-			$a=$bondMapHashRev{"$a-$resIndA"};
+			$a=$bondMapHashRev->{"$a-$resIndA"};
 			if(!defined $a){smog_quit("Connection improper dihedral has unknown atom: $atomname not found in definition for residue $resIndA");}
 		}
 		$atoms[$I]=$a;
