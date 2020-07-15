@@ -58,6 +58,12 @@
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
+	<dihedral func="dihedral_harmonic(?,40)" energyGroup="pro_a">
+	<bType>*</bType>
+	<bType>*</bType>
+	<bType>*</bType>
+	<bType>*</bType>
+	</dihedral>
 	<dihedral func="dihedral_harmonic(?,10)" energyGroup="r_a">
 	<bType>*</bType>
 	<bType>*</bType>

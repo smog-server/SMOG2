@@ -7,8 +7,11 @@ use Exporter;
 #####################
 our $maxwarn;
 our $warncount;
+our @convarray;
+our %reverthash;
+our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists);
+our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate);
 our %supported_directives;
 
 #####################
@@ -87,6 +90,7 @@ sub checkForModules {
 sub checkcomment
 {
 	my ($LINE) = @_;
+	chomp($LINE);
 	my $comment;
 	if($LINE =~ m/(;.*)/){
 		$comment=$1;
@@ -98,9 +102,7 @@ sub checkcomment
 	$LINE =~ s/\t/ /g; 
 	$LINE =~ s/^\s+|\s+$//g;
 	$LINE =~ s/ +/ /g;
-	if( $LINE =~ m/^#/ ){
-		print "preprocessing line found in .top file\n";
-	}elsif( $LINE =~ m/[#!\^\$]/ ){
+	if( $LINE =~ m/[#!\^\$]/ ){
 		smog_quit("Special characters not recognized\n  Offending line: $LINE\n");
 	}
 	return ($LINE,$comment);
@@ -325,6 +327,72 @@ sub printcenter
 		}		
 
 	}
+}
+
+sub InitLargeBase {
+        # this is only done once.
+        @convarray = (0..9,"a".."z","A".."Z");
+	$BaseN=$#convarray+1;
+        my $J=0;
+        foreach my $I(@convarray){
+                $reverthash{$I}=$J;
+                $J++;
+        }
+}
+
+sub BaseTentoLarge {
+        my ($base10,$digits)=@_;
+        my $baselarge="";
+
+        my $val=$base10;
+        for (my $I=0;$I<$digits;$I++){
+                my $rem=$val % $BaseN;
+                $val=int($val/$BaseN);
+                $rem=$convarray[$rem];
+                $baselarge = $rem . $baselarge;
+        }
+
+	if($val != 0) {
+
+		my $N=length(@convarray)-1;
+		$N=$convarray[$N];
+		my $maxV="";
+        	for (my $I=0;$I<$digits;$I++){
+			$maxV .= "$N";
+		}
+		my $max10=BaseLargetoTen($maxV);
+		smog_quit("Using base-$BaseN numbering for atoms/residues and hit maximum defined value of $maxV ($max10)");
+
+	}
+
+        return $baselarge;
+}
+
+sub BaseLargetoTen {
+        my ($baselarge)=@_;
+	# remove any space
+	$baselarge =~ s/\s+//g;
+	my $length=length($baselarge);
+
+        my $base10=0;
+	my $power=0;
+        for (my $I=$length-1;$I>=0;$I--){
+		my $char=substr($baselarge,$I,1);
+		$base10+=$reverthash{$char}*$BaseN**$power;
+		$power++;
+        }
+
+        return $base10;
+}
+
+sub printhostdate {
+
+	my $date=`date`;
+	my $hostname=`hostname`;
+	chomp($date);
+	chomp($hostname);
+	my $string = "; date: $date\n; hostname: $hostname\n";
+	return $string;
 }
 
 1;

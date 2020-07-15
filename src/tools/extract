@@ -214,6 +214,8 @@ open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing.");
 print TOPOUT "; This is a top file generated with smog_extract, using the command:\n;";
 print TOPOUT "   smog_extract $inputArguments\n;";
 print TOPOUT "; Selected group: $extgrp\n ";
+my $date=printhostdate();
+print TOPOUT "$date";
 print TOPOUT "$DATA[0]\n";
 
 print TOPOUT "[ defaults ]\n";

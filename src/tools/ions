@@ -458,7 +458,12 @@ my $NBPpresent=0;
 my %typesinsystem;
 my %seenmoltype;
 my $alreadypresent=0;
-print TOPOUT "; File generated with: smog_ions $inputArguments\n";
+
+print TOPOUT "; This is a top file generated with smog_ions, using the command:\n;";
+print TOPOUT "   smog_ions $inputArguments\n";
+my $date=printhostdate();
+print TOPOUT "$date";
+print TOPOUT "; any comments below were from the input top file\n\n";
 while (<FILE>){
 	my $LINE = $_;
 	my $LINEORIG=$LINE;

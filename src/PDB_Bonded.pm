@@ -118,6 +118,7 @@ sub checkPDB
 	my $lastchainstart=0;
 	my $endfound=0;
 	my $residueSerial=0;
+	my $largebase=0;
 	## OPEN .PDB FILE ##
 
 	unless (open(PDBFILE, $fileName)) {
@@ -136,6 +137,17 @@ sub checkPDB
 			next;
 		# make sure BOND appears after END
 		}
+
+		if($record =~ m/^LARGE/){
+			# large-base numbering will be used
+			$largebase=1;
+			&InitLargeBase;
+			my $B=$smog_common::BaseN;
+			print "PDB is using large numbers (expecting base $B)\n";
+			next;
+		}
+
+
 		if($record !~ m/^BOND/ && $endfound ==1){
 			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$record\"\n");
 		}
@@ -162,7 +174,7 @@ sub checkPDB
 		chomp($lng);
 		$lng =~ s/\s+//g;	
 		$lng =~ s/\t+//g;	
-		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $lng eq ""){
+		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $record =~ m/^LARGE/ || $lng eq ""){
 			next;
 		# make sure BOND appears after END
 		}elsif($record !~ m/^BOND/ && $endfound ==1){
@@ -261,8 +273,17 @@ sub checkPDB
 		 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 			my $resname=$residue;
 	        	my $resindex = substr($record,22,5);
-			if ($lastresindex ne "null" && $resindex-$lastresindex != 1 && $resindex-$lastresindex != 0){
-				smog_quit("Non-sequential residue numbers ($lastresindex,$resindex) appear at line $lineNumber.");
+			if ($lastresindex ne "null"){
+				my $diff;
+				if($largebase==1){
+					$diff=BaseLargetoTen($resindex)-BaseLargetoTen($lastresindex);
+				}else{
+					$diff=$resindex-$lastresindex;
+				}
+
+				if($diff != 1 && $resindex ne $lastresindex){
+					smog_quit("Non-sequential residue numbers ($lastresindex,$resindex) appear at line $lineNumber.");
+				}
 			}
 			$lastresindex=$resindex;
 			my %uniqueAtom;
@@ -274,17 +295,17 @@ sub checkPDB
 				if($record =~ m/^ATOM|^HETATM/)
 				{
 	
-				$interiorResidue = substr($record,17,4);
-				$interiorResidue =~ s/^\s+|\s+$//g;
-		   		$residue = substr($record,17,4);
-	        	        $residue =~ s/^\s+|\s+$//g;
-		   		my $altlocator = substr($record,16,1);
-				if($altlocator ne " "){
-					smog_quit("Alternate location indicator found at line $lineNumber.  Alt. Loc. Indic. not supported by SMOG.");
-				}
+					$interiorResidue = substr($record,17,4);
+					$interiorResidue =~ s/^\s+|\s+$//g;
+		   			$residue = substr($record,17,4);
+	        	        	$residue =~ s/^\s+|\s+$//g;
+		   			my $altlocator = substr($record,16,1);
+					if($altlocator ne " "){
+						smog_quit("Alternate location indicator found at line $lineNumber.  Alt. Loc. Indic. not supported by SMOG.");
+					}
 	
-		        	if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
-	            		$interiorPdbResidueIndex = substr($record,22,5); 
+		        		if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
+	            			$interiorPdbResidueIndex = substr($record,22,5); 
 				} 
 				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex or  $record !~ m/^ATOM|^HETATM/){
 					my $linetemp=$lineNumber-1;
@@ -311,7 +332,7 @@ sub checkPDB
 				}
 	
 				$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
-				unless($interiorPdbResidueIndex =~ /^\d+$/){;
+				unless($interiorPdbResidueIndex =~ /^\d+$/ ||  $largebase ==1){;
 					smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
 				}
 	
@@ -424,7 +445,7 @@ sub parsePDBATOMS
 			$endfound=1;
 			next;
 		}
-		if($lng eq "" || $record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/){
+		if($lng eq "" || $record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $record =~ m/^LARGE/){
 			next;
 		# make sure BOND appears after END
 		}
@@ -447,7 +468,7 @@ sub parsePDBATOMS
 		chomp($lng);
 		$lng =~ s/\s+//g;	
 		$lng =~ s/\t+//g;	
-		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $lng eq ""){
+		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $lng eq "" || $record =~ m/^LARGE/ ){
 			next;
 		# make sure BOND appears after END
 		}
@@ -487,6 +508,7 @@ sub parsePDBATOMS
 			## Check if improper directive is present ##
 			if($record =~ m/^IMPROPER/)
 			{
+			# you can never reach this point in the code.  We should either remove the feature, or fix it.
 				my($left,$right) = split(/IMPROPER/,$record);
 				$right =~ s/^\s+|\s+$//g;
 				@impAtoms = split(/\s+/,$right);
@@ -1009,227 +1031,142 @@ sub connCreateInteractionsSingleBOND
 
 sub appendImpropers
 {
-my($map,$connect,$bondMapHashRev,$tempArr,$union) = @_;
-my $connHandle;
-my %bondMapHashRev=%{$bondMapHashRev};
-#loop through the residues in the chain
+	my($map,$connect,$bondMapHashRev,$tempArr,$union) = @_;
+	my $connHandle;
+	#loop through the residues in the chain
+	# don't loop through the last residue, since the loop always checks the current, plus next
 	for(my $resIndA=0;$resIndA<=$#$connect;$resIndA++){
+
 		my $resA=$connect->[$resIndA];
 		my $resAIp = $residues{"$resA"}->{"impropers"};
-		# if not terminal, then also check the next residue
+
+	 	if($resIndA == 0) {
+			DoImproperSet($map,$connect,$bondMapHashRev,$tempArr,$union,$resAIp,$resIndA,"no","nohandle");	 
+		}
+
+		# if not the final residue, then also check the next residue
 		if($resIndA != $#$connect){
 			my $resIndB=$resIndA+1;
 			my $resB=$connect->[$resIndB];
 			my $resBIp = $residues{"$resB"}->{"impropers"};
-	   		## WORK RESIDUE B ##
-	   		foreach my $ips(@{$resBIp})
-	   		{
-	      			if(! (defined $ips) ) {next;}
-	  
-	  			my $ia;my $ib;my $ic;my $id;
-	  			my $ta;my $tb;my $tc;my $td;
-	        	        my $na;my $nb;my $nc;my $nd;
-	  			my $ra;my $rb;my $rc;my $rd;
-	  			my $sizeA; my $sizeB;my $sizeC;my $sizeD;
-	  			my($a,$b,$c,$d) = @{$ips};
-	  
-	  
-	   			$a=$bondMapHashRev{"$a-$resIndB"};
-	   			$b=$bondMapHashRev{"$b-$resIndB"};
-	   			$c=$bondMapHashRev{"$c-$resIndB"};
-	   			$d=$bondMapHashRev{"$d-$resIndB"};
-	  
-	  			my $IMPFLAG1=0;
-	  			my $IMPFLAG2=0;
-	  			my @TMPARR2 = ($a,$b,$c,$d);
-	  			# checking that one of the atoms is bonded to the other three
-	  			for(my $I=0;$I<4;$I++){
-	  				foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
-	  					if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
-	  						$IMPFLAG1++;
-	  					}
-	  				}
-	  				if($IMPFLAG1==3){$IMPFLAG2=1;}
-	  				$IMPFLAG1=0;
-	  			}
-	  
-	  			##[AtomName,ResidueIndex,prevSize]##
-	  			$na = $map->{$a}->[0];
-	  			$ra = $connect->[$map->{$a}->[1]];
-	   			$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
-	  			$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
-	  			$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
-	  			$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
-	  			$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
-	  
-	  			($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
-	  			($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
-	  			($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
-	  			($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
-	        	  	if($IMPFLAG2==0){
-	  				smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
-	  			}
-	  
-	  		
-	  			## Adjust args for getEnergyGroup() ##
-	        	  	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
-	  			my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
-	  			push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
-	   		}
-	  
-	  
-	   		## WORK ON INTER-RESIDUAL IMPROPERS ##
-	   		### CHANGE THIS, ONLY HANDLES SINGLE IMPROPERS ###
-	   		$connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}};
-	   		foreach my $ips(@{$connHandle->{"improper"}})
-	   		{
-	  			if(exists $ips->{"atom"}){ 
-	    			my ($a,$b,$c,$d) = @{$ips->{"atom"}}; 
-	  			my $ia;my $ib;my $ic;my $id;
-	  			my $ta;my $tb;my $tc;my $td;
-	        	        my $na;my $nb;my $nc;my $nd;
-	  			my $ra;my $rb;my $rc;my $rd;
-	  			my $sizeA; my $sizeB;my $sizeC;my $sizeD;
-	  
-	  
-	        		if($a =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $a found.")};
-	        		if($b =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $b found.")};
-	        		if($c =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $c found.")};
-	        		if($d =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in connection atoms: $d found.")};
-	  
-	  			# check if there is a + sign appended to any of the atoms. This indicates which is the subsequent residue.
-				my $atomname;
-	  			if( $a =~ s/\+$//g ){
-					$atomname=$a;
-	   				$a=$bondMapHashRev{"$a-$resIndB"};
-					if(!defined $a){smog_quit("$atomname not found in definition for residue $resIndB");}
-	  			}else{
-					$atomname=$a;
-	   				$a=$bondMapHashRev{"$a-$resIndA"};
-					if(!defined $a){smog_quit("$atomname not found in definition for residue $resIndA");}
-	  			}
-
-	  			if( $b =~ s/\+$//g ){
-					$atomname=$b;
-	   				$b=$bondMapHashRev{"$b-$resIndB"};
-					if(!defined $b){smog_quit("$atomname not found in definition for residue $resIndB");}
-	  			}else{
-					$atomname=$b;
-	   				$b=$bondMapHashRev{"$b-$resIndA"};
-					if(!defined $b){smog_quit("$atomname not found in definition for residue $resIndA");}
-	  			}
-	  			if( $c =~ s/\+$//g ){
-					$atomname=$c;
-	   				$c=$bondMapHashRev{"$c-$resIndB"};
-					if(!defined $c){smog_quit("$atomname not found in definition for residue $resIndB");}
-	  			}else{
-					$atomname=$c;
-	   				$c=$bondMapHashRev{"$c-$resIndA"};
-					if(!defined $c){smog_quit("$atomname not found in definition for residue $resIndA");}
-	  			}
-	  			if( $d =~ s/\+$//g ){
-					$atomname=$d;
-	   				$d=$bondMapHashRev{"$d-$resIndB"};
-					if(!defined $d){smog_quit("$atomname not found in definition for residue $resIndB");}
-	  			}else{
-					$atomname=$d;
-	   				$d=$bondMapHashRev{"$d-$resIndA"};
-					if(!defined $d){smog_quit("$atomname not found in definition for residue $resIndA");}
-	  			}
-				#print "$a $b $c $d\n";
-	  			my $IMPFLAG1=0;
-	  			my $IMPFLAG2=0;
-	  			my @TMPARR2 = ($a,$b,$c,$d);
-	  			for(my $I=0;$I<4;$I++){
-	  				foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
-	  					if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
-	  						$IMPFLAG1++;
-	  					}
-	  				}
-	  				if($IMPFLAG1==3){$IMPFLAG2=1;}
-	  				$IMPFLAG1=0;
-	  			}
-	  
-	  			##[AtomName,ResidueIndex,prevSize]##
-	  			$na = $map->{$a}->[0];
-	  			$ra = $connect->[$map->{$a}->[1]];
-	   			$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
-	  			$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
-	  			$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
-	  			$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
-	  			$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
-	  
-	  			($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
-	  			($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
-	  			($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
-	  			($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
-	  
-	        	  	if($IMPFLAG2==0){
-	  				smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
-	  			}
-	  
-	          			($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
-	  				my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
-	  				push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
-	  			}else{
-	  				smog_quit("Internal error 1.  Please inform smog team");
-	  			}
-			}	
+			DoImproperSet($map,$connect,$bondMapHashRev,$tempArr,$union,$resBIp,$resIndB,"no","nohandle");	 
+	   		# check for connection-associated impropers
+	   		$connHandle = $connections{$residues{$resA}->{"residueType"}}->{$residues{$resB}->{"residueType"}}->{"improper"};
+			DoImproperSet($map,$connect,$bondMapHashRev,$tempArr,$union,$resAIp,$resIndA,$resIndB,$connHandle);	 
 	 	}
-	
-	 	if($resIndA != 0) {next;}
-	 
-	 	## WORK RESIDUE A ##
-	 	foreach my $ips(@{$resAIp})
-	 	{
-	    		if(! (defined $ips) ) {next;}
-	
-			my $ia;my $ib;my $ic;my $id;
-			my $ta;my $tb;my $tc;my $td;
-	                my $na;my $nb;my $nc;my $nd;
-			my $ra;my $rb;my $rc;my $rd;
-			my $sizeA; my $sizeB;my $sizeC;my $sizeD;
-			my($a,$b,$c,$d) = @{$ips};
-	 		$a=$bondMapHashRev{"$a-$resIndA"};
-	 		$b=$bondMapHashRev{"$b-$resIndA"};
-	 		$c=$bondMapHashRev{"$c-$resIndA"};
-	 		$d=$bondMapHashRev{"$d-$resIndA"};
-			my $IMPFLAG1=0;
-			my $IMPFLAG2=0;
-			my @TMPARR2 = ($a,$b,$c,$d);
-			for(my $I=0;$I<4;$I++){
-				foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
-					if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
-						$IMPFLAG1++;
-					}
-				}
-				if($IMPFLAG1==3){$IMPFLAG2=1;}
-				$IMPFLAG1=0;
-			}
-	
-			##[AtomName,ResidueIndex,prevSize]##
-			$na = $map->{$a}->[0];
-			$ra = $connect->[$map->{$a}->[1]];
-	 		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
-			$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
-			$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
-			$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
-			$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
-	
-			($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
-			($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
-			($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
-			($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
-	         	if($IMPFLAG2==0){
-				smog_quit("There is an incorrectly formed improper dihedral. Three atoms must be bonded to a central atom. Improper defined by atoms $ia-$ib-$ic-$id.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
-			}
-	       	
-			## Adjust args for getEnergyGroup() ##
-	        	($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
-			my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
-			push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
-		}
 	}
+}
+
+sub DoImproperSet
+{
+	my ($map,$connect,$bondMapHashRev,$tempArr,$union,$curres,$resInd,$resInd2,$connecthandle)=@_;
+	my $imphandle;
+	my $isconnection;
+	# check if this is a connection, or single residue
+	if($resInd2 eq "no"){
+		$imphandle=$curres;
+		$isconnection="no";
+	}else{
+		$imphandle=$connecthandle;
+		$isconnection="yes";
+	}
+
+	foreach my $ips(@{$imphandle})
+	{
+		if(! (defined $ips) ) {next;}
+
+		my $ia;my $ib;my $ic;my $id;
+		my $ta;my $tb;my $tc;my $td;
+	        my $na;my $nb;my $nc;my $nd;
+		my $ra;my $rb;my $rc;my $rd;
+		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
+		my ($a,$b,$c,$d);
+		if($isconnection eq "no"){
+			#just process a single residue
+			($a,$b,$c,$d) = @{$ips};
+			$a=$bondMapHashRev->{"$a-$resInd"};
+			$b=$bondMapHashRev->{"$b-$resInd"};
+			$c=$bondMapHashRev->{"$c-$resInd"};
+			$d=$bondMapHashRev->{"$d-$resInd"};
+		}else{
+			# do a connection improper
+			($a,$b,$c,$d)=splitconnectionatoms($ips->{"atom"},$bondMapHashRev,$resInd,$resInd2);
+		}
+
+		##[AtomName,ResidueIndex,prevSize]##
+		$na = $map->{$a}->[0];
+		$nb = $map->{$b}->[0];
+		$nc = $map->{$c}->[0];
+		$nd = $map->{$d}->[0];
+		$ra = $connect->[$map->{$a}->[1]];
+		$rb = $connect->[$map->{$b}->[1]];
+		$rc = $connect->[$map->{$c}->[1]];
+		$rd = $connect->[$map->{$d}->[1]];
+		$sizeA=$map->{$a}->[2];
+		$sizeB=$map->{$b}->[2];
+		$sizeC=$map->{$c}->[2];
+		$sizeD=$map->{$d}->[2];
+		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
+		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
+		($ic,$tc) = ($sizeC+getAtomIndexInResidue($rc,$nc),getAtomBType($rc,$nc));
+		($id,$td) = ($sizeD+getAtomIndexInResidue($rd,$nd),getAtomBType($rd,$nd));	
+
+		if($isconnection ne "no"){
+			# we only check for connections, since impropers within a 
+			# dihedral are checked during template validation
+			checkimproperdefined($union,$a,$b,$c,$d,$na,$nb,$nc,$nd,$resInd,$resInd2);
+		}
+
+		($nb,$nc) =  ($map->{$b}->[1]-$map->{$c}->[1]==0)?($nb,$nc):("nb?",$nc);
+		my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");	
+		push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);	
+	}
+}
+
+sub checkimproperdefined
+{
+	my ($union,$a,$b,$c,$d,$na,$nb,$nc,$nd,$resInd,$resInd2)=@_;
+	my $IMPFLAG1=0;
+	my $IMPFLAG2=0;
+	my @TMPARR2 = ($a,$b,$c,$d);
+	for(my $I=0;$I<4;$I++){
+		foreach my $VAL(@{$union->{$TMPARR2[$I]}}){
+			if($VAL == $TMPARR2[0] || $VAL == $TMPARR2[1] ||$VAL == $TMPARR2[2] ||$VAL == $TMPARR2[3] ){
+				$IMPFLAG1++;
+			}
+		}
+		if($IMPFLAG1==3){$IMPFLAG2=1;}
+		$IMPFLAG1=0;
+	}
+
+ 	if($IMPFLAG2==0){
+		my $rr=$resInd+1;
+		my $rr2=$resInd2+1;
+		smog_quit("There is an incorrectly formed improper dihedral defined between residues $rr and $rr2 (index starting at 1). Three atoms must be bonded to a central atom. Improper defined by atoms $na-$nb-$nc-$nd.\nThere may be a missing bond, or incorrectly defined improper in the .bif file.\n");
+	}
+}
+
+sub splitconnectionatoms
+{
+	# this determines if the atoms in a connection improper are in the first, or second residue
+	my ($atomshandle,$bondMapHashRev,$resIndA,$resIndB)=@_;
+	my @atoms = @{$atomshandle};
+
+	for(my $I=0;$I<4;$I++){
+		my $atomname;
+		my $a=$atoms[$I];
+		if( $a =~ s/\+$//g ){
+			$atomname=$a;
+			$a=$bondMapHashRev->{"$a-$resIndB"};
+			if(!defined $a){smog_quit("Connection improper dihedral has unknown atom: $atomname not found in definition for residue $resIndB");}
+		}else{
+			$atomname=$a;
+			$a=$bondMapHashRev->{"$a-$resIndA"};
+			if(!defined $a){smog_quit("Connection improper dihedral has unknown atom: $atomname not found in definition for residue $resIndA");}
+		}
+		$atoms[$I]=$a;
+	}
+	return @atoms;
 }
 
 sub connWildcardMatchAngles
@@ -1639,15 +1576,20 @@ sub parseCONTACT
 				$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
 				$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
 				$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
-				if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
+				my $mindist=$interactionThreshold->{"contacts"}->{"shortContacts"};
+				if($dist < $mindist)
 				{
-				  if($main::setContacttoLimit){
-				    $dist=$interactionThreshold->{"contacts"}->{"shortContacts"};
-	                            print "NOTE: Contact between atoms $contact1 $contact2 below threshold with value $dist\n";
-				    print "-limitcontactlength is being used, will set distance of contact to $dist\n\n";
-				  }else{
-	                            smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");
-	 			  }
+					if($main::setContacttoLimit){
+	                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
+						print "-limitcontactlength is being used, will set distance of contact to $mindist\n\n";
+						$dist=$mindist;
+					}elsif($main::DeleteShortContact){
+	                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
+						print "-deleteshortcontact is being used, will exclude this contact.\n\n";
+						next;
+					}else{
+	                            		smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");
+	 			  	}
 				}
 				push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
 				$numContacts++;
@@ -1733,17 +1675,23 @@ sub parseCONTACT
 			$dist = $dist * $angToNano;
 			if(!exists $allAtoms{$contact1}){smog_quit("ATOM $contact1 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
 			if(!exists $allAtoms{$contact2}){smog_quit("ATOM $contact2 doesn't exists. Skipping contacts $contact1-$contact2\n");next;}
-			if($dist < $interactionThreshold->{"contacts"}->{"shortContacts"})
-			{
 
+			my $mindist=$interactionThreshold->{"contacts"}->{"shortContacts"};
+			if($dist < $mindist)
+			{
 				if($main::setContacttoLimit){
-			    		$dist=$interactionThreshold->{"contacts"}->{"shortContacts"};
-                            		print "CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist\n";
-			    		print "-limitcontactlength is being used, will set distance of contact to $dist\n\n";
-			  	}else{
-                            		smog_quit("CONTACT between atoms $contact1 $contact2 exceed contacts threshold with value $dist");
+                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
+					print "-limitcontactlength is being used, will set distance of contact to $mindist\n\n";
+					$dist=$mindist;
+				}elsif($main::DeleteShortContact){
+                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
+					print "-deleteshortcontact is being used, will exclude this contact.\n\n";
+					next;
+				}else{
+                            		smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");
  			  	}
-		        }
+			}
+
 			push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
 			$numContacts++;
 		}

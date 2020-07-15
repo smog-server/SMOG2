@@ -38,16 +38,21 @@ use String::Util 'trim';
 use Storable qw(dclone);
 use smog_common;
 
-## DECLEARATION TO SHARE DATA STRUCTURES ##
+## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges round);
+qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
 
 ######################
 ## GLOBAL VARIABLES ##
 ######################
 
-
+my %SMOGversions;
+my $smi=0;
+foreach my $ver("2.0", "2.0.1", "2.0.2", "2.0.3", "2.1", "2.2", "2.3"){
+ $SMOGversions{$ver}=$smi;
+ $smi++; 
+}
 #########################
 ## XML PARSED VARIBLES ##
 #########################
@@ -124,6 +129,11 @@ sub clearBifMemory {
 	undef %dihedralAdjList;
 	undef @topFileBuffer;
 	undef @linesInDirectives;
+        undef %NBtypespresent;
+        undef %Btypespresent;
+        undef %PAIRtypespresent;
+	undef %pairtypesused;
+	undef %bondtypesused;
 }
 
 ########################
@@ -192,6 +202,60 @@ sub checkREScharges
 	return $string;
 }
 
+sub checkRESimpropers
+{
+	my $string="";
+	foreach my $res(keys %residues){
+		# handle for bonds in residue $res
+		my $bondshandle=$residues{$res}->{"bonds"};
+		my @improperHandle = @{$residues{$res}->{"impropers"}};
+               	foreach my $improper(@improperHandle){
+			my @IMPARR;
+			for(my $I=0;$I<4;$I++){
+				$IMPARR[$I]=$improper->[$I]
+			}
+			my $passed=0;
+			my @ips=@IMPARR;
+			for(my $I=0;$I<4;$I++){
+				my %blist;
+				my $centeratom=$IMPARR[0];
+				# shift so that we always check the first three
+				$IMPARR[0]=$IMPARR[1];
+				$IMPARR[1]=$IMPARR[2];
+				$IMPARR[2]=$IMPARR[3];
+				$IMPARR[3]=$centeratom;
+				# make list of atoms that are bonded to $I
+				foreach my $tb(keys %{$bondshandle}){
+					my @B=split(/-/,$tb);
+					if("$B[0]" eq "$centeratom"){
+						$blist{$B[1]}=1;
+					}
+					if("$B[1]" eq "$centeratom"){
+						$blist{$B[0]}=1;
+					}
+				}
+			
+				# check bond list and see if the other three atoms are bonded to the possible center atom
+				my @found=(0,0,0);
+				foreach my $ba(keys %blist){
+					for(my $I=0;$I<3;$I++){
+						if("$ba" eq "$IMPARR[$I]"){
+							$found[$I]=1;
+						}
+					}
+				}
+				if($found[0]==1 && $found[1]==1 && $found[2]==1){
+					$passed=1;
+				}
+			}
+			if($passed == 0){
+				$string  .= "Improper dihedral in residue $res, defined by atoms @ips, is not defined by three atoms bonded to a central atom.  There may be missing bonds, or an incorrectly-defined improper, in the .bif file.\n";
+			}
+		}
+	}
+	return $string;
+}
+
 sub checkBONDnames
 {
 	my $string="";
@@ -203,6 +267,16 @@ sub checkBONDnames
 			$string .="bType $name appears in .b file, but doesn't appear anywhere in .bif.  Likely a typo in your .b file.\n";
 		}
 	}
+
+	foreach my $name(keys %Btypespresent){
+		unless($name =~ /^[a-zA-Z0-9_]+$/){
+			$string .="Only letters, numbers or _ can be used in a bType definition of a residue. bType \"$name\" encountered\n";
+		}
+		if(!defined $bondtypesused{$name} && !defined $bondtypesused{"*"}){	
+			$string .="bType $name appears in .bif file, but doesn't appear to have parameters defined in the .b file.\n";
+		}
+	}
+
 	return $string;
 }
 
@@ -217,6 +291,17 @@ sub checkNONBONDnames
 			$string .="nbType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.\n";
 		}
 	}
+
+	foreach my $name(keys %NBtypespresent){
+		unless($name =~ /^[a-zA-Z0-9_]+$/){
+			$string .="Only letters, numbers or _ can appear in nbType name within a residue. nbType \"$name\" encountered\n";
+		}
+		if(!defined ${$interactions->{"nonbonds"}}{$name} && !defined ${$interactions->{"nonbonds"}}{"*"}){	
+			$string .="nbType $name appears in .bif file, but parameters are not defined in the .nb file. \n";
+		}
+	}
+
+
 	return $string;
 }
 
@@ -231,6 +316,17 @@ sub checkPAIRnames
 			$string .="pairType $name appears in .nb file, but doesn't appear anywhere in .bif.  Likely a typo in your .nb file.\n";
 		}
 	}
+
+	foreach my $name(keys %PAIRtypespresent){
+		unless($name =~ /^[a-zA-Z0-9_]+$/){
+			$string.="Only letters, numbers or _ can appear in pairType names within a residue definition. pairType \"$name\" encountered\n";
+		}
+		if( !defined $pairtypesused{$name} && !defined $pairtypesused{"*"} ){	
+			$string .="pairType $name appears in .bif file, but parameters are not defined in the .nb file.\n";
+		}
+	}
+
+	return $string;
 }
 
 sub checkenergygroups
@@ -239,28 +335,28 @@ sub checkenergygroups
 	my $string="It appears that dihedrals energy groups are only partially defined. Since dihedrals energy groups must be defined in the .bif (residue->bonds), .sif (energyGroup) and .b (bonds) files, in order for the interaction to be applied, a partial declaration is probably unintentional.  Specific issues listed below:\n\n";
 	foreach my $II (sort keys %{$interactions->{"dihedrals"}}){
 		if(! exists $EGinBif{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .b file, but is not used in .bif file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .b file, but is not used in .bif file.\n";
 		}
 		if(! exists $EGinSif{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .b file, but is not used in .sif file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .b file, but is not used in .sif file.\n";
 		}
 	}
 
 	foreach my $II (sort keys %EGinBif){
 		if(! exists $interactions->{"dihedrals"}->{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .bif file, but is not used in .b file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .bif file, but is not used in .b file.\n";
 		}
 		if(! exists $EGinSif{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .bif file, but is not used in .sif file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .bif file, but is not used in .sif file.\n";
 		}
 	}
 
 	foreach my $II (sort keys %EGinSif){
 		if(! exists $interactions->{"dihedrals"}->{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .sif file, but is not used in .b file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .sif file, but is not used in .b file. \n";
 		}
 		if(! exists $EGinBif{$II}){
-			$messagestring .="energyGroup \"$II\" defined in .sif file, but is not used in .bif file. $string\n";
+			$messagestring .="energyGroup \"$II\" defined in .sif file, but is not used in .bif file.\n";
 		}
 	}
 
@@ -376,24 +472,20 @@ sub parseBif {
 		{
 		  ## [[A,B,C,D],[E,F,G,H],...]
 		      	if(!exists $improper->{"atom"}->[0]){smog_quit("Declaration of residue $res has an improper that lacks atoms\n")};
-				my %seenAtom;
+			my %seenAtom;
 		      	my $atomstring=$improper->{"atom"}->[0];
+		      	my $atomstringRev=$improper->{"atom"}->[0];
 		      	for(my $I=1;$I<4;$I++){
 		      		my $T=$improper->{"atom"}->[$I];
 		      		$atomstring=$atomstring . "-" . $T;
+		      		$atomstringRev=$T . "-" . $atomstring;
+	        		if($T =~ /[?^&!@#%()-]/){smog_quit ("Special characters not permitted in \"connection\" atom names: $T found.")};
 		      		if(exists $seenAtom{"$T"}){
 		      			smog_quit("Error in .bif.  Duplicate declaration of atom $T in improper dihedral for residue $res.");
 		      		}else{
 		      			$seenAtom{"$T"}=1;
 		      		}
 		      	}
-		
-		      	my $atomstringRev=$improper->{"atom"}->[3];
-		      	for(my $I=2;$I>=0;$I--){
-		      		my $T=$improper->{"atom"}->[$I];
-		      		$atomstringRev=$atomstringRev . "-". $T;
-		      	}
-		
 		
 		      	if(exists $seenIMP{"$atomstring"} or exists $seenIMP{"$atomstringRev"}){
 		      		smog_quit("Error in .bif.  Duplicate declaration of improper dihedral $atomstring for residue $res.");
@@ -463,7 +555,7 @@ sub parseBif {
 		$resA = $conHandle->{$connname}->{"residueType1"};
 		$resB = $conHandle->{$connname}->{"residueType2"};
 		if(exists $connections{$resA}->{$resB}){
-			smog_quit ("Duplicate assignment of connections between residueTypes $resA and $resB");
+			smog_quit ("Multiple connections defined between residueTypes $resA and $resB");
 		}
 		$connections{$resA}->{$resB}=$conHandle->{$connname};
 		foreach my $II(@{$conHandle->{$connname}->{"bond"}}){
@@ -476,6 +568,14 @@ sub parseSif {
 
 	## Read .sif file ##
 	$data = $xml->XMLin($sif,KeyAttr => ['name'],ForceArray=>1);
+	if(!exists $data->{"version"}->[0]->{"min"}){
+		smog_quit("Minimum required SMOG version is not defined in .sif file. This check is intended to ensure that one does not use new templates with an old version of SMOG.  However, newer version of SMOG should always work with old templates.  Accordingly, if you are using the newest release of SMOG, you can probably ignore this warning.",0);
+	}else{
+		my $minver=$data->{"version"}->[0]->{"min"};
+		if(!exists $SMOGversions{"$minver"}){
+			smog_quit("These templates require SMOG v$minver, or newer (defined in .sif file).");
+		}
+	}
 	## Parse function data
 	$functions = $data->{"functions"}->[0]->{"function"};
 	foreach my $funcName(keys %{$functions}){
@@ -541,13 +641,7 @@ sub parseSif {
 	foreach my $egName(keys %{$contactGroups})
 	{
 		$numCGs++;
-		if($numCGs > 1){smog_quit("Currently, use of multiple contactGroups is not supported.")}
 		$intraRelativeStrength = $contactGroups->{$egName}->{"intraRelativeStrength"};
-		if(exists $contactGroups->{$egName}->{"intraRelativeStrength"} && $contactGroups->{$egName}->{"intraRelativeStrength"} != 1){
-			print "\nNOTE: Contact intraRelativeStrength is not used, yet. Value reset to 1.\n";
-			$contactGroups->{$egName}->{"intraRelativeStrength"}=1;
-			$intraRelativeStrength=1.0;
-		}
 		$normalize = $contactGroups->{$egName}->{"normalize"};
 		$termRatios->{"contactGroup"}->{$egName}={"normalize"=>$normalize,"intraRelativeStrength"=>$intraRelativeStrength};
 		##if($normalize){$total+=$intraRelativeStrength;$CG_NORM++}
@@ -567,10 +661,6 @@ sub parseSif {
 	if(($CG_NORM > 0 and $EG_NORM ==0) or ($EG_NORM > 0 and $CG_NORM ==0)){
 		smog_quit('Issue in .sif. Normalization only turned on for ContactGroups, or EnergyGroups. Normalization must be off, or on, for both.');
 	}
-	
-	
-	
-	
 	
 	## NOTE:Contact Type is Global ##
 	## Sum of contact scalings ##
@@ -821,6 +911,7 @@ sub parseBonds {
 
 		my $func = $inter->{"func"};
 		&checkFunction($func);
+
 		my $eG;
 		if(exists $inter->{"energyGroup"})
 		{	
@@ -917,19 +1008,67 @@ sub parseBonds {
 ## PARSE NONBOND FILE ##
 sub parseNonBonds {
 	$data = $xml->XMLin($nbondxml,KeyAttr => ['name'],ForceArray=>1);
-	
-	my @interHandle = @{$data->{"nonbond"}};
+
+	## Obtain default options ##
+	my @interHandle = @{$data->{"defaults"}};
+	if(exists $interHandle[0]->{"gen-pairs"}) {
+		if($interHandle[0]->{"gen-pairs"}==0){
+			$interactions->{"gen-pairs"}="no";
+		}else{
+			$interactions->{"gen-pairs"}="yes";
+		}
+	}else{
+		print "gen-pairs not defined in templates.  Will assume no.\n";
+		$interactions->{"gen-pairs"}="no";
+	}
+
+	if(exists $interHandle[0]->{"nbfunc"}) {
+		$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
+	}else{
+		print "nbfunc not defined in templates.  Will assume a value of 1.\n";
+		$interactions->{"nbfunc"}=1;
+	}
+	if(exists $interHandle[0]->{"gmx-combination-rule"}) {
+		$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
+	}else{
+		print "gmx-combination-rule not defined in templates.  Will assume a value of 1.\n";
+		$interactions->{"gmx-combination-rule"}=1;
+	}
+
+	@interHandle = @{$data->{"nonbond"}};
 	## Loop over nonbonds, save in $interaction{nonbonds}{typeA} = func info.
 	my $counter = 0;
 	foreach my $inter(@interHandle)
 	{
 		my $typeA = $inter->{"nbType"}->[0];
+		my $func;
 		if($inter->{"mass"} <=0){
 			my $M=$inter->{"mass"};
 			smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
 		}
-		my $func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
-		"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
+
+		if($interactions->{"gmx-combination-rule"}==1){
+			if(!exists $inter->{"c6"} || !exists $inter->{"c12"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. c6, c12 must be provided when using gmx-combination-rule=1. Check .nb file.");
+			}
+			if(exists $inter->{"sigma"} || exists $inter->{"epsilon"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. sigma and epsilon can not be provided when using gmx-combination-rule=1. Check .nb file.");
+			}	
+			$func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
+			"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
+		}
+
+		if($interactions->{"gmx-combination-rule"}==2){
+			if(!exists $inter->{"sigma"} || !exists $inter->{"epsilon"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. sigma and epsilon must be provided when using gmx-combination-rule=2. Check .nb file.");
+			}
+			if(exists $inter->{"c6"} || exists $inter->{"c12"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. c6, c12 sigma and epsilon can not be provided when using gmx-combination-rule=2. Check .nb file.");
+			}	
+			$func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
+			"ptype"=>$inter->{"ptype"},"sigma"=>$inter->{"sigma"},"epsilon"=>$inter->{"epsilon"}};
+		}
+
 		if(exists $interactions->{"nonbonds"}->{$typeA}){
 			smog_quit ("nonbonded parameters defined multiple times for nbType $typeA. Check .nb file.");
 		}
@@ -968,20 +1107,6 @@ sub parseNonBonds {
 	}
 	
 	
-	## Obtain default options (ONLY FOR GEN PAIRS) ##
-	@interHandle = @{$data->{"defaults"}};
-	if(exists $interactions->{"gen-pairs"}){
-		smog_quit ("default declaration is given multiple times. Check .nb file.");
-	}
-	if(exists $interHandle[0]->{"gen-pairs"}) {
-		$interactions->{"gen-pairs"} = $interHandle[0]->{"gen-pairs"};
-	}
-	if(exists $interHandle[0]->{"nbfunc"}) {
-		$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
-	}
-	if(exists $interHandle[0]->{"gmx-combination-rule"}) {
-		$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
-	}
 
 }
 
@@ -1053,7 +1178,6 @@ foreach my $res (keys %residues)
 		
 		push(@{$adjList{$atomA}},$atomB);
 		push(@{$adjList{$atomB}},$atomA);
-		
 	   }
 	$bondFunctionals{$res} = {"bonds"=>\@inputString, "functions"=>\@functionString}; 
 	$dihedralAdjList{$res} = \%adjList;
@@ -1142,7 +1266,6 @@ sub adjListTraversalHelper
 {
 	my($listHandle,$atomParent,$visitedString,$diheStringList,$angleStringList,$visitedList,$counter) = @_;
 	my $limitCounter = $counter;
- 
  	## End reached don't need to search further
  	if($counter >=4){return;}
  	## Given an atom loop through all the atoms it is bonded to
@@ -1152,16 +1275,12 @@ sub adjListTraversalHelper
 		if(exists($visitedList->{$atomIn})){next;}
 		## Stitch dihedral string with atomIn
 		my $visitedStringNew = "$visitedString-$atomIn";
-	
 		## Update counters, visitedList hash
-		#my $counterNew = $counter;$counterNew++;
-		$counter++;
-		$visitedList->{$atomIn} = 1;
+		$counter=$limitCounter+1;
 		my %sendHash = %{$visitedList};
-	
+		$sendHash{$atomIn} = 1;	
 		## Traverse through the child of atomIn
 		adjListTraversalHelper($listHandle,$atomIn,$visitedStringNew,$diheStringList,$angleStringList,\%sendHash,$counter);
-		if($limitCounter < 2) {$counter--;}
 	
 		## 3 atom count is reached, creating an angle
 		## add to angleStringList; continue
@@ -1187,7 +1306,8 @@ sub adjListTraversal
 	## Loop through all the atoms in the residue
 	foreach my $atomOut(keys(%{$listHandle}))
 	{
-       		my %visitedList; my $visitedString;
+       		my %visitedList;
+		my $visitedString;
    		## Add the current atom as the first atom in the dihedral
        		$visitedString="$atomOut";
        		$visitedList{$visitedString}=1; ## Set visited flag
@@ -1195,29 +1315,32 @@ sub adjListTraversal
 	}
 
 	## Remove duplicate dihedrals and angles
- 	my @combined = (@diheStringList,@angleStringList);
- 	my @uniqueD = ();my %seen  = ();
- 	my @uniqueA = (); my @uniqueOF;
- 	foreach my $elem (@combined)
+ 	my @uniqueD = ();
+	my %seen  = ();
+ 	my @uniqueA = ();
+ 	foreach my $elem (@angleStringList)
  	{
     		my @orgsplit = split('-', $elem);
     		my $testKey = join('-', reverse(@orgsplit));
     		if(exists $seen{$testKey}){next;}
         	$seen{$elem} = 1;
-       
-        	if(scalar(@orgsplit) == 3) ## ANGLES
-       		{push (@uniqueA,$elem);}
-        	else ## DIHEDRALS & 1-4 ##
-       		{
-       			push (@uniqueD,$elem);
-       			push(@uniqueOF,"$orgsplit[0]-$orgsplit[3]");
-		}
+       		push (@uniqueA,$elem)
  	}
+	%seen  = ();
+
+ 	foreach my $elem (@diheStringList)
+ 	{
+    		my @orgsplit = split('-', $elem);
+    		my $testKey = join('-', reverse(@orgsplit));
+    		if(exists $seen{$testKey}){next;}
+        	$seen{$elem} = 1;
+       		push (@uniqueD,$elem);
+ 	}
+
  	## Reset diheStringList, angleStringList after removing duplicates
  	@diheStringList = @uniqueD;
  	@angleStringList = @uniqueA;
- 	@oneFourStringList = @uniqueOF;
- 	return (\@diheStringList,\@angleStringList,\@oneFourStringList);
+ 	return (\@diheStringList,\@angleStringList);
 }
 
 sub createDihedralAngleFunctionals {
