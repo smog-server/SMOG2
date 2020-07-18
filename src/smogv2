@@ -51,6 +51,7 @@ my $inputFolder=""; my $bifForSCM;
 my $userProvidedMap=0;
 my $topFile = "";
 my $groFile = "";
+my $groFile4SCM = "";
 my $ContactFile;
 my $shadowFile = "";
 my $ndxFile = "";
@@ -110,19 +111,19 @@ parse_args();
 
 print "Parsing templates files...\n";
 parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
-if($CGenabled == 0) {
-	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
-} elsif ($CGenabled == 1 && $userProvidedMap == 0) { #CG but we still need full .top to make a map
-	print "Creating topology for contact calculation.....\n";
-	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
-}
+if($CGenabled == 0 || ($CGenabled == 1 && $userProvidedMap == 0)) {
+	# either no CG, or CG and need to generate a map
+	printBondedTopOutput($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap);
+} 
+
+
 
 # generate contact map
 if($userProvidedMap == 0) { #use SCM.jar if user doesn't provide a map
 	printTop($topFile);
-	generateContactMap($groFile,$ndxFile,$shadowFile,$topFile);
+	generateContactMap($groFile4SCM,$ndxFile,$shadowFile,$topFile);
+	`rm $groFile4SCM`;
 }
-
 # do CGing, if needed
 if($CGenabled == 1) { #Coarse graining, do everything over with new templates
     	clearBifMemory();clearPDBMemory();
@@ -131,7 +132,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	print "\nParsing templates for coarse graining... ";
 	$inputFolder = $coarseFolder;
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
-	printBondedTopOutput($inputPDB,$groFile,$ndxFile);
+	printBondedTopOutput($inputPDB,$groFile,$groFile4SCM,$ndxFile,1);
 }
 
 appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
@@ -345,6 +346,7 @@ sub parse_args {
 	## Ensure we only write out files with gromacs-compatible suffices
 	if($topFile eq ""){$topFile=$DNAME};
 	if($groFile eq ""){$groFile=$DNAME};
+	$groFile4SCM=$groFile . "4SCM.gro";
 	if($shadowFile eq ""){$shadowFile=$DNAME};
 	if($ndxFile eq ""){$ndxFile=$DNAME};
 	
@@ -357,7 +359,7 @@ sub parse_args {
 	## check if files exist
 	# things we don't want to overwrite
 	if($backup eq "yes"){
-		foreach my $filen($topFile, $groFile, $shadowFile, $ndxFile){
+		foreach my $filen($topFile, $groFile, $groFile4SCM, $shadowFile, $ndxFile){
 			checkalreadyexists($filen);
 		}
 	}
@@ -1812,7 +1814,7 @@ sub readAtoms
 # Store chain info to ndx file
 sub convertPDBToGroNdx
 {
-	my ($inputPDB,$outputGRO,$outputNDX) = @_;
+	my ($inputPDB,$outputGRO,$outputGRO4SCM,$outputNDX,$userProvidedMap) = @_;
 	my $counter = 0 ;	
 	my $line = "";
 	my $resName="";
@@ -1829,10 +1831,8 @@ sub convertPDBToGroNdx
 	my $lastTER=0;
 	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
  	open(PDB,"$inputPDB") or smog_quit("can not open $inputPDB"); ## INPUT PDB
-	if(-e "meta.Gro"){
-		smog_quit("meta.Gro is a reserved file name.  It appears to already exist.  Please move and try again\n");
-	}
-	open(GRO,">meta.Gro") or smog_quit("can not open meta.Gro for writing");
+	my $atominfo="";
+	my $atominfo4SCM="";
 	while($line=<PDB>)
 	{
 		
@@ -1890,8 +1890,8 @@ sub convertPDBToGroNdx
   		push(@{$chainHash{$chain}},$atomNum);
 		if($atomNum >= 100000){$atomNum = $atomNum%100000;}
 	        if($resCounter >= 100000){$resCounter = $resCounter%100000;}
-		$output = sprintf("%5d%-5s%5s%5d%8.3f%8.3f%8.3f\n",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
-		print GRO $output;
+		$atominfo .= sprintf("%5d%-5s%5s%5d%8.3f%8.3f%8.3f\n",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
+		$atominfo4SCM .= sprintf("%5d%-5s%5s%5d%9.4f%9.4f%9.4f\n",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
 		$lastTER=0;
 		
 	 }
@@ -1904,15 +1904,25 @@ sub convertPDBToGroNdx
 
  ## ADJUST GRO FILE ##
 	close(PDB);
-	close(GRO);
-        open(GROIN,"meta.Gro") or smog_quit("can not open meta.Gro for reading");
 	open(GRO,">$outputGRO") or smog_quit("can not open $outputGRO for writing");
 	print GRO "Gro file for a structure based model, generated with SMOG Version $VERSION\n";
 	print GRO $counter,"\n";
-	while(<GROIN>) { print GRO $_;}
+
+	print GRO "$atominfo";
 	print GRO "$xrange $yrange $zrange\n";
-	close(GRO); close(GROIN);
-	unlink("meta.Gro");
+	close(GRO);
+
+	if($userProvidedMap==0){
+	# we are generating a map, so save full PDB-precision gro
+		open(GRO,">$outputGRO4SCM") or smog_quit("can not open $outputGRO4SCM for writing");
+		print GRO "Temp Gro file with PDB precision for SCM calculations.\n";
+		print GRO $counter,"\n";
+
+		print GRO "$atominfo4SCM";
+		print GRO "$xrange $yrange $zrange\n";
+		close(GRO);
+	}
+
 	
  ## CREATE NDX FILE ##
 	open(NDX,">$outputNDX");
@@ -2235,7 +2245,7 @@ sub parseTemplatesAndPDB
 sub printBondedTopOutput {
 
 
-	my ($inputPDB,$groFile,$ndxFile) = @_;
+	my ($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap) = @_;
         if($countDihedrals){
 		print "Counting dihedrals\n";
 		getSetDiheCounts(\%DihedralData,\%bondPDL);
@@ -2265,12 +2275,12 @@ sub printBondedTopOutput {
 	printOrderedDihedrals(\%DihedralData,\%bondPDL,\%allAtoms);
 
 	## CREATE GRO FILE ##
-	convertPDBToGroNdx($inputPDB,$groFile,$ndxFile);
+	convertPDBToGroNdx($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap);
 	## print intermediate top for SCM.jar to read ##
 }
 
 sub generateContactMap {
-	my ($groFile,$ndxFile,$shadowFile,$topFile) = @_;
+	my ($groFile4SCM,$ndxFile,$shadowFile,$topFile) = @_;
 	## CALL SHADOW/PARSE CONTACTS ##
 	print "Starting contact calculations ...\n  ";
 	my $SCMparams = setContactParams();
@@ -2292,7 +2302,7 @@ sub generateContactMap {
 	
 	if((!exists $ENV{SMOG_PATH}) || !(-e "$ENV{SMOG_PATH}/src/tools/SCM.jar")){smog_quit ("Can't find Shadow executable. Make sure SMOG_PATH is set correctly.")}
 	print "Calling $ENV{SMOG_PATH}/src/tools/SCM.jar \n";
-	system("java $memoryMax -jar $ENV{SMOG_PATH}/src/tools/SCM.jar -g $groFile -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
+	system("java $memoryMax -jar $ENV{SMOG_PATH}/src/tools/SCM.jar -g $groFile4SCM -ndec 4 -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
 }
 
 sub appendContacts {
