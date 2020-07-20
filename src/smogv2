@@ -135,6 +135,8 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	printBondedTopOutput($inputPDB,$groFile,$groFile4SCM,$ndxFile,1);
 }
 
+appendDefaults();
+
 appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
 
 printTop($topFile);
@@ -2305,6 +2307,14 @@ sub generateContactMap {
 	system("java $memoryMax -jar $ENV{SMOG_PATH}/src/tools/SCM.jar -g $groFile4SCM -ndec 4 -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
 }
 
+sub appendDefaults
+{
+	my $combrule = $interactions->{"gmx-combination-rule"};
+	my $nbfunc = $interactions->{"nbfunc"};
+	my $genpairs = $interactions->{"gen-pairs"};
+	addToTop("defaults", "  $nbfunc      $combrule         $genpairs\n");
+}
+
 sub appendContacts {
 	my($fileName,$fileName2,$userProvidedMap,$saveSCMorig) = @_;
 	#Parse the contact map, either the generated one or the user provided one
@@ -2315,13 +2325,6 @@ sub appendContacts {
 	print "Completing final details...\n";
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
-	#print defaults
-
-	my $combrule = $interactions->{"gmx-combination-rule"};
-	my $nbfunc = $interactions->{"nbfunc"};
-	my $genpairs = $interactions->{"gen-pairs"};
-
-	addToTop("defaults", "  $nbfunc      $combrule         $genpairs\n");
 }
 
 
