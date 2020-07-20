@@ -753,12 +753,16 @@ sub GenerateBondedGeometry {
     	my @tempArr=();
 	## BOND ##
     	for(my $i=0;$i<scalar(@{$bH})-1;$i+=2) {	
-		my $bondStrA = $bH->[$i];
-		$bondStrA = $map->{$bondStrA}->[0];
-		my $bondStrB = $bH->[$i+1];
-		$bondStrB = $map->{$bondStrB}->[0];
-		my $sizeA = $map->{$bH->[$i]}->[2];my $sizeB = $map->{$bH->[$i+1]}->[2];
-		my $ra=$connect->[$map->{$bH->[$i]}->[1]];my $rb=$connect->[$map->{$bH->[$i+1]}->[1]];
+		my $bH1=$map->{$bH->[$i]};
+		my $bH2=$map->{$bH->[$i+1]};
+
+		my $bondStrA = $bH1->[0];
+		my $bondStrB = $bH2->[0];
+		my $sizeA = $bH1->[2];
+		my $sizeB = $bH2->[2];
+		my $ra=$connect->[$bH1->[1]];
+		my $rb=$connect->[$bH2->[1]];
+
 		my ($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$bondStrA)
 			       ,getAtomBType($ra,$bondStrA));
 		my ($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$bondStrB)
@@ -776,15 +780,14 @@ sub GenerateBondedGeometry {
 	{
 		my $ia;my $ib;my $ic;
 		my $ta;my $tb;my $tc;
-                my $na;my $nb;my $nc;
-		my $ra;my $rb;my $rc;
-		my $sizeA; my $sizeB;my $sizeC;
 		my($a,$b,$c) = split("-",$angs);
-		$na = $map->{$a}->[0];$ra = $connect->[$map->{$a}->[1]];
- 		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
-		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
-		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
-		$sizeC=$map->{$c}->[2];
+		my ($na,$mar,$sizeA)=@{$map->{$a}}[0..2];
+		my ($nb,$mbr,$sizeB)=@{$map->{$b}}[0..2];
+		my ($nc,$mcr,$sizeC)=@{$map->{$c}}[0..2];
+
+		my $ra = $connect->[$mar];
+		my $rb = $connect->[$mbr];
+		my $rc = $connect->[$mcr];
 
 		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
 		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
@@ -804,17 +807,18 @@ sub GenerateBondedGeometry {
 	{
 		my $ia;my $ib;my $ic;my $id;
 		my $ta;my $tb;my $tc;my $td;
-                my $na;my $nb;my $nc;my $nd;
-		my $ra;my $rb;my $rc;my $rd;
-		my $sizeA; my $sizeB;my $sizeC;my $sizeD;
 		my($a,$b,$c,$d) = split("-",$dihes);
 		##[AtomName,ResidueIndex,prevSize]##
-		$na = $map->{$a}->[0];$ra = $connect->[$map->{$a}->[1]];
- 		$nb = $map->{$b}->[0];$rb = $connect->[$map->{$b}->[1]];
-		$nc = $map->{$c}->[0];$rc = $connect->[$map->{$c}->[1]];
-		$nd = $map->{$d}->[0];$rd = $connect->[$map->{$d}->[1]];
-		$sizeA=$map->{$a}->[2];$sizeB=$map->{$b}->[2];
-		$sizeC=$map->{$c}->[2];$sizeD=$map->{$d}->[2];
+
+		my ($na,$mar,$sizeA)=@{$map->{$a}}[0..2];
+		my ($nb,$mbr,$sizeB)=@{$map->{$b}}[0..2];
+		my ($nc,$mcr,$sizeC)=@{$map->{$c}}[0..2];
+		my ($nd,$mdr,$sizeD)=@{$map->{$d}}[0..2];
+
+		my $ra = $connect->[$mar];
+		my $rb = $connect->[$mbr];
+		my $rc = $connect->[$mcr];
+		my $rd = $connect->[$mcr];
 
 		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
 		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
@@ -1573,8 +1577,9 @@ sub parseCONTACT
 				}
 			}
 			if($skip == 0) { #maybe we skip sometimes if coarse graining				
-				$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
-				$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
+				($x1,$y1,$z1) = @{$allAtoms{$contact1}}[6..8];
+				($x2,$y2,$z2) = @{$allAtoms{$contact2}}[6..8];
+
 				$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2) * $angToNano;
 				my $mindist=$interactionThreshold->{"contacts"}->{"shortContacts"};
 				if($dist < $mindist)
@@ -1668,8 +1673,9 @@ sub parseCONTACT
 					smog_quit("Input contact map has non-numeric distance for contact $chain1 $pdbNum1 $chain2 $pdbNum2: $dist.\n");
 				}
 			} else { #distace was not provided, lets calculate it from structure
-				$x1 = $allAtoms{$contact1}[6];$y1 = $allAtoms{$contact1}[7];$z1 = $allAtoms{$contact1}[8];
-				$x2 = $allAtoms{$contact2}[6];$y2 = $allAtoms{$contact2}[7];$z2 = $allAtoms{$contact2}[8];
+
+				($x1,$y1,$z1) = @{$allAtoms{$contact1}}[6..8];
+				($x2,$y2,$z2) = @{$allAtoms{$contact2}}[6..8];
 				$dist = sqrt( ($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2);
 			}
 			$dist = $dist * $angToNano;
