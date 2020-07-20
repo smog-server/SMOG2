@@ -818,7 +818,7 @@ sub GenerateBondedGeometry {
 		my $ra = $connect->[$mar];
 		my $rb = $connect->[$mbr];
 		my $rc = $connect->[$mcr];
-		my $rd = $connect->[$mcr];
+		my $rd = $connect->[$mdr];
 
 		($ia,$ta) = ($sizeA+getAtomIndexInResidue($ra,$na),getAtomBType($ra,$na));
 		($ib,$tb) = ($sizeB+getAtomIndexInResidue($rb,$nb),getAtomBType($rb,$nb));
