@@ -70,6 +70,7 @@ my $DNAME="smog";
 my $backup="yes";
 my $allowCG = 0;
 my $nocheck = "no";
+my $keep4SCM;
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
@@ -122,7 +123,10 @@ if($CGenabled == 0 || ($CGenabled == 1 && $userProvidedMap == 0)) {
 if($userProvidedMap == 0) { #use SCM.jar if user doesn't provide a map
 	printTop($topFile);
 	generateContactMap($groFile4SCM,$ndxFile,$shadowFile,$topFile);
-	`rm $groFile4SCM`;
+	if(! defined $keep4SCM){
+		# this is only used for smog-check
+		`rm $groFile4SCM`;
+	}
 }
 # do CGing, if needed
 if($CGenabled == 1) { #Coarse graining, do everything over with new templates
@@ -132,7 +136,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	print "\nParsing templates for coarse graining... ";
 	$inputFolder = $coarseFolder;
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
-	printBondedTopOutput($inputPDB,$groFile,$groFile4SCM,$ndxFile,1);
+	printBondedTopOutput($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap);
 }
 
 appendDefaults();
@@ -202,6 +206,7 @@ sub parse_args {
 		'deleteshortcontacts' => \$DeleteShortContact, 
 		'rescaleCD=s' => \$rescaleCD, 
 		'nocheck'=> \$tempcheckoff,
+		'keep4SCM'=> \$keep4SCM,
 		'<>' => \&usage, 
 		'v' => \$printversion)
 	          or defined $help 
