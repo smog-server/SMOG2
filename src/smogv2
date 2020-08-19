@@ -2077,7 +2077,7 @@ EOT
 
 sub usage
 {
-  print <<EOT;
+	print <<EOT;
 
 usage: smog2 .. options ..
 
@@ -2109,11 +2109,11 @@ usage: smog2 .. options ..
                                         when using old templates with new versions of SMOG
 	-help                   : show options 
 EOT
-  if ( @_ ){
-   smog_quit("Flag \"@_\" not recognized, or is missing arguments.");
-  }else{
-   exit(0);
-  }
+	if ( @_ ){
+		smog_quit("Flag \"@_\" not recognized, or is missing arguments.");
+	}else{
+		exit(0);
+	}
 }
 
 sub setContactParams
