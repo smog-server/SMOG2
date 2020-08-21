@@ -40,7 +40,6 @@ src/smogv2
 src/templateParser.pm
 src/setRatios.pm
 examples/gromacs4/all-atom/smog.gro
-examples/gromacs4/all-atom/mdout.mdp
 examples/gromacs4/all-atom/state.cpt
 examples/gromacs4/all-atom/CI2.AA.pdb
 examples/gromacs4/all-atom/all-atom.tpr
@@ -55,7 +54,6 @@ examples/gromacs4/all-atom/state_prev.cpt
 examples/gromacs4/all-atom/ener.edr
 examples/gromacs4/all-atom/confout.gro
 examples/gromacs4/calpha/smog.gro
-examples/gromacs4/calpha/mdout.mdp
 examples/gromacs4/calpha/state.cpt
 examples/gromacs4/calpha/CI2.AA.pdb
 examples/gromacs4/calpha/calpha.tpr
@@ -71,7 +69,6 @@ examples/gromacs4/calpha/ener.edr
 examples/gromacs4/calpha/confout.gro
 examples/gromacs5/all-atom/allatomForGromacs5.mdp
 examples/gromacs5/all-atom/smog.gro
-examples/gromacs5/all-atom/mdout.mdp
 examples/gromacs5/all-atom/traj_comp.xtc
 examples/gromacs5/all-atom/state.cpt
 examples/gromacs5/all-atom/CI2.AA.pdb
@@ -85,7 +82,6 @@ examples/gromacs5/all-atom/smog.contacts
 examples/gromacs5/all-atom/ener.edr
 examples/gromacs5/all-atom/confout.gro
 examples/gromacs5/calpha/smog.gro
-examples/gromacs5/calpha/mdout.mdp
 examples/gromacs5/calpha/traj_comp.xtc
 examples/gromacs5/calpha/state.cpt
 examples/gromacs5/calpha/terminalHistory

@@ -103,10 +103,6 @@ our %pairtypesused;
 our %bondtypesused;
 our %fTypes;
 
-my $atomA;my $atomB;my $funct; my $inputString;
-my $atomC;my $atomD;
-my $indexA;my $indexB;my $typeA; my $typeB;
-my $indexC;my $indexD;my $typeC; my $typeD;
 
 my %bondHandle;
 my @improperHandle;
@@ -875,8 +871,7 @@ sub parseBonds {
 	my $counter = 0;
 	foreach my $inter(@interHandle)
 	{
-		my $typeA = $inter->{"bType"}->[0];
-		my $typeB = $inter->{"bType"}->[1];
+		my ($typeA,$typeB) = @{$inter->{"bType"}}[0..1];
  		$bondtypesused{$typeA}=1;
  		$bondtypesused{$typeB}=1;
 		my $func = $inter->{"func"};
@@ -900,10 +895,7 @@ sub parseBonds {
 	$counter=0;
 	foreach my $inter(@interHandle)
 	{
-		my $typeA = $inter->{"bType"}->[0];
-		my $typeB = $inter->{"bType"}->[1];
-		my $typeC = $inter->{"bType"}->[2];
-		my $typeD = $inter->{"bType"}->[3];
+		my ($typeA,$typeB,$typeC,$typeD) = @{$inter->{"bType"}}[0..3];
 
 		foreach my $name($typeA, $typeB, $typeC, $typeD){
  			$bondtypesused{$name}=1;
@@ -946,10 +938,7 @@ sub parseBonds {
 		$counter=0;
 		foreach my $inter(@interHandle)
 		{
-			my $typeA = $inter->{"bType"}->[0];
-			my $typeB = $inter->{"bType"}->[1];
-			my $typeC = $inter->{"bType"}->[2];
-			my $typeD = $inter->{"bType"}->[3];
+			my ($typeA,$typeB,$typeC,$typeD) = @{$inter->{"bType"}}[0..3];
 
 			foreach my $name($typeA, $typeB, $typeC, $typeD){
  				$bondtypesused{$name}=1;
@@ -980,9 +969,7 @@ sub parseBonds {
 	$counter = 0;
 	foreach my $inter(@interHandle)
 	{
-		my $typeA = $inter->{"bType"}->[0];
-		my $typeB = $inter->{"bType"}->[1];
-		my $typeC = $inter->{"bType"}->[2];
+		my ($typeA,$typeB,$typeC) = @{$inter->{"bType"}}[0..2];
 
 		foreach my $name($typeA, $typeB, $typeC){
  			$bondtypesused{$name}=1;
@@ -1135,15 +1122,15 @@ foreach my $res (keys %residues)
 
 	foreach my $bondInfo(keys %bondHandle)
 	{
-		($atomA,$atomB) = $bondInfo =~ /(.*)\-(.*)/;
+		my ($atomA,$atomB) = $bondInfo =~ /(.*)\-(.*)/;
   ## Check if atoms exists in declaration ##
   	    if(!exists $residueHandle->{"atoms"}->{"$atomA"}) 
 		{smog_quit ("$atomA doesn't exists in $res but a bond was defined $bondInfo"); }
 		if(!exists $residueHandle->{"atoms"}->{"$atomB"}) 
 		{smog_quit ("$atomB doesn't exists in $res but a bond was defined $bondInfo"); }
 
-		$typeA = $residueHandle->{"atoms"}->{"$atomA"}->{"bType"};
-		$typeB = $residueHandle->{"atoms"}->{"$atomB"}->{"bType"};
+		my $typeA = $residueHandle->{"atoms"}->{"$atomA"}->{"bType"};
+		my $typeB = $residueHandle->{"atoms"}->{"$atomB"}->{"bType"};
 		## WILD CARD MATCHING CONDITIONALS ##
 
 		## If both bond types exists ##
@@ -1171,8 +1158,8 @@ foreach my $res (keys %residues)
 			smog_quit ("Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB");
 			}
 		}
-		$indexA = $residueHandle->{"atoms"}->{"$atomA"}->{"index"};
-		$indexB = $residueHandle->{"atoms"}->{"$atomB"}->{"index"};
+		my $indexA = $residueHandle->{"atoms"}->{"$atomA"}->{"index"};
+		my $indexB = $residueHandle->{"atoms"}->{"$atomB"}->{"index"};
 		push(@inputString,"$indexA-$indexB"); ## MIGHT CHANGE
 		push(@functionString,"$funct");
 		
@@ -1353,8 +1340,11 @@ sub createDihedralAngleFunctionals {
 		my ($dihes,$angles) = adjListTraversal($dihedralAdjList{$res});
 		## MATCH DIHEDRALS WITH FUNCTIONS ##
 		my $diheHandle = $interactions->{"dihedrals"};
-		my @allAngles; my @allDihes;
-		my @allAnglesFunct; my @allDihesFunct;
+		my @allAngles; 
+		my @allDihes;
+		my @allAnglesFunct; 
+		my @allDihesFunct;
+		my $funct;
 		 foreach my $dihs(@{$dihes})
 		{
 			my @atoms = split("-",$dihs);
@@ -1367,7 +1357,10 @@ sub createDihedralAngleFunctionals {
 			my $eG = getEnergyGroup($res,$res,$atoms[1],$atoms[2]);
 			
 			## WILD CARD MATCHING CONDITIONALS ##
-			my $matchScore = 0; my $saveScore = 0;my $matchScoreCount=0; my $symmatch=0;
+			my $matchScore = 0; 
+			my $saveScore = 0;
+			my $matchScoreCount=0; 
+			my $symmatch=0;
 			my $Nd=0;
 			foreach my $matches(keys %{$diheHandle->{$eG}})
 			{
@@ -1397,7 +1390,8 @@ sub createDihedralAngleFunctionals {
 						}else{
 							$matchScoreCount=0;
 						}
-						$saveScore = $matchScore;$funct = $diheHandle->{$eG}->{$matches};
+						$saveScore = $matchScore;
+						$funct = $diheHandle->{$eG}->{$matches};
 					}
 				}
 			}
