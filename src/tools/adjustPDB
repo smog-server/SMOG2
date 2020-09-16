@@ -137,10 +137,10 @@ usage: smog_adjustPDB .. options ..
 	-i <filename>           : input PDB to adjust to smog2 format
 	-default                : use the default map file provided by smog2 
 	-map <filename>         : specify a user-defined mapping file
-	-legacy                 : Use legacy (version < 2.3) non-matching routine 
+	-legacy                 : use legacy (version < 2.3) non-matching routine 
                                      for mapping name residues. 
                                      Must be used in conjunction with -map
-                                     Different mapping files used with -nomatch
+                                     Different mapping files used with -default
 	-o [adjusted.pdb]       : output pdb file name
 	-renumber               : ignore any residue numbering inconsistencies 
                                      and renumber residues sequentially
@@ -149,9 +149,9 @@ usage: smog_adjustPDB .. options ..
                                      Necessary if a single chain has more than 
                                      9999 residues of 99999 atoms.
 	-sort                   : reorder atoms in each residue by name
-	-insertTER              : Insert "TER" lines between any non-consecutive 
+	-insertTER              : insert "TER" lines between any non-consecutive 
                                      residue numbers
-	-subALA                 : If a residue only has C, CA, N, O, and CB atoms, 
+	-subALA                 : if a residue only has C, CA, N, O, and CB atoms, 
                                      then rename it ALA 
 	-warn [0]               : convert first N errors to warnings (-1: convert 
                                      all errors) 
