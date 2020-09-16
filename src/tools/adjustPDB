@@ -400,9 +400,11 @@ sub readmap {
 	
 	if (defined $legacymatch) {
 		# use the old head/tail convention for renaming
+		print "Will use a legacy map file\n";
 		readlegacymap();
 	} else {
 		# rename residues based one exact matches, only
+		print "Will use an exact-matching map file\n";
 		readexactmap();	
 	}
 }
