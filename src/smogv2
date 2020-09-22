@@ -2325,11 +2325,11 @@ sub appendDefaults
 	}
 	if($fudgeLJ != -1 && $fudgeQQ == -1){
 		addToTop("defaults", "; nbfunc comb-rule gen-pairs fudgeLJ\n");
-		addToTop("defaults", "  $nbfunc      $combrule         $genpairs       $fudgeLJ\n");
+		addToTop("defaults", "  $nbfunc      $combrule         $genpairs        $fudgeLJ\n");
 	}
 	if($fudgeQQ != -1){
 		addToTop("defaults", "; nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ\n");
-		addToTop("defaults", "  $nbfunc      $combrule         $genpairs   $fudgeLJ   $fudgeQQ\n");
+		addToTop("defaults", "  $nbfunc      $combrule         $genpairs        $fudgeLJ       $fudgeQQ\n");
 	}
 }
 
