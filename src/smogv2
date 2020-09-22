@@ -426,7 +426,6 @@ sub initializeDirectives {
 	addToTop("comments", "$hostdate");
 	addToTop("comments", "; SMOG2 run with the following flags: $inputArguments\n");	
 	addToTop("defaults", "\n[ defaults ]\n");
-	addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
 	addToTop("bonds","\n[ bonds ]\n");
 	addToTop("bonds",";ai\taj\tfunc\t r0(nm)\t         Kb\n");
 	addToTop("angles","\n[ angles ]\n");
@@ -2317,7 +2316,21 @@ sub appendDefaults
 	my $combrule = $interactions->{"gmx-combination-rule"};
 	my $nbfunc = $interactions->{"nbfunc"};
 	my $genpairs = $interactions->{"gen-pairs"};
-	addToTop("defaults", "  $nbfunc      $combrule         $genpairs\n");
+	my $fudgeLJ = $interactions->{"fudgeLJ"};
+	my $fudgeQQ = $interactions->{"fudgeQQ"};
+
+	if($fudgeLJ == -1 && $fudgeQQ == -1){
+		addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
+		addToTop("defaults", "  $nbfunc      $combrule         $genpairs\n");
+	}
+	if($fudgeLJ != -1 && $fudgeQQ == -1){
+		addToTop("defaults", "; nbfunc comb-rule gen-pairs fudgeLJ\n");
+		addToTop("defaults", "  $nbfunc      $combrule         $genpairs       $fudgeLJ\n");
+	}
+	if($fudgeQQ != -1){
+		addToTop("defaults", "; nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ\n");
+		addToTop("defaults", "  $nbfunc      $combrule         $genpairs   $fudgeLJ   $fudgeQQ\n");
+	}
 }
 
 sub appendContacts {
