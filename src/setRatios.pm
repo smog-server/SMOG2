@@ -101,7 +101,7 @@ sub getSetDiheCounts
 # Set the dihedral strength through normalization.
 sub setRatios	
 {
-	my($diheFunctHandle,$inputPDL,$atomNum,$atomTypes,$rescaleCD) = @_;
+	my($diheFunctHandle,$inputPDL,$atomNum,$atomTypes) = @_;
 	my %residueRatio;
 	my $sum; my $diheStrengthTotal;
 	undef %uniqueBonds;
@@ -113,7 +113,7 @@ sub setRatios
 	
 	foreach my $chain(keys %{$diheFunctHandle})
 	{
-		adjustFactorsHelper2($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomNum,$atomTypes,$diheStrengthTotal,\$sum,\%rescalePDL,$chain,$rescaleCD);
+		adjustFactorsHelper2($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomNum,$atomTypes,$diheStrengthTotal,\$sum,\%rescalePDL,$chain);
 	}
 }
 
@@ -201,7 +201,7 @@ sub adjustFactorsHelper1
 
 sub adjustFactorsHelper2
 {
-	my($diheArr,$inputPDL,$totalAtoms,$atomTypes,$diheStrengthTotal,$sum,$rescalePDL,$chain,$rescaleCD) = @_;
+	my($diheArr,$inputPDL,$totalAtoms,$atomTypes,$diheStrengthTotal,$sum,$rescalePDL,$chain) = @_;
 	my $totalStrength;
 	my $contactTotal;
  	my $size = $diheArr->dim(1);
@@ -224,7 +224,7 @@ sub adjustFactorsHelper2
 		if($normalize eq 1) 
 		{
 			my $count=sclr(slice($rescalePDL->{$chain},"0:0,$i:$i"));
-			$count = ($count/${$sum})*($diheLeftOver)*$rescaleCD; 
+			$count = ($count/${$sum})*($diheLeftOver); 
 			set($diheArr,5,$i,$count);
 		}
 	}

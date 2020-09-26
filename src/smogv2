@@ -57,7 +57,6 @@ my $shadowFile = "";
 my $ndxFile = "";
 my $mapOpt = "shadow";
 my $numContacts = 0;
-my $rescaleCD = 1.0; ## rescale all contacts and dihedrals ##
 my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $AAdefault = 0; 
 my $CAdefault = 0;
@@ -204,7 +203,6 @@ sub parse_args {
 		'limitbondlength' => \$setBondtoLimit, 
 		'limitcontactlength' => \$setContacttoLimit, 
 		'deleteshortcontacts' => \$DeleteShortContact, 
-		'rescaleCD=s' => \$rescaleCD, 
 		'nocheck'=> \$tempcheckoff,
 		'keep4SCM'=> \$keep4SCM,
 		'<>' => \&usage, 
@@ -216,10 +214,6 @@ sub parse_args {
 	if($printversion){
 		print "Version $VERSION\n";
 		exit;
-	}
-	
-	unless ($rescaleCD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
-		smog_quit("$rescaleCD is not a valid value for -rescaleCD.  Must be an integer, or decimal.");
 	}
 	
 	warninfo();
@@ -1382,7 +1376,7 @@ sub calculateContacts
 		}else{	
 			## DIHE TO CONTACT SCALING ##
 	
-			$epsilon_array[$i] *= $multFactor*$rescaleCD;
+			$epsilon_array[$i] *= $multFactor;
 			($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
 			addToTop($directive,$outputString);
 			if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
@@ -2102,7 +2096,6 @@ usage: smog2 .. options ..
 	-limitcontactlength     : if a contact length is too short, set it to the minimal value
 	-deleteshortcontact     : if a contact length is too short, don't include it in the model
 	-ignH                   : ignore any atoms with name starting with 'H' in the internal contact algorithm
-	-rescaleCD [1.0]        : override total energy normalization and rescale all contacts/dihedrals by a factor
 	-gen_map <out map file> : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
 	-nocheck                : turn off template cross-validation checks.  This can be useful
                                         when using old templates with new versions of SMOG
@@ -2260,7 +2253,7 @@ sub printBondedTopOutput {
         }
 	## SET DIHEDRAL RATIOS ##
 	print "Setting energetic ratios\n";
-	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms,$rescaleCD);
+	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms);
 	print "Processing atoms\n";
 	getAtomTypes(\%allAtoms);
  	# adding extras at this point is a bit out of place.  but, it is important, in order to verify that all bonds have bondtypes, etc.
