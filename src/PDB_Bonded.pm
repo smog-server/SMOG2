@@ -220,7 +220,6 @@ sub checkPDB
 			my $resBIdx = $allAtoms{$idxB}->[2];
 			
 			my $sizeA = scalar(keys %{$residues{$resA}->{"atoms"}});
-			print "\nNOTE:";
 			my $chaina1=$chaina+1;
 			my $chainb1=$chainb+1;
 			## Check if improper directive is present ##
@@ -389,7 +388,7 @@ sub checkPDB
 		$lastrecord=$record;
 		$record = "";
  	}
-	print "Done checking PDB formatting.\n\n";
+	print "Done checking PDB formatting\n\n";
 }
 
 

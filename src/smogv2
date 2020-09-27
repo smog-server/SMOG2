@@ -470,7 +470,7 @@ sub addExtras {
 	my $filename = "$inputFolder/extras";
 	my %foundNBe;
 	if( -e $filename){
-		print "\nAdding extras information.\n\n";
+		print "\nAdding extras information\n\n";
 		open(EXTRA,"$filename");
 		my $line = "";
 		my $directive;my $stuff;my @tokens;
@@ -2230,7 +2230,7 @@ sub parseTemplatesAndPDB
 		initializeDirectives($inputFolder,$inputPDB);
 	}
 
-	print "\nPre-processing templates.\n";
+	print "\nPre-processing templates\n";
 	## Find Bonds ##
 	createBondFunctionals();
 	## Find Angles ##
@@ -2335,7 +2335,7 @@ sub appendContacts {
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled,$saveSCMorig);
 	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
-	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
+	print "If normalization is being used, the total number of atoms included in normalization will be $totalAtoms, while $absAtomCount atoms are in the system.\n";
 	print "Completing final details...\n";
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
