@@ -1369,18 +1369,13 @@ sub calculateContacts
 		my $directive;my $addExclusions;
 		my $normalize=$normalize_array[$i];	
 		## Non-normalize option for contacts ##
-		if(!$normalize) {
-			($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
-			addToTop($directive,$outputString);
-			if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
-		}else{	
+		if($normalize) {
 			## DIHE TO CONTACT SCALING ##
-	
 			$epsilon_array[$i] *= $multFactor;
-			($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
-			addToTop($directive,$outputString);
-			if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
 		}
+		($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
+		addToTop($directive,$outputString);
+		if($addExclusions && $funct_array[$i] !~ m/^contact_free/) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
 	}
 
 	if(scalar keys %conttypeseen >1){
