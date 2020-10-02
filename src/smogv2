@@ -1375,7 +1375,7 @@ sub calculateContacts
 		}
 		($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
 		addToTop($directive,$outputString);
-		if($addExclusions && $funct_array[$i] !~ m/^contact_free/) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
+		if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
 	}
 
 	if(scalar keys %conttypeseen >1){
