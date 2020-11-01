@@ -996,8 +996,12 @@ sub parseBonds {
 sub parseNonBonds {
 	$data = $xml->XMLin($nbondxml,KeyAttr => ['name'],ForceArray=>1);
 
+	my @interHandle;
 	## Obtain default options ##
-	my @interHandle = @{$data->{"defaults"}};
+	if(exists $data->{"defaults"}){
+		# defaults found in the templates, so use the values
+		@interHandle = @{$data->{"defaults"}};
+	}
 	if(exists $interHandle[0]->{"gen-pairs"}) {
 		if($interHandle[0]->{"gen-pairs"}==0){
 			$interactions->{"gen-pairs"}="no";
@@ -1022,8 +1026,44 @@ sub parseNonBonds {
 		$interactions->{"gmx-combination-rule"}=1;
 	}
 
-	@interHandle = @{$data->{"nonbond"}};
+	if(exists $interHandle[0]->{"fudgeLJ"}) {
+		$interactions->{"fudgeLJ"} = $interHandle[0]->{"fudgeLJ"};
+		if($interactions->{"fudgeLJ"} < 0 ){
+			my $tmp=$interactions->{"fudgeLJ"};
+			smog_quit("fudgeLJ must be greater than, or equal to, 0.  Found $tmp.");
+		}
+
+		if($interactions->{"gen-pairs"} eq "no"){
+			smog_quit("fudgeLJ has no effect when gen-pairs=no.");
+		}
+	}else{
+		print "fudgeLJ not defined in templates. Will assume a value of 1.\n";
+		# we are setting to -1, to indicate that we don't want to write it later.
+		$interactions->{"fudgeLJ"}=-1;
+	}
+
+	if(exists $interHandle[0]->{"fudgeQQ"}) {
+		$interactions->{"fudgeQQ"} = $interHandle[0]->{"fudgeQQ"};
+		if($interactions->{"fudgeQQ"} < 0 ){
+			my $tmp=$interactions->{"fudgeQQ"};
+			smog_quit("fudgeQQ must be greater than, or equal to, 0.  Found $tmp.");
+		}
+		if($interactions->{"fudgeLJ"}==-1){
+			# since we gave a value for fudgeQQ and not fudgeLJ, we need to set the latter to 1, 
+			# in order to write it properly, later
+			$interactions->{"fudgeLJ"}=1;
+			if($interactions->{"gen-pairs"} ne "no"){
+				print "\nNote: Since fudgeQQ was set and gen-pairs=no, fudgeLJ will be written to the top file.\nHowever, this parameter has no effect, and is only written as a placeholder\n\n.";
+			}
+		}
+	}else{
+		print "fudgeQQ not defined in templates. Will assume a value of 1.\n";
+		# we are setting to -1, to indicate that we don't want to write it later.
+		$interactions->{"fudgeQQ"}=-1;
+	}
+
 	## Loop over nonbonds, save in $interaction{nonbonds}{typeA} = func info.
+	@interHandle = @{$data->{"nonbond"}};
 	my $counter = 0;
 	foreach my $inter(@interHandle)
 	{

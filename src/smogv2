@@ -57,7 +57,6 @@ my $shadowFile = "";
 my $ndxFile = "";
 my $mapOpt = "shadow";
 my $numContacts = 0;
-my $rescaleCD = 1.0; ## rescale all contacts and dihedrals ##
 my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $AAdefault = 0; 
 my $CAdefault = 0;
@@ -204,7 +203,6 @@ sub parse_args {
 		'limitbondlength' => \$setBondtoLimit, 
 		'limitcontactlength' => \$setContacttoLimit, 
 		'deleteshortcontacts' => \$DeleteShortContact, 
-		'rescaleCD=s' => \$rescaleCD, 
 		'nocheck'=> \$tempcheckoff,
 		'keep4SCM'=> \$keep4SCM,
 		'<>' => \&usage, 
@@ -216,10 +214,6 @@ sub parse_args {
 	if($printversion){
 		print "Version $VERSION\n";
 		exit;
-	}
-	
-	unless ($rescaleCD =~ /^-?(?:\d+(?:\.\d*)?|\.\d+)$/){ ;
-		smog_quit("$rescaleCD is not a valid value for -rescaleCD.  Must be an integer, or decimal.");
 	}
 	
 	warninfo();
@@ -426,7 +420,6 @@ sub initializeDirectives {
 	addToTop("comments", "$hostdate");
 	addToTop("comments", "; SMOG2 run with the following flags: $inputArguments\n");	
 	addToTop("defaults", "\n[ defaults ]\n");
-	addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
 	addToTop("bonds","\n[ bonds ]\n");
 	addToTop("bonds",";ai\taj\tfunc\t r0(nm)\t         Kb\n");
 	addToTop("angles","\n[ angles ]\n");
@@ -477,7 +470,7 @@ sub addExtras {
 	my $filename = "$inputFolder/extras";
 	my %foundNBe;
 	if( -e $filename){
-		print "\nAdding extras information.\n\n";
+		print "\nAdding extras information\n\n";
 		open(EXTRA,"$filename");
 		my $line = "";
 		my $directive;my $stuff;my @tokens;
@@ -1376,18 +1369,13 @@ sub calculateContacts
 		my $directive;my $addExclusions;
 		my $normalize=$normalize_array[$i];	
 		## Non-normalize option for contacts ##
-		if(!$normalize) {
-			($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
-			addToTop($directive,$outputString);
-			if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
-		}else{	
+		if($normalize) {
 			## DIHE TO CONTACT SCALING ##
-	
-			$epsilon_array[$i] *= $multFactor*$rescaleCD;
-			($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
-			addToTop($directive,$outputString);
-			if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
+			$epsilon_array[$i] *= $multFactor;
 		}
+		($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
+		addToTop($directive,$outputString);
+		if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
 	}
 
 	if(scalar keys %conttypeseen >1){
@@ -2082,32 +2070,39 @@ sub usage
 usage: smog2 .. options ..
 
    Options
-	-i [molecule.pdb]       : input PDB to generate Hamiltonian
-	-AA                     : use default All-atom model
-	-AAgaussian             : use default All-atom model with gaussian contacts
-	-CA                     : use default Calpha protein model
-	-CAgaussian             : use default Calpha protein model with gaussian contacts
-	-t [templateFolder]     : folder containing templates of molecular and interaction definitions. required when defaults are not used
-	-tCG [templateFolder]   : folder containing templates Coarse Graining. indicates that the program should coarse grain
-	-g [smog.gro]           : output .gro file name
-	-o [smog.top]           : output .top file name
-	-s [smog.contacts]      : output .contacts file name
-	-n [smog.ndx]           : output .ndx file name
-	-c [contacts.txt]       : input contact map file
-	-SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  useful for debugging
-	-dname [smog]           : default name to use for all output files
-	-backup [yes]           : back up any pre-existing output files
-	-warn [0]               : convert the first N fatal errors to warnings  
-					Convert all if N=-1 (Caution: Consult manual before using this option)
-	-limitbondlength        : if a bond length is outside of the allowable range, set it to limiting value
-	-limitcontactlength     : if a contact length is too short, set it to the minimal value
-	-deleteshortcontact     : if a contact length is too short, don't include it in the model
-	-ignH                   : ignore any atoms with name starting with 'H' in the internal contact algorithm
-	-rescaleCD [1.0]        : override total energy normalization and rescale all contacts/dihedrals by a factor
-	-gen_map <out map file> : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
-	-nocheck                : turn off template cross-validation checks.  This can be useful
-                                        when using old templates with new versions of SMOG
-	-help                   : show options 
+     I/O flags  
+       -i [molecule.pdb]       : input PDB to generate Hamiltonian
+       -g [smog.gro]           : output .gro file name
+       -o [smog.top]           : output .top file name
+       -s [smog.contacts]      : output .contacts file name
+       -n [smog.ndx]           : output .ndx file name
+       -c [contacts.txt]       : input contact map file
+       -SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  useful for debugging
+       -dname [smog]           : default name to use for all output files
+       -backup [yes]           : back up any pre-existing output files
+
+     Force Field Designation
+       -AA                     : use default All-atom model
+       -AAgaussian             : use default All-atom model with gaussian contacts
+       -CA                     : use default Calpha protein model
+       -CAgaussian             : use default Calpha protein model with gaussian contacts
+       -t [templateFolder]     : folder containing templates of molecular and interaction definitions. required when defaults are not used
+       -tCG [templateFolder]   : folder containing templates Coarse Graining. indicates that the program should coarse grain
+       -nocheck                : turn off template cross-validation checks.  This can be useful
+                                       when using old templates with new versions of SMOG
+
+     Force Field Modifications/exceptions
+       -limitbondlength        : if a bond length is outside of the allowable range, set it to limiting value
+       -limitcontactlength     : if a contact length is too short, set it to the minimal value
+       -deleteshortcontact     : if a contact length is too short, don't include it in the model
+
+     Misc. Options
+       -ignH                   : ignore any atoms with name starting with 'H' in the internal contact algorithm
+       -gen_map <out map file> : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
+
+       -warn [0]               : convert the first N fatal errors to warnings  
+                                       Convert all if N=-1 (Caution: Consult manual before using this option)
+       -help                   : show options 
 EOT
 	if ( @_ ){
 		smog_quit("Flag \"@_\" not recognized, or is missing arguments.");
@@ -2235,7 +2230,7 @@ sub parseTemplatesAndPDB
 		initializeDirectives($inputFolder,$inputPDB);
 	}
 
-	print "\nPre-processing templates.\n";
+	print "\nPre-processing templates\n";
 	## Find Bonds ##
 	createBondFunctionals();
 	## Find Angles ##
@@ -2261,7 +2256,7 @@ sub printBondedTopOutput {
         }
 	## SET DIHEDRAL RATIOS ##
 	print "Setting energetic ratios\n";
-	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms,$rescaleCD);
+	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms);
 	print "Processing atoms\n";
 	getAtomTypes(\%allAtoms);
  	# adding extras at this point is a bit out of place.  but, it is important, in order to verify that all bonds have bondtypes, etc.
@@ -2317,7 +2312,21 @@ sub appendDefaults
 	my $combrule = $interactions->{"gmx-combination-rule"};
 	my $nbfunc = $interactions->{"nbfunc"};
 	my $genpairs = $interactions->{"gen-pairs"};
-	addToTop("defaults", "  $nbfunc      $combrule         $genpairs\n");
+	my $fudgeLJ = $interactions->{"fudgeLJ"};
+	my $fudgeQQ = $interactions->{"fudgeQQ"};
+
+	if($fudgeLJ == -1 && $fudgeQQ == -1){
+		addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
+		addToTop("defaults", "  $nbfunc      $combrule         $genpairs\n");
+	}
+	if($fudgeLJ != -1 && $fudgeQQ == -1){
+		addToTop("defaults", "; nbfunc comb-rule gen-pairs fudgeLJ\n");
+		addToTop("defaults", "  $nbfunc      $combrule         $genpairs        $fudgeLJ\n");
+	}
+	if($fudgeQQ != -1){
+		addToTop("defaults", "; nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ\n");
+		addToTop("defaults", "  $nbfunc      $combrule         $genpairs        $fudgeLJ       $fudgeQQ\n");
+	}
 }
 
 sub appendContacts {
@@ -2326,7 +2335,7 @@ sub appendContacts {
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled,$saveSCMorig);
 	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
-	print "NOTE: Total number of atoms included in normalization is $totalAtoms, and $absAtomCount atoms are in the system.\n";
+	print "If normalization is being used, the total number of atoms included in normalization will be $totalAtoms, while $absAtomCount atoms are in the system.\n";
 	print "Completing final details...\n";
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);

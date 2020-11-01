@@ -220,17 +220,9 @@ sub checkPDB
 			my $resBIdx = $allAtoms{$idxB}->[2];
 			
 			my $sizeA = scalar(keys %{$residues{$resA}->{"atoms"}});
-			print "\nNOTE:";
 			my $chaina1=$chaina+1;
 			my $chainb1=$chainb+1;
 			## Check if improper directive is present ##
-			if($record =~ m/^IMPROPER/)
-			{
-				my($left,$right) = split(/IMPROPER/,$record);
-				$right =~ s/^\s+|\s+$//g;
-				@impAtoms = split(/\s+/,$right);
-				print "IMPROPER DETECTED @impAtoms\n";
-			}
 			$counter++;
 			next;
 		}
@@ -396,7 +388,7 @@ sub checkPDB
 		$lastrecord=$record;
 		$record = "";
  	}
-	print "Done checking PDB formatting.\n\n";
+	print "Done checking PDB formatting\n\n";
 }
 
 
@@ -505,15 +497,6 @@ sub parsePDBATOMS
 				smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
 			}
 			$bondPDL{$counter}=$union;
-			## Check if improper directive is present ##
-			if($record =~ m/^IMPROPER/)
-			{
-			# you can never reach this point in the code.  We should either remove the feature, or fix it.
-				my($left,$right) = split(/IMPROPER/,$record);
-				$right =~ s/^\s+|\s+$//g;
-				@impAtoms = split(/\s+/,$right);
-				print "IMPROPER DETECTED @impAtoms\n";
-			}
 			connCreateInteractionsSingleBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
 			$counter++;
 			next;
