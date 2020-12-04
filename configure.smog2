@@ -108,7 +108,10 @@ EOS
 		done
 
 	fi
-	rm $smog2dir/header
+	if [ -e $smog2dir/header ]
+	then
+		rm $smog2dir/header
+	fi
 else
 	echo 
 	echo "There were issues configuring SMOG. Configuration incomplete."
