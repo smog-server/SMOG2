@@ -464,6 +464,7 @@ sub initializeDirectives {
 #adds something to the topfile at the bottom of a directive
 sub addToTop {
 	my($directive,$stuff) = @_;
+	if($directive eq "comments") { $stuff = "; ".$stuff; } 	#if it is a comment, add the comment character
 	$linesInDirectivesWithContent[$directives{$directive}]+= hascontent($stuff);
 	push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
 }
