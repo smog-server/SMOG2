@@ -114,14 +114,18 @@ my %dihedralHandle;
 sub clearBifMemory {
 	## Store bif info for PDB looping
 	%residueBackup = %{ dclone (\%residues) };
-	undef %residues;undef $functions;
-	undef $contactSettings;undef $termRatios;
+	undef %residues;
+	undef $functions;
+	undef $contactSettings;
+	undef $termRatios;
 	undef $interactions;
-	undef %funcTable;undef %funcTableRev;
-	##undef %eGTable; 
+	undef %funcTable;
+	undef %funcTableRev;
 	undef %eGRevTable;
-	undef %bondFunctionals;undef %dihedralFunctionals;
-	undef %angleFunctionals;undef %connections;
+	undef %bondFunctionals;
+	undef %dihedralFunctionals;
+	undef %angleFunctionals;
+	undef %connections;
 	undef %dihedralAdjList;
 	undef @topFileBuffer;
 	undef @linesInDirectives;

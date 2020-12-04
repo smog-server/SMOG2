@@ -52,6 +52,7 @@ my $userProvidedMap=0;
 my $topFile = "";
 my $groFile = "";
 my $groFile4SCM = "";
+my $topFile4SCM = "";
 my $ContactFile;
 my $shadowFile = "";
 my $ndxFile = "";
@@ -116,15 +117,15 @@ if($CGenabled == 0 || ($CGenabled == 1 && $userProvidedMap == 0)) {
 	printBondedTopOutput($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap);
 } 
 
-
+appendDefaults();
 
 # generate contact map
 if($userProvidedMap == 0) { #use SCM.jar if user doesn't provide a map
-	printTop($topFile);
-	generateContactMap($groFile4SCM,$ndxFile,$shadowFile,$topFile);
+	printTop($topFile4SCM);
+	generateContactMap($groFile4SCM,$ndxFile,$shadowFile,$topFile4SCM);
 	if(! defined $keep4SCM){
 		# this is only used for smog-check
-		`rm $groFile4SCM`;
+		`rm $groFile4SCM $topFile4SCM`;
 	}
 }
 # do CGing, if needed
@@ -137,8 +138,6 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
 	printBondedTopOutput($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap);
 }
-
-appendDefaults();
 
 appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
 
@@ -348,6 +347,7 @@ sub parse_args {
 	if($topFile eq ""){$topFile=$DNAME};
 	if($groFile eq ""){$groFile=$DNAME};
 	$groFile4SCM=$groFile . "4SCM.gro";
+	$topFile4SCM=$topFile . "4SCM.top";
 	if($shadowFile eq ""){$shadowFile=$DNAME};
 	if($ndxFile eq ""){$ndxFile=$DNAME};
 	
