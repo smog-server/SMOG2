@@ -128,15 +128,18 @@ if($userProvidedMap == 0) { #use SCM.jar if user doesn't provide a map
 		`rm $groFile4SCM $topFile4SCM`;
 	}
 }
+
 # do CGing, if needed
 if($CGenabled == 1) { #Coarse graining, do everything over with new templates
-    	clearBifMemory();clearPDBMemory();
+    	clearBifMemory();
+	clearPDBMemory();
 	undef %presentatomtypes;
 	$allowCG = 1;
 	print "\nParsing templates for coarse graining... ";
 	$inputFolder = $coarseFolder;
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
 	printBondedTopOutput($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap);
+	appendDefaults();
 }
 
 appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
