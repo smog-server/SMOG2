@@ -7,3 +7,6 @@ examples/gromacs4/calpha : protein folding setup for CI2 using Gromacs 4.5 or 4.
 examples/gromacs5/all-atom : protein folding setup for CI2 using Gromacs 5 
 examples/gromacs5/calpha : protein folding setup for CI2 using Gromacs 5 and coarse grained calpha SBM
 
+whamExamples/1 : combining various constant temperature trajectories with WHAM.jar
+	run: java -jar $SMOG_PATH/src/tools/WHAM.jar --config config
+
