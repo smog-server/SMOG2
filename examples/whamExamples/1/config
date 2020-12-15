@@ -1,0 +1,43 @@
+kB 0.008314 # Boltzmann constant
+tolerance .001 # when convergence is reached
+
+##### define internal histograming #####
+numDimensions 2 # space delimited file, two columns: Potential_energy and Q
+# energy
+numBins 144
+start -88
+step 2
+# Q
+numBins 100
+start 0
+step 2
+
+##### trajectory files (each with 2 columns: Potential_energy and Q)
+numFiles 3
+name data/hist.144.2.in temp 144.2 # temp specifies the temperature of this trajectory
+name data/hist.144.3.in temp 144.3
+name data/hist.144.4.in temp 144.4
+
+run_wham # tells the program to compute density of states
+dosFile dos # filename for density of states output
+
+run_cv # tells the program to compute specific head from dos
+### run_cv parameters
+startT 135 # start temp
+deltaT 0.1 # print every 0.1 degree
+ntemps 200 # for a total of 200 prints
+run_cv_out cv # name of cv outputfile
+
+run_free #tells the program to compute a free energy
+startTF 135 # start temp
+deltaTF 1 # print every 1 degree
+ntempsF 20 # for a total of 20 prints
+run_free_out free/  # filename is ${run_free_out}${temp}
+#NOTE run_free_out can be a directory structure but the program will fail 
+#NOTE if directory does not exist!
+
+run_coord #tells the program to compute coordinate averages
+startTC 135 # start temp
+deltaTC 1 # print every 1 degree
+ntempsC 20 # for a total of 20 prints
+run_coord_out coord  # filename
