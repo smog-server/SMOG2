@@ -1210,33 +1210,32 @@ sub connWildcardMatchBond
 	my($typeA,$typeB) = @_;
 	my $funct="";
 
-
   ## Check if atoms exists in declaration ##
 
-		## WILD CARD MATCHING CONDITIONALS ##
+	## WILD CARD MATCHING CONDITIONALS ##
 
 	## If both bond types exists ##
 	if( exists $interactions->{"bonds"}->{$typeA}->{$typeB})
 	{
+		# exact match
 		$funct = $interactions->{"bonds"}->{$typeA}->{$typeB};
-	}elsif (
-		$typeA ne $typeB && (exists $interactions->{"bonds"}->{$typeA}->{"*"} 
-                         && exists $interactions->{"bonds"}->{$typeB}->{"*"})){
+	}elsif(
+           $typeA ne $typeB && (exists $interactions->{"bonds"}->{$typeA}->{"*"} 
+           && exists $interactions->{"bonds"}->{$typeB}->{"*"})){
+		# two partial WC matches
 		smog_quit ("Wildcard conflict in bonds $typeA-$typeB. Both $typeA-\* and $typeB-\* are defined in .b file. Can not unambiguously assign a function...");
-	}
+	}elsif(exists $interactions->{"bonds"}->{$typeA}->{"*"}){
 	## If typeA exists while TypeB is a wildcard ##
-	elsif (exists $interactions->{"bonds"}->{$typeA}->{"*"})
-	{$funct = $interactions->{"bonds"}->{$typeA}->{"*"};}
-
-	## If typeB exists while TypeA is a wildcard ##
-	elsif (exists $interactions->{"bonds"}->{$typeB}->{"*"})
-	{$funct = $interactions->{"bonds"}->{$typeB}->{"*"};}
-
+ 		$funct = $interactions->{"bonds"}->{$typeA}->{"*"};
+	}elsif (exists $interactions->{"bonds"}->{$typeB}->{"*"}){
+		## If typeB exists while TypeA is a wildcard ##
+		$funct = $interactions->{"bonds"}->{$typeB}->{"*"};
+	}
 	if(!defined $funct || $funct eq ""){
-		if(exists $interactions->{"bonds"}->{"*"}->{"*"})
-    		{$funct = $interactions->{"bonds"}->{"*"}->{"*"};}
-	     	else{
-		smog_quit ("Unable to unambiguously assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB. Check .b file");
+		if(exists $interactions->{"bonds"}->{"*"}->{"*"}){
+			$funct = $interactions->{"bonds"}->{"*"}->{"*"};
+		}else{
+			smog_quit ("Unable to assign bond types to all bonds in a residue\n Offending btypes are $typeA $typeB. Check .b file");
 		}
 	}
 
