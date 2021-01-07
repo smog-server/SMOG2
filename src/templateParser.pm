@@ -89,8 +89,8 @@ my $data;
 my $residueHandle;
 
 ## INPUT FILE NAMES ##
-our $bif = "bif.xml";
-our $sif = "sif.xml";
+our $bifxml = "bif.xml";
+our $sifxml = "sif.xml";
 our $bondxml = "b.xml";
 our $nbondxml = "nb.xml";
 
@@ -140,9 +140,9 @@ sub clearBifMemory {
 ## SET INPUTFILE NAME ##
 ########################
 sub setInputFileName {
-	my ($a,$b,$c,$d) = @_;
-	$bif = $a;
-	$sif = $b;
+	my ($a,$b,$c,$d,$e) = @_;
+	$bifxml = $a;
+	$sifxml = $b;
 	$bondxml = $c;
 	$nbondxml = $d;
 }
@@ -374,7 +374,7 @@ sub checkenergygroups
 sub parseBif {
 	my ($tempdir,$maponly)=@_;
 	## Read .bif ##
-	my $data = $xml->XMLin($bif,KeyAttr=>{residue=>"name",connection=>"name"},ForceArray=>1);
+	my $data = $xml->XMLin($bifxml,KeyAttr=>{residue=>"name",connection=>"name"},ForceArray=>1);
 	
 	## PARSE RESIDUES INTO A HASH ##
 	## Hash is formatted as below
@@ -567,7 +567,7 @@ sub parseBif {
 sub parseSif {
 
 	## Read .sif file ##
-	$data = $xml->XMLin($sif,KeyAttr => ['name'],ForceArray=>1);
+	$data = $xml->XMLin($sifxml,KeyAttr => ['name'],ForceArray=>1);
 	if(!exists $data->{"version"}->[0]->{"min"}){
 		smog_quit("Minimum required SMOG version is not defined in .sif file. This check is intended to ensure that one does not use new templates with an old version of SMOG.  However, newer version of SMOG should always work with old templates.  Accordingly, if you are using the newest release of SMOG, you can probably ignore this warning.",0);
 	}else{

@@ -71,6 +71,7 @@ my $backup="yes";
 my $allowCG = 0;
 my $nocheck = "no";
 my $keep4SCM;
+my $extrasfile="";
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
@@ -478,7 +479,7 @@ sub addToTop {
 
 #read file "extras" in template directory
 sub addExtras {
-	my $filename = "$inputFolder/extras";
+	my ($filename) = @_;
 	my %foundNBe;
 	if( -e $filename){
 		print "\nAdding extras information\n\n";
@@ -1986,29 +1987,37 @@ sub parseInputFolder
 			$bif = $file;$bif = "$folderName/$bif";
 			print "Found .bif file $bif\n";
 			print "Validating XML format of $bif\n";
-			validateTemplate($bif,"bif");next;}
+			validateTemplate($bif,"bif");
+			next;
+		}
 		if($file =~ m/\.sif$/){
 			$sifexists++;
 			$sif = $file;$sif = "$folderName/$sif";
 			print "Found .sif file $sif\n";
 			print "Validating XML format of $sif\n";
-			validateTemplate($sif,"sif");next;}
+			validateTemplate($sif,"sif");
+			next;
+		}
 		if($file =~ m/\.b$/){
 			$bexists++;
 			$b = $file;$b = "$folderName/$b";
 			print "Found .b file $b\n";
 			print "Validating XML format of $b\n";
-			validateTemplate($b,"b");next;}
+			validateTemplate($b,"b");
+			next;
+		}
 		if($file =~ m/\.nb$/){
 			$nbexists++;
 			$nb = $file;$nb = "$folderName/$nb";
 			print "Found .nb file $nb\n";
 			print "Validating XML format of $nb\n";
-			validateTemplate($nb,"nb");next;}
-		if($file =~ m/^extras$/) {
-			$extras = "$folderName/extras";
-			print "Found extras file $extras\n";
-			checkExtras($extras);
+			validateTemplate($nb,"nb");
+			next;
+		}
+		if($file =~ m/extras$/) {
+			$extrasfile = "$folderName/$file";
+			print "Found extras file $extrasfile\n";
+			checkExtras($extrasfile);
 			next;}
 	}
 	$bifForSCM = $bif;
@@ -2271,7 +2280,7 @@ sub printBondedTopOutput {
 	print "Processing atoms\n";
 	getAtomTypes(\%allAtoms);
  	# adding extras at this point is a bit out of place.  but, it is important, in order to verify that all bonds have bondtypes, etc.
-	addExtras();
+	addExtras($extrasfile);
 	saveAtomTypes();
 	my %atomIndex2Line=readAtoms($inputPDB);
 
