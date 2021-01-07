@@ -1981,6 +1981,7 @@ sub parseInputFolder
 	my $sifexists=0;
 	my $nbexists=0;
 	my $bexists=0;
+	my $extrasexists=0;
 	while(my $file = readdir($folder)){
 		if($file =~ m/\.bif$/){
 			$bifexists++;
@@ -1989,36 +1990,36 @@ sub parseInputFolder
 			print "Validating XML format of $bif\n";
 			validateTemplate($bif,"bif");
 			next;
-		}
-		if($file =~ m/\.sif$/){
+		}elsif($file =~ m/\.sif$/){
 			$sifexists++;
 			$sif = $file;$sif = "$folderName/$sif";
 			print "Found .sif file $sif\n";
 			print "Validating XML format of $sif\n";
 			validateTemplate($sif,"sif");
 			next;
-		}
-		if($file =~ m/\.b$/){
+		}elsif($file =~ m/\.b$/){
 			$bexists++;
 			$b = $file;$b = "$folderName/$b";
 			print "Found .b file $b\n";
 			print "Validating XML format of $b\n";
 			validateTemplate($b,"b");
 			next;
-		}
-		if($file =~ m/\.nb$/){
+		}elsif($file =~ m/\.nb$/){
 			$nbexists++;
 			$nb = $file;$nb = "$folderName/$nb";
 			print "Found .nb file $nb\n";
 			print "Validating XML format of $nb\n";
 			validateTemplate($nb,"nb");
 			next;
-		}
-		if($file =~ m/extras$/) {
+		}elsif($file =~ m/extras$/) {
+			$extrasexists++;
 			$extrasfile = "$folderName/$file";
 			print "Found extras file $extrasfile\n";
 			checkExtras($extrasfile);
-			next;}
+			next;
+		}else{
+			print "\nNOTE: Found unused file \"$file\" in the template directory\n";	
+		}
 	}
 	$bifForSCM = $bif;
 
@@ -2041,6 +2042,9 @@ sub parseInputFolder
 		smog_quit ("Found multiple .nb files in directory $folderName");
 	}elsif($nbexists ==0){
 		smog_quit (" .nb file not found in directory $folderName");
+	}
+	if($extrasexists >1){
+		smog_quit ("Found multiple extras (or .extras) files in directory $folderName");
 	}
 	
 	setInputFileName($bif,$sif,$b,$nb);
