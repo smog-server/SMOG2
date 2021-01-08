@@ -63,6 +63,10 @@ warninfo();
 $outputPDB=checksuffix($outputPDB,".pdb");
 $inputPDB=checksuffix($inputPDB,".pdb");
 
+if($inputPDB eq $outputPDB){
+	smog_quit("Input and output PDB files can not have the same name: $outputPDB");
+}
+
 if(defined $renumber && defined $insertTER){
 	smog_quit("Simultaneous use of -renumber and -insertTER not supported");
 }

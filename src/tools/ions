@@ -74,7 +74,7 @@ if($inputGRO eq $outputgro){
 }
 
 if($inputTOP eq $outputtop){
-	smog_quit("Input and output top files can not have the same name: $outputgro");
+	smog_quit("Input and output top files can not have the same name: $outputtop");
 }
 
 foreach my $filen($outputtop, $outputgro){
