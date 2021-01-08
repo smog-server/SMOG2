@@ -67,6 +67,14 @@ usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g
 
 warninfo();
 
+if($inputGRO eq $outputgro){
+        smog_quit("Input and output gro files can not have the same name: $outputgro");
+}
+
+if($inputTOP eq $outputtop){
+        smog_quit("Input and output top files can not have the same name: $outputtop");
+}
+
 unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen_restraints eq "null"){
 	smog_quit("-restraints given with a non-numerical value: $gen_restraints");
 }

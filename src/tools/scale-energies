@@ -69,6 +69,12 @@ usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n
         '<>' => \&usage)
         or defined $help); 
 
+
+
+if($inputTOP eq $outputTOP){
+        smog_quit("Input and output top files can not have the same name: $outputtop");
+}
+
 if($rescaleC < 0){
 	smog_quit("negative may not be provided with -rc.")
 }
