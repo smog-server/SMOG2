@@ -69,7 +69,13 @@ usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g
         '<>' => \&usage)
         or defined $help); 
 
+if($inputGRO eq $outputgro){
+	smog_quit("Input and output gro files can not have the same name: $outputgro");
+}
 
+if($inputTOP eq $outputtop){
+	smog_quit("Input and output top files can not have the same name: $outputgro");
+}
 
 foreach my $filen($outputtop, $outputgro){
 	checkalreadyexists($filen);
