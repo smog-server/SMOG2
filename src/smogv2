@@ -1938,7 +1938,7 @@ sub convertPDBToGroNdx
 	{
 	       print NDX "[ $chain ]\n";
 	       print NDX join("\n",@{$chainHash{$chain}});
-	       print NDX "\n";
+	       print NDX "\n\n";
 	}
 	close(NDX);
 }
