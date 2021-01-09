@@ -2035,7 +2035,7 @@ sub parseInputFolder
 			print "Found extras file $extrasfile\n";
 			checkExtras($extrasfile);
 			next;
-		}elsif($file !~ m/^[Rr][Ee][Aa][Dd][Mm][Ee]$/) {
+		}elsif($file !~ m/^[Rr][Ee][Aa][Dd][Mm][Ee]$/ && $file !~ m/^\./) {
 			# note that READMEs are ignored
 			print "\nNOTE: Found unused file \"$file\" in the template directory\n";	
 		}
