@@ -91,6 +91,7 @@ our %NBtypespresent;
 our %PAIRtypespresent;
 our %pairtypesused;
 our %fTypes;
+our %fTypesArgNum;
 our %directives;
 our @directivesList;
 our %extraatomtypes;
@@ -161,6 +162,23 @@ sub setglobals {
 	%fTypes = ('bond_harmonic' => '1',
 		'bond_bytype' => '-1',
 		'bond_type6' => '6',
+		'angle_harmonic' => '1',
+		'angle_bytype' => '-1',
+		'angle_free' => '0',
+		'dihedral_cosine'=>'1',
+		'dihedral_cosine4'=>'4',
+		'dihedral_harmonic' => '2',
+		'dihedral_bytype' => '-1',
+		'dihedral_free' => '0',
+		'contact_free'=>'0',
+		'contact_1'=>'1',
+		'contact_2'=>'1',
+		'contact_gaussian'=>'6'
+		);
+	# note, only bonds are properly set in fTypesArgNum.  The rest will be updated later.
+	%fTypesArgNum = ('bond_harmonic' => '2',
+		'bond_bytype' => '0',
+		'bond_type6' => '2',
 		'angle_harmonic' => '1',
 		'angle_bytype' => '-1',
 		'angle_free' => '0',

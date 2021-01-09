@@ -41,7 +41,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
+qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -53,9 +53,9 @@ foreach my $ver("2.0", "2.0.1", "2.0.2", "2.0.3", "2.1", "2.2", "2.3"){
  $SMOGversions{$ver}=$smi;
  $smi++; 
 }
-#########################
-## XML PARSED VARIBLES ##
-#########################
+##########################
+## XML PARSED VARIABLES ##
+##########################
 
 ## HOLDS INFORMATION ON RESIDUES ##
 ## residue => 
@@ -102,6 +102,7 @@ our %EGinSif;
 our %pairtypesused;
 our %bondtypesused;
 our %fTypes;
+our %fTypesArgNum;
 
 
 my %bondHandle;
@@ -173,16 +174,23 @@ sub checkFunction
 sub checkBondFunctionDef
 {
 	my($funcString) = @_;
-	my $store=$funcString;
+	my $funcargs=$funcString;
+	my $funcname=$funcString;
+	$funcname =~ s/\(.*//g;
 	# get arguments to function
-	$funcString =~ s/.*\(//g;
-	$funcString =~ s/\).*//g;
-	my @vars=split(/\,/,$funcString);
-	if($#vars >0 && $vars[0] =~ m/\?\?/){
-		smog_quit("Double question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$store\n");
+	$funcargs =~ s/.*\(//g;
+	$funcargs =~ s/\).*//g;
+	my @vars=split(/\,/,$funcargs);
+	my $nargs = $#vars + 1;
+	my $nargs_exp=$fTypesArgNum{"$funcname"};
+	if($nargs_exp != $nargs){
+		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs.\n\tSee following definition in .b file:\n\t$funcString\n")
+	}
+	if($nargs > 0 && $vars[0] =~ m/\?\?/){
+		smog_quit("Double question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
 	}
 	if($#vars>0 && $vars[1] =~ m/\?/){
-		smog_quit("Question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$store\n");
+		smog_quit("Question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
 	}
 }
 
