@@ -121,12 +121,14 @@ foreach my $filen ($outputPDB){
 	checkalreadyexists($filen);
 }
 
-open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
+open(NEWPDB,">$outputPDB.adjustPDB.partial") or smog_quit("Can't open the output PDB file.");
 print "New file will be written: $outputPDB\n\n";
 
 readmap();	
 adjustInputFile($subALA);
 warnsummary();
+# since we completed without an error, save the final file.
+`mv $outputPDB.adjustPDB.partial $outputPDB`;
 print "\n\tAdjustment of PDB is complete.\n\n";
 
 #########SUBROUTINES#########
