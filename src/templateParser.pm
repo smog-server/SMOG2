@@ -169,6 +169,23 @@ sub checkFunction
 	if(!exists $functions->{$funcString}){smog_quit ("Function \"$funcString\" is being used, but is not defined in .sif file");}
 }
 
+# checkBondFunctionDef: verifies that the bond function declation satisfies some standards
+sub checkBondFunctionDef
+{
+	my($funcString) = @_;
+	my $store=$funcString;
+	# get arguments to function
+	$funcString =~ s/.*\(//g;
+	$funcString =~ s/\).*//g;
+	my @vars=split(/\,/,$funcString);
+	if($#vars >0 && $vars[0] =~ m/\?\?/){
+		smog_quit("Double question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$store\n");
+	}
+	if($#vars>0 && $vars[1] =~ m/\?/){
+		smog_quit("Question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$store\n");
+	}
+}
+
 sub checkREScharges
 {
 	my $string="";
@@ -880,6 +897,7 @@ sub parseBonds {
  		$bondtypesused{$typeB}=1;
 		my $func = $inter->{"func"};
 		&checkFunction($func);
+		&checkBondFunctionDef($func);
 		if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
 	               exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
 			smog_quit ("bond type between bType $typeA and bType $typeB defined more than once. Check .b file.");
