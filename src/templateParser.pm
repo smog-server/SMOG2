@@ -1039,20 +1039,20 @@ sub parseNonBonds {
 			$interactions->{"gen-pairs"}="yes";
 		}
 	}else{
-		print "gen-pairs not defined in templates.  Will assume no.\n";
+		smog_note("gen-pairs not defined in templates.  Will assume no.");
 		$interactions->{"gen-pairs"}="no";
 	}
 
 	if(exists $interHandle[0]->{"nbfunc"}) {
 		$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
 	}else{
-		print "nbfunc not defined in templates.  Will assume a value of 1.\n";
+		smog_note("nbfunc not defined in templates.  Will assume a value of 1.");
 		$interactions->{"nbfunc"}=1;
 	}
 	if(exists $interHandle[0]->{"gmx-combination-rule"}) {
 		$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
 	}else{
-		print "gmx-combination-rule not defined in templates.  Will assume a value of 1.\n";
+		smog_note("gmx-combination-rule not defined in templates.  Will assume a value of 1.");
 		$interactions->{"gmx-combination-rule"}=1;
 	}
 
@@ -1067,7 +1067,7 @@ sub parseNonBonds {
 			smog_quit("fudgeLJ has no effect when gen-pairs=no.");
 		}
 	}else{
-		print "fudgeLJ not defined in templates. Will assume a value of 1.\n";
+		smog_note("fudgeLJ not defined in templates. Will assume a value of 1.");
 		# we are setting to -1, to indicate that we don't want to write it later.
 		$interactions->{"fudgeLJ"}=-1;
 	}
@@ -1087,7 +1087,7 @@ sub parseNonBonds {
 			}
 		}
 	}else{
-		print "fudgeQQ not defined in templates. Will assume a value of 1.\n";
+		smog_note("fudgeQQ not defined in templates. Will assume a value of 1.");
 		# we are setting to -1, to indicate that we don't want to write it later.
 		$interactions->{"fudgeQQ"}=-1;
 	}
