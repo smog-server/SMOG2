@@ -1058,13 +1058,13 @@ sub parseNonBonds {
 
 	if(exists $interHandle[0]->{"fudgeLJ"}) {
 		$interactions->{"fudgeLJ"} = $interHandle[0]->{"fudgeLJ"};
-		if($interactions->{"fudgeLJ"} < 0 ){
-			my $tmp=$interactions->{"fudgeLJ"};
+		my $tmp=$interactions->{"fudgeLJ"};
+		if($tmp < 0 ){
 			smog_quit("fudgeLJ must be greater than, or equal to, 0.  Found $tmp.");
 		}
 
-		if($interactions->{"gen-pairs"} eq "no"){
-			smog_quit("fudgeLJ has no effect when gen-pairs=no.");
+		if($interactions->{"gen-pairs"} eq "no" && $tmp != 1.0){
+			smog_quit("fudgeLJ is set to $tmp, but this value is not applied when gen-pairs=no.");
 		}
 	}else{
 		smog_note("fudgeLJ not defined in templates. Will assume a value of 1.");
