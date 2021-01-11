@@ -613,7 +613,7 @@ sub parseSif {
 			smog_quit("function $funcName element exclusions must be 0, or 1.");
 		}elsif($functions->{$funcName}->{"directive"} ne "pairs"
 	                && exists $functions->{$funcName}->{"exclusions"}){
-			print "\nNOTE: Element \"exclusions\" is defined for function $funcName. This is likely unnecessary, since the \"exclusions\" element is only relevant for contacts.\n";
+			smog_note("Element \"exclusions\" is defined for function $funcName. This is likely unnecessary, since the \"exclusions\" element is only relevant for contacts.");
 		}
 	}
 	## Parse settings data
