@@ -59,6 +59,7 @@ our %supported_directives = ( 'defaults' => '1',
         );
 
 quit_init();
+note_init();
 checkForModules();
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
         'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'orm=s' => \$restrainedmap, 'restraints=s' => \$gen_restraints, 'ndxorder' => \$ndxorder,  'warn=i' => \$maxwarn, 
