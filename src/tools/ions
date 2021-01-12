@@ -62,6 +62,7 @@ my $template;
 my $help;
 my @grobox;
 quit_init();
+note_init();
 checkForModules();
 
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  

@@ -59,6 +59,7 @@ our %supported_directives = ( 'defaults' => '1',
         );
 
 quit_init();
+note_init();
 checkForModules();
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
         'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'orm=s' => \$restrainedmap, 'restraints=s' => \$gen_restraints, 'ndxorder' => \$ndxorder,  'warn=i' => \$maxwarn, 
@@ -237,8 +238,8 @@ for(my $JJ=1;$JJ<=$#C;$JJ++){
 		next;
 	}else{
 		my @D=split(/ /,$A);
-		if($#D != 2){
-			smog_quit("Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs.\n");
+		if($#D < 2 || $#D > 4){
+			smog_quit("Improperly formatted defaults line.  Must provide nbfunc, comb-rule and gen-pairs (and optionally fudgeLJ and fudgeQQ).\n");
 		}
 		print TOPOUT "$A";
 		if($B ne ""){

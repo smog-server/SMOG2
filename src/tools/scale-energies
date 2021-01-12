@@ -60,9 +60,8 @@ our %supported_directives = ( 'defaults' => '1',
         );
 
 quit_init();
+note_init();
 checkForModules();
-
-
 
 usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
         'of=s' => \$outputTOP, 'rc=f' => \$rescaleC, 'rd=f' => \$rescaleD, 'warn=i' => \$maxwarn, 

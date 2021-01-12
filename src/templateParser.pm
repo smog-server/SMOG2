@@ -41,7 +41,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
+qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -53,9 +53,9 @@ foreach my $ver("2.0", "2.0.1", "2.0.2", "2.0.3", "2.1", "2.2", "2.3"){
  $SMOGversions{$ver}=$smi;
  $smi++; 
 }
-#########################
-## XML PARSED VARIBLES ##
-#########################
+##########################
+## XML PARSED VARIABLES ##
+##########################
 
 ## HOLDS INFORMATION ON RESIDUES ##
 ## residue => 
@@ -102,6 +102,7 @@ our %EGinSif;
 our %pairtypesused;
 our %bondtypesused;
 our %fTypes;
+our %fTypesArgNum;
 
 
 my %bondHandle;
@@ -167,6 +168,30 @@ sub checkFunction
 	$funcString =~ s/\(.*//g;
 	if(!exists $fTypes{"$funcString"}){smog_quit ("\"$funcString\" is not a supported function type in SMOG");}
 	if(!exists $functions->{$funcString}){smog_quit ("Function \"$funcString\" is being used, but is not defined in .sif file");}
+}
+
+# checkBondFunctionDef: verifies that the bond function declation satisfies some standards
+sub checkBondFunctionDef
+{
+	my($funcString) = @_;
+	my $funcargs=$funcString;
+	my $funcname=$funcString;
+	$funcname =~ s/\(.*//g;
+	# get arguments to function
+	$funcargs =~ s/.*\(//g;
+	$funcargs =~ s/\).*//g;
+	my @vars=split(/\,/,$funcargs);
+	my $nargs = $#vars + 1;
+	my $nargs_exp=$fTypesArgNum{"$funcname"};
+	if($nargs_exp != $nargs){
+		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs.\n\tSee following definition in .b file:\n\t$funcString\n")
+	}
+	if($nargs > 0 && $vars[0] =~ m/\?\?/){
+		smog_quit("Double question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+	}
+	if($#vars>0 && $vars[1] =~ m/\?/){
+		smog_quit("Question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+	}
 }
 
 sub checkREScharges
@@ -588,7 +613,7 @@ sub parseSif {
 			smog_quit("function $funcName element exclusions must be 0, or 1.");
 		}elsif($functions->{$funcName}->{"directive"} ne "pairs"
 	                && exists $functions->{$funcName}->{"exclusions"}){
-			print "\nNOTE: Element \"exclusions\" is defined for function $funcName. This is likely unnecessary, since the \"exclusions\" element is only relevant for contacts.\n";
+			smog_note("Element \"exclusions\" is defined for function $funcName. This is likely unnecessary, since the \"exclusions\" element is only relevant for contacts.");
 		}
 	}
 	## Parse settings data
@@ -880,6 +905,7 @@ sub parseBonds {
  		$bondtypesused{$typeB}=1;
 		my $func = $inter->{"func"};
 		&checkFunction($func);
+		&checkBondFunctionDef($func);
 		if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
 	               exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
 			smog_quit ("bond type between bType $typeA and bType $typeB defined more than once. Check .b file.");
@@ -1013,35 +1039,35 @@ sub parseNonBonds {
 			$interactions->{"gen-pairs"}="yes";
 		}
 	}else{
-		print "gen-pairs not defined in templates.  Will assume no.\n";
+		smog_note("gen-pairs not defined in templates.  Will assume no.");
 		$interactions->{"gen-pairs"}="no";
 	}
 
 	if(exists $interHandle[0]->{"nbfunc"}) {
 		$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
 	}else{
-		print "nbfunc not defined in templates.  Will assume a value of 1.\n";
+		smog_note("nbfunc not defined in templates.  Will assume a value of 1.");
 		$interactions->{"nbfunc"}=1;
 	}
 	if(exists $interHandle[0]->{"gmx-combination-rule"}) {
 		$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
 	}else{
-		print "gmx-combination-rule not defined in templates.  Will assume a value of 1.\n";
+		smog_note("gmx-combination-rule not defined in templates.  Will assume a value of 1.");
 		$interactions->{"gmx-combination-rule"}=1;
 	}
 
 	if(exists $interHandle[0]->{"fudgeLJ"}) {
 		$interactions->{"fudgeLJ"} = $interHandle[0]->{"fudgeLJ"};
-		if($interactions->{"fudgeLJ"} < 0 ){
-			my $tmp=$interactions->{"fudgeLJ"};
+		my $tmp=$interactions->{"fudgeLJ"};
+		if($tmp < 0 ){
 			smog_quit("fudgeLJ must be greater than, or equal to, 0.  Found $tmp.");
 		}
 
-		if($interactions->{"gen-pairs"} eq "no"){
-			smog_quit("fudgeLJ has no effect when gen-pairs=no.");
+		if($interactions->{"gen-pairs"} eq "no" && $tmp != 1.0){
+			smog_quit("fudgeLJ is set to $tmp, but this value is not applied when gen-pairs=no.");
 		}
 	}else{
-		print "fudgeLJ not defined in templates. Will assume a value of 1.\n";
+		smog_note("fudgeLJ not defined in templates. Will assume a value of 1.");
 		# we are setting to -1, to indicate that we don't want to write it later.
 		$interactions->{"fudgeLJ"}=-1;
 	}
@@ -1061,7 +1087,7 @@ sub parseNonBonds {
 			}
 		}
 	}else{
-		print "fudgeQQ not defined in templates. Will assume a value of 1.\n";
+		smog_note("fudgeQQ not defined in templates. Will assume a value of 1.");
 		# we are setting to -1, to indicate that we don't want to write it later.
 		$interactions->{"fudgeQQ"}=-1;
 	}

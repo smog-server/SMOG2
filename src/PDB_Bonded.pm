@@ -486,10 +486,9 @@ sub parsePDBATOMS
 			my $sizeA = scalar(keys %{$residues{$resA}->{"atoms"}});
 			my $union;
 			$union=($tempPDL{$resA}->{$resAIdx})->glue(1,$tempPDL{$resB}->{$resBIdx});
-			print "\nNOTE:";
 			my $chaina1=$chaina+1;
 			my $chainb1=$chainb+1;
-			print "Generating user-specified bonded interaction between chain-atom pair $chaina1-$atoma,$chainb1-$atomb.\nWill assign to energy group $eG.\n";
+			smog_note("Generating user-specified bonded interaction between chain-atom pair $chaina1-$atoma,$chainb1-$atomb.\nWill assign to energy group $eG.");
 			if(exists $connectedatom{$idxA}){ 
 				smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomA, in $resA$resAIdx) and line:$record");
 			}
@@ -1567,12 +1566,10 @@ sub parseCONTACT
 				if($dist < $mindist)
 				{
 					if($main::setContacttoLimit){
-	                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
-						print "-limitcontactlength is being used, will set distance of contact to $mindist\n\n";
+	                        		smog_note("Contact between atoms $contact1 $contact2 below threshold.\n-limitcontactlength is being used, will set distance of contact to $mindist");
 						$dist=$mindist;
 					}elsif($main::DeleteShortContact){
-	                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
-						print "-deleteshortcontact is being used, will exclude this contact.\n\n";
+	                        		smog_note("Contact between atoms $contact1 $contact2 below threshold.\n-deleteshortcontact is being used, will exclude this contact.");
 						next;
 					}else{
 	                            		smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");
@@ -1615,8 +1612,8 @@ sub parseCONTACT
 			" This is because the coarse graining options are only to enable automatic contact generation from an all-atom input pdb.".
 			" If the user wishes to use their own contact map, use a .bif and .pdb that already have the correct graining.".
 			" For example, for a C-alpha model, directly use the template \$SMOG2_LOCATION/templates/SBM_calpha with the -t option." ); }
-		print "\nNOTE: Not calculating contact map\n";
-		print "Reading contacts from $fileName2\n";
+		print "Not going to calculate a contact map\n";
+		print "Will read contacts from $fileName2\n";
 		## OPEN user provided contact FILE ##
 		unless (open(CONTFILE1, $fileName2)) {
 			smog_quit ("Cannot read contact file '$fileName2'.");
@@ -1668,12 +1665,10 @@ sub parseCONTACT
 			if($dist < $mindist)
 			{
 				if($main::setContacttoLimit){
-                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
-					print "-limitcontactlength is being used, will set distance of contact to $mindist\n\n";
+                        		smog_note("Contact between atoms $contact1 $contact2 below threshold.\n-limitcontactlength is being used, will set distance of contact to $mindist");
 					$dist=$mindist;
 				}elsif($main::DeleteShortContact){
-                        		print "NOTE: Contact between atoms $contact1 $contact2 below threshold.\n";
-					print "-deleteshortcontact is being used, will exclude this contact.\n\n";
+                        		smog_note("Contact between atoms $contact1 $contact2 below threshold.\n-deleteshortcontact is being used, will exclude this contact.");
 					next;
 				}else{
                             		smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");

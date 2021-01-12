@@ -54,11 +54,17 @@ printdashed($wide);
 printcenter($wide,$tmpstring);
 printdashed($wide);
 
+quit_init();
+note_init();
 checkForModules();
 
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'large' => \$large, 'sort' => \$sort,  '<>' => \&usage) or !defined $inputPDB or defined $help); 
+usage() if ( !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'large' => \$large, 'sort' => \$sort,  '<>' => \&usage) or defined $help); 
 
 warninfo();
+
+if(!defined $inputPDB){
+	smog_quit("No input PDB file name given.");
+}
 
 $outputPDB=checksuffix($outputPDB,".pdb");
 $inputPDB=checksuffix($inputPDB,".pdb");
@@ -72,20 +78,20 @@ if(defined $renumber && defined $insertTER){
 }
 
 if (defined $renumber){
-	print "\nNOTE: the flag -renumber was selected. Will assign consecutive residue numbering within each chain.\n";
+	smog_note("The flag -renumber was selected. Will assign consecutive residue numbering within each chain.");
 }
 
 if (defined $sort){
-	print "\nNOTE: the flag -sort was selected. Will order atoms in each residue by name.\n";
+	smog_note("The flag -sort was selected. Will order atoms in each residue by name.");
 }
 
 if (defined $removeH){
-	print "\nNOTE: the flag -removeH was selected. Will remove all H atoms.\n";
+	smog_note("The flag -removeH was selected. Will remove all H atoms.");
 }
 
 
 if (defined $insertTER){
-	print "\nNOTE: the flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.\n";
+	smog_note("The flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.");
 }
 
 if(!defined $inputPDB){
@@ -121,12 +127,14 @@ foreach my $filen ($outputPDB){
 	checkalreadyexists($filen);
 }
 
-open(NEWPDB,">$outputPDB") or smog_quit("Can't open the output PDB file.");
+open(NEWPDB,">$outputPDB.adjustPDB.partial") or smog_quit("Can't open the output PDB file.");
 print "New file will be written: $outputPDB\n\n";
 
 readmap();	
 adjustInputFile($subALA);
 warnsummary();
+# since we completed without an error, save the final file.
+`mv $outputPDB.adjustPDB.partial $outputPDB`;
 print "\n\tAdjustment of PDB is complete.\n\n";
 
 #########SUBROUTINES#########
