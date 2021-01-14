@@ -7,11 +7,12 @@ use Exporter;
 #####################
 our $maxwarn;
 our $warncount;
+our $notecount;
 our @convarray;
 our %reverthash;
 our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate);
+our @EXPORT = qw($warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate);
 our %supported_directives;
 
 #####################
@@ -44,6 +45,18 @@ sub smog_quit
 	}
 }
 
+sub note_init
+{
+	$notecount=0;
+}
+
+sub smog_note
+{
+	my ($LINE)=@_;
+	$notecount++;
+	warn("\nNOTE $notecount: $LINE\n\n");
+}
+
 sub warninfo
 {
 	if($maxwarn > 0 || $maxwarn ==-1 ){
@@ -53,6 +66,13 @@ sub warninfo
 
 sub warnsummary
 {
+
+	if ($notecount == 1){
+		print "\n\nTHERE WAS $notecount NOTE. Even if you know what you are doing, it is always worth checking any notes.\n\n"; 
+	}elsif ($notecount > 1){
+		print "\n\nTHERE WERE $notecount NOTES. Even if you know what you are doing, it is always worth checking any notes.\n\n"; 
+	}
+
 	if ($warncount == 1){
 		print "\n\n NOTE: There was $warncount warning. It is recommended that you read all warnings carefully.\n\n"; 
 	}elsif ($warncount > 1){

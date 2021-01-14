@@ -60,14 +60,19 @@ our %supported_directives = ( 'defaults' => '1',
         );
 
 quit_init();
+note_init();
 checkForModules();
-
-
 
 usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'n=s' => \$indexFile, 
         'of=s' => \$outputTOP, 'rc=f' => \$rescaleC, 'rd=f' => \$rescaleD, 'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
+
+
+
+if($inputTOP eq $outputTOP){
+        smog_quit("Input and output top files can not have the same name: $outputTOP");
+}
 
 if($rescaleC < 0){
 	smog_quit("negative may not be provided with -rc.")
@@ -154,32 +159,31 @@ my @DATA=@{$DATA};
 #make sure that the nbfunc and comb-rule is supported
 my @C=split(/\n/,$DATA[$DIRLIST{"defaults"}]);
 
-my $combrule=-1;
+my $combrule;
+my $nbfunc;
 my $onedefault=0;
 for(my $JJ=1;$JJ<=$#C;$JJ++){
 	my ($A, $B)=checkcomment($C[$JJ]);
 	if($A ne ""){
 		if($onedefault !=0){
-			smog_quit("\"defaults\" can only have a single non-comment line with nbfunc, comb-rule and genpairs values")
+			smog_quit("\"defaults\" can only have a single non-comment line")
 		}
 		$A =~ s/^\s+//g;
+		$A =~ s/\s+$//g;
 		my @array=split(/\s+/,$A);
-		if($#array != 2){
-			smog_quit("\"defaults\" can only have a single non-comment line with nbfunc, comb-rule and genpairs values.  Found $A");
-		}
-		if($array[0] != 1){
-			smog_quit("Only nbfunc=1 supported by smog_scale-energies. Found $array[0]");
-		}
-		if($array[1] !~ m/^[12]$/ ){
-			smog_quit("Only gen-pairs=1 or 2 supported by smog_scale-energies. Found $array[1]");
-		}
+		$nbfunc=$array[0];
 		$combrule=$array[1];
+		if($#array != 2 && $#array != 4){
+			smog_quit("\"defaults\" can only have a single non-comment line with: nbfunc, comb-rule, genpairs, <fudgeLJ>, <fudgeQQ>.  Found \"$A\"");
+		}
+		if($nbfunc !~ m/^1$/){
+			smog_quit("Only nbfunc=1 supported by smog_scale-energies. Found $nbfunc");
+		}
+		if($combrule !~ m/^[12]$/ ){
+			smog_quit("Only comb-rule=1 or 2 supported by smog_scale-energies. Found $combrule");
+		}
 		$onedefault++;
 	}
-}
-
-if($combrule == -1){
-	smog_quit("No value for gen-pairs found in .top file.");
 }
 
 # Go through the directives, in order, and write out information for the subsystem

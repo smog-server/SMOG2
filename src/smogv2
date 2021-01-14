@@ -71,6 +71,7 @@ my $backup="yes";
 my $allowCG = 0;
 my $nocheck = "no";
 my $keep4SCM;
+my $extrasfile="";
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
@@ -90,6 +91,7 @@ our %NBtypespresent;
 our %PAIRtypespresent;
 our %pairtypesused;
 our %fTypes;
+our %fTypesArgNum;
 our %directives;
 our @directivesList;
 our %extraatomtypes;
@@ -103,6 +105,7 @@ our %contactParseSeen;
 #######MAIN PROGRAM####### 
 
 quit_init();
+note_init();
 
 setglobals();
 
@@ -173,6 +176,23 @@ sub setglobals {
 		'contact_2'=>'1',
 		'contact_gaussian'=>'6'
 		);
+	# note, only bonds are properly set in fTypesArgNum.  The rest will be updated later.
+	%fTypesArgNum = ('bond_harmonic' => '2',
+		'bond_bytype' => '0',
+		'bond_type6' => '2',
+		'angle_harmonic' => '1',
+		'angle_bytype' => '-1',
+		'angle_free' => '0',
+		'dihedral_cosine'=>'1',
+		'dihedral_cosine4'=>'4',
+		'dihedral_harmonic' => '2',
+		'dihedral_bytype' => '-1',
+		'dihedral_free' => '0',
+		'contact_free'=>'0',
+		'contact_1'=>'1',
+		'contact_2'=>'1',
+		'contact_gaussian'=>'6'
+		);
 
 	## this is the topfile buffer stuff
 	%directives = ("comments",1,"defaults",2,"atomtypes",3,"bondtypes",4,"angletypes",5,"dihedraltypes",6,"nonbond_params",7,"moleculetype",8,"atoms",9,"bonds",10,"angles",11,"dihedrals",12,"pairs",13,"exclusions",14,"position_restraints",15,"system",16,"molecules",17);
@@ -220,7 +240,7 @@ sub parse_args {
 	
 	warninfo();
 	if(defined $tempcheckoff){
-		print "\n\nNOTE: -nocheck was issued. Will not cross check the templates for consistency in energetics declarations. Use this option at your own risk...\n\n";
+		smog_note("-nocheck was issued. Will not cross check the templates for consistency in energetics declarations. Use this option at your own risk...");
 		$nocheck="yes";
 	}
 
@@ -478,7 +498,7 @@ sub addToTop {
 
 #read file "extras" in template directory
 sub addExtras {
-	my $filename = "$inputFolder/extras";
+	my ($filename) = @_;
 	my %foundNBe;
 	if( -e $filename){
 		print "\nAdding extras information\n\n";
@@ -803,7 +823,7 @@ sub bondOutput
 					my $i1=$reflist{$i};
 					my $j1=$reflist{$j};
 					my $DIST=int($values*100)/100.0;
-					print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates. This may mean there is something strange with your structure.\n\n");
+					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates. This may mean there is something strange with your structure.");
 				}
 			}
         		## Check bonds threshold ##
@@ -818,7 +838,7 @@ sub bondOutput
 					}
 					my $i1=$reflist{$i};
 					my $j1=$reflist{$j};
-					print("\n\nNOTE: Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.\n\n");
+					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
 					print "-limitbondlength is being used, will set length to ";
 	 				if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
 	  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
@@ -1980,36 +2000,46 @@ sub parseInputFolder
 	my $sifexists=0;
 	my $nbexists=0;
 	my $bexists=0;
+	my $extrasexists=0;
 	while(my $file = readdir($folder)){
 		if($file =~ m/\.bif$/){
 			$bifexists++;
 			$bif = $file;$bif = "$folderName/$bif";
 			print "Found .bif file $bif\n";
 			print "Validating XML format of $bif\n";
-			validateTemplate($bif,"bif");next;}
-		if($file =~ m/\.sif$/){
+			validateTemplate($bif,"bif");
+			next;
+		}elsif($file =~ m/\.sif$/){
 			$sifexists++;
 			$sif = $file;$sif = "$folderName/$sif";
 			print "Found .sif file $sif\n";
 			print "Validating XML format of $sif\n";
-			validateTemplate($sif,"sif");next;}
-		if($file =~ m/\.b$/){
+			validateTemplate($sif,"sif");
+			next;
+		}elsif($file =~ m/\.b$/){
 			$bexists++;
 			$b = $file;$b = "$folderName/$b";
 			print "Found .b file $b\n";
 			print "Validating XML format of $b\n";
-			validateTemplate($b,"b");next;}
-		if($file =~ m/\.nb$/){
+			validateTemplate($b,"b");
+			next;
+		}elsif($file =~ m/\.nb$/){
 			$nbexists++;
 			$nb = $file;$nb = "$folderName/$nb";
 			print "Found .nb file $nb\n";
 			print "Validating XML format of $nb\n";
-			validateTemplate($nb,"nb");next;}
-		if($file =~ m/^extras$/) {
-			$extras = "$folderName/extras";
-			print "Found extras file $extras\n";
-			checkExtras($extras);
-			next;}
+			validateTemplate($nb,"nb");
+			next;
+		}elsif($file =~ m/extras$/) {
+			$extrasexists++;
+			$extrasfile = "$folderName/$file";
+			print "Found extras file $extrasfile\n";
+			checkExtras($extrasfile);
+			next;
+		}elsif($file !~ m/^[Rr][Ee][Aa][Dd][Mm][Ee]$/ && $file !~ m/^\./) {
+			# note that READMEs are ignored
+			smog_note("Found unused file \"$file\" in the template directory");	
+		}
 	}
 	$bifForSCM = $bif;
 
@@ -2032,6 +2062,9 @@ sub parseInputFolder
 		smog_quit ("Found multiple .nb files in directory $folderName");
 	}elsif($nbexists ==0){
 		smog_quit (" .nb file not found in directory $folderName");
+	}
+	if($extrasexists >1){
+		smog_quit ("Found multiple extras (or .extras) files in directory $folderName");
 	}
 	
 	setInputFileName($bif,$sif,$b,$nb);
@@ -2271,7 +2304,7 @@ sub printBondedTopOutput {
 	print "Processing atoms\n";
 	getAtomTypes(\%allAtoms);
  	# adding extras at this point is a bit out of place.  but, it is important, in order to verify that all bonds have bondtypes, etc.
-	addExtras();
+	addExtras($extrasfile);
 	saveAtomTypes();
 	my %atomIndex2Line=readAtoms($inputPDB);
 
@@ -2346,7 +2379,7 @@ sub appendContacts {
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled,$saveSCMorig);
 	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
-	print "If normalization is being used, the total number of atoms included in normalization will be $totalAtoms, while $absAtomCount atoms are in the system.\n";
+	print "If normalization is used, the total number of atoms included in normalization will be $totalAtoms, while $absAtomCount atoms are in the system.\n";
 	print "Completing final details...\n";
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);

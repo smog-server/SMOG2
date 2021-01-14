@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <nb>
 <!-- DEFAULTS -->
-<defaults gen-pairs="0"/>
+<defaults gen-pairs="0" nbfunc="1" gmx-combination-rule="1" fudgeLJ="1" fudgeQQ="1"/>
 
 <!-- GENERAL NONBONDS -->
 <nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.0"  c12="5.96046e-9">
