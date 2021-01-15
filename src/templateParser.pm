@@ -690,7 +690,7 @@ sub parseSif {
 	## NOTE:Contact Type is Global ##
 	## Sum of contact scalings ##
 	
-	if($groupRatios->{"contacts"} <=0 || $groupRatios->{"contacts"} <=0){
+	if($groupRatios->{"contacts"} <=0 || $groupRatios->{"dihedrals"} <=0){
 		smog_quit("All values for groupRatios must be greater than zero. See .sif file.")
 	}
 	## contact/dihe relative Scale ##
