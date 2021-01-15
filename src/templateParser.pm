@@ -41,7 +41,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($normalizevals checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
+qw($normalizevals checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round compareFuncs);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -103,8 +103,8 @@ our %EGinSif;
 our %pairtypesused;
 our %bondtypesused;
 our %fTypes;
+our %usedFunctions;
 our %fTypesArgNum;
-
 
 my %bondHandle;
 my @improperHandle;
@@ -118,6 +118,7 @@ sub clearBifMemory {
 	%residueBackup = %{ dclone (\%residues) };
 	undef %residues;
 	undef $functions;
+	undef %usedFunctions;
 	undef $contactSettings;
 	undef $termRatios;
 	undef $interactions;
@@ -170,6 +171,19 @@ sub checkFunction
 	$funcString =~ s/\(.*//g;
 	if(!exists $fTypes{"$funcString"}){smog_quit ("\"$funcString\" is not a supported function type in SMOG");}
 	if(!exists $functions->{$funcString}){smog_quit ("Function \"$funcString\" is being used, but is not defined in .sif file");}
+	$usedFunctions{$funcString}=1;
+}
+
+# compareFuncs checks to see if all defined functions in the .sif are used.
+sub compareFuncs
+{
+	my $string="";
+	foreach my $i(keys %{$functions}){
+		if(!defined $usedFunctions{$i}){
+			$string .="Function $i is defined in the .sif file, but not used in the .nb or .b files.\n";
+		}
+	}
+	return $string;
 }
 
 # checkBondFunctionDef: verifies that the bond function declation satisfies some standards
