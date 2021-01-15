@@ -166,6 +166,7 @@ sub round
 sub checkFunction
 {
 	my($funcString) = @_;
+	$funcString =~ s/^\s+//g;
 	$funcString =~ s/\(.*//g;
 	if(!exists $fTypes{"$funcString"}){smog_quit ("\"$funcString\" is not a supported function type in SMOG");}
 	if(!exists $functions->{$funcString}){smog_quit ("Function \"$funcString\" is being used, but is not defined in .sif file");}
