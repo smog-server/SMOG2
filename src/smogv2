@@ -472,7 +472,7 @@ sub initializeDirectives {
 	}elsif($interactions->{"gmx-combination-rule"}==2){
 		addToTop("nonbond_params",";ai     aj    func    sigma       epsilon\n");
 		addToTop("atomtypes","; name  mass     charge    ptype  sigma   epsilon\n");
-		addToTop("pairs",";ai\taj\ttype\tsigma\tepsilon               B\n");
+		addToTop("pairs",";ai\taj\ttype\tsigma\t\tepsilon\n");
 	}
 	addToTop("position_restraints","\n[ position_restraints ]\n");
 	addToTop("position_restraints",";ai    func    kx    ky   kz\n");
