@@ -779,10 +779,11 @@ sub parseSif {
 	$interactionThreshold->{"contacts"}={"shortContacts"=>$contactsThreshold->{"shortContacts"}};
 	$interactionThreshold->{"distance"}={"tooShortDistance"=>$distanceThreshold->{"tooShortDistance"}};
 	if(exists $data->{"settings"}->[0]->{"dihedralNormalization"}->[0]->{"dihedralCounting"}){
-	 $countDihedrals=$data->{"settings"}->[0]->{"dihedralNormalization"}->[0]->{"dihedralCounting"};
+	 	$countDihedrals=$data->{"settings"}->[0]->{"dihedralNormalization"}->[0]->{"dihedralCounting"};
         }else{
-         # by default, we will count dihedrals.
-         $countDihedrals=1;
+         	# by default, we will count dihedrals.
+       		smog_note("dihedralNormalization not given.  Will count dihedrals, by default.");
+         	$countDihedrals=1;
         }
 # depricated options.  We have left them in the schemas so that the error that would be thrown when using an old template will not be cryptic.  However, the entries are optional 
 	if( $interactionThreshold->{"distance"}->{"tooShortDistance"} )
