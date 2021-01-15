@@ -41,7 +41,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
+qw($normalizevals checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -70,6 +70,7 @@ our $functions;
 our $contactSettings;
 our $interactionThreshold;
 our $countDihedrals;
+our $normalizevals;
 
 my $settings; our $termRatios;
 our $interactions;
@@ -686,7 +687,13 @@ sub parseSif {
 	if(($CG_NORM > 0 and $EG_NORM ==0) or ($EG_NORM > 0 and $CG_NORM ==0)){
 		smog_quit('Issue in .sif. Normalization only turned on for ContactGroups, or EnergyGroups. Normalization must be off, or on, for both.');
 	}
-	
+
+	if($EG_NORM > 0){
+		$normalizevals=1;
+	}else{
+		$normalizevals=0;
+	}	
+		
 	## NOTE:Contact Type is Global ##
 	## Sum of contact scalings ##
 	

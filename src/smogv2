@@ -99,6 +99,7 @@ our %bondParseSeen;
 our %angleParseSeen;
 our %dihParseSeen;
 our %contactParseSeen;
+our $normalizevals;
 #######END GLOBAL DEFS#######
 
 
@@ -2299,8 +2300,11 @@ sub printBondedTopOutput {
         	print "Will not count/rescale dihedrals with common middle bonds.";
         }
 	## SET DIHEDRAL RATIOS ##
-	print "Setting energetic ratios\n";
-	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms);
+	if($normalizevals){
+		# only set ratios if normalization is on.  It is faster to not use it.
+		print "Setting energetic ratios\n";
+		setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms);
+	}
 	print "Processing atoms\n";
 	getAtomTypes(\%allAtoms);
  	# adding extras at this point is a bit out of place.  but, it is important, in order to verify that all bonds have bondtypes, etc.
