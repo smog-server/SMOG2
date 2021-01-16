@@ -610,7 +610,7 @@ sub parseSif {
 	## Read .sif file ##
 	$data = $xml->XMLin($sifxml,KeyAttr => ['name'],ForceArray=>1);
 	if(!exists $data->{"version"}->[0]->{"min"}){
-		smog_quit("Minimum required SMOG version is not defined in .sif file. This check is intended to ensure that one does not use new templates with an old version of SMOG.  However, newer version of SMOG should always work with old templates.  Accordingly, if you are using the newest release of SMOG, you can probably ignore this warning.",0);
+		smog_note("Minimum required SMOG version is not defined in .sif file. This check is intended to ensure that one does not use new templates with an old version of SMOG.  However, newer version of SMOG should always work with old templates.  Accordingly, if you are using the newest release of SMOG, you can probably ignore this warning.");
 	}else{
 		my $minver=$data->{"version"}->[0]->{"min"};
 		if(!exists $SMOGversions{"$minver"}){

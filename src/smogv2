@@ -2298,7 +2298,7 @@ sub printBondedTopOutput {
 		print "Counting dihedrals\n";
 		getSetDiheCounts(\%DihedralData,\%bondPDL);
         }else{
-        	print "Will not count/rescale dihedrals with common middle bonds.";
+        	print "Will not count/rescale dihedrals with common middle bonds.\n";
         }
 	## SET DIHEDRAL RATIOS ##
 	if($normalizevals){
