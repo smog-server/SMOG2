@@ -99,6 +99,7 @@ our %bondParseSeen;
 our %angleParseSeen;
 our %dihParseSeen;
 our %contactParseSeen;
+our $normalizevals;
 #######END GLOBAL DEFS#######
 
 
@@ -472,7 +473,7 @@ sub initializeDirectives {
 	}elsif($interactions->{"gmx-combination-rule"}==2){
 		addToTop("nonbond_params",";ai     aj    func    sigma       epsilon\n");
 		addToTop("atomtypes","; name  mass     charge    ptype  sigma   epsilon\n");
-		addToTop("pairs",";ai\taj\ttype\tsigma\tepsilon               B\n");
+		addToTop("pairs",";ai\taj\ttype\tsigma\t\tepsilon\n");
 	}
 	addToTop("position_restraints","\n[ position_restraints ]\n");
 	addToTop("position_restraints",";ai    func    kx    ky   kz\n");
@@ -2260,6 +2261,7 @@ sub parseTemplatesAndPDB
 		$checkmessage.=checkPAIRnames();
 		$checkmessage.=checkREScharges();
 		$checkmessage.=checkRESimpropers();
+		$checkmessage.=compareFuncs();
 		if($checkmessage ne ""){
 			smog_quit("Cross-comparison of templates failed. See messages below:\n\n$checkmessage");
 		}
@@ -2296,11 +2298,14 @@ sub printBondedTopOutput {
 		print "Counting dihedrals\n";
 		getSetDiheCounts(\%DihedralData,\%bondPDL);
         }else{
-        	print "Will not count/rescale dihedrals with common middle bonds.";
+        	print "Will not count/rescale dihedrals with common middle bonds.\n";
         }
 	## SET DIHEDRAL RATIOS ##
-	print "Setting energetic ratios\n";
-	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms);
+	if($normalizevals){
+		# only set ratios if normalization is on.  It is faster to not use it.
+		print "Setting energetic ratios\n";
+		setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms);
+	}
 	print "Processing atoms\n";
 	getAtomTypes(\%allAtoms);
  	# adding extras at this point is a bit out of place.  but, it is important, in order to verify that all bonds have bondtypes, etc.

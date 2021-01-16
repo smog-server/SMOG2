@@ -41,7 +41,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
+qw($normalizevals checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round compareFuncs);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -70,6 +70,7 @@ our $functions;
 our $contactSettings;
 our $interactionThreshold;
 our $countDihedrals;
+our $normalizevals;
 
 my $settings; our $termRatios;
 our $interactions;
@@ -102,8 +103,8 @@ our %EGinSif;
 our %pairtypesused;
 our %bondtypesused;
 our %fTypes;
+our %usedFunctions;
 our %fTypesArgNum;
-
 
 my %bondHandle;
 my @improperHandle;
@@ -117,6 +118,7 @@ sub clearBifMemory {
 	%residueBackup = %{ dclone (\%residues) };
 	undef %residues;
 	undef $functions;
+	undef %usedFunctions;
 	undef $contactSettings;
 	undef $termRatios;
 	undef $interactions;
@@ -165,9 +167,23 @@ sub round
 sub checkFunction
 {
 	my($funcString) = @_;
+	$funcString =~ s/^\s+//g;
 	$funcString =~ s/\(.*//g;
 	if(!exists $fTypes{"$funcString"}){smog_quit ("\"$funcString\" is not a supported function type in SMOG");}
 	if(!exists $functions->{$funcString}){smog_quit ("Function \"$funcString\" is being used, but is not defined in .sif file");}
+	$usedFunctions{$funcString}=1;
+}
+
+# compareFuncs checks to see if all defined functions in the .sif are used.
+sub compareFuncs
+{
+	my $string="";
+	foreach my $i(keys %{$functions}){
+		if(!defined $usedFunctions{$i}){
+			$string .="Function $i is defined in the .sif file, but not used in the .nb or .b files.\n";
+		}
+	}
+	return $string;
 }
 
 # checkBondFunctionDef: verifies that the bond function declation satisfies some standards
@@ -594,7 +610,7 @@ sub parseSif {
 	## Read .sif file ##
 	$data = $xml->XMLin($sifxml,KeyAttr => ['name'],ForceArray=>1);
 	if(!exists $data->{"version"}->[0]->{"min"}){
-		smog_quit("Minimum required SMOG version is not defined in .sif file. This check is intended to ensure that one does not use new templates with an old version of SMOG.  However, newer version of SMOG should always work with old templates.  Accordingly, if you are using the newest release of SMOG, you can probably ignore this warning.",0);
+		smog_note("Minimum required SMOG version is not defined in .sif file. This check is intended to ensure that one does not use new templates with an old version of SMOG.  However, newer version of SMOG should always work with old templates.  Accordingly, if you are using the newest release of SMOG, you can probably ignore this warning.");
 	}else{
 		my $minver=$data->{"version"}->[0]->{"min"};
 		if(!exists $SMOGversions{"$minver"}){
@@ -686,11 +702,17 @@ sub parseSif {
 	if(($CG_NORM > 0 and $EG_NORM ==0) or ($EG_NORM > 0 and $CG_NORM ==0)){
 		smog_quit('Issue in .sif. Normalization only turned on for ContactGroups, or EnergyGroups. Normalization must be off, or on, for both.');
 	}
-	
+
+	if($EG_NORM > 0){
+		$normalizevals=1;
+	}else{
+		$normalizevals=0;
+	}	
+		
 	## NOTE:Contact Type is Global ##
 	## Sum of contact scalings ##
 	
-	if($groupRatios->{"contacts"} <=0 || $groupRatios->{"contacts"} <=0){
+	if($groupRatios->{"contacts"} <=0 || $groupRatios->{"dihedrals"} <=0){
 		smog_quit("All values for groupRatios must be greater than zero. See .sif file.")
 	}
 	## contact/dihe relative Scale ##
@@ -772,10 +794,11 @@ sub parseSif {
 	$interactionThreshold->{"contacts"}={"shortContacts"=>$contactsThreshold->{"shortContacts"}};
 	$interactionThreshold->{"distance"}={"tooShortDistance"=>$distanceThreshold->{"tooShortDistance"}};
 	if(exists $data->{"settings"}->[0]->{"dihedralNormalization"}->[0]->{"dihedralCounting"}){
-	 $countDihedrals=$data->{"settings"}->[0]->{"dihedralNormalization"}->[0]->{"dihedralCounting"};
+	 	$countDihedrals=$data->{"settings"}->[0]->{"dihedralNormalization"}->[0]->{"dihedralCounting"};
         }else{
-         # by default, we will count dihedrals.
-         $countDihedrals=1;
+         	# by default, we will count dihedrals.
+       		smog_note("dihedralNormalization not given.  Will count dihedrals, by default.");
+         	$countDihedrals=1;
         }
 # depricated options.  We have left them in the schemas so that the error that would be thrown when using an old template will not be cryptic.  However, the entries are optional 
 	if( $interactionThreshold->{"distance"}->{"tooShortDistance"} )

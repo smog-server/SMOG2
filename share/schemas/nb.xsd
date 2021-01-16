@@ -4,26 +4,26 @@
 <!-- BOOLEAN TYPE -->
 <xs:simpleType name="booleanType">
     <xs:restriction base="xs:integer">
-    <xs:pattern value="^[01]$"/>
+      <xs:pattern value="^[01]$"/>
     </xs:restriction>
 </xs:simpleType>
 
 <xs:simpleType name="gmxType">
     <xs:restriction base="xs:integer">
-    <xs:pattern value="^[123]$"/>
+      <xs:pattern value="^[123]$"/>
     </xs:restriction>
 </xs:simpleType>
 
 <xs:simpleType name="gmxTypeComb">
     <xs:restriction base="xs:integer">
-    <xs:pattern value="^[12]$"/>
+      <xs:pattern value="^[12]$"/>
     </xs:restriction>
 </xs:simpleType>
 
 <!-- funcTypeC TYPE -->
 <xs:simpleType name="funcTypeTypeC">
     <xs:restriction base="xs:string">
-    <xs:pattern value=".*\(.*\)"/>
+      <xs:pattern value=".*\(.*\)"/>
     </xs:restriction>
 </xs:simpleType>
 
@@ -38,7 +38,6 @@
     <xs:element name="pairType" value="xs:string"/>
 </xs:complexType>
 
-
 <!--nonbond TYPE -->
 <xs:complexType name="nonbondType">
     <xs:element name="nbType" type="nbTypeType"/>
@@ -51,14 +50,12 @@
     <xs:attribute name="epsilon" type="xs:double" use="optional"/>
 </xs:complexType>
 
-
 <!--contacts TYPE -->
 <xs:complexType name="contactType">
     <xs:element name="pairType" type="pairTypeType" minOccurs="2" maxOccurs="2"/>
     <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
     <xs:attribute name="contactGroup" type="xs:string" use="required"/>
 </xs:complexType>
-
 
 <!--pairs TYPE -->
 <xs:complexType name="pairType">
@@ -75,14 +72,11 @@
     <xs:attribute name="fudgeQQ" type="xs:decimal" use="optional"/>
 </xs:complexType>
 
-
 <!-- NB TYPE -->
 <xs:complexType name="nbTypes">
-  <xs:sequence>
     <xs:element name="defaults" type="defaultsType" minOccurs="0" maxOccurs="1" />
     <xs:element name="nonbond" type="nonbondType" maxOccurs="unbounded"/>
     <xs:element name="contact" type="contactType" maxOccurs="unbounded"/>
-  </xs:sequence>
 </xs:complexType>
 
 <!-- nb SCHEMA -->

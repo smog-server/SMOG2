@@ -76,13 +76,11 @@
 </xs:complexType>
 
  <!-- GROUPS TYPE -->
- <xs:complexType name="groupsType">
-      <xs:sequence>
-      <xs:element name="energyGroup" type="energyGroupType" minOccurs="1" maxOccurs="unbounded"/>
-      <xs:element name="contactGroup" type="contactGroupType" minOccurs="1" maxOccurs="unbounded"/>
-      <xs:element name="groupRatios" type="groupRatioType" minOccurs="1" maxOccurs="1"/>
-      </xs:sequence>
-  </xs:complexType>
+<xs:complexType name="groupsType">
+    <xs:element name="energyGroup" type="energyGroupType" minOccurs="1" maxOccurs="unbounded"/>
+    <xs:element name="contactGroup" type="contactGroupType" minOccurs="1" maxOccurs="unbounded"/>
+    <xs:element name="groupRatios" type="groupRatioType" minOccurs="1" maxOccurs="1"/>
+</xs:complexType>
 
 <!--bondsThresholdType -->
 <xs:complexType name="bondsThresholdType">
@@ -111,11 +109,8 @@
     <xs:attribute name="dihedralCounting" type="booleanType" use="optional"/>
 </xs:complexType>
 
-
-
 <!-- SETTINGS TYPE -->
 <xs:complexType name="settingsType">
-    <xs:sequence>
     <xs:element name="Groups" type="groupsType"/>
     <xs:element name="Contacts" type="contactType"/>
     <xs:element name="bondsThreshold" type="bondsThresholdType" minOccurs="0" maxOccurs="1"/>
@@ -123,8 +118,8 @@
     <xs:element name="contactsThreshold" type="contactsThresholdType" minOccurs="0" maxOccurs="1"/>
     <xs:element name="dihedralNormalization" type="dihedralNormalizationType" minOccurs="0" maxOccurs="1"/>
     <xs:element name="distanceThreshold" type="distanceThresholdType" minOccurs="0" maxOccurs="1"/>
-    </xs:sequence>
 </xs:complexType>
+
 <!-- FUNCTIONS TYPE -->
 <xs:complexType name="functionsType">
     <xs:element name="function" type="functionType" maxOccurs="unbounded"/>
@@ -133,11 +128,9 @@
 
 <!-- SIF TYPE -->
 <xs:complexType name="sifType">
-  <xs:sequence>
     <xs:element name="version" type="versionType" minOccurs="0" maxOccurs="1" />
     <xs:element name="functions" type="functionsType"/>
     <xs:element name="settings" type="settingsType"/>
-  </xs:sequence>
 </xs:complexType>
 
 <!-- BIF SCHEMA -->
