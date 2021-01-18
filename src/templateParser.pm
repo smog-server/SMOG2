@@ -313,9 +313,11 @@ sub checkContactFunctionDef
 		}
 		## Epsilon_nc ##
 		if($vars[1] =~ /\?/){smog_quit("value of a in Gaussian can not be a ? mark. Problematic declaration (in .nb file): $funcString");}
-	}
+	}elsif($funcname eq "bond_type6"){
+		if($vars[1] =~ /\?/){smog_quit("bond_type6 can't have ? in the stiffness. Problematic declaration (in .nb file): $funcString");}
+    	}
 
-        $usedFunctions{$funcname}=1;
+ 	$usedFunctions{$funcname}=1;
 
 	# we had to put in a kludge to account for the fact that bond_type6 is also a contact potential
         if($functions->{$funcname}->{"directive"}  ne "pairs" && $funcname ne "bond_type6"){smog_quit ("$funcname is not a valid contact function. Problematic declaration (in .nb file): $funcString");}

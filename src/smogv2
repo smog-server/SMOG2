@@ -1625,19 +1625,11 @@ my $k;
 	##i=1 is k#
 	
 	## k ##
-	if($paramArr->[1] =~ /\?/){smog_quit("CONTACT FUNCTION PARSING:: contact bond_type6 can't have ? in the stiffness.");}
 	$paramArr->[1] = eval($paramArr->[1]);
 	
 	## r ##
 	$paramArr->[0] = evalsub($paramArr->[0],$r0);
-#	if($paramArr->[0] =~ /\?/)
-#	{
-#		#Replace ? with $r0 
-#		$paramArr->[0] =~ s/\?/$r0/g;
-#	}
-#	#Eval expression
-#	$paramArr->[0] = eval($paramArr->[0]);
-	
+
 	($r0,$k) = ($paramArr->[0],$paramArr->[1]);
 	@{$paramArr}=($r0,$k);
 
