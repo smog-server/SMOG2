@@ -263,7 +263,7 @@ sub checkAngleFunctionDef
 # checkContactFunctionDef: verifies that the contact function declaration satisfies some standards 
 sub checkContactFunctionDef
 {
-	my($funcString) = @_;
+	my($funcString,$cG) = @_;
 	my $funcargs=$funcString;
 	my $funcname=$funcString;
 
@@ -281,6 +281,39 @@ sub checkContactFunctionDef
 	$funcargs =~ s/\s+//g;
 	my @vars=split(/\,/,$funcargs);
 	my $nargs = $#vars + 1;
+
+        my $settings = $data->{"settings"}->[0];
+        my $contactGroups = $settings->{"Groups"}->[0]->{"contactGroup"};
+        my $normalize = $contactGroups->{$cG}->{"normalize"};
+
+	if($funcname eq "contact_1"){
+		my $N=$vars[1];
+		my $M=$vars[0];
+        	if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
+        	if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller. Problematic declaration (in .nb file): $funcString")}
+	}elsif($funcname eq "contact_2"){
+		if($interactions->{"gmx-combination-rule"}==2){
+			# the reason for this error is that contact_1 and contact_2 have identical behavior with combrule 2
+			smog_quit("contact_2 not supported with gmx-combination-rule=2. Problematic declaration (in .nb file): $funcString");
+		}
+		if($vars[3] !~ /^\?$/ && $vars[3] =~ /\?/)
+	 	{
+			smog_quit("Epsilon value used in contact_2 interaction can not be an expression that includes ?. Problematic declaration (in .nb file): $funcString");
+		}
+
+	}elsif($funcname eq "contact_gaussian"){
+		if($vars[0] =~ /^\?$/){
+			if(!$normalize){smog_quit("Gaussian contact type can not have normalization turned off with epsilon=?  Problematic declaration (in .nb file): $funcString")}
+		}
+		elsif($vars[0] =~ /\?/)
+		{
+			smog_quit("Epsilon value used in Gaussian interaction can not be an expression that includes ?. Problematic declaration (in .nb file): $funcString");
+		}else{
+			if($normalize){smog_quit("Can\'t normalize a Gaussian contact since the weight is not defined by a ? mark. Problematic declaration (in .nb file): $funcString")}
+		}
+		## Epsilon_nc ##
+		if($vars[1] =~ /\?/){smog_quit("value of a in Gaussian can not be a ? mark. Problematic declaration (in .nb file): $funcString");}
+	}
 
         $usedFunctions{$funcname}=1;
 
@@ -1255,8 +1288,8 @@ sub parseNonBonds {
 	 	$pairtypesused{$typeA}=1;
 	 	$pairtypesused{$typeB}=1;
 		my $func = $inter->{"func"};
-		&checkContactFunctionDef($func);
 	 	my $cG = $inter->{"contactGroup"};
+		&checkContactFunctionDef($func,$cG);
 		if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
 			smog_quit ("contact parameters defined multiple times for types $typeA-$typeB. Check .nb file.");
 		}

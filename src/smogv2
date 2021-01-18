@@ -1487,9 +1487,6 @@ sub contactParseNM1
 	$N=$paramArr->[1];
 	my $length=scalar @{$paramArr};
 
-	if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_1. Expecting 4, found $length."); }
-	if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
-	if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller.")}
 
 	if($interactions->{"gmx-combination-rule"}==1){
 	
@@ -1554,22 +1551,15 @@ sub contactParseNM2
 	##epsilon  
 	##r0 is native distance##
 	#
-	if($interactions->{"gmx-combination-rule"}==2){
-		# the reason for this error is that contact_1 and contact_2 have identical behavior with combrule 2
-		smog_quit("contact_2 not supported with gmx-combination-rule=2.");
-	}
 	my $A; my $B;
 	my $length=scalar @{$paramArr};
 
-	if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_2. Expecting 4, found $length."); }
-	
 	# replace ? with native distance expression
 	$paramArr->[2]=evalsub($paramArr->[2],$r0);
 	
 	# substitute value of r into f(r) and g(r)
 	$A=evalsub($paramArr->[1],$paramArr->[2]);	
 	$B=evalsub($paramArr->[0],$paramArr->[2]);	
-
 
 	$A *= $epsilon; 
 	$B *= $epsilon; 
@@ -1580,13 +1570,8 @@ sub contactParseNM2
 		if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
 		$paramArr->[3]=$A;
 		$paramArr->[2]=$B;
-	}
-	elsif($paramArr->[3] =~ /\?/)
-	{
-		smog_quit("Epsilon value used in contact_2 interaction can not be an expression that includes ?.\n");
-	}
+	}else{
 	## additional rescaling used
-	else{
 		if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
 		$A *= $paramArr->[3];
 		$B *= $paramArr->[3];
@@ -1609,23 +1594,13 @@ sub contactParseGaussian
 	##i=2 is sigma_gaussian##
 	##i=3 is r ##
 	
-	if($paramArr->[1] =~ /\?/ && !($paramArr->[2] =~ /^\?$/)){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
 	
 	## Epsilon_c ##
 	if($paramArr->[0] =~ /^\?$/){
-		if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
 		$paramArr->[0]=$epsilon;
-	}
-	elsif($paramArr->[0] =~ /\?/)
-	{
-		smog_quit("Epsilon value used in gaussian interaction can not be an expression that includes ?.\n");
-	}
-	else{
-		if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
+	}else{
 		$paramArr->[0]=$epsilon*($paramArr->[0]);
 	}
-	## Epsilon_nc ##
-	if($paramArr->[1] =~ /\?/){smog_quit("value of a in gaussian can not be a ? mark");}
 	
 	## Check if sigma_G has r0 dependency ##
 	if($paramArr->[2] =~ /\?/)
@@ -1688,7 +1663,6 @@ sub contactFuncParser
 	$params = $2;
 	$params =~ s/\s+//g; 
 	($fType,$directive,$addExclusions) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "pairs" && $directive ne "bonds"){smog_quit ("$funcName is a contact type function and should only go into pairs or bonds directives");}
  	@paramArr = split(",",$params); ## Parse all parameters
 
 	$contactParseSeen{$contactFunc}{"fType"}=$fType;
