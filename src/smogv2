@@ -181,18 +181,18 @@ sub setglobals {
 	%fTypesArgNum = ('bond_harmonic' => '2',
 		'bond_bytype' => '0',
 		'bond_type6' => '2',
-		'angle_harmonic' => '1',
-		'angle_bytype' => '-1',
+		'angle_harmonic' => '2',
+		'angle_bytype' => '0',
 		'angle_free' => '0',
-		'dihedral_cosine'=>'1',
-		'dihedral_cosine4'=>'4',
+		'dihedral_cosine'=>'3',
+		'dihedral_cosine4'=>'3',
 		'dihedral_harmonic' => '2',
-		'dihedral_bytype' => '-1',
+		'dihedral_bytype' => '0',
 		'dihedral_free' => '0',
 		'contact_free'=>'0',
-		'contact_1'=>'1',
-		'contact_2'=>'1',
-		'contact_gaussian'=>'6'
+		'contact_1'=>'4',
+		'contact_2'=>'4',
+		'contact_gaussian'=>'4'
 		);
 
 	## this is the topfile buffer stuff
@@ -968,8 +968,8 @@ sub bondFuncParser
 	$funcName = $1;
 	$params = $2;
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "bonds"){smog_quit ("$funcName is not a valid bonds function");}
- 	@paramArr = split(",",$params); ## Parse all parameters
+	$params =~ s/\s+//g; 
+	@paramArr = split(",",$params); ## Parse all parameters
 	$bondParseSeen{$bondFunc}{"fType"}=$fType;
 	$bondParseSeen{$bondFunc}{"paramArr"}=\@paramArr;
 	return ($fType,@paramArr);
@@ -1034,7 +1034,6 @@ sub CalculateAnglesHelper
 sub angleOutput
 {
  	my($inputFunc,$i,$j,$k,$values,$indexhandle,$allatoms) = @_;
-	if(!$inputFunc){smog_quit ("ANGLEOUTPUT::NO FUNCTION DEFINED");}
  ## Remove white spaces from string ##
  	$inputFunc =~ s/^\s+|\s+$//g;
  ## If $input contains a + ##
@@ -1113,8 +1112,8 @@ sub angleFuncParser
  	($angFunc =~ m/(.*)\((.*)\)/);
 	$funcName = $1;
 	$params = $2;
+	$params =~ s/\s+//g; 
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "angles"){smog_quit ("$funcName is not a valid angles function");}
  	@paramArr = split(",",$params); ## Parse all parameters
 	$angleParseSeen{$angFunc}{"fType"}=$fType;
 	$angleParseSeen{$angFunc}{"paramArr"}=\@paramArr;
@@ -1288,6 +1287,7 @@ sub diheFuncParser
 	my $funcName = "";my $params = "";
 	($diheFunc =~ m/(.*)\((.*)\)/);
 	$funcName = $1; $params = $2;
+	$params =~ s/\s+//g; 
 
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "dihedrals"){smog_quit ("$funcName is not a valid dihedrals function");}
@@ -1686,6 +1686,7 @@ sub contactFuncParser
  	($contactFunc =~ /^([^(]+)\((.*)\)$/);
  	$funcName = $1;
 	$params = $2;
+	$params =~ s/\s+//g; 
 	($fType,$directive,$addExclusions) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "pairs" && $directive ne "bonds"){smog_quit ("$funcName is a contact type function and should only go into pairs or bonds directives");}
  	@paramArr = split(",",$params); ## Parse all parameters

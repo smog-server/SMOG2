@@ -169,8 +169,6 @@ sub checkFunction
 	my($funcString) = @_;
 	$funcString =~ s/^\s+//g;
 	$funcString =~ s/\(.*//g;
-	if(!exists $fTypes{"$funcString"}){smog_quit ("\"$funcString\" is not a supported function type in SMOG");}
-	if(!exists $functions->{$funcString}){smog_quit ("Function \"$funcString\" is being used, but is not defined in .sif file");}
 	$usedFunctions{$funcString}=1;
 }
 
@@ -194,25 +192,74 @@ sub checkBondFunctionDef
 	my $funcname=$funcString;
 
 	if($funcname =~ m/\).*\(/) {
-		smog_quit("Non-supported format in bond definition. It appears you may be trying to define the potential as a sum/difference of two functions. Problematic declaration: $funcname")
+		smog_quit("Unsupported format in bond definition. It appears you may be trying to define the potential as a sum/difference of two functions. Problematic declaration (in .b file): $funcString")
 	} 
+	if($funcname =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in bond function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
+	} 
+
 	$funcname =~ s/\(.*//g;
 	# get arguments to function
 	$funcargs =~ s/.*\(//g;
 	$funcargs =~ s/\).*//g;
+	$funcargs =~ s/\s+//g;
 	my @vars=split(/\,/,$funcargs);
 	my $nargs = $#vars + 1;
+
+        $usedFunctions{$funcname}=1;
+
+        if($functions->{$funcname}->{"directive"}  ne "bonds"){smog_quit ("$funcname is not a valid bonds function. Problematic declaration (in .b file): $funcString");}
+
 	my $nargs_exp=$fTypesArgNum{"$funcname"};
 	if($nargs_exp != $nargs){
-		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs.\n\tSee following definition in .b file:\n\t$funcString\n")
+		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .b file:\n\t$funcString\n")
 	}
 	if($nargs > 0 && $vars[0] =~ m/\?\?/){
 		smog_quit("Double question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
 	}
 	if($#vars>0 && $vars[1] =~ m/\?/){
-		smog_quit("Question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+		smog_quit("Question marks not allowed in bond weight definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
 	}
 }
+
+# checkAngleFunctionDef: verifies that the angle function declation satisfies some standards (this is very similar to the bond func def routine.  But, we may want to later add some differences
+sub checkAngleFunctionDef
+{
+	my($funcString) = @_;
+	my $funcargs=$funcString;
+	my $funcname=$funcString;
+
+	if($funcname =~ m/\).*\(/) {
+		smog_quit("Unsupported format in angle definition. It appears you may be trying to define the potential as a sum/difference of two functions. Problematic declaration (in .b file): $funcString")
+	} 
+	if($funcname =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in angle function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
+	} 
+
+	$funcname =~ s/\(.*//g;
+	# get arguments to function
+	$funcargs =~ s/.*\(//g;
+	$funcargs =~ s/\).*//g;
+	$funcargs =~ s/\s+//g;
+	my @vars=split(/\,/,$funcargs);
+	my $nargs = $#vars + 1;
+
+        $usedFunctions{$funcname}=1;
+
+        if($functions->{$funcname}->{"directive"}  ne "angles"){smog_quit ("$funcname is not a valid bonds function. Problematic declaration (in .b file): $funcString");}
+
+	my $nargs_exp=$fTypesArgNum{"$funcname"};
+	if($nargs_exp != $nargs){
+		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .b file:\n\t$funcString\n")
+	}
+	if($nargs > 0 && $vars[0] =~ m/\?\?/){
+		smog_quit("Double question marks not allowed in angle definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+	}
+	if($#vars>0 && $vars[1] =~ m/\?/){
+		smog_quit("Question marks not allowed in angle weight definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+	}
+}
+
 
 sub checkREScharges
 {
@@ -624,6 +671,7 @@ sub parseSif {
 	## Parse function data
 	$functions = $data->{"functions"}->[0]->{"function"};
 	foreach my $funcName(keys %{$functions}){
+	        if(!exists $fTypes{"$funcName"}){smog_quit ("\"$funcName\" is not a supported function type in SMOG");}
 	
 		if($functions->{$funcName}->{"directive"} eq "pairs" 
 			&& !exists $functions->{$funcName}->{"exclusions"}){
@@ -931,7 +979,6 @@ sub parseBonds {
  		$bondtypesused{$typeA}=1;
  		$bondtypesused{$typeB}=1;
 		my $func = $inter->{"func"};
-		&checkFunction($func);
 		&checkBondFunctionDef($func);
 		if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
 	               exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
@@ -1033,7 +1080,7 @@ sub parseBonds {
 		}
 
 		my $func = $inter->{"func"};
-		&checkFunction($func);
+		&checkAngleFunctionDef($func);
 		my $keyString = "$typeA-$typeB-$typeC";
 		## NOTE THE ORDER OF CENTRAL TYPE LISTED IN XML FILE MATTERS ##
 		if(exists $interactions->{"angles"}->{$keyString}){
