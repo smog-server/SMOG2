@@ -184,7 +184,7 @@ sub compareFuncs
 	return $string;
 }
 
-# checkBondFunctionDef: verifies that the bond function declation satisfies some standards
+# checkBondFunctionDef: verifies that the bond function declaration satisfies some standards
 sub checkBondFunctionDef
 {
 	my($funcString) = @_;
@@ -222,7 +222,7 @@ sub checkBondFunctionDef
 	}
 }
 
-# checkAngleFunctionDef: verifies that the angle function declation satisfies some standards (this is very similar to the bond func def routine.  But, we may want to later add some differences
+# checkAngleFunctionDef: verifies that the angle function declaration satisfies some standards (this is very similar to the bond func def routine.  But, we may want to later add some differences
 sub checkAngleFunctionDef
 {
 	my($funcString) = @_;
@@ -260,6 +260,41 @@ sub checkAngleFunctionDef
 	}
 }
 
+# checkContactFunctionDef: verifies that the contact function declaration satisfies some standards 
+sub checkContactFunctionDef
+{
+	my($funcString) = @_;
+	my $funcargs=$funcString;
+	my $funcname=$funcString;
+
+	if($funcname =~ m/\).*\(/) {
+		smog_quit("Unsupported format in contact definition. It appears you may be trying to define the potential as a sum/difference of two functions. Problematic declaration (in .nb file): $funcString")
+	} 
+	if($funcname =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in contact function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .nb file): $funcString")
+	} 
+
+	$funcname =~ s/\(.*//g;
+	# get arguments to function
+	$funcargs =~ s/.*\(//g;
+	$funcargs =~ s/\).*//g;
+	$funcargs =~ s/\s+//g;
+	my @vars=split(/\,/,$funcargs);
+	my $nargs = $#vars + 1;
+
+        $usedFunctions{$funcname}=1;
+
+	# we had to put in a kludge to account for the fact that bond_type6 is also a contact potential
+        if($functions->{$funcname}->{"directive"}  ne "pairs" && $funcname ne "bond_type6"){smog_quit ("$funcname is not a valid contact function. Problematic declaration (in .nb file): $funcString");}
+
+	my $nargs_exp=$fTypesArgNum{"$funcname"};
+	if($nargs_exp != $nargs){
+		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .nb file:\n\t$funcString\n")
+	}
+	if($funcname =~ m/\?\?/){
+		smog_quit("Double question marks not allowed in contact definition.\nSee the following function defined in the .nb file:\n\t$funcString\n");
+	}
+}
 
 sub checkREScharges
 {
@@ -1007,7 +1042,6 @@ sub parseBonds {
 
 		my $func = $inter->{"func"};
 		&checkFunction($func);
-
 		my $eG;
 		if(exists $inter->{"energyGroup"})
 		{	
@@ -1221,7 +1255,7 @@ sub parseNonBonds {
 	 	$pairtypesused{$typeA}=1;
 	 	$pairtypesused{$typeB}=1;
 		my $func = $inter->{"func"};
-		&checkFunction($func);
+		&checkContactFunctionDef($func);
 	 	my $cG = $inter->{"contactGroup"};
 		if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
 			smog_quit ("contact parameters defined multiple times for types $typeA-$typeB. Check .nb file.");
@@ -1236,9 +1270,6 @@ sub parseNonBonds {
 		$funcTableRev{"contacts"}->{$counter}->{"contactGroup"} = $cG;
 		$counter++;
 	}
-	
-	
-
 }
 
 ######################
