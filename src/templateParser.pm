@@ -192,6 +192,10 @@ sub checkBondFunctionDef
 	my($funcString) = @_;
 	my $funcargs=$funcString;
 	my $funcname=$funcString;
+
+	if($funcname =~ m/\).*\(/) {
+		smog_quit("Non-supported format in bond definition. It appears you may be trying to define the potential as a sum/difference of two functions. Problematic declaration: $funcname")
+	} 
 	$funcname =~ s/\(.*//g;
 	# get arguments to function
 	$funcargs =~ s/.*\(//g;
