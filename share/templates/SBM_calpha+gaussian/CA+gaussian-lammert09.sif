@@ -26,6 +26,9 @@
        <groupRatios contacts="1" dihedrals="1"/>
 
 </Groups>
+
+<dihedralNormalization dihedralCounting="0"/>
+
 <!-- CONTACT MAP SETTINGS -->
 <!-- NOTE: If a different template is provided with the -t flag, then these settings will be ignored-->
 <Contacts method="shadow" contactDistance="6" shadowRadius="1" shadowRadiusBonded="0.5">
