@@ -188,23 +188,19 @@ sub compareFuncs
 sub checkBondFunctionDef
 {
 	my($funcString) = @_;
-	my $funcargs=$funcString;
-	my $funcname=$funcString;
-	if(isFunction($funcString) != 1){
+	if($funcString =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in bond function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
+	}
+	my ($name,$var)=splitFunction($funcString);
+	my @name=@{$name};
+	my @var=@{$var};
+	if($#name != 0){
 		smog_quit("Only single functions are allowed in bond declarations. Issue in .b file: $funcString");
 	};
 
-	if($funcname =~ m/\^/) {
-		smog_quit("\"^\" characters are not supported in bond function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
-	} 
-
-	$funcname =~ s/\(.*//g;
-	# get arguments to function
-	$funcargs =~ s/.*\(//g;
-	$funcargs =~ s/\).*//g;
-	$funcargs =~ s/\s+//g;
-	my @vars=split(/\,/,$funcargs);
+	my @vars=split(/\,/,$var[0]);
 	my $nargs = $#vars + 1;
+	my $funcname=$name[0];
 
         $usedFunctions{$funcname}=1;
 
@@ -226,27 +222,24 @@ sub checkBondFunctionDef
 sub checkAngleFunctionDef
 {
 	my($funcString) = @_;
-	my $funcargs=$funcString;
-	my $funcname=$funcString;
-	if(isFunction($funcString) != 1){
+
+	if($funcString =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in bond function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
+	}
+	my ($name,$var)=splitFunction($funcString);
+	my @name=@{$name};
+	my @var=@{$var};
+	if($#name != 0){
 		smog_quit("Only single functions are allowed in angle declarations. Issue in .b file: $funcString");
 	};
 
-	if($funcname =~ m/\^/) {
-		smog_quit("\"^\" characters are not supported in angle function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
-	} 
-
-	$funcname =~ s/\(.*//g;
-	# get arguments to function
-	$funcargs =~ s/.*\(//g;
-	$funcargs =~ s/\).*//g;
-	$funcargs =~ s/\s+//g;
-	my @vars=split(/\,/,$funcargs);
+	my @vars=split(/\,/,$var[0]);
 	my $nargs = $#vars + 1;
+	my $funcname=$name[0];
 
         $usedFunctions{$funcname}=1;
 
-        if($functions->{$funcname}->{"directive"}  ne "angles"){smog_quit ("$funcname is not a valid bonds function. Problematic declaration (in .b file): $funcString");}
+        if($functions->{$funcname}->{"directive"}  ne "angles"){smog_quit ("$funcname is not a valid angle function. Problematic declaration (in .b file): $funcString");}
 
 	my $nargs_exp=$fTypesArgNum{"$funcname"};
 	if($nargs_exp != $nargs){
@@ -264,30 +257,22 @@ sub checkAngleFunctionDef
 sub checkContactFunctionDef
 {
 	my($funcString,$cG) = @_;
-	my $funcargs=$funcString;
-	my $funcname=$funcString;
-	if(isFunction($funcString) != 1){
+
+	if($funcString =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in contact function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .nb file): $funcString")
+	}
+	my ($name,$var)=splitFunction($funcString);
+	my @name=@{$name};
+	my @var=@{$var};
+	if($#name != 0){
 		smog_quit("Only single functions are allowed in contact declarations. Issue in .nb file: $funcString");
 	};
-	
-	if($funcname =~ m/\^/) {
-		smog_quit("\"^\" characters are not supported in contact function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .nb file): $funcString")
-	} 
-
-	$funcname =~ s/\(.*//;
-	# get arguments to function
-	$funcargs =~ s/^.*\(//;
-	$funcargs =~ s/\)$//;
-	$funcargs =~ s/\s+//g;
-	my @vars=split(/\,/,$funcargs);
+	my @vars=split(/\,/,$var[0]);
 	my $nargs = $#vars + 1;
+	my $funcname=$name[0];
 
-        my $settings = $data->{"settings"}->[0];
-        my $contactGroups = $settings->{"Groups"}->[0]->{"contactGroup"};
-        my $normalize = $contactGroups->{$cG}->{"normalize"};
-	foreach my $J(@vars){
-		print "$J n\n";
-	}
+        my $normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
+
 	if($funcname eq "contact_1"){
 		my $N=$vars[1];
 		my $M=$vars[0];
@@ -305,16 +290,16 @@ sub checkContactFunctionDef
 
 	}elsif($funcname eq "contact_gaussian"){
 		if($vars[0] =~ /^\?$/){
-			if(!$normalize){smog_quit("Gaussian contact type can not have normalization turned off with epsilon=?  Problematic declaration (in .nb file): $funcString")}
+			if(!$normalize){smog_quit("Gaussian contact type can not have normalization turned off with epsilon_C=?  Problematic declaration (in .nb file): $funcString")}
 		}
 		elsif($vars[0] =~ /\?/)
 		{
-			smog_quit("Epsilon value used in Gaussian interaction can not be an expression that includes ?. Problematic declaration (in .nb file): $funcString");
+			smog_quit("Epsilon_C used in Gaussian interaction can not be an expression that includes ?. Problematic declaration (in .nb file): $funcString");
 		}else{
 			if($normalize){smog_quit("Can\'t normalize a Gaussian contact since the weight is not defined by a ? mark. Problematic declaration (in .nb file): $funcString")}
 		}
 		## Epsilon_nc ##
-		if($vars[1] =~ /\?/){smog_quit("value of a in Gaussian can not be a ? mark. Problematic declaration (in .nb file): $funcString");}
+		if($vars[1] =~ /\?/){smog_quit("value of (r_NC)^12 (second argument) in Gaussian can not be a ? mark. Problematic declaration (in .nb file): $funcString");}
 	}elsif($funcname eq "bond_type6"){
 		if($vars[1] =~ /\?/){smog_quit("bond_type6 can't have ? in the stiffness. Problematic declaration (in .nb file): $funcString");}
     	}
@@ -333,7 +318,7 @@ sub checkContactFunctionDef
 	}
 }
 
-sub isFunction
+sub splitFunction
 {
 	# if the arg is a properly-defined function, meeting some basic criteria, return the number of functions defined in the string.
 	my ($string)=@_;
@@ -347,29 +332,40 @@ sub isFunction
 	my $chars= length $string;
 	# $pp will keep track of how many open (+1) and closed (-1) parentheses there are.  Every time the counter returns to 0, then we have completed a function declaration.
 	my @funcs;
+	my @funcargs;
 	my $funcN=0;
 	my $pp=0;
 	my $tstr="";
+	my $args="";
 	my $lastchar="";
 	for(my $I=0;$I<$chars;$I++){
 		my $char=substr($string,$I,1);
-		$tstr .= $char;
 		if($char eq " "){
 			next;
 		}
 		if($char eq "("){
+			if($pp>0){
+				$args .= $char;
+			}
 			$pp++
 		}elsif($char eq ")"){
 			$pp--;
 			if($pp==0){
 				$funcs[$funcN]=$tstr;
+				$funcargs[$funcN]=$args;
 				$funcN++;
 				$tstr="";
+			}elsif($pp>0){
+				$args .= $char;
 			}elsif($pp<0){
 				smog_quit("Function declaration issue. Unmatched close-parentheses. Problematic function: $string");
 			}
 		}elsif($char eq "," && $pp > 1){
 			smog_quit("Function declaration issue. Too many parentheses enclosing a comma. Problematic function: $string");
+		}elsif($pp==0){
+			$tstr .= $char;
+		}elsif($pp>0){
+			$args .= $char;
 		}
 		if($pp == 0 && $lastchar eq ")" && $char !~ m/\+/){
 			smog_quit("Currently, only sums of functions are supported in templates. Problematic function: $string");
@@ -382,7 +378,7 @@ sub isFunction
 	if($funcN==0){
 		smog_quit("Incomplete function declaration. Problematic function: $string");
 	}
-	return $funcN;
+	return (\@funcs, \@funcargs);
 }
 
 sub checkREScharges
@@ -981,9 +977,6 @@ sub parseSif {
 	{
 		smog_quit("tooShortDistance found in .sif file. The use of tooShortDistance has been replaced with bondsThreshold. Please remove tooShortDistance from your .sif");
 	} 
-
-
-
 }
 
 sub funcToInt
