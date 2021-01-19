@@ -190,10 +190,10 @@ sub checkBondFunctionDef
 	my($funcString) = @_;
 	my $funcargs=$funcString;
 	my $funcname=$funcString;
+	if(isFunction($funcString) != 1){
+		smog_quit("Only single functions are allowed in bond declarations. Issue in .b file: $funcString");
+	};
 
-	if($funcname =~ m/\).*\(/) {
-		smog_quit("Unsupported format in bond definition. It appears you may be trying to define the potential as a sum/difference of two functions. Problematic declaration (in .b file): $funcString")
-	} 
 	if($funcname =~ m/\^/) {
 		smog_quit("\"^\" characters are not supported in bond function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
 	} 
@@ -228,10 +228,10 @@ sub checkAngleFunctionDef
 	my($funcString) = @_;
 	my $funcargs=$funcString;
 	my $funcname=$funcString;
+	if(isFunction($funcString) != 1){
+		smog_quit("Only single functions are allowed in angle declarations. Issue in .b file: $funcString");
+	};
 
-	if($funcname =~ m/\).*\(/) {
-		smog_quit("Unsupported format in angle definition. It appears you may be trying to define the potential as a sum/difference of two functions. Problematic declaration (in .b file): $funcString")
-	} 
 	if($funcname =~ m/\^/) {
 		smog_quit("\"^\" characters are not supported in angle function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
 	} 
@@ -266,18 +266,18 @@ sub checkContactFunctionDef
 	my($funcString,$cG) = @_;
 	my $funcargs=$funcString;
 	my $funcname=$funcString;
-
-	if($funcname =~ m/\).*\(/) {
-		smog_quit("Unsupported format in contact definition. It appears you may be trying to define the potential as a sum/difference of two functions. Problematic declaration (in .nb file): $funcString")
-	} 
+	if(isFunction($funcString) != 1){
+		smog_quit("Only single functions are allowed in contact declarations. Issue in .nb file: $funcString");
+	};
+	
 	if($funcname =~ m/\^/) {
 		smog_quit("\"^\" characters are not supported in contact function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .nb file): $funcString")
 	} 
 
-	$funcname =~ s/\(.*//g;
+	$funcname =~ s/\(.*//;
 	# get arguments to function
-	$funcargs =~ s/.*\(//g;
-	$funcargs =~ s/\).*//g;
+	$funcargs =~ s/^.*\(//;
+	$funcargs =~ s/\)$//;
 	$funcargs =~ s/\s+//g;
 	my @vars=split(/\,/,$funcargs);
 	my $nargs = $#vars + 1;
@@ -285,7 +285,9 @@ sub checkContactFunctionDef
         my $settings = $data->{"settings"}->[0];
         my $contactGroups = $settings->{"Groups"}->[0]->{"contactGroup"};
         my $normalize = $contactGroups->{$cG}->{"normalize"};
-
+	foreach my $J(@vars){
+		print "$J n\n";
+	}
 	if($funcname eq "contact_1"){
 		my $N=$vars[1];
 		my $M=$vars[0];
@@ -329,6 +331,58 @@ sub checkContactFunctionDef
 	if($funcname =~ m/\?\?/){
 		smog_quit("Double question marks not allowed in contact definition.\nSee the following function defined in the .nb file:\n\t$funcString\n");
 	}
+}
+
+sub isFunction
+{
+	# if the arg is a properly-defined function, meeting some basic criteria, return the number of functions defined in the string.
+	my ($string)=@_;
+	if($string =~ m/[\[|\]]/){
+		smog_quit("Function names and arguments can not have square brackets.  Problematic declaration: $string");
+	}
+	if($string =~ m/[\{|\}]/){
+		smog_quit("Function names and arguments can not have curly brackets.  Problematic declaration: $string");
+	}
+
+	my $chars= length $string;
+	# $pp will keep track of how many open (+1) and closed (-1) parentheses there are.  Every time the counter returns to 0, then we have completed a function declaration.
+	my @funcs;
+	my $funcN=0;
+	my $pp=0;
+	my $tstr="";
+	my $lastchar="";
+	for(my $I=0;$I<$chars;$I++){
+		my $char=substr($string,$I,1);
+		$tstr .= $char;
+		if($char eq " "){
+			next;
+		}
+		if($char eq "("){
+			$pp++
+		}elsif($char eq ")"){
+			$pp--;
+			if($pp==0){
+				$funcs[$funcN]=$tstr;
+				$funcN++;
+				$tstr="";
+			}elsif($pp<0){
+				smog_quit("Function declaration issue. Unmatched close-parentheses. Problematic function: $string");
+			}
+		}elsif($char eq "," && $pp > 1){
+			smog_quit("Function declaration issue. Too many parentheses enclosing a comma. Problematic function: $string");
+		}
+		if($pp == 0 && $lastchar eq ")" && $char !~ m/\+/){
+			smog_quit("Currently, only sums of functions are supported in templates. Problematic function: $string");
+		}
+		$lastchar=$char;
+	}
+	if($pp>0){
+		smog_quit("Function declaration issue. Unmatched open-parentheses. Problematic function: $string");
+	}
+	if($funcN==0){
+		smog_quit("Incomplete function declaration. Problematic function: $string");
+	}
+	return $funcN;
 }
 
 sub checkREScharges
