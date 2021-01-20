@@ -41,7 +41,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($normalizevals checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round compareFuncs);
+qw($normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round compareFuncs);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -161,15 +161,6 @@ sub round
 		$round=int($val+0.5);
  	}
 	return $round;	
-}
-
-# checkFunction: verifies that function type is supported 
-sub checkFunction
-{
-	my($funcString) = @_;
-	$funcString =~ s/^\s+//g;
-	$funcString =~ s/\(.*//g;
-	$usedFunctions{$funcString}=1;
 }
 
 # compareFuncs checks to see if all defined functions in the .sif are used.
@@ -299,6 +290,41 @@ sub checkDihedralFunctionDef
 		}elsif($I != 0 and $fTypei[0] != $fType){
 		        smog_quit ("Sums of dihedrals of different types is not supported.");
 		}
+	}
+}
+
+# checkImproperFunctionDef: verifies that the improper function declaration satisfies some standards (this is very similar to the bond func def routine.  But, we may want to later add some differences
+sub checkImproperFunctionDef
+{
+	my($funcString) = @_;
+
+	if($funcString =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in improper function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
+	}
+	my ($name,$var)=splitFunction($funcString);
+	my @name=@{$name};
+	my @var=@{$var};
+	if($#name != 0){
+		smog_quit("Only single functions are allowed in improper declarations. Issue in .b file: $funcString");
+	};
+
+	my @vars=split(/\,/,$var[0]);
+	my $nargs = $#vars + 1;
+	my $funcname=$name[0];
+
+        $usedFunctions{$funcname}=1;
+
+        if($functions->{$funcname}->{"directive"}  ne "dihedrals"){smog_quit ("$funcname is not a valid improper function. Problematic declaration (in .b file): $funcString");}
+
+	my $nargs_exp=$fTypesArgNum{"$funcname"};
+	if($nargs_exp != $nargs){
+		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .b file:\n\t$funcString\n")
+	}
+	if($nargs > 0 && $vars[0] =~ m/\?\?/){
+		smog_quit("Double question marks not allowed in improper definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+	}
+	if($#vars>0 && $vars[1] =~ m/\?/){
+		smog_quit("Question marks not allowed in improper weight definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
 	}
 }
 
@@ -1217,7 +1243,7 @@ sub parseBonds {
 			}
 
 			my $func = $inter->{"func"};
-			&checkFunction($func);
+			&checkImproperFunctionDef($func);
 			my $keyString = "$typeA-$typeB-$typeC-$typeD";
 			if(exists $interactions->{"impropers"}->{$keyString}){
 				smog_quit ("improper type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.");
