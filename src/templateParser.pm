@@ -28,7 +28,7 @@ package templateParser;
 ## COMPILE HEADERS ##
 #####################
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 ####################
 ## MODULE HEADERS ##
 ####################
@@ -71,7 +71,7 @@ our $contactSettings;
 our $interactionThreshold;
 our $countDihedrals;
 our $normalizevals;
-
+our $energyGroups;
 my $settings; our $termRatios;
 our $interactions;
 our %funcTable;our %funcTableRev;
@@ -253,6 +253,55 @@ sub checkAngleFunctionDef
 	}
 }
 
+# checkDihedralFunctionDef: verifies that the contact function declaration satisfies some standards 
+sub checkDihedralFunctionDef
+{
+	my($funcString,$eG) = @_;
+
+	if($funcString =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in dihedral function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .nb file): $funcString")
+	}
+	my ($name,$var)=splitFunction($funcString);
+	my @name=@{$name};
+	my @var=@{$var};
+	my $normalize = $energyGroups->{$eG}->{"normalize"};
+ 	my @fTypei;
+	for (my $I=0;$I<=$#name;$I++){
+		my @vars=split(/\,/,$var[$I]);
+		my $nargs = $#vars + 1;
+		my $funcname=$name[$I];
+
+ 		$usedFunctions{$funcname}=1;
+        	if($functions->{$funcname}->{"directive"}  ne "dihedrals"){smog_quit ("$funcname is not a valid dihedral function. Problematic declaration (in .b file): $funcString");}
+
+		my $nargs_exp=$fTypesArgNum{"$funcname"};
+		my $fType=$fTypes{"$funcname"};
+
+		if($nargs_exp != $nargs){
+			smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .b file:\n\t$funcString\n")
+		}
+		if($funcname =~ m/\?\?/){
+			smog_quit("Double question marks not allowed in dihedral definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+		}
+		if(whatAmI($vars[1]) > 2){
+			smog_quit ("Dihedral weight can only contain numbers: Problematic declaration (in .b file): $funcString");
+		}
+		if($fType == -1 && $normalize == 1){
+			smog_quit("$funcname $normalize Function type dihedral_free is being used for an energy group with normalize != 0.  This can lead to unpredictable results.");
+		}
+
+		if($I == 0){
+		        $fTypei[0]= $fType;
+		
+		        if($fType==1 and $vars[1] != 1 and $normalize != 0){
+		                smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
+		        }
+		}elsif($I != 0 and $fTypei[0] != $fType){
+		        smog_quit ("Sums of dihedrals of different types is not supported.");
+		}
+	}
+}
+
 # checkContactFunctionDef: verifies that the contact function declaration satisfies some standards 
 sub checkContactFunctionDef
 {
@@ -355,6 +404,7 @@ sub splitFunction
 				$funcargs[$funcN]=$args;
 				$funcN++;
 				$tstr="";
+				$args="";
 			}elsif($pp>0){
 				$args .= $char;
 			}elsif($pp<0){
@@ -363,12 +413,16 @@ sub splitFunction
 		}elsif($char eq "," && $pp > 1){
 			smog_quit("Function declaration issue. Too many parentheses enclosing a comma. Problematic function: $string");
 		}elsif($pp==0){
-			$tstr .= $char;
+			if($lastchar eq ")" && $char !~ m/\+/){
+				smog_quit("Currently, only sums of functions are supported in templates. Problematic function: $string");
+			}elsif($char =~ m/\+/){
+				$lastchar=$char;
+				# don't save the + sign in a function.
+			}else{
+				$tstr .= $char;
+			}
 		}elsif($pp>0){
 			$args .= $char;
-		}
-		if($pp == 0 && $lastchar eq ")" && $char !~ m/\+/){
-			smog_quit("Currently, only sums of functions are supported in templates. Problematic function: $string");
 		}
 		$lastchar=$char;
 	}
@@ -795,18 +849,16 @@ sub parseSif {
 	
 		if($functions->{$funcName}->{"directive"} eq "pairs" 
 			&& !exists $functions->{$funcName}->{"exclusions"}){
-			smog_quit( "Since $funcName is of directive \"pairs\", boolean element \"exclusions\" must be included in the function declaration in the .sif file.\n");
-		}elsif(exists $functions->{$funcName}->{"exclusions"} && $functions->{$funcName}->{"exclusions"} ==1 
-			&& $functions->{$funcName}->{"exclusions"} ==0){
-			smog_quit("function $funcName element exclusions must be 0, or 1.");
+			smog_quit( "Since $funcName is of directive \"pairs\", boolean (0, 1) element \"exclusions\" must be included in the function declaration in the .sif file.\n");
 		}elsif($functions->{$funcName}->{"directive"} ne "pairs"
 	                && exists $functions->{$funcName}->{"exclusions"}){
 			smog_note("Element \"exclusions\" is defined for function $funcName. This is likely unnecessary, since the \"exclusions\" element is only relevant for contacts.");
 		}
 	}
+
 	## Parse settings data
 	$settings = $data->{"settings"}->[0];
-	our $energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};
+	$energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};
 	my $contactGroups = $settings->{"Groups"}->[0]->{"contactGroup"};
 	my $groupRatios = $settings->{"Groups"}->[0]->{"groupRatios"}->[0];
 	my $residueType; 
@@ -1123,12 +1175,12 @@ sub parseBonds {
 		}
 
 		my $func = $inter->{"func"};
-		&checkFunction($func);
 		my $eG;
 		if(exists $inter->{"energyGroup"})
 		{	
 			$eG = $inter->{"energyGroup"};
 		}
+		&checkDihedralFunctionDef($func,$eG);
 		
 		my $keyString = "$typeA-$typeB-$typeC-$typeD";
 		if(exists $interactions->{"dihedrals"}->{$eG}->{$keyString}){

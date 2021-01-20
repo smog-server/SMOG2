@@ -27,7 +27,7 @@ package PDB_Bonded;
 use templateParser;
 use setRatios;
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 use Exporter;
 use PDL; ## LOAD PDL MODULE
 use Storable qw(dclone);
@@ -1684,12 +1684,6 @@ sub parseCONTACT
 	#exit(0);
 	return $numContacts;
   
-}
-
-sub whatAmI {
-	if($_[0] =~ /^[0-9,eE]+$/) {return 1;} #integer
-	if($_[0] =~ /^[0-9,.Ee+-]+$/) {return 2;} #float
-	return 3; #not integer or float
 }
 
 1;
