@@ -824,7 +824,7 @@ sub bondOutput
 					my $i1=$reflist{$i};
 					my $j1=$reflist{$j};
 					my $DIST=int($values*100)/100.0;
-					smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates. This may mean there is something strange with your structure.");
+					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates ($values). This may mean there is something strange with your structure.");
 				}
 			}
         		## Check bonds threshold ##
@@ -839,8 +839,6 @@ sub bondOutput
 					}
 					my $i1=$reflist{$i};
 					my $j1=$reflist{$j};
-					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
-					print "-limitbondlength is being used, will set length to ";
 	 				if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
 	  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
 	  					print "$paramArr[0] nm\n\n";
@@ -848,6 +846,7 @@ sub bondOutput
 	  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
 	  					print "$paramArr[0] nm\n\n";
 	 				}
+					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range. -limitbondlength is being used, will set length to: $paramArr[0]");
 				}else{
 					if(!exists $reflist{$i} || !exists $reflist{$j}){
 						smog_quit("Internal error 3.  Please inform smog team");
@@ -862,7 +861,6 @@ sub bondOutput
 			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
 			$outputString = "$outputString$formattedString\n";
        		}
-
 	}
 	return $outputString;
 }
