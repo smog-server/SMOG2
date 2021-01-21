@@ -271,6 +271,10 @@ sub checkDihedralFunctionDef
 		if($nargs_exp != $nargs){
 			smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .b file:\n\t$funcString\n")
 		}
+		if($nargs_exp == 0){
+			# if we don't need args, and we don't have any, then there is nothing to do.
+			next;
+		}
 		if($funcname =~ m/\?\?/){
 			smog_quit("Double question marks not allowed in dihedral definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
 		}
