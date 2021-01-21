@@ -1,5 +1,4 @@
-In the following directories you can find examples of the steps taken to run a protein simulation
-with various molecular systems, Gromacs versions, etc.
+In the following directories you can find examples of the steps taken to run a protein simulation with various molecular systems, Gromacs versions, etc.
 
 examples/gromacs4/all-atom : protein folding setup for CI2 using Gromacs 4.5 or 4.6 and all-atom SBM
 examples/gromacs4/calpha : protein folding setup for CI2 using Gromacs 4.5 or 4.6 and coarse grained calpha SBM
