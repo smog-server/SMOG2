@@ -1,0 +1,61 @@
+;Run control: A leap-frog algorithm for integrating Newton's equations. 
+integrator		 = sd
+;time step in femtoseconds 
+dt			 = 0.002
+;number of stepsi
+nsteps  		 = 100000
+;frequency to write coordinates to output trajectory file
+nstxout 		 = 0
+;frequency to write velocities to output trajectory file
+nstvout 		 = 0
+;frequency to write force to output trajectory file
+nstfout 		 = 5000
+;frequency to write energies to log file
+nstlog  		 = 5000
+;frequency to write energies to energy file
+nstenergy		 = 5000
+;frequency to write coordinates to xtc trajectory 
+nstxout-compressed	 = 5000
+;precision of xtc
+compressed-x-precision   = 1000
+;group(s) to write to xtc trajectory
+compressed-x-grps	 = system
+;group(s) to write to energy file 
+energygrps		 = system  
+;Frequency to update the neighbor list (and the long-range forces, 
+;when using twin-range cut-off's). 
+nstlist 		 = 20
+coulombtype 		 = Cut-off
+table-extension		 = 20
+cutoff-scheme		 = verlet
+; ** cutoffs are short because it is only for the non-bonded
+; ** [ pairs ] are always calculated provided they are in 
+; ** the same domain decomposition box. One would have to
+; ** increase the cutoff if using non-bonded electrostatics
+;cut-off distance for the short-range neighbor list
+rlist			 = 1.2
+;treatment of electrostatic interactions
+rcoulomb 		 = 1.2
+;treatment of van der waals interactions
+rvdw			 = 1.2
+;need to use periodic boundary conditions since gromacs2020
+;requires cutoff-scheme=verlet in order to use openmp
+;threads. So make sure your box dimensions in the .gro 
+;are sufficient.
+pbc                      = xyz
+;Temperature coupling
+tc-grps 		 = system
+tau_t			 = 1.0 
+ref_t			 = 70 
+;Pressure coupling
+Pcoupl  		 = no
+;Velocity generation
+gen_vel 		 = yes 
+gen_temp		 = 70
+gen_seed		 = -1
+; no constraints
+constraints		 = none
+;if you have a very big box that the molecule doesn't cross
+;you can use this, otherwise no
+comm_mode = none
+

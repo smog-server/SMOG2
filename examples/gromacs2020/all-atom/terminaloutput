@@ -1,0 +1,341 @@
+bash User$ smog_adjustPDB -i 2ci2.1chain.pdb -default -o 2ci2.rename.pdb
+****************************************************************************************
+                                            
+                                     smog_adjustPDB
+                                            
+    smog_adjustPDB is part of the SMOG 2 distribution, available at smog-server.org
+                                            
+   This tool will renumber the atoms in each chain, and modify the names of terminal
+       residues, so that they are compatible with the definitions used by SMOG 2
+                                            
+                       See the SMOG manual for usage guidelines.
+                                            
+           For questions regarding this script, contact info@smog-server.org
+****************************************************************************************
+
+Will reformat the PDB file: 2ci2.1chain.pdb
+
+-default selected. Will use the default map file for list of residue names.
+New file will be written: 2ci2.rename.pdb
+
+Mapping file "/Users/whitford/git.repos/smog2/share/mapfiles/sbmMapExact" will be read.
+
+Will use an exact-matching map file
+Renamed residues/atoms in chain index 1: GLY-83->GLYT-65 
+
+	Adjustment of PDB is complete.
+
+bash User$ smog2 -i 2ci2.rename.pdb -AA -dname 2ci2
+*********************************************************************************************
+
+******* ******* ******* ******* ******* SMOG v2.3beta ******* ******* ******* ******* *******
+                                              
+                Thank you for using the Structure-based Model (SMOG) software
+                                              
+      This package is the product of contributions from a number of people, including:
+                  Jeffrey Noel, Mariana Levi, Mohit Raghunathan, Joyce Yang
+                        Prasad Bandarkar, Udayan Mohanty, Ailun Wang
+                          Ryan Hayes, Jose Onuchic & Paul Whitford
+                                              
+                      Copyright (c) 2015, The SMOG development team at
+                         Rice University and Northeastern University
+                                              
+               SMOG v2.3beta & Shadow are available at http://smog-server.org
+                                              
+         You can direct questions to info@smog-server.org, or the smog-users forum,
+         which can be found at https://mailman.rice.edu/mailman/listinfo/smog-users
+*********************************************************************************************
+
+SMOG 2 called with the command:
+smog2 -i 2ci2.rename.pdb -AA -dname 2ci2 
+
+-AA given. Will use the default All-Atom SMOG model provided with the distribution.
+Will try to use templates found in 
+/Users/whitford/git.repos/smog2/SBM_AA
+
+
+*****************************************************
+******* ALL-ATOM SMOG MODEL WILL BE GENERATED *******
+*****************************************************
+Parsing templates files...
+Found .b file /Users/whitford/git.repos/smog2/SBM_AA/AA-whitford09.b
+Validating XML format of /Users/whitford/git.repos/smog2/SBM_AA/AA-whitford09.b
+Found .sif file /Users/whitford/git.repos/smog2/SBM_AA/AA-whitford09.sif
+Validating XML format of /Users/whitford/git.repos/smog2/SBM_AA/AA-whitford09.sif
+Found .nb file /Users/whitford/git.repos/smog2/SBM_AA/AA-whitford09.nb
+Validating XML format of /Users/whitford/git.repos/smog2/SBM_AA/AA-whitford09.nb
+Found .bif file /Users/whitford/git.repos/smog2/SBM_AA/AA-whitford09.bif
+Validating XML format of /Users/whitford/git.repos/smog2/SBM_AA/AA-whitford09.bif
+
+Done parsing templates.
+
+Checking template definitions for consistency.
+
+Pre-processing templates
+
+Reading 2ci2.rename.pdb
+
+Checking PDB formatting
+Done checking PDB formatting
+
+Building covalent geometry for chain 1
+Attempting to connect all atoms in chain 1 to the first atom..
+	All 521 atoms connected via covalent bonds 
+Generating bonds for chain 1.
+Generating bond angles for chain 1.
+Generating dihedral angles for chain 1.
+Generating improper angles for chain 1.
+Storing dihedral info for chain 1.
+Done generating bonded geometry of chain 1.
+
+Done building covalent geometry of all chains.
+
+Counting dihedrals
+Setting energetic ratios
+Processing atoms
+Charge of chain 1: 0
+
+Total charge of system:    0.000
+
+Checking and saving bonds
+Checking and saving angles
+Checking and saving dihedrals
+Starting contact calculations ...
+  Calling /Users/whitford/git.repos/smog2/src/tools/SCM.jar 
+	
+	Shadow Contact Map Java Application (SCM)
+	More information at: http://smog-server.org/Shadow.html
+	Version 1.33
+	Using protein residue definitions from supplied .bif.
+	Reading grofile: 2ci24SCM.gro.
+	Reading chains from 2ci2.ndx.
+	Found 1 chains.
+	Calculating contacts.
+		10% done and 35 contacts.
+		20% done and 58 contacts.
+		30% done and 133 contacts.
+		40% done and 244 contacts.
+		50% done and 350 contacts.
+		60% done and 456 contacts.
+		70% done and 521 contacts.
+		80% done and 575 contacts.
+		90% done and 586 contacts.
+	Printing contacts to file: 2ci2.contacts.
+	******* Parameters Used for determination of contacts *********
+	Using type: Shadow
+	Atom shadowing size: 1.0 angstrom
+	Shadowing size of bonded atom: 0.5 angstrom
+	Cutoff radius: 6.0 angstrom
+	Minimum sequence distance between protein contacts: |i-j|>3
+	***************************************************************
+	Finished with contacts. 
+
+If normalization is used, the total number of atoms included in normalization will be 521, while 521 atoms are in the system.
+Completing final details...
+
+Your Structure-based Model is ready!
+
+Files generated: 
+	2ci2.top
+	2ci2.gro
+	2ci2.ndx
+	2ci2.contacts
+
+########################################################################################
+
+              We kindly ask that you cite the appropriate primary references
+             when using SMOG models. See http://www.smog-server.org/refs.html
+
+--Software-- 
+Noel JK, Levi M, Raghunathan M, Lammert H, Hayes R, Onuchic JN, and Whitford PC. (2016)
+SMOG V2, A Versatile Software Package for Generating Structure-Based Models.
+PLoS Comput Biol 12(3): e1004794. doi:10.1371/journal.pcbi.1004794
+
+--All-Atom Model-- 
+Whitford PC, et al. (2009) Proteins: Structure, Function, Bioinformatics, 75, 430-441. 
+
+--Contact Potentials--
+Shadow Algorithm: Noel JK, Whitford PC, Onuchic, JN (2012) J Phys Chem, 116, 8692-8702.
+
+########################################################################################
+
+bash User$ gmx editconf -f 2ci2.gro -c -d 2 -o 2ci2.box.gro -bt cubic 
+                     :-) GROMACS - gmx editconf, 2020.5 (-:
+
+                            GROMACS is written by:
+     Emile Apol      Rossen Apostolov      Paul Bauer     Herman J.C. Berendsen
+    Par Bjelkmar      Christian Blau   Viacheslav Bolnykh     Kevin Boyd    
+ Aldert van Buuren   Rudi van Drunen     Anton Feenstra       Alan Gray     
+  Gerrit Groenhof     Anca Hamuraru    Vincent Hindriksen  M. Eric Irrgang  
+  Aleksei Iupinov   Christoph Junghans     Joe Jordan     Dimitrios Karkoulis
+    Peter Kasson        Jiri Kraus      Carsten Kutzner      Per Larsson    
+  Justin A. Lemkul    Viveca Lindahl    Magnus Lundborg     Erik Marklund   
+    Pascal Merz     Pieter Meulenhoff    Teemu Murtola       Szilard Pall   
+    Sander Pronk      Roland Schulz      Michael Shirts    Alexey Shvetsov  
+   Alfons Sijbers     Peter Tieleman      Jon Vincent      Teemu Virolainen 
+ Christian Wennberg    Maarten Wolf      Artem Zhmurov   
+                           and the project leaders:
+        Mark Abraham, Berk Hess, Erik Lindahl, and David van der Spoel
+
+Copyright (c) 1991-2000, University of Groningen, The Netherlands.
+Copyright (c) 2001-2019, The GROMACS development team at
+Uppsala University, Stockholm University and
+the Royal Institute of Technology, Sweden.
+check out http://www.gromacs.org for more information.
+
+GROMACS is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License
+as published by the Free Software Foundation; either version 2.1
+of the License, or (at your option) any later version.
+
+GROMACS:      gmx editconf, version 2020.5
+Executable:   /Users/whitford/BIN/gromacs-2020.5/bin/gmx
+Data prefix:  /Users/whitford/BIN/gromacs-2020.5
+Working dir:  /Users/whitford/git.repos/smog2/examples/gromacs2020/all-atom
+Command line:
+  gmx editconf -f 2ci2.gro -c -d 2 -o 2ci2.box.gro -bt cubic
+
+Note that major changes are planned in future for editconf, to improve usability and utility.
+Read 521 atoms
+Volume: 135.694 nm^3, corresponds to roughly 61000 electrons
+No velocities found
+    system size :  2.916  3.490  3.027 (nm)
+    diameter    :  4.218               (nm)
+    center      :  0.541 -2.149  1.214 (nm)
+    box vectors :  4.916  5.490  5.027 (nm)
+    box angles  :  90.00  90.00  90.00 (degrees)
+    box volume  : 135.69               (nm^3)
+    shift       :  3.568  6.258  2.895 (nm)
+new center      :  4.109  4.109  4.109 (nm)
+new box vectors :  8.218  8.218  8.218 (nm)
+new box angles  :  90.00  90.00  90.00 (degrees)
+new box volume  : 555.01               (nm^3)
+
+GROMACS reminds you: "Ich Bin Ein Berliner" (J.F. Kennedy)
+
+bash User$ 
+bash User$ gmx grompp -f allatom.smog.gromacs2020.mdp  -c 2ci2.box.gro -p 2ci2.top -o 2ci2.tpr
+                      :-) GROMACS - gmx grompp, 2020.5 (-:
+
+                            GROMACS is written by:
+     Emile Apol      Rossen Apostolov      Paul Bauer     Herman J.C. Berendsen
+    Par Bjelkmar      Christian Blau   Viacheslav Bolnykh     Kevin Boyd    
+ Aldert van Buuren   Rudi van Drunen     Anton Feenstra       Alan Gray     
+  Gerrit Groenhof     Anca Hamuraru    Vincent Hindriksen  M. Eric Irrgang  
+  Aleksei Iupinov   Christoph Junghans     Joe Jordan     Dimitrios Karkoulis
+    Peter Kasson        Jiri Kraus      Carsten Kutzner      Per Larsson    
+  Justin A. Lemkul    Viveca Lindahl    Magnus Lundborg     Erik Marklund   
+    Pascal Merz     Pieter Meulenhoff    Teemu Murtola       Szilard Pall   
+    Sander Pronk      Roland Schulz      Michael Shirts    Alexey Shvetsov  
+   Alfons Sijbers     Peter Tieleman      Jon Vincent      Teemu Virolainen 
+ Christian Wennberg    Maarten Wolf      Artem Zhmurov   
+                           and the project leaders:
+        Mark Abraham, Berk Hess, Erik Lindahl, and David van der Spoel
+
+Copyright (c) 1991-2000, University of Groningen, The Netherlands.
+Copyright (c) 2001-2019, The GROMACS development team at
+Uppsala University, Stockholm University and
+the Royal Institute of Technology, Sweden.
+check out http://www.gromacs.org for more information.
+
+GROMACS is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License
+as published by the Free Software Foundation; either version 2.1
+of the License, or (at your option) any later version.
+
+GROMACS:      gmx grompp, version 2020.5
+Executable:   /Users/whitford/BIN/gromacs-2020.5/bin/gmx
+Data prefix:  /Users/whitford/BIN/gromacs-2020.5
+Working dir:  /Users/whitford/git.repos/smog2/examples/gromacs2020/all-atom
+Command line:
+  gmx grompp -f allatom.smog.gromacs2020.mdp -c 2ci2.box.gro -p 2ci2.top -o 2ci2.tpr
+
+Setting the LD random seed to -270631199
+Generated 1 of the 1 non-bonded parameter combinations
+Excluding 3 bonded neighbours molecule type 'Macromolecule'
+Setting gen_seed to -303073665
+Velocities were taken from a Maxwell distribution at 70 K
+Analysing residue names:
+There are:    64    Protein residues
+There are:     1      Other residues
+Analysing Protein...
+Analysing residues not classified as Protein/DNA/RNA/Water and splitting into groups...
+Number of degrees of freedom in T-Coupling group System is 1563.00
+Determining Verlet buffer for a tolerance of 0.005 kJ/mol/ps at 70 K
+Calculated rlist for 1x1 atom pair-list as 1.200 nm, buffer size 0.000 nm
+Set rlist, assuming 4x4 atom pair-list, to 1.200 nm, buffer size 0.000 nm
+Note that mdrun will redetermine rlist based on the actual pair-list setup
+This run will generate roughly 0 Mb of data
+
+GROMACS reminds you: "Ich Bin Ein Berliner" (J.F. Kennedy)
+
+bash User$ gmx mdrun -v -deffnm 2ci2 -noddcheck -ntmpi 2
+                      :-) GROMACS - gmx mdrun, 2020.5 (-:
+
+                            GROMACS is written by:
+     Emile Apol      Rossen Apostolov      Paul Bauer     Herman J.C. Berendsen
+    Par Bjelkmar      Christian Blau   Viacheslav Bolnykh     Kevin Boyd    
+ Aldert van Buuren   Rudi van Drunen     Anton Feenstra       Alan Gray     
+  Gerrit Groenhof     Anca Hamuraru    Vincent Hindriksen  M. Eric Irrgang  
+  Aleksei Iupinov   Christoph Junghans     Joe Jordan     Dimitrios Karkoulis
+    Peter Kasson        Jiri Kraus      Carsten Kutzner      Per Larsson    
+  Justin A. Lemkul    Viveca Lindahl    Magnus Lundborg     Erik Marklund   
+    Pascal Merz     Pieter Meulenhoff    Teemu Murtola       Szilard Pall   
+    Sander Pronk      Roland Schulz      Michael Shirts    Alexey Shvetsov  
+   Alfons Sijbers     Peter Tieleman      Jon Vincent      Teemu Virolainen 
+ Christian Wennberg    Maarten Wolf      Artem Zhmurov   
+                           and the project leaders:
+        Mark Abraham, Berk Hess, Erik Lindahl, and David van der Spoel
+
+Copyright (c) 1991-2000, University of Groningen, The Netherlands.
+Copyright (c) 2001-2019, The GROMACS development team at
+Uppsala University, Stockholm University and
+the Royal Institute of Technology, Sweden.
+check out http://www.gromacs.org for more information.
+
+GROMACS is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License
+as published by the Free Software Foundation; either version 2.1
+of the License, or (at your option) any later version.
+
+GROMACS:      gmx mdrun, version 2020.5
+Executable:   /Users/whitford/BIN/gromacs-2020.5/bin/gmx
+Data prefix:  /Users/whitford/BIN/gromacs-2020.5
+Working dir:  /Users/whitford/git.repos/smog2/examples/gromacs2020/all-atom
+Command line:
+  gmx mdrun -v -deffnm 2ci2 -noddcheck -ntmpi 2
+
+Reading file 2ci2.tpr, VERSION 2020.5 (single precision)
+Changing nstlist from 20 to 100, rlist from 1.2 to 1.2
+
+Using 2 MPI threads
+starting mdrun 'Macromolecule'
+100000 steps,    200.0 ps.
+step 99900, remaining wall clock time:     0 s          vol 0.87  imb F 25% 
+Writing final coordinates.
+
+Back Off! I just backed up 2ci2.gro to ./#2ci2.gro.1#
+step 100000, remaining wall clock time:     0 s          
+
+Dynamic load balancing report:
+ DLB was turned on during the run due to measured imbalance.
+ Average load imbalance: 14.7%.
+ The balanceable part of the MD step is 82%, load imbalance is computed from this.
+ Part of the total run time spent waiting due to load imbalance: 12.1%.
+ Steps where the load balancing was limited by -rdd, -rcon and/or -dds: X 0 %
+
+NOTE: 12.1 % of the available CPU time was lost due to load imbalance
+      in the domain decomposition.
+      You can consider manually changing the decomposition (option -dd);
+      e.g. by using fewer domains along the box dimension in which there is
+      considerable inhomogeneity in the simulated system.
+
+               Core t (s)   Wall t (s)        (%)
+       Time:       20.701       10.351      200.0
+                 (ns/day)    (hour/ns)
+Performance:     1669.446        0.014
+
+GROMACS reminds you: "Inventions have long since reached their limit, and I see no hope for further development." (Julius Sextus Frontinus, 1st century A.D.)
+
+bash User$ 
+
