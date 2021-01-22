@@ -30,16 +30,17 @@ printdashed($wide);
 # K_Coulomb=1/(4*pi*epsilon_{0})=~33.2 kcal*mol^-1 (nm)
 # for dilute systems, B(kappa)~1
 # Gromacs automatically multiplies by an 'electric conversion factor,' 
-#   equal to 138.935485. We want to undo that, hence the division by 138.
+#   equal to 138.935485. We want to undo that, hence the division by 138
+# when using kCal/Mol units.
 
 # Note on units: that the table uses the numerical value of 33.2 as the 
 #	prefactor. If you are using kJ in your simulations, then you would 
-#	need to multiple by ~4.18.  Also, if you are running the simulations
+#	need to multiple by 4.184. Also, if you are running the simulations
 # 	in Gromacs at a temperature other than 300 (mdp settings), then
 # 	it is appropriate to rescale the electrostatic strength according to 
 #	thermal-energy matching arguments (described in Noel and Whitford,
 #	Nature Comm, 2016). For example, typical simulations
-#	with SMOG models are performat at T=60 (mdp setting), since the 
+#	with SMOG models are performed at T=60 (mdp setting), since the 
 #	energy scale is not calibrated to be either kCal, or kJ. Accordingly, 
 #	the prefactor should be divided by 5 (60/300), since 60*k_B is the 
 #	relevant energy scale.
@@ -53,9 +54,9 @@ my $rc=1.5;
 my $Rtable=5.0;
 my $outfilename="table.xvg";
 my $unit;
-my $u_rescale;
+my $u_scale;
 my $temperature;
-my $t_rescale;
+my $t_scale;
 my $help;
 quit_init();
 checkForModules();
@@ -65,27 +66,27 @@ usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'N=i' => \$exponent2, '
         or defined $help); 
 
 if(!defined $temperature){
-	$t_rescale=1;
+	$t_scale=1;
 	$temperature=300;
 }elsif(whatAmI($temperature) =~ [12] ){
 	my $I=whatAmI($temperature);
 	print "$I $temperature a\n";
 	smog_quit("real/int value must be given with -temp [temperature]");
 }else{
-	$t_rescale=$temperature/300;
+	$t_scale=$temperature/300;
 }
 
 if(! defined $unit or $unit =~ m/[kK][cC][aA][lL]/){
-	$u_rescale=1;
+	$u_scale=33.20/138.935485;
 	$unit="kCal";
 }elsif($unit =~ m/[kK][jJ]/){
-	$u_rescale=4.184;
+	$u_scale=1.0;
 }else{
 	smog_quit("Only kJ and kCal are acceptable values to use with -unit");
 }
 
 
-my $prefactor=33.20/138.935485*$t_rescale*$u_rescale;
+my $prefactor=$t_scale*$u_scale;
 
 if($exponent2 >= $exponent1){
 	smog_quit ("For consistency with smog2, only M < N is supported");
@@ -220,7 +221,7 @@ DESCRIPTION:
  table. If you would like to use a Debye-Huckel potential to describe screened
  electrostatic interactions, then you should use this script. Parameters for the DH
  potential are decsribed in Givaty and Levy (2009) J. Mol. Biol., 385, pp 1087-1097.
- Note: The generated table will assume units of kCal/Mol.  However, one typically use
+ Note: The generated table will assume units of kCal/Mol.  However, one typically uses
  kJ/Mol in Gromacs, so it is necessary to rescale the values by 4.184.  Also, as described
  in Noel and Whitford, Nature Comm, 13314 (2016), one typically rescales the 
  electrostatic interactions by (simulated temperature, in Gromacs units)/300. Such 
