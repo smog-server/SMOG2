@@ -1,0 +1,84 @@
+#!/bin/bash
+export smog2wrapper=`which smog2`
+if [ -z "$smog2wrapper" ]
+then
+	echo "
+
+' $> which smog2 ' returned null, which means smog2 is not configured correctly. 
+
+Edit and source the file configure.smog2 
+
+SMOG 2 not configured!  QUITTING
+"
+	exit 1
+fi
+
+export perl4smog=`tail -n 1 $smog2wrapper | awk '{print $1}'`
+
+export SMOG_PATH=`tail -n 1 $smog2wrapper | awk '{print $2}' | sed "s/src\/smogv2$//g"`
+
+count=0
+if [ -z "$SMOG_PATH" ]; then
+	echo "ERROR: smog2 wrapper executable \$smog2wrapper is not found"
+	echo "Check, edit and source the file configure.smog2"
+	exit 1
+fi
+
+echo "Found smog2 ... running basic tests ..." 
+
+testDir=$(pwd)/share/test
+
+for pdb in 1AKEapo_v2 1ypa.2chains 2GIS_noSAM_v2
+do
+for graining in AA CA AAgauss
+do
+
+if [ -e $testDir/benchmarks/$pdb.$graining.pdb ]
+then
+
+	echo "test: $pdb $graining"
+
+if [ -d testing ]
+then
+rm -r testing
+fi
+mkdir testing
+
+if [ $graining == "AA" ]
+then
+	grainingText="AA"
+elif [ $graining == "CA" ]
+then
+	grainingText="CA"
+elif [ $graining == "AAgauss" ]
+then
+	grainingText="t $SMOG_PATH/share/templates/SBM_AA+gaussian"
+fi
+
+$perl4smog $smog2wrapper -i $testDir/benchmarks/$pdb.$graining.pdb -$grainingText -dname testing/$pdb.$graining  &> testing/smog2.output
+$perl4smog $testDir/benchmark.pl $testDir/benchmarks/$pdb.$graining.top testing/$pdb.$graining.top &> testing/$pdb.$graining.test
+
+a=$(grep ERROR testing/$pdb.$graining.test | wc -l | awk '{print $1}')
+b=$(grep "Your Structure-based Model is ready" testing/smog2.output | wc -l | awk '{print $1}')
+
+if [ $a -gt 0 ]
+then
+echo There are errors. Check testing/$pdb.$graining.test for details.
+exit
+elif [ $b -eq 0 ]
+then
+echo SMOG2 did not finish running. Check testing/smog.output for details.
+exit
+fi
+fi
+
+done
+done
+rm -r testing
+
+echo "------------------------"
+echo "Configuration summary:"
+echo "------------------------"
+echo smog2 executable: $smog2wrapper
+echo path to perl: $perl4smog
+echo smog path: $SMOG_PATH
