@@ -1,5 +1,6 @@
 package smog_common;
 use strict;
+use warnings FATAL => 'all';
 use Exporter;
 
 #####################
@@ -12,7 +13,7 @@ our @convarray;
 our %reverthash;
 our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate);
+our @EXPORT = qw($warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI);
 our %supported_directives;
 
 #####################
@@ -374,7 +375,7 @@ sub BaseTentoLarge {
 
 	if($val != 0) {
 
-		my $N=length(@convarray)-1;
+		my $N=scalar(@convarray)-1;
 		$N=$convarray[$N];
 		my $maxV="";
         	for (my $I=0;$I<$digits;$I++){
@@ -413,6 +414,13 @@ sub printhostdate {
 	chomp($hostname);
 	my $string = "; date: $date\n; hostname: $hostname\n";
 	return $string;
+}
+
+sub whatAmI {
+	if($_[0] =~ /^[0-9]*$/) {return 1;} #integer
+	# there is certainly a more compact way of writing thie regex.  oh well, I'll come back to it...
+	if($_[0] =~ /^[0-9]*\.[0-9]*$/ ||  $_[0] =~ /^\-[0-9]*\.[0-9]*$/ || $_[0] =~ /^[0-9]*\.[0-9]*[eE]/ ||  $_[0] =~ /^\-[0-9]*\.+[0-9][eE]/ ) {return 2;} #float
+	return 3; #not integer or float
 }
 
 1;

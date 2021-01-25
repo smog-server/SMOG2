@@ -27,7 +27,7 @@ package PDB_Bonded;
 use templateParser;
 use setRatios;
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 use Exporter;
 use PDL; ## LOAD PDL MODULE
 use Storable qw(dclone);
@@ -615,8 +615,6 @@ sub returnFunction
 {
 	my($funcString) = @_;
 	my $addExclusions;
-	if(!exists $fTypes{"$funcString"}){smog_quit ("$funcString is not a supported function type in SMOG");}
-	if(!exists $functions->{$funcString}){smog_quit ("Function $funcString is being used, but is not defined in .sif file");}
 	#Sometimes exclusions are not defined for contacts that go under other directives. Need to set it to zero.
 	if(!exists $functions->{$funcString}->{"exclusions"}){ $addExclusions = 0; }
 	else { $addExclusions = $functions->{$funcString}->{"exclusions"}; }
@@ -1686,12 +1684,6 @@ sub parseCONTACT
 	#exit(0);
 	return $numContacts;
   
-}
-
-sub whatAmI {
-	if($_[0] =~ /^[0-9,eE]+$/) {return 1;} #integer
-	if($_[0] =~ /^[0-9,.Ee+-]+$/) {return 2;} #float
-	return 3; #not integer or float
 }
 
 1;

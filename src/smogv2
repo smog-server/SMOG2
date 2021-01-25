@@ -99,6 +99,7 @@ our %bondParseSeen;
 our %angleParseSeen;
 our %dihParseSeen;
 our %contactParseSeen;
+our $normalizevals;
 #######END GLOBAL DEFS#######
 
 
@@ -180,18 +181,18 @@ sub setglobals {
 	%fTypesArgNum = ('bond_harmonic' => '2',
 		'bond_bytype' => '0',
 		'bond_type6' => '2',
-		'angle_harmonic' => '1',
-		'angle_bytype' => '-1',
+		'angle_harmonic' => '2',
+		'angle_bytype' => '0',
 		'angle_free' => '0',
-		'dihedral_cosine'=>'1',
-		'dihedral_cosine4'=>'4',
+		'dihedral_cosine'=>'3',
+		'dihedral_cosine4'=>'3',
 		'dihedral_harmonic' => '2',
-		'dihedral_bytype' => '-1',
+		'dihedral_bytype' => '0',
 		'dihedral_free' => '0',
 		'contact_free'=>'0',
-		'contact_1'=>'1',
-		'contact_2'=>'1',
-		'contact_gaussian'=>'6'
+		'contact_1'=>'4',
+		'contact_2'=>'4',
+		'contact_gaussian'=>'4'
 		);
 
 	## this is the topfile buffer stuff
@@ -472,7 +473,7 @@ sub initializeDirectives {
 	}elsif($interactions->{"gmx-combination-rule"}==2){
 		addToTop("nonbond_params",";ai     aj    func    sigma       epsilon\n");
 		addToTop("atomtypes","; name  mass     charge    ptype  sigma   epsilon\n");
-		addToTop("pairs",";ai\taj\ttype\tsigma\tepsilon               B\n");
+		addToTop("pairs",";ai\taj\ttype\tsigma\t\tepsilon\n");
 	}
 	addToTop("position_restraints","\n[ position_restraints ]\n");
 	addToTop("position_restraints",";ai    func    kx    ky   kz\n");
@@ -807,7 +808,7 @@ sub bondOutput
 				}
 				my $i1=$reflist{$i};
 				my $j1=$reflist{$j};
-				smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file) is outside of the bond threshold range. Since the parameters for this interaction will be read from bondtypes, energy minimization will fix the structure.  However, it is possible that there is a problem with the input PDB (e.g. residue numbering error).",0);
+				smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file) is outside of the bond threshold range. Since the parameters for this interaction will be read from bondtypes, energy minimization will fix the structure.  However, it is possible that there is a problem with the input PDB (e.g. residue numbering error).");
 			}
 		}else{
 			# by default, assume we will replace and evaluate the distance.
@@ -823,7 +824,7 @@ sub bondOutput
 					my $i1=$reflist{$i};
 					my $j1=$reflist{$j};
 					my $DIST=int($values*100)/100.0;
-					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates. This may mean there is something strange with your structure.");
+					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates ($values). This may mean there is something strange with your structure.");
 				}
 			}
         		## Check bonds threshold ##
@@ -838,8 +839,6 @@ sub bondOutput
 					}
 					my $i1=$reflist{$i};
 					my $j1=$reflist{$j};
-					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
-					print "-limitbondlength is being used, will set length to ";
 	 				if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
 	  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
 	  					print "$paramArr[0] nm\n\n";
@@ -847,6 +846,7 @@ sub bondOutput
 	  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
 	  					print "$paramArr[0] nm\n\n";
 	 				}
+					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range. -limitbondlength is being used, will set length to: $paramArr[0]");
 				}else{
 					if(!exists $reflist{$i} || !exists $reflist{$j}){
 						smog_quit("Internal error 3.  Please inform smog team");
@@ -861,7 +861,6 @@ sub bondOutput
 			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
 			$outputString = "$outputString$formattedString\n";
        		}
-
 	}
 	return $outputString;
 }
@@ -963,12 +962,12 @@ sub bondFuncParser
 		return ($bondParseSeen{$bondFunc}{"fType"},@{$bondParseSeen{$bondFunc}{"paramArr"}});
 	}
 
- 	($bondFunc =~ m/(.*)\((.*)\)/);
+ 	($bondFunc =~ /^([^(]+)\((.*)\)$/);
 	$funcName = $1;
 	$params = $2;
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "bonds"){smog_quit ("$funcName is not a valid bonds function");}
- 	@paramArr = split(",",$params); ## Parse all parameters
+	$params =~ s/\s+//g; 
+	@paramArr = split(",",$params); ## Parse all parameters
 	$bondParseSeen{$bondFunc}{"fType"}=$fType;
 	$bondParseSeen{$bondFunc}{"paramArr"}=\@paramArr;
 	return ($fType,@paramArr);
@@ -1033,7 +1032,6 @@ sub CalculateAnglesHelper
 sub angleOutput
 {
  	my($inputFunc,$i,$j,$k,$values,$indexhandle,$allatoms) = @_;
-	if(!$inputFunc){smog_quit ("ANGLEOUTPUT::NO FUNCTION DEFINED");}
  ## Remove white spaces from string ##
  	$inputFunc =~ s/^\s+|\s+$//g;
  ## If $input contains a + ##
@@ -1059,7 +1057,7 @@ sub angleOutput
 				my $i1=$reflist{$i};
 				my $j1=$reflist{$j};
 				my $k1=$reflist{$k};
-				smog_quit("Angle formed by atoms $i $j $k (PDB lines $i1 $j1 $k1) outside of the range set by smallAngles and largeAngles (see .sif): theta=$THETA degrees\n\tWhile the interaction parameters will be defined by angletypes, this warning means there may be something strange about your input configuration.",1);
+				smog_note("Angle formed by atoms $i $j $k (PDB lines $i1 $j1 $k1) outside of the range set by smallAngles and largeAngles (see .sif): theta=$THETA degrees\n\tWhile the interaction parameters will be defined by angletypes, this warning means there may be something strange about your input configuration.");
 			}
 	 		
 		}else{
@@ -1109,11 +1107,11 @@ sub angleFuncParser
 		# if we have parsed this before, just write it.  Don't mess with everything else.
 		return ($angleParseSeen{$angFunc}{"fType"},@{$angleParseSeen{$angFunc}{"paramArr"}});
 	}
- 	($angFunc =~ m/(.*)\((.*)\)/);
+ 	($angFunc =~ /^([^(]+)\((.*)\)$/);
 	$funcName = $1;
 	$params = $2;
+	$params =~ s/\s+//g; 
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "angles"){smog_quit ("$funcName is not a valid angles function");}
  	@paramArr = split(",",$params); ## Parse all parameters
 	$angleParseSeen{$angFunc}{"fType"}=$fType;
 	$angleParseSeen{$angFunc}{"paramArr"}=\@paramArr;
@@ -1213,7 +1211,6 @@ sub dihedralOutput
 	foreach my $fun(@funcs)
 	{
 		my $paramFormat="";
-		# since this is only used here, we may remove the call and sub in the code
 		($fType,@paramArr) = diheFuncParser($fun);
 		if($fType ==-1){
 			 ## don't write angle. Make gromacs use dihedraltype
@@ -1230,30 +1227,7 @@ sub dihedralOutput
 			        	$paramArr[0] *= $paramArr[2];
 					$paramArr[0] += 180;
 				}
-			
-	
-				# Perform checks of dihedral parameters (only do this once, then set funtypechecked)
-				unless(exists $funtypechecked{$fun}){
-					$funtypechecked{$fun}=1;		
-			        	if($paramArr[1] =~ /[*?^&!@#%()]/){smog_quit ("Dihedral weight can only contain numbers, but $paramArr[1] found.")};
-			
-					if($fType == 0 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
-						smog_quit("Function type dihedral_free is being used for an energy group with normalize != 0.  This can lead to unpredictable results.");
-					}
-			
-					if($funci == 0){
-						$fTypei[0]= $fType;
-			
-						if($fType==1 and $paramArr[1] != 1 and $energyGroups->{$eGTable{$eG}}->{"normalize"} != 0){
-					   		smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
-						}
-					}elsif($funci != 0 and $fTypei[0] != $fType){
-			        	  	smog_quit ("Sums of dihedrals of different types is not supported.");
-					}
-				}
-				# end of consistency checks
-	
-	
+
 				$funci++;
 				## If dihedral kd is normalized or has scaling&normalize ##
 			 	$paramArr[1]*=$ratio;
@@ -1285,8 +1259,9 @@ sub diheFuncParser
 	}
  	my $fType;my @paramArr; my $directive;
 	my $funcName = "";my $params = "";
-	($diheFunc =~ m/(.*)\((.*)\)/);
+ 	($diheFunc =~ /^([^(]+)\((.*)\)$/);
 	$funcName = $1; $params = $2;
+	$params =~ s/\s+//g; 
 
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
 	if($directive ne "dihedrals"){smog_quit ("$funcName is not a valid dihedrals function");}
@@ -1486,9 +1461,6 @@ sub contactParseNM1
 	$N=$paramArr->[1];
 	my $length=scalar @{$paramArr};
 
-	if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_1. Expecting 4, found $length."); }
-	if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
-	if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller.")}
 
 	if($interactions->{"gmx-combination-rule"}==1){
 	
@@ -1553,22 +1525,15 @@ sub contactParseNM2
 	##epsilon  
 	##r0 is native distance##
 	#
-	if($interactions->{"gmx-combination-rule"}==2){
-		# the reason for this error is that contact_1 and contact_2 have identical behavior with combrule 2
-		smog_quit("contact_2 not supported with gmx-combination-rule=2.");
-	}
 	my $A; my $B;
 	my $length=scalar @{$paramArr};
 
-	if($length != 4){ smog_quit ("Incorrect number of parameters provided for contact_2. Expecting 4, found $length."); }
-	
 	# replace ? with native distance expression
 	$paramArr->[2]=evalsub($paramArr->[2],$r0);
 	
 	# substitute value of r into f(r) and g(r)
 	$A=evalsub($paramArr->[1],$paramArr->[2]);	
 	$B=evalsub($paramArr->[0],$paramArr->[2]);	
-
 
 	$A *= $epsilon; 
 	$B *= $epsilon; 
@@ -1579,13 +1544,8 @@ sub contactParseNM2
 		if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
 		$paramArr->[3]=$A;
 		$paramArr->[2]=$B;
-	}
-	elsif($paramArr->[3] =~ /\?/)
-	{
-		smog_quit("Epsilon value used in contact_2 interaction can not be an expression that includes ?.\n");
-	}
+	}else{
 	## additional rescaling used
-	else{
 		if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
 		$A *= $paramArr->[3];
 		$B *= $paramArr->[3];
@@ -1608,23 +1568,13 @@ sub contactParseGaussian
 	##i=2 is sigma_gaussian##
 	##i=3 is r ##
 	
-	if($paramArr->[1] =~ /\?/ && !($paramArr->[2] =~ /^\?$/)){smog_quit("CONTACT FUNCTION PARSING:: CONFLICTING INPUTS");}
 	
 	## Epsilon_c ##
 	if($paramArr->[0] =~ /^\?$/){
-		if(!$normalize){smog_quit("contact type can not have normalization turned off with epsilon=?")}
 		$paramArr->[0]=$epsilon;
-	}
-	elsif($paramArr->[0] =~ /\?/)
-	{
-		smog_quit("Epsilon value used in gaussian interaction can not be an expression that includes ?.\n");
-	}
-	else{
-		if($normalize){smog_quit("Can\'t normalize a contact since the weight is not defined by a ? mark.")}
+	}else{
 		$paramArr->[0]=$epsilon*($paramArr->[0]);
 	}
-	## Epsilon_nc ##
-	if($paramArr->[1] =~ /\?/){smog_quit("value of a in gaussian can not be a ? mark");}
 	
 	## Check if sigma_G has r0 dependency ##
 	if($paramArr->[2] =~ /\?/)
@@ -1649,19 +1599,11 @@ my $k;
 	##i=1 is k#
 	
 	## k ##
-	if($paramArr->[1] =~ /\?/){smog_quit("CONTACT FUNCTION PARSING:: contact bond_type6 can't have ? in the stiffness.");}
 	$paramArr->[1] = eval($paramArr->[1]);
 	
 	## r ##
 	$paramArr->[0] = evalsub($paramArr->[0],$r0);
-#	if($paramArr->[0] =~ /\?/)
-#	{
-#		#Replace ? with $r0 
-#		$paramArr->[0] =~ s/\?/$r0/g;
-#	}
-#	#Eval expression
-#	$paramArr->[0] = eval($paramArr->[0]);
-	
+
 	($r0,$k) = ($paramArr->[0],$paramArr->[1]);
 	@{$paramArr}=($r0,$k);
 
@@ -1685,8 +1627,8 @@ sub contactFuncParser
  	($contactFunc =~ /^([^(]+)\((.*)\)$/);
  	$funcName = $1;
 	$params = $2;
+	$params =~ s/\s+//g; 
 	($fType,$directive,$addExclusions) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "pairs" && $directive ne "bonds"){smog_quit ("$funcName is a contact type function and should only go into pairs or bonds directives");}
  	@paramArr = split(",",$params); ## Parse all parameters
 
 	$contactParseSeen{$contactFunc}{"fType"}=$fType;
@@ -2260,6 +2202,7 @@ sub parseTemplatesAndPDB
 		$checkmessage.=checkPAIRnames();
 		$checkmessage.=checkREScharges();
 		$checkmessage.=checkRESimpropers();
+		$checkmessage.=compareFuncs();
 		if($checkmessage ne ""){
 			smog_quit("Cross-comparison of templates failed. See messages below:\n\n$checkmessage");
 		}
@@ -2290,17 +2233,19 @@ sub parseTemplatesAndPDB
 
 sub printBondedTopOutput {
 
-
 	my ($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap) = @_;
         if($countDihedrals){
 		print "Counting dihedrals\n";
 		getSetDiheCounts(\%DihedralData,\%bondPDL);
         }else{
-        	print "Will not count/rescale dihedrals with common middle bonds.";
+        	print "Will not count/rescale dihedrals with common middle bonds.\n";
         }
 	## SET DIHEDRAL RATIOS ##
-	print "Setting energetic ratios\n";
-	setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms);
+	if($normalizevals){
+		# only set ratios if normalization is on.  It is faster to not use it.
+		print "Setting energetic ratios\n";
+		setRatios(\%DihedralData,\%bondPDL,$totalAtoms,\%allAtoms);
+	}
 	print "Processing atoms\n";
 	getAtomTypes(\%allAtoms);
  	# adding extras at this point is a bit out of place.  but, it is important, in order to verify that all bonds have bondtypes, etc.

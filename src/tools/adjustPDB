@@ -106,7 +106,7 @@ if (defined $large){
 }
 
 if (defined $default){
-	print "-default selected. Will use the default map file provided for terminal residue names.\n";
+	print "-default selected. Will use the default map file for list of residue names.\n";
 	if(!exists $ENV{"SMOG_PATH"}){
         smog_quit("Environmental Variable SMOG_PATH not set. You may need to run the configure.smog2 script.\n");
 	}

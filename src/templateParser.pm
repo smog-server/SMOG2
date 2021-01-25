@@ -28,7 +28,7 @@ package templateParser;
 ## COMPILE HEADERS ##
 #####################
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 ####################
 ## MODULE HEADERS ##
 ####################
@@ -41,7 +41,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(checkFunction getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round);
+qw($normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round compareFuncs);
 
 ######################
 ## GLOBAL VARIABLES ##
@@ -70,7 +70,8 @@ our $functions;
 our $contactSettings;
 our $interactionThreshold;
 our $countDihedrals;
-
+our $normalizevals;
+our $energyGroups;
 my $settings; our $termRatios;
 our $interactions;
 our %funcTable;our %funcTableRev;
@@ -102,8 +103,8 @@ our %EGinSif;
 our %pairtypesused;
 our %bondtypesused;
 our %fTypes;
+our %usedFunctions;
 our %fTypesArgNum;
-
 
 my %bondHandle;
 my @improperHandle;
@@ -117,6 +118,7 @@ sub clearBifMemory {
 	%residueBackup = %{ dclone (\%residues) };
 	undef %residues;
 	undef $functions;
+	undef %usedFunctions;
 	undef $contactSettings;
 	undef $termRatios;
 	undef $interactions;
@@ -161,37 +163,306 @@ sub round
 	return $round;	
 }
 
-# checkFunction: verifies that function type is supported 
-sub checkFunction
+# compareFuncs checks to see if all defined functions in the .sif are used.
+sub compareFuncs
 {
-	my($funcString) = @_;
-	$funcString =~ s/\(.*//g;
-	if(!exists $fTypes{"$funcString"}){smog_quit ("\"$funcString\" is not a supported function type in SMOG");}
-	if(!exists $functions->{$funcString}){smog_quit ("Function \"$funcString\" is being used, but is not defined in .sif file");}
+	my $string="";
+	foreach my $i(keys %{$functions}){
+		if(!defined $usedFunctions{$i}){
+			$string .="Function $i is defined in the .sif file, but not used in the .nb or .b files.\n";
+		}
+	}
+	return $string;
 }
 
-# checkBondFunctionDef: verifies that the bond function declation satisfies some standards
+# checkBondFunctionDef: verifies that the bond function declaration satisfies some standards
 sub checkBondFunctionDef
 {
 	my($funcString) = @_;
-	my $funcargs=$funcString;
-	my $funcname=$funcString;
-	$funcname =~ s/\(.*//g;
-	# get arguments to function
-	$funcargs =~ s/.*\(//g;
-	$funcargs =~ s/\).*//g;
-	my @vars=split(/\,/,$funcargs);
+	if($funcString =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in bond function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
+	}
+	my ($name,$var)=splitFunction($funcString);
+	my @name=@{$name};
+	my @var=@{$var};
+	if($#name != 0){
+		smog_quit("Only single functions are allowed in bond declarations. Issue in .b file: $funcString");
+	};
+
+	my @vars=split(/\,/,$var[0]);
 	my $nargs = $#vars + 1;
+	my $funcname=$name[0];
+
+        $usedFunctions{$funcname}=1;
+
+        if($functions->{$funcname}->{"directive"}  ne "bonds"){smog_quit ("$funcname is not a valid bonds function. Problematic declaration (in .b file): $funcString");}
+
 	my $nargs_exp=$fTypesArgNum{"$funcname"};
 	if($nargs_exp != $nargs){
-		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs.\n\tSee following definition in .b file:\n\t$funcString\n")
+		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .b file:\n\t$funcString\n")
 	}
 	if($nargs > 0 && $vars[0] =~ m/\?\?/){
 		smog_quit("Double question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
 	}
 	if($#vars>0 && $vars[1] =~ m/\?/){
-		smog_quit("Question marks not allowed in bond distance definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+		smog_quit("Question marks not allowed in bond weight definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
 	}
+}
+
+# checkAngleFunctionDef: verifies that the angle function declaration satisfies some standards (this is very similar to the bond func def routine.  But, we may want to later add some differences
+sub checkAngleFunctionDef
+{
+	my($funcString) = @_;
+
+	if($funcString =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in bond function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
+	}
+	my ($name,$var)=splitFunction($funcString);
+	my @name=@{$name};
+	my @var=@{$var};
+	if($#name != 0){
+		smog_quit("Only single functions are allowed in angle declarations. Issue in .b file: $funcString");
+	};
+
+	my @vars=split(/\,/,$var[0]);
+	my $nargs = $#vars + 1;
+	my $funcname=$name[0];
+
+        $usedFunctions{$funcname}=1;
+
+        if($functions->{$funcname}->{"directive"}  ne "angles"){smog_quit ("$funcname is not a valid angle function. Problematic declaration (in .b file): $funcString");}
+
+	my $nargs_exp=$fTypesArgNum{"$funcname"};
+	if($nargs_exp != $nargs){
+		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .b file:\n\t$funcString\n")
+	}
+	if($nargs > 0 && $vars[0] =~ m/\?\?/){
+		smog_quit("Double question marks not allowed in angle definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+	}
+	if($#vars>0 && $vars[1] =~ m/\?/){
+		smog_quit("Question marks not allowed in angle weight definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+	}
+}
+
+# checkDihedralFunctionDef: verifies that the contact function declaration satisfies some standards 
+sub checkDihedralFunctionDef
+{
+	my($funcString,$eG) = @_;
+
+	if($funcString =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in dihedral function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .nb file): $funcString")
+	}
+	my ($name,$var)=splitFunction($funcString);
+	my @name=@{$name};
+	my @var=@{$var};
+	my $normalize = $energyGroups->{$eG}->{"normalize"};
+ 	my @fTypei;
+	for (my $I=0;$I<=$#name;$I++){
+		my @vars=split(/\,/,$var[$I]);
+		my $nargs = $#vars + 1;
+		my $funcname=$name[$I];
+
+ 		$usedFunctions{$funcname}=1;
+        	if($functions->{$funcname}->{"directive"}  ne "dihedrals"){smog_quit ("$funcname is not a valid dihedral function. Problematic declaration (in .b file): $funcString");}
+
+		my $nargs_exp=$fTypesArgNum{"$funcname"};
+		my $fType=$fTypes{"$funcname"};
+
+		if($nargs_exp != $nargs){
+			smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .b file:\n\t$funcString\n")
+		}
+		if($nargs_exp == 0){
+			# if we don't need args, and we don't have any, then there is nothing to do.
+			next;
+		}
+		if($funcname =~ m/\?\?/){
+			smog_quit("Double question marks not allowed in dihedral definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+		}
+		if(whatAmI($vars[1]) > 2){
+			smog_quit ("Dihedral weight can only contain numbers: Problematic declaration (in .b file): $funcString");
+		}
+		if($fType == -1 && $normalize == 1){
+			smog_quit("$funcname $normalize Function type dihedral_free is being used for an energy group with normalize != 0.  This can lead to unpredictable results.");
+		}
+
+		if($I == 0){
+		        $fTypei[0]= $fType;
+		
+		        if($fType==1 and $vars[1] != 1 and $normalize != 0){
+		                smog_quit ("Since normalization is turned on, the first cosine dihedral in a sum should have weight of 1.\n In order to adjust overall weight of dihedral, while also imposing normalization, use intraRelativeStrength in .sif file");
+		        }
+		}elsif($I != 0 and $fTypei[0] != $fType){
+		        smog_quit ("Sums of dihedrals of different types is not supported.");
+		}
+	}
+}
+
+# checkImproperFunctionDef: verifies that the improper function declaration satisfies some standards (this is very similar to the bond func def routine.  But, we may want to later add some differences
+sub checkImproperFunctionDef
+{
+	my($funcString) = @_;
+
+	if($funcString =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in improper function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .b file): $funcString")
+	}
+	my ($name,$var)=splitFunction($funcString);
+	my @name=@{$name};
+	my @var=@{$var};
+	if($#name != 0){
+		smog_quit("Only single functions are allowed in improper declarations. Issue in .b file: $funcString");
+	};
+
+	my @vars=split(/\,/,$var[0]);
+	my $nargs = $#vars + 1;
+	my $funcname=$name[0];
+
+        $usedFunctions{$funcname}=1;
+
+        if($functions->{$funcname}->{"directive"}  ne "dihedrals"){smog_quit ("$funcname is not a valid improper function. Problematic declaration (in .b file): $funcString");}
+
+	my $nargs_exp=$fTypesArgNum{"$funcname"};
+	if($nargs_exp != $nargs){
+		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .b file:\n\t$funcString\n")
+	}
+	if($nargs > 0 && $vars[0] =~ m/\?\?/){
+		smog_quit("Double question marks not allowed in improper definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+	}
+	if($#vars>0 && $vars[1] =~ m/\?/){
+		smog_quit("Question marks not allowed in improper weight definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+	}
+}
+
+# checkContactFunctionDef: verifies that the contact function declaration satisfies some standards 
+sub checkContactFunctionDef
+{
+	my($funcString,$cG) = @_;
+
+	if($funcString =~ m/\^/) {
+		smog_quit("\"^\" characters are not supported in contact function declarations. If including an exponent, use \"\*\*\" convention. Problematic declaration (in .nb file): $funcString")
+	}
+	my ($name,$var)=splitFunction($funcString);
+	my @name=@{$name};
+	my @var=@{$var};
+	if($#name != 0){
+		smog_quit("Only single functions are allowed in contact declarations. Issue in .nb file: $funcString");
+	};
+	my @vars=split(/\,/,$var[0]);
+	my $nargs = $#vars + 1;
+	my $funcname=$name[0];
+
+        my $normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
+
+	if($funcname eq "contact_1"){
+		my $N=$vars[1];
+		my $M=$vars[0];
+        	if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
+        	if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller. Problematic declaration (in .nb file): $funcString")}
+	}elsif($funcname eq "contact_2"){
+		if($interactions->{"gmx-combination-rule"}==2){
+			# the reason for this error is that contact_1 and contact_2 have identical behavior with combrule 2
+			smog_quit("contact_2 not supported with gmx-combination-rule=2. Problematic declaration (in .nb file): $funcString");
+		}
+		if($vars[3] !~ /^\?$/ && $vars[3] =~ /\?/)
+	 	{
+			smog_quit("Epsilon value used in contact_2 interaction can not be an expression that includes ?. Problematic declaration (in .nb file): $funcString");
+		}
+
+	}elsif($funcname eq "contact_gaussian"){
+		if($vars[0] =~ /^\?$/){
+			if(!$normalize){smog_quit("Gaussian contact type can not have normalization turned off with epsilon_C=?  Problematic declaration (in .nb file): $funcString")}
+		}
+		elsif($vars[0] =~ /\?/)
+		{
+			smog_quit("Epsilon_C used in Gaussian interaction can not be an expression that includes ?. Problematic declaration (in .nb file): $funcString");
+		}else{
+			if($normalize){smog_quit("Can\'t normalize a Gaussian contact since the weight is not defined by a ? mark. Problematic declaration (in .nb file): $funcString")}
+		}
+		## Epsilon_nc ##
+		if($vars[1] =~ /\?/){smog_quit("value of (r_NC)^12 (second argument) in Gaussian can not be a ? mark. Problematic declaration (in .nb file): $funcString");}
+	}elsif($funcname eq "bond_type6"){
+		if($vars[1] =~ /\?/){smog_quit("bond_type6 can't have ? in the stiffness. Problematic declaration (in .nb file): $funcString");}
+    	}
+
+ 	$usedFunctions{$funcname}=1;
+
+	# we had to put in a kludge to account for the fact that bond_type6 is also a contact potential
+        if($functions->{$funcname}->{"directive"}  ne "pairs" && $funcname ne "bond_type6"){smog_quit ("$funcname is not a valid contact function. Problematic declaration (in .nb file): $funcString");}
+
+	my $nargs_exp=$fTypesArgNum{"$funcname"};
+	if($nargs_exp != $nargs){
+		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .nb file:\n\t$funcString\n")
+	}
+	if($funcname =~ m/\?\?/){
+		smog_quit("Double question marks not allowed in contact definition.\nSee the following function defined in the .nb file:\n\t$funcString\n");
+	}
+}
+
+sub splitFunction
+{
+	# if the arg is a properly-defined function, meeting some basic criteria, return the number of functions defined in the string.
+	my ($string)=@_;
+	if($string =~ m/[\[|\]]/){
+		smog_quit("Function names and arguments can not have square brackets.  Problematic declaration: $string");
+	}
+	if($string =~ m/[\{|\}]/){
+		smog_quit("Function names and arguments can not have curly brackets.  Problematic declaration: $string");
+	}
+
+	my $chars= length $string;
+	# $pp will keep track of how many open (+1) and closed (-1) parentheses there are.  Every time the counter returns to 0, then we have completed a function declaration.
+	my @funcs;
+	my @funcargs;
+	my $funcN=0;
+	my $pp=0;
+	my $tstr="";
+	my $args="";
+	my $lastchar="";
+	for(my $I=0;$I<$chars;$I++){
+		my $char=substr($string,$I,1);
+		if($char eq " "){
+			next;
+		}
+		if($char eq "("){
+			if($pp>0){
+				$args .= $char;
+			}
+			$pp++
+		}elsif($char eq ")"){
+			$pp--;
+			if($pp==0){
+				$funcs[$funcN]=$tstr;
+				$funcargs[$funcN]=$args;
+				$funcN++;
+				$tstr="";
+				$args="";
+			}elsif($pp>0){
+				$args .= $char;
+			}elsif($pp<0){
+				smog_quit("Function declaration issue. Unmatched close-parentheses. Problematic function: $string");
+			}
+		}elsif($char eq "," && $pp > 1){
+			smog_quit("Function declaration issue. Too many parentheses enclosing a comma. Problematic function: $string");
+		}elsif($pp==0){
+			if($lastchar eq ")" && $char !~ m/\+/){
+				smog_quit("Currently, only sums of functions are supported in templates. Problematic function: $string");
+			}elsif($char =~ m/\+/){
+				$lastchar=$char;
+				# don't save the + sign in a function.
+			}else{
+				$tstr .= $char;
+			}
+		}elsif($pp>0){
+			$args .= $char;
+		}
+		$lastchar=$char;
+	}
+	if($pp>0){
+		smog_quit("Function declaration issue. Unmatched open-parentheses. Problematic function: $string");
+	}
+	if($funcN==0){
+		smog_quit("Incomplete function declaration. Problematic function: $string");
+	}
+	return (\@funcs, \@funcargs);
 }
 
 sub checkREScharges
@@ -594,7 +865,7 @@ sub parseSif {
 	## Read .sif file ##
 	$data = $xml->XMLin($sifxml,KeyAttr => ['name'],ForceArray=>1);
 	if(!exists $data->{"version"}->[0]->{"min"}){
-		smog_quit("Minimum required SMOG version is not defined in .sif file. This check is intended to ensure that one does not use new templates with an old version of SMOG.  However, newer version of SMOG should always work with old templates.  Accordingly, if you are using the newest release of SMOG, you can probably ignore this warning.",0);
+		smog_note("Minimum required SMOG version is not defined in .sif file. This check is intended to ensure that one does not use new templates with an old version of SMOG.  However, newer version of SMOG should always work with old templates.  Accordingly, if you are using the newest release of SMOG, you can probably ignore this warning.");
 	}else{
 		my $minver=$data->{"version"}->[0]->{"min"};
 		if(!exists $SMOGversions{"$minver"}){
@@ -604,21 +875,20 @@ sub parseSif {
 	## Parse function data
 	$functions = $data->{"functions"}->[0]->{"function"};
 	foreach my $funcName(keys %{$functions}){
+	        if(!exists $fTypes{"$funcName"}){smog_quit ("\"$funcName\" is not a supported function type in SMOG");}
 	
 		if($functions->{$funcName}->{"directive"} eq "pairs" 
 			&& !exists $functions->{$funcName}->{"exclusions"}){
-			smog_quit( "Since $funcName is of directive \"pairs\", boolean element \"exclusions\" must be included in the function declaration in the .sif file.\n");
-		}elsif(exists $functions->{$funcName}->{"exclusions"} && $functions->{$funcName}->{"exclusions"} ==1 
-			&& $functions->{$funcName}->{"exclusions"} ==0){
-			smog_quit("function $funcName element exclusions must be 0, or 1.");
+			smog_quit( "Since $funcName is of directive \"pairs\", boolean (0, 1) element \"exclusions\" must be included in the function declaration in the .sif file.\n");
 		}elsif($functions->{$funcName}->{"directive"} ne "pairs"
 	                && exists $functions->{$funcName}->{"exclusions"}){
 			smog_note("Element \"exclusions\" is defined for function $funcName. This is likely unnecessary, since the \"exclusions\" element is only relevant for contacts.");
 		}
 	}
+
 	## Parse settings data
 	$settings = $data->{"settings"}->[0];
-	our $energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};
+	$energyGroups = $settings->{"Groups"}->[0]->{"energyGroup"};
 	my $contactGroups = $settings->{"Groups"}->[0]->{"contactGroup"};
 	my $groupRatios = $settings->{"Groups"}->[0]->{"groupRatios"}->[0];
 	my $residueType; 
@@ -686,11 +956,17 @@ sub parseSif {
 	if(($CG_NORM > 0 and $EG_NORM ==0) or ($EG_NORM > 0 and $CG_NORM ==0)){
 		smog_quit('Issue in .sif. Normalization only turned on for ContactGroups, or EnergyGroups. Normalization must be off, or on, for both.');
 	}
-	
+
+	if($EG_NORM > 0){
+		$normalizevals=1;
+	}else{
+		$normalizevals=0;
+	}	
+		
 	## NOTE:Contact Type is Global ##
 	## Sum of contact scalings ##
 	
-	if($groupRatios->{"contacts"} <=0 || $groupRatios->{"contacts"} <=0){
+	if($groupRatios->{"contacts"} <=0 || $groupRatios->{"dihedrals"} <=0){
 		smog_quit("All values for groupRatios must be greater than zero. See .sif file.")
 	}
 	## contact/dihe relative Scale ##
@@ -772,19 +1048,17 @@ sub parseSif {
 	$interactionThreshold->{"contacts"}={"shortContacts"=>$contactsThreshold->{"shortContacts"}};
 	$interactionThreshold->{"distance"}={"tooShortDistance"=>$distanceThreshold->{"tooShortDistance"}};
 	if(exists $data->{"settings"}->[0]->{"dihedralNormalization"}->[0]->{"dihedralCounting"}){
-	 $countDihedrals=$data->{"settings"}->[0]->{"dihedralNormalization"}->[0]->{"dihedralCounting"};
+	 	$countDihedrals=$data->{"settings"}->[0]->{"dihedralNormalization"}->[0]->{"dihedralCounting"};
         }else{
-         # by default, we will count dihedrals.
-         $countDihedrals=1;
+         	# by default, we will count dihedrals.
+       		smog_note("dihedralNormalization not given.  Will count dihedrals, by default.");
+         	$countDihedrals=1;
         }
 # depricated options.  We have left them in the schemas so that the error that would be thrown when using an old template will not be cryptic.  However, the entries are optional 
 	if( $interactionThreshold->{"distance"}->{"tooShortDistance"} )
 	{
 		smog_quit("tooShortDistance found in .sif file. The use of tooShortDistance has been replaced with bondsThreshold. Please remove tooShortDistance from your .sif");
 	} 
-
-
-
 }
 
 sub funcToInt
@@ -904,7 +1178,6 @@ sub parseBonds {
  		$bondtypesused{$typeA}=1;
  		$bondtypesused{$typeB}=1;
 		my $func = $inter->{"func"};
-		&checkFunction($func);
 		&checkBondFunctionDef($func);
 		if(exists $interactions->{"bonds"}->{$typeA}->{$typeB} || 
 	               exists $interactions->{"bonds"}->{$typeA}->{$typeB}){
@@ -932,13 +1205,12 @@ sub parseBonds {
 		}
 
 		my $func = $inter->{"func"};
-		&checkFunction($func);
-
 		my $eG;
 		if(exists $inter->{"energyGroup"})
 		{	
 			$eG = $inter->{"energyGroup"};
 		}
+		&checkDihedralFunctionDef($func,$eG);
 		
 		my $keyString = "$typeA-$typeB-$typeC-$typeD";
 		if(exists $interactions->{"dihedrals"}->{$eG}->{$keyString}){
@@ -975,7 +1247,7 @@ sub parseBonds {
 			}
 
 			my $func = $inter->{"func"};
-			&checkFunction($func);
+			&checkImproperFunctionDef($func);
 			my $keyString = "$typeA-$typeB-$typeC-$typeD";
 			if(exists $interactions->{"impropers"}->{$keyString}){
 				smog_quit ("improper type between bTypes $typeA-$typeB-$typeC-$typeD defined more than once. Check .b file.");
@@ -1006,7 +1278,7 @@ sub parseBonds {
 		}
 
 		my $func = $inter->{"func"};
-		&checkFunction($func);
+		&checkAngleFunctionDef($func);
 		my $keyString = "$typeA-$typeB-$typeC";
 		## NOTE THE ORDER OF CENTRAL TYPE LISTED IN XML FILE MATTERS ##
 		if(exists $interactions->{"angles"}->{$keyString}){
@@ -1147,8 +1419,8 @@ sub parseNonBonds {
 	 	$pairtypesused{$typeA}=1;
 	 	$pairtypesused{$typeB}=1;
 		my $func = $inter->{"func"};
-		&checkFunction($func);
 	 	my $cG = $inter->{"contactGroup"};
+		&checkContactFunctionDef($func,$cG);
 		if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
 			smog_quit ("contact parameters defined multiple times for types $typeA-$typeB. Check .nb file.");
 		}
@@ -1162,9 +1434,6 @@ sub parseNonBonds {
 		$funcTableRev{"contacts"}->{$counter}->{"contactGroup"} = $cG;
 		$counter++;
 	}
-	
-	
-
 }
 
 ######################
