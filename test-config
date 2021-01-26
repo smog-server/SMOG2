@@ -1,4 +1,14 @@
 #!/bin/bash
+
+###############################################
+# This script performs a quick check that
+# the expected SMOG 2 environment is found
+# and that the linked executables in fact
+# return the same topology as is saved
+# in the directory $(pwd)/share/test/benchmarks
+###############################################
+
+
 export smog2wrapper=`which smog2`
 if [ -z "$smog2wrapper" ]
 then
