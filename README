@@ -80,7 +80,7 @@ source configure.smog2
 Note: This is written for use with BASH.
 
 To run a basic test that SMOG 2 is up and running
-issue the command
+issue the command:
 
 ./test-config 
 
