@@ -89,7 +89,7 @@ sub whatAmI {
 }
 
 sub whatAmItext {
-	if($_[0] =~ /^[+-]?[0-9]*[0-9,eE+-]*$$/) {return "integer";} #integer
+	if($_[0] =~ /^[+-]?[0-9]*[0-9,eE+-]*$/) {return "integer";} #integer
 	if($_[0] =~ /^[+-]?[0-9]*\.[0-9]*[0-9,eE+-]*$/) {return "float";} #float
 	return "string"; #not integer or float
 }
