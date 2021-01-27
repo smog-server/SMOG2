@@ -370,4 +370,12 @@ public class FileIO extends java.io.File {
     public String toString() {
 	    return super.toString();
     }
+	
+	/**
+	* Wrapper for my use so I don't have to remember the right java.io commands
+	*/
+	public boolean isWriteable() {
+		return true;
+	}
+		
 }
