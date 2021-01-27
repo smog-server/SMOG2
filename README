@@ -95,7 +95,7 @@ sure to include the full path for configure.smog2.
 3) (Optional) It is highly recommended that once SMOG
 is configured, you download and run the smog-check suite.
 This will verify your configurations are correct and that
-SMOG is producing accurate forcefield files.
+SMOG is producing accurate force field files.
 
 ########################################################
 
