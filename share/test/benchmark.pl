@@ -83,14 +83,14 @@ sub complain {
 }
 
 sub whatAmI {
-	if($_[0] =~ /^[0-9,eE]+$/) {return 1;} #integer
-	if($_[0] =~ /^[0-9,.Ee+-]+$/) {return 2;} #float
+	if($_[0] =~ /^[+-]?[0-9]*[0-9,eE+-]*$/) {return 1;} #integer
+	if($_[0] =~ /^[+-]?[0-9]*\.[0-9]*[0-9,eE+-]*$/) {return 2;} #float
 	return 3; #not integer or float
 }
 
 sub whatAmItext {
-	if($_[0] =~ /^[0-9,eE]+$/) {return "integer";} #integer
-	if($_[0] =~ /^[0-9,.Ee+-]+$/) {return "float";} #float
+	if($_[0] =~ /^[+-]?[0-9]*[0-9,eE+-]*$$/) {return "integer";} #integer
+	if($_[0] =~ /^[+-]?[0-9]*\.[0-9]*[0-9,eE+-]*$/) {return "float";} #float
 	return "string"; #not integer or float
 }
 

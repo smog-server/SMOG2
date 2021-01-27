@@ -67,7 +67,7 @@ fi
 
 $perl4smog $smog2wrapper -i $testDir/benchmarks/$pdb.$graining.pdb -$grainingText -dname testing/$pdb.$graining  &> testing/smog2.output
 $perl4smog $testDir/benchmark.pl $testDir/benchmarks/$pdb.$graining.top testing/$pdb.$graining.top &> testing/$pdb.$graining.test
-
+exit
 a=$(grep ERROR testing/$pdb.$graining.test | wc -l | awk '{print $1}')
 b=$(grep "Your Structure-based Model is ready" testing/smog2.output | wc -l | awk '{print $1}')
 
