@@ -68,16 +68,25 @@ public class FileIO extends java.io.File {
 			} else {
 				//is there a parent directory?
 				if(this.getParent() != null) {
-					// if parent directory does not exist, make it
-					if( ! (new File(this.getParent())).exists() ) {
-						(new File(this.getParent())).mkdirs();
+					//check if file exists with attempted directory name
+					if((new File(this.getParent())).isFile()) {
+						//this will definitely fail because can't make the directory, quit
+						System.out.println("Trying to make file "+filename+" but a file already exists which blocks this name.\nExiting.");
+						System.exit(1);
 					}
+					// if parent directory does not exist, make it
+					if( ! (new File(this.getParent())).exists()) {
+						if(!(new File(this.getParent())).mkdirs()) {
+							//there was a problem making the directory, maybe file already exists?
+						}
+					} 
 				}
 			    try {
 				    writer = new FileWriter(this, false);
 			    } catch (IOException e) { 
 					System.out.println("Problem writing to file: "+filename);
 					e.printStackTrace(); 
+					System.exit(1);
 				}
 			}
 	    } else {
