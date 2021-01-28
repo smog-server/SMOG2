@@ -35,8 +35,7 @@ startTF 135 # start temp
 deltaTF 1 # print every 1 degree
 ntempsF 20 # for a total of 20 prints
 run_free_out free/  # filename is ${run_free_out}${temp}
-#NOTE run_free_out can be a directory structure but the program will fail 
-#NOTE if directory does not exist!
+#NOTE any output file can have directory structure
 
 run_coord #tells the program to compute coordinate averages
 startTC 135 # start temp
