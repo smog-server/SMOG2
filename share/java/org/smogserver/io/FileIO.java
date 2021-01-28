@@ -19,8 +19,10 @@ public class FileIO extends java.io.File {
     private BufferedReader bufReader;
     private StreamTokenizer tok;
     private int type;
+	public boolean alreadyExisted = false;
     public final static int READING = 0;
     public final static int WRITING = 2;
+    public final static int NO_OVER_WRITING = 4;
     public final static int BUFFERED_READING = 1;
     public final static int TOKEN_READING = 3;
     /**
@@ -39,11 +41,12 @@ public class FileIO extends java.io.File {
      * <li>FileIO.READING use of {@link #read(int numChar)}
      * <li>FileIO.BUFFERED_READING {@link #readLine()} and {@link #readAllLines(int skip)}
      * <li>FileIO.TOKEN_READING {@link #getTokens(Object[] tokens)}
-     * <li>FileIO.WRITING {@link #write(String s)}
+     * <li>FileIO.WRITING {@link #write(String s)} 
+	 * <li>FileIO.NO_OVER_WRITING {@link #write(String s)} (no FileWriter created if file already exists, sets alreadyExisted=true for error checking )
      */
     public FileIO(String filename, int type) {
 	    super(filename);
-	    if(!this.exists()&&type!=FileIO.WRITING){
+	    if(!this.exists()&&type!=FileIO.WRITING&&type!=FileIO.NO_OVER_WRITING){
 		    System.out.println("File: \""+filename+"\" does not exist!  Exiting.");
 		    System.exit(1);
 	    }    
@@ -58,19 +61,24 @@ public class FileIO extends java.io.File {
 				    tok = new StreamTokenizer(bufReader);
 			    }
 		    } catch (Exception e) { e.printStackTrace(); }
-	    } else if (type == 2) {
-			//is there a parent directory?
-			if(this.getParent() != null) {
-				// if parent directory does not exist, make it
-				if( ! (new File(this.getParent())).exists() ) {
-					(new File(this.getParent())).mkdirs();
+	    } else if (type == 2 || type == 4) { //makes a new file
+			if(type == 4 && this.exists()) {
+				this.alreadyExisted = true;
+				writer = null;
+			} else {
+				//is there a parent directory?
+				if(this.getParent() != null) {
+					// if parent directory does not exist, make it
+					if( ! (new File(this.getParent())).exists() ) {
+						(new File(this.getParent())).mkdirs();
+					}
 				}
-			}
-		    try {
-			    writer = new FileWriter(this, false);
-		    } catch (IOException e) { 
-				System.out.println("Problem writing to file: "+filename);
-				e.printStackTrace(); 
+			    try {
+				    writer = new FileWriter(this, false);
+			    } catch (IOException e) { 
+					System.out.println("Problem writing to file: "+filename);
+					e.printStackTrace(); 
+				}
 			}
 	    } else {
 		    System.out.println("Bad argument sent to FileIO!");
@@ -109,12 +117,20 @@ public class FileIO extends java.io.File {
     /**
      * Writes a string to a FileIO.WRITING object.
      * @param string to write
+	 * @return true if successufl
      */  
-    public void write(String s) {
+    public boolean write(String s) {
+		if(writer == null) {
+			return false;
+		}
 	    try {
 		    writer.write(s);
 		    writer.flush();
-	    } catch (Exception e) { e.printStackTrace(); }
+	    } catch (Exception e) { 
+			e.printStackTrace(); 
+			return false;
+		}
+		return true;
     }
     /**
      * Closes any type of FileIO object.
