@@ -59,9 +59,19 @@ public class FileIO extends java.io.File {
 			    }
 		    } catch (Exception e) { e.printStackTrace(); }
 	    } else if (type == 2) {
+			//is there a parent directory?
+			if(this.getParent() != null) {
+				// if parent directory does not exist, make it
+				if( ! (new File(this.getParent())).exists() ) {
+					(new File(this.getParent())).mkdirs();
+				}
+			}
 		    try {
 			    writer = new FileWriter(this, false);
-		    } catch (Exception e) { e.printStackTrace(); }
+		    } catch (IOException e) { 
+				System.out.println("Problem writing to file: "+filename);
+				e.printStackTrace(); 
+			}
 	    } else {
 		    System.out.println("Bad argument sent to FileIO!");
 	    }
