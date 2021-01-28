@@ -10,7 +10,7 @@ import ral.*;
 
 public class WhamMain {
 	
-	static String versionNum = "1.09";
+	static String versionNum = "1.10";
 	static boolean distribution = true;
 	static final double SMALL_SHIFT = 0.000001; //makes the binning not insane
 	static String distString = ""+
@@ -30,7 +30,7 @@ public class WhamMain {
 	static Vector<StringHolder> fileNames, umbrellaType;
 	static Vector<DoubleHolder> fileTemps, start, step, umbrella_k, umbrella_sigma, umbrella_0, umbrella_0_2;
 	static StringHolder config, dosFileName, run_cv_out, run_free_out, run_coord_out, free_energy_out, run_prob_out, convergenceType, convergenceCriteria;
-	static BooleanHolder run_free,run_cv,run_coord,run_wham,readFreeEnergy,reweighting,run_FEP,run_prob;
+	static BooleanHolder run_free,run_cv,run_coord,run_wham,readFreeEnergy,reweighting,run_FEP,run_prob,overwriting;
 	
 	//Useful global declarations
 	static Vector<SmartBin> shist;
@@ -57,16 +57,16 @@ public class WhamMain {
 	        run_wham(numD-1-numU,numU);
 	    }
         if(run_cv.value) { 
-            System.out.println("\nPrinting specific heat.");
             SparseRealArray dos = readDOS(numD-numU);
+            System.out.println("Printing specific heat.\n");
             for(int i = 0; i < (numD-1-numU); i++) {
                 dos = SparseRealArray.sumOverLast(dos);
             }
             run_cv(dos);
         }
 		if(run_FEP.value) {
-            System.out.println("\nPrinting free energy perturbation. Will print Delta F.");
             SparseRealArray dos = readDOS(numD-numU);
+            System.out.println("Printing free energy perturbation. Will print Delta F.\n");
             if(numD - numU == 3) {
                 run_FEP(dos);
             } else {
@@ -75,8 +75,8 @@ public class WhamMain {
             }
 		}
         if(run_free.value) { 
-            System.out.println("\nPrinting free energy vs order parameter(s).");
             SparseRealArray dos = readDOS(numD-numU);
+            System.out.println("Printing free energy vs order parameter(s).\n");
             if(numD - numU == 3) {
                 run_free_2D(dos);
             } else if(numD - numU == 2) { 
@@ -87,8 +87,8 @@ public class WhamMain {
             }
         }
         if(run_coord.value) {
-            System.out.println("\nPrinting coordinate values.");
             SparseRealArray dos = readDOS(numD-numU);
+            System.out.println("Printing coordinate values.\n");
             if(numD - numU == 2) {
                 run_coord(dos);
             } else if(numD - numU == 3) {
@@ -105,8 +105,8 @@ public class WhamMain {
             }
         }
 		if(run_prob.value) {
-			System.out.println("\nRegurgitating reweighted histograms.");
             SparseRealArray dos = readDOS(numD-numU);
+			System.out.println("\nRegurgitating reweighted histograms.");
             if(numD - numU == 2) {
                 run_prob(dos);
             } else if(numD - numU == 3) {
@@ -126,6 +126,20 @@ public class WhamMain {
         if(distribution) System.out.println(distString+"\nThank you, wham again.");
         else System.out.println("\nThank you, wham again.");
 	}
+	
+	//Wrapper method for creating a FileIO in order to do some error checking
+	private static FileIO getOutputFileIO(String name) {
+		if(overwriting.value) return new FileIO(name,FileIO.WRITING);
+		else { //will die if file already exists
+			FileIO file = new FileIO(name,FileIO.NO_OVER_WRITING);
+			if(file.alreadyExisted) {
+				System.out.println("Error: A file named '"+name+ "' already exists. "+
+					"Delete file, or add option 'overwriting' to config file or to command line.");
+				System.exit(1);
+			}
+			return file;
+		}
+	}	
 
     /*********************************************
     * WHAM algorithm (outputs density of states)
@@ -411,7 +425,7 @@ public class WhamMain {
             //Utilities.print(olist,false); //abc
             for(double t = startTF.value ; t < startTF.value + ntempsF.value*deltaTF.value; t+=deltaTF.value) {
             // System.out.println("\nPrinting free energy vs order parameter."+startTF.value+" "+ntempsF.value+" "+deltaTF.value+" "+(ntempsF.value*deltaTF.value));
-                FileIO free = new FileIO(run_free_out.value+((int)(t*10)),FileIO.WRITING);
+                FileIO free = getOutputFileIO(run_free_out.value+((int)(t*10+SMALL_SHIFT)));
                 double tt = t*kb.value;
                 Real ttR = new Real( (new Double(-tt)).toString() );
                 Real min = new Real();
@@ -481,7 +495,7 @@ public class WhamMain {
         dos = SparseRealArray.switchIndices(dos,1,2);
         for(double t = startTF.value ; t < startTF.value + ntempsF.value*deltaTF.value; t+=deltaTF.value) {
     	   // System.out.println("\nPrinting free energy vs order parameter."+startTF.value+" "+ntempsF.value+" "+deltaTF.value+" "+(ntempsF.value*deltaTF.value));
-            FileIO free = new FileIO(run_free_out.value+((int)(t*10)),FileIO.WRITING);
+            FileIO free = getOutputFileIO(run_free_out.value+((int)(t*10+SMALL_SHIFT)));
             double tt = t*kb.value;
             Real ttR = new Real( (new Double(-tt)).toString() );
             Real min = new Real();
@@ -556,7 +570,7 @@ public class WhamMain {
         dos = SparseRealArray.switchIndices(dos,1,2);
         for(double t = startTF.value ; t < startTF.value + ntempsF.value*deltaTF.value; t+=deltaTF.value) {
     	   // System.out.println("\nPrinting free energy vs order parameter."+startTF.value+" "+ntempsF.value+" "+deltaTF.value+" "+(ntempsF.value*deltaTF.value));
-            FileIO free = new FileIO(run_free_out.value+((int)(t*10)),FileIO.WRITING);
+            FileIO free = getOutputFileIO(run_free_out.value+((int)(t*10+SMALL_SHIFT)));
             double tt = t*kb.value;
             Real ttR = new Real( (new Double(-tt)).toString() );
             int[] o1list = dos.getTopList();
@@ -600,7 +614,7 @@ public class WhamMain {
 	}//end run_free_2D
     private static void run_cv(SparseRealArray dos) {
         //calculate CV
-        FileIO cv = new FileIO(run_cv_out.value,FileIO.WRITING);
+        FileIO cv = getOutputFileIO(run_cv_out.value);
         for(double t = startT.value ; t < startT.value + ntemps.value*deltaT.value; t+=deltaT.value) {
             Real enth = new Real(); 
             Real psum = new Real();
@@ -645,7 +659,7 @@ public class WhamMain {
     * computes Q(T) from a density of states assuming a dos(E,Q)
     */
     private static void run_coord(SparseRealArray dos) {
-        FileIO coord = new FileIO(run_coord_out.value,FileIO.WRITING);
+        FileIO coord = getOutputFileIO(run_coord_out.value);
         //problem: we have a dos(E,Q) but we need dos(Q,E) for this integral.  So switch it!
         dos = SparseRealArray.switchIndices(dos,0,1); // dos(Q,E)
         for(double t = startTC.value ; t < startTC.value + ntempsC.value*deltaTC.value; t+=deltaTC.value) {
@@ -681,7 +695,7 @@ public class WhamMain {
         //problem: we have a dos(E,Q) but we need dos(Q,E) for this integral.  So switch it!
         dos = SparseRealArray.switchIndices(dos,0,1); // dos(Q,E)
 
-        FileIO coord = new FileIO(run_prob_out.value+startTC.value,FileIO.WRITING);
+        FileIO coord = getOutputFileIO(run_prob_out.value+startTC.value);
         double tt = startTC.value*kb.value;
         int[] olist = dos.getTopList();
         //Real ep = new Real();
@@ -717,7 +731,7 @@ public class WhamMain {
         dos = SparseRealArray.switchIndices(dos,1,2); //dos(Q1,Q2,E)
         double t = startTC.value;
         double tt = t * kb.value;
-        FileIO coord = new FileIO(run_coord_out.value+((int)(t*10)),FileIO.WRITING);
+        FileIO coord = getOutputFileIO(run_coord_out.value+((int)(t*10+SMALL_SHIFT)));
         int[] o1list = dos.getTopList();
         for(int k = 0; k < o1list.length; k++) { //Q1
             double order1 = start.elementAt(1).value + step.elementAt(1).value * (o1list[k]);
@@ -757,7 +771,7 @@ public class WhamMain {
         dos = SparseRealArray.switchIndices(dos,1,2); //dos(Q1,Q2,E)
         double t = startTC.value;
         double tt = t * kb.value;
-        FileIO coord = new FileIO(run_prob_out.value+((int)(t*10)),FileIO.WRITING);
+        FileIO coord = getOutputFileIO(run_prob_out.value+((int)(t*10+SMALL_SHIFT)));
         int[] o1list = dos.getTopList();
         for(int k = 0; k < o1list.length; k++) { //Q1
             double order1 = start.elementAt(1).value + step.elementAt(1).value * (o1list[k]+0.5);
@@ -800,7 +814,7 @@ public class WhamMain {
         double tt = t * kb.value;
 		double q2prev = startProb.value;
 		for(double q2 = startProb.value+stepProb.value; q2 < stepProb.value*numBinProb.value; q2 += stepProb.value) {
-	        FileIO prob = new FileIO(run_prob_out.value+((int)(t*10))+"."+((int)(q2/stepProb.value)),FileIO.WRITING);
+	        FileIO prob = getOutputFileIO(run_prob_out.value+((int)(t*10+SMALL_SHIFT))+"."+((int)(q2/stepProb.value+SMALL_SHIFT)));
 	        int[] o1list = dos.getTopList();
 	        for(int k = 0; k < o1list.length; k++) { //Q1
 	            double order1 = start.elementAt(1).value + step.elementAt(1).value * (o1list[k]+0.5);
@@ -848,7 +862,7 @@ public class WhamMain {
         int[] olist = dos.getTopList();
         double t = startTC.value;
         double tt = t * kb.value;
-        FileIO coord = new FileIO(run_coord_out.value+((int)(t*10)),FileIO.WRITING);
+        FileIO coord = getOutputFileIO(run_coord_out.value+((int)(t*10+SMALL_SHIFT)));
         int[] o1list = dos.getTopList();
         for(int k = 0; k < o1list.length; k++) { //Q1
             double order1 = start.elementAt(1).value + step.elementAt(1).value * (o1list[k]+0.5);
@@ -896,7 +910,7 @@ public class WhamMain {
         int[] olist = dos.getTopList();
         double t = startTC.value;
         double tt = t * kb.value;
-        FileIO coord = new FileIO(run_coord_out.value+((int)(t*10)),FileIO.WRITING);
+        FileIO coord = getOutputFileIO(run_coord_out.value+((int)(t*10+SMALL_SHIFT)));
         int[] o1list = dos.getTopList();
         for(int k = 0; k < o1list.length; k++) { //Q1
             double order1 = start.elementAt(1).value + step.elementAt(1).value * (o1list[k]+0.5);
@@ -1072,6 +1086,7 @@ public class WhamMain {
 	    run_prob = new BooleanHolder();
 	    readFreeEnergy = new BooleanHolder();
 	    reweighting = new BooleanHolder();
+		overwriting = new BooleanHolder();
 	    startT = new DoubleHolder();
 	    startTF = new DoubleHolder();
 	    startTC = new DoubleHolder();
@@ -1129,6 +1144,7 @@ public class WhamMain {
 	    parser.addOption("ntemps %d #number of cv points",ntemps);
 	    parser.addOption("ntempsF %d #number of free energy plots",ntempsF);
 	    parser.addOption("ntempsC %d #number of coordinate points",ntempsC);
+		parser.addOption("overwriting %v #allows overwriting of existing files",overwriting);
 	    parser.addOption("run_cv_out %s #name of cv file",run_cv_out);
 	    parser.addOption("run_free_out %s #appended name of free file",run_free_out);
 	    parser.addOption("run_coord_out %s #appended name of free file",run_coord_out);
@@ -1207,7 +1223,7 @@ public class WhamMain {
 	}
     private static void writeDOS(SparseRealArray dos, int dim) {
 	    System.out.println("Writing density of states to file: "+dosFileName.value);
-        FileIO dosFile = new FileIO(dosFileName.value,FileIO.WRITING);
+		FileIO dosFile = getOutputFileIO(dosFileName.value);
         int nenergy = (int)numBin.elementAt(0).value;
 	    int norder = (int)numBin.elementAt(1).value;
         int[][] index = dos.getIntegerIndex();
@@ -1266,7 +1282,7 @@ public class WhamMain {
         }
     }
     private static void writeFree(double[] z) {
-        FileIO free = new FileIO(free_energy_out.value,FileIO.WRITING);
+        FileIO free = getOutputFileIO(free_energy_out.value);
         for (int i = 0; i < z.length; i++) {
             free.write(z[i]+"\n");
         }
