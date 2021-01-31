@@ -417,9 +417,9 @@ sub printhostdate {
 }
 
 sub whatAmI {
-	if($_[0] =~ /^[0-9]*$/) {return 1;} #integer
+	if($_[0] =~ /^[+-]?[0-9]+[0-9,eE+-]*$/) {return 1;} #integer
 	# there is certainly a more compact way of writing thie regex.  oh well, I'll come back to it...
-	if($_[0] =~ /^[0-9]*\.[0-9]*$/ ||  $_[0] =~ /^\-[0-9]*\.[0-9]*$/ || $_[0] =~ /^[0-9]*\.[0-9]*[eE]/ ||  $_[0] =~ /^\-[0-9]*\.+[0-9][eE]/ ) {return 2;} #float
+	if($_[0] =~ /^[+-]?[0-9]*\.[0-9]*[eE]?$/ ) {return 2;} #float
 	return 3; #not integer or float
 }
 
