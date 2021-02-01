@@ -36,6 +36,7 @@ fi
 
 echo "Found smog2 ... running basic tests ..." 
 
+tmpDir=test-config-tmp
 testDir=$(pwd)/share/test
 
 for pdb in 1AKEapo_v2 1ypa.2chains 2GIS_noSAM_v2
@@ -48,11 +49,11 @@ then
 
 	echo "test: $pdb $graining"
 
-if [ -d testing ]
+if [ -d $tmpDir ]
 then
-rm -r testing
+rm -r $tmpDir
 fi
-mkdir testing
+mkdir $tmpDir
 
 if [ $graining == "AA" ]
 then
@@ -65,27 +66,27 @@ then
 	grainingText="t $SMOG_PATH/share/templates/SBM_AA+gaussian"
 fi
 
-$perl4smog $smog2wrapper -i $testDir/benchmarks/$pdb.$graining.pdb -$grainingText -dname testing/$pdb.$graining  &> testing/smog2.output
-$perl4smog $testDir/benchmark.pl $testDir/benchmarks/$pdb.$graining.top testing/$pdb.$graining.top &> testing/$pdb.$graining.test
+$perl4smog $smog2wrapper -i $testDir/benchmarks/$pdb.$graining.pdb -$grainingText -dname $tmpDir/$pdb.$graining  &> $tmpDir/smog2.output
+$perl4smog $testDir/benchmark.pl $testDir/benchmarks/$pdb.$graining.top $tmpDir/$pdb.$graining.top &> $tmpDir/$pdb.$graining.test
 
-a=$(grep ERROR testing/$pdb.$graining.test | wc -l | awk '{print $1}')
-b=$(grep "Your Structure-based Model is ready" testing/smog2.output | wc -l | awk '{print $1}')
+a=$(grep ERROR $tmpDir/$pdb.$graining.test | wc -l | awk '{print $1}')
+b=$(grep "Your Structure-based Model is ready" $tmpDir/smog2.output | wc -l | awk '{print $1}')
 
 if [ $a -gt 0 ]
 then
-echo There are errors. Check testing/$pdb.$graining.test for details.
+echo There are errors. Check $tmpDir/$pdb.$graining.test for details.
 exit
 elif [ $b -eq 0 ]
 then
-echo SMOG2 did not finish running. Check testing/smog.output for details.
+echo SMOG2 did not finish running. Check $tmpDir/smog.output for details.
 exit
 fi
 fi
 
 done
 done
-rm -r testing
-
+rm -r test-config-tmp
+echo "Tests passed."
 echo "------------------------"
 echo "Configuration summary:"
 echo "------------------------"
