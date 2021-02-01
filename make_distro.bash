@@ -25,7 +25,7 @@ fi
 
 else
 
-if [ $1 = build_manifest ]
+if [ $1 = manifest ]
 then
 
 # Steps:
@@ -67,5 +67,6 @@ find . -type f | grep -v "$remove" | sed "s/\.\///g" > MANIFEST
 
 else
 echo Error: parameter $1 not recognized
+echo "bash make_distro.bash manifest <-- builds a new MANIFEST file"
 fi
 fi
