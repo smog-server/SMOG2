@@ -25,4 +25,4 @@ rm -r org/smogserver/io
 rm -r org/smogserver/util
 
 mv WHAM.jar ..
-
+rm error
