@@ -1390,7 +1390,7 @@ sub calculateContacts
 			$L .= $CT;
 			$L .= " ";
 		}
-		smog_quit("More than one type of contact being used at the same time. Not all combinations of contacts are supported by Gromacs. List of used contact types: $L",1);
+		smog_note("More than one type of contact being used at the same time. Not all combinations of contacts are supported by Gromacs. List of used contact types: $L");
  	}
 }
 

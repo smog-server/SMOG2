@@ -8,12 +8,13 @@ use Exporter;
 #####################
 our $maxwarn;
 our $warncount;
+our $allwarncount;
 our $notecount;
 our @convarray;
 our %reverthash;
 our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI);
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI);
 our %supported_directives;
 
 #####################
@@ -24,19 +25,20 @@ sub quit_init
 {
 	$maxwarn=0;
 	$warncount=0;
+	$allwarncount=0;
 }
 
 sub smog_quit
 {
 	my ($LINE,$warn)=@_;
+	$allwarncount++;
 	if(defined $warn){
 		#if $warn is defined, it means we that this call is never treated as fatal
-		warn("\nWARNING : $LINE\n\n");
+		warn("\nWARNING $allwarncount (non-fatal warning) : $LINE\n\n");
 	}elsif($maxwarn > $warncount || $maxwarn ==-1 ){
 		$warncount++;
-		warn("\nWARNING (suppressed error no. $warncount): $LINE\n\n");
+		warn("\nWARNING $allwarncount (suppressed fatal error no. $warncount): $LINE\n\n");
 	}elsif($maxwarn <= $warncount && $maxwarn>0){
-		$warncount++;
 		print "\nWARNING $warncount : $LINE\n\n";
 		warn("\n\nEXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
 		exit(1);
@@ -74,10 +76,10 @@ sub warnsummary
 		print "\n\nTHERE WERE $notecount NOTES. Even if you know what you are doing, it is always worth checking any notes.\n\n"; 
 	}
 
-	if ($warncount == 1){
-		print "\n\n NOTE: There was $warncount warning. It is recommended that you read all warnings carefully.\n\n"; 
-	}elsif ($warncount > 1){
-		print "\n\n NOTE: There were $warncount warnings. It is recommended that you read all warnings carefully.\n\n"; 
+	if ($allwarncount == 1){
+		print "\n\n NOTE: There was $allwarncount warning. It is recommended that you read all warnings carefully.\n\n"; 
+	}elsif ($allwarncount > 1){
+		print "\n\n NOTE: There were $allwarncount warnings. It is recommended that you read all warnings carefully.\n\n"; 
 	}
 }
 
@@ -417,9 +419,9 @@ sub printhostdate {
 }
 
 sub whatAmI {
-	if($_[0] =~ /^[0-9]*$/) {return 1;} #integer
+	if($_[0] =~ /^[+-]?[0-9]+[0-9,eE+-]*$/) {return 1;} #integer
 	# there is certainly a more compact way of writing thie regex.  oh well, I'll come back to it...
-	if($_[0] =~ /^[0-9]*\.[0-9]*$/ ||  $_[0] =~ /^\-[0-9]*\.[0-9]*$/ || $_[0] =~ /^[0-9]*\.[0-9]*[eE]/ ||  $_[0] =~ /^\-[0-9]*\.+[0-9][eE]/ ) {return 2;} #float
+	if($_[0] =~ /^[+-]?[0-9]*\.[0-9]*[eE]?$/ ) {return 2;} #float
 	return 3; #not integer or float
 }
 
