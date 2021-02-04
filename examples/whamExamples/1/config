@@ -2,7 +2,7 @@ kB 0.008314 # Boltzmann constant
 tolerance .001 # when convergence is reached
 overwriting # WHAM.jar is allowed to overwrite
             # existing files
-threads 1   # multicore environments speed the calculation	
+threads 1   # increase to utilize multiple cores	
 
 ##### define internal histograming #####
 numDimensions 2 # space delimited file, two columns: Potential_energy and Q
