@@ -149,7 +149,6 @@ usage: smog_adjustPDB .. options ..
 
   Options
 	-i <filename>           : input PDB to adjust to smog2 format
-	-default                : use the default map file provided by smog2 
 	-map <filename>         : specify a user-defined mapping file
 	-legacy                 : use legacy (version < 2.3) non-matching routine 
                                      for mapping name residues. 
