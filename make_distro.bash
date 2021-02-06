@@ -44,16 +44,16 @@ exit
 fi
 
 cp MANIFEST MANIFEST.bak
-#full paths!!
+#^ means match the beginning in grep
 cat > dontkeep << EOF
-./SBM_AA
-./SBM_AA+gaussian
-./SBM_calpha
-./SBM_calpha+gaussian
-./bin
-.git
-./dontkeep
-./MANIFEST.bak
+^./SBM_AA
+^./SBM_AA+gaussian
+^./SBM_calpha
+^./SBM_calpha+gaussian
+^./bin
+^.git
+^./dontkeep
+^./MANIFEST.bak
 EOF
 
 remove="dummyXYZ"
