@@ -61,7 +61,7 @@ our %supported_directives = ( 'defaults' => '1',
 quit_init();
 note_init();
 checkForModules();
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
+usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
         'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'orm=s' => \$restrainedmap, 'restraints=s' => \$gen_restraints, 'ndxorder' => \$ndxorder,  'warn=i' => \$maxwarn, 
         '<>' => \&usage, 'nogro' => \$nogro)
         or defined $help); 
@@ -576,7 +576,7 @@ sub usage
 
 usage: smog_extract  .. options ..
 
-   Optional flags 
+   Options 
 	-f [smog.top]		: input SMOG forcefield file
 	-g [smog.gro]		: input SMOG configuration file
 	-n [smog.ndx]		: index file to define extracted group
@@ -586,7 +586,7 @@ usage: smog_extract  .. options ..
 	-orm [restrained.map]	: output file with old-to-new atom index mapping for restrained atoms
 	-restraints <float>	: generate restraints with a specific strength for atoms 
                                   that have interactions removed during extraction
-	-ndxorder		: Order the top and gro atoms in the order provided in the ndx file. 
+	-ndxorder		: order the top and gro atoms in the order provided in the ndx file. 
 				  Default is to preserve the original ordering. 
 	-warn [0]		: convert the first N errors into warnings
 	-nogro			: do not extract a gro file. Only extract a .top
