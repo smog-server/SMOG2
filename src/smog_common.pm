@@ -57,7 +57,7 @@ sub smog_note
 {
 	my ($LINE)=@_;
 	$notecount++;
-	warn("\nNOTE $notecount: $LINE\n\n");
+	print "\nNOTE $notecount: $LINE\n\n";
 }
 
 sub warninfo
