@@ -58,12 +58,17 @@ quit_init();
 note_init();
 checkForModules();
 
-usage() if ( !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'default' => \$default ,'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'large' => \$large, 'sort' => \$sort,  '<>' => \&usage) or defined $help); 
+usage() if ( !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'large' => \$large, 'sort' => \$sort,  '<>' => \&usage) or defined $help); 
 
 warninfo();
 
+
 if(!defined $inputPDB){
 	smog_quit("No input PDB file name given.");
+}
+
+if($subALA && ! $legacymatch){
+	smog_quit("-subALA is only supported with -legacy matching");
 }
 
 $outputPDB=checksuffix($outputPDB,".pdb");
@@ -105,8 +110,11 @@ if (defined $large){
 	&InitLargeBase;
 }
 
-if (defined $default){
-	print "-default selected. Will use the default map file for list of residue names.\n";
+if (defined $mapFile){
+		$mapOption = $mapFile;
+}else{
+	$default=0;
+	print "Will use the default map file for list of residue names.\n";
 	if(!exists $ENV{"SMOG_PATH"}){
         smog_quit("Environmental Variable SMOG_PATH not set. You may need to run the configure.smog2 script.\n");
 	}
@@ -115,12 +123,6 @@ if (defined $default){
 	} else {
 		$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMapExact";
 	}	
-}else{
-	if (!defined $mapFile ){
-		smog_quit("No map file was provided. Please choose a map file with -map, or use the default map settings with -default.");
-	}else{
-		$mapOption = $mapFile;
-	}
 }
 
 foreach my $filen ($outputPDB){
@@ -147,7 +149,6 @@ usage: smog_adjustPDB .. options ..
 
   Options
 	-i <filename>           : input PDB to adjust to smog2 format
-	-default                : use the default map file provided by smog2 
 	-map <filename>         : specify a user-defined mapping file
 	-legacy                 : use legacy (version < 2.3) non-matching routine 
                                      for mapping name residues. 

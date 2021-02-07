@@ -2062,7 +2062,7 @@ usage: smog2 .. options ..
        -o [smog.top]           : output .top file name
        -s [smog.contacts]      : output .contacts file name
        -n [smog.ndx]           : output .ndx file name
-       -c [contacts.txt]       : input contact map file
+       -c <file name>          : input contact map file
        -SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  useful for debugging
        -dname [smog]           : default name to use for all output files
        -backup [yes]           : back up any pre-existing output files

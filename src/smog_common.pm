@@ -34,13 +34,13 @@ sub smog_quit
 	$allwarncount++;
 	if(defined $warn){
 		#if $warn is defined, it means we that this call is never treated as fatal
-		warn("\nWARNING $allwarncount (non-fatal warning) : $LINE\n\n");
+		print "\nWARNING $allwarncount (non-fatal warning) : $LINE\n\n";
 	}elsif($maxwarn > $warncount || $maxwarn ==-1 ){
 		$warncount++;
-		warn("\nWARNING $allwarncount (suppressed fatal error no. $warncount): $LINE\n\n");
+		print "\nWARNING $allwarncount (suppressed fatal error no. $warncount): $LINE\n\n";
 	}elsif($maxwarn <= $warncount && $maxwarn>0){
 		print "\nWARNING $warncount : $LINE\n\n";
-		warn("\n\nEXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n");
+		print "\n\nEXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n";
 		exit(1);
 	}else{
 		print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error with the -warn flag.\nHowever, it is not recommended that output obtained with this flag be used for an actual simulation.\n";
@@ -57,7 +57,7 @@ sub smog_note
 {
 	my ($LINE)=@_;
 	$notecount++;
-	warn("\nNOTE $notecount: $LINE\n\n");
+	print "\nNOTE $notecount: $LINE\n\n";
 }
 
 sub warninfo
