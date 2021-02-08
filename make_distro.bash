@@ -51,9 +51,10 @@ cat > dontkeep << EOF
 ^./SBM_calpha
 ^./SBM_calpha+gaussian
 ^./bin
-^.git
+^./.git
 ^./dontkeep
-^./MANIFEST.bak
+^./MANIFEST
+optim
 EOF
 
 remove="dummyXYZ"
@@ -63,7 +64,7 @@ remove=$remove"\\|$token"
 done
 rm dontkeep
 
-find . -type f | sed "s/\.\///g" | grep -v "$remove"  > MANIFEST
+find . -type f |  grep -v "$remove" | sed "s/\.\///g"  > MANIFEST
 
 else
 echo Error: parameter $1 not recognized
