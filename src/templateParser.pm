@@ -49,7 +49,7 @@ qw($normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihed
 
 my %SMOGversions;
 my $smi=0;
-foreach my $ver("2.0", "2.0.1", "2.0.2", "2.0.3", "2.1", "2.2", "2.3"){
+foreach my $ver("2.0", "2.0.1", "2.0.2", "2.0.3", "2.1", "2.2", "2.3", "2.4"){
  $SMOGversions{$ver}=$smi;
  $smi++; 
 }
