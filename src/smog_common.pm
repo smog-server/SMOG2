@@ -39,7 +39,7 @@ sub smog_quit
 		$warncount++;
 		print "\nWARNING $allwarncount (suppressed fatal error no. $warncount): $LINE\n\n";
 	}elsif($maxwarn <= $warncount && $maxwarn>0){
-		print "\nWARNING $warncount : $LINE\n\n";
+		print "\nWARNING $allwarncount : $LINE\n\n";
 		print "\n\nEXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n";
 		exit(1);
 	}else{

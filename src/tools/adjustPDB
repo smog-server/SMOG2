@@ -160,7 +160,7 @@ usage: smog_adjustPDB .. options ..
 	-removeH                : strip the file of any atoms that begin with "H"
 	-large                  : use base-N (N>10) for indexing atom and residues
                                      Necessary if a single chain has more than 
-                                     9999 residues of 99999 atoms.
+                                     9999 residues or 99999 atoms.
 	-sort                   : reorder atoms in each residue by name
 	-insertTER              : insert "TER" lines between any non-consecutive 
                                      residue numbers
@@ -476,7 +476,7 @@ sub readexactmap
 				smog_quit("Repeated IgnoreRes entry in mapping file. Offending line:\n$line");
 			}
 			$ignorename{"$entries[1]"}=0;
-			print "Note: Will not rename $entries[1] residues\n"
+			print "     Will not rename $entries[1] residues\n";
 		}
 	}
 
