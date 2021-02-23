@@ -32,6 +32,8 @@ use Exporter;
 use PDL; ## LOAD PDL MODULE
 use Storable qw(dclone);
 use smog_common;
+use String::Util qw(trim);
+
 
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
@@ -104,7 +106,7 @@ sub checkPDB
 	my @tempBond;
 	my @consecResidues;
 	my $x;my $y;my $z;
-	my $residue; my $interiorResidue; my $atom;my $atomSerial;
+	my $residue; my $atom;my $atomSerial;
 	my $atomsInRes; 
 	my $i; my $putIndex=0; 
 	my $headFlag=1;my $outLength;
@@ -264,7 +266,7 @@ sub checkPDB
 			my $atomsmatch=0;
 		 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 			my $resname=$residue;
-	        	my $resindex = substr($record,22,5);
+	        	my $resindex = int(substr($record,22,5));
 			if ($lastresindex ne "null"){
 				my $diff;
 				if($largebase==1){
@@ -287,8 +289,6 @@ sub checkPDB
 				if($record =~ m/^ATOM|^HETATM/)
 				{
 	
-					$interiorResidue = substr($record,17,4);
-					$interiorResidue =~ s/^\s+|\s+$//g;
 		   			$residue = substr($record,17,4);
 	        	        	$residue =~ s/^\s+|\s+$//g;
 		   			my $altlocator = substr($record,16,1);
@@ -297,7 +297,7 @@ sub checkPDB
 					}
 	
 		        		if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
-	            			$interiorPdbResidueIndex = substr($record,22,5); 
+	            			$interiorPdbResidueIndex = int(substr($record,22,5)); 
 				} 
 				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex or  $record !~ m/^ATOM|^HETATM/){
 					my $linetemp=$lineNumber-1;
@@ -409,7 +409,7 @@ sub parsePDBATOMS
 	my @tempBond;
 	my @consecResidues;
 	my $x;my $y;my $z;
-	my $residue; my $interiorResidue; my $atom;my $atomSerial;
+	my $residue; my $atom;my $atomSerial;
 	my $atomsInRes; 
 	my $i; my $putIndex=0; 
 	my $headFlag=1;my $outLength;
@@ -551,8 +551,6 @@ sub parsePDBATOMS
 				$record = <PDBFILE>;
 	 			$lineNumber++;
 	
-				$interiorResidue = substr($record,17,4);
-				$interiorResidue =~ s/^\s+|\s+$//g;
 		   		$residue = substr($record,17,4);
 	        	        $residue =~ s/^\s+|\s+$//g;
 		   		my $altlocator = substr($record,16,1);
