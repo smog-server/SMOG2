@@ -107,7 +107,7 @@ if(defined $template){
 			#skip comment lines; 
 			next;
 		}
-		$data =~ s/^\s+|\s+$//g;
+		$data = trim($data);
 		# check that nonbonded params are only added if the atom types are present
 		my @tarray=split(/\s+/,$data);
 		if($#tarray != 4){
@@ -191,7 +191,7 @@ chomp($groheader);
 my $TMP=<GROFILE>;
 chomp($TMP);
 $TMP =~ s/\t/ /g; 
-$TMP =~ s/^\s+|\s+$//g;
+$TMP = trim($TMP);
 $TMP =~ s/ +/ /g;
 my @A=split(/\s+/,$TMP);
 my $NATOMS=$A[0];
@@ -538,10 +538,8 @@ while (<FILE>){
 					my ($A,$B)=checkcomment($line);
 					if($A eq ""){next;}  # skip the line if it is only a comment
 				    	my @tokens = split('<',$line);
-					my $directive = $tokens[0];
-					$directive =~ s/^\s+|\s+$//g;
-					my $stuff = $tokens[1];
-					$stuff =~ s/^\s+|\s+$//g;
+					my $directive = trim($tokens[0]);
+					my $stuff = trim($tokens[1]);
 					# check that nonbonded params are only added if the atom types are present
 					if($directive eq "nonbond_params"){
 						my @tarray=split(/\s+/,$stuff);
@@ -616,7 +614,7 @@ while (<FILE>){
 			($data,$comment)=checkcomment($LINE);
 		} 
 		$LINE =~ s/\t/ /g; 
-		$LINE =~ s/^\s+|\s+$//g;
+		$LINE = trim($LINE);
 		$LINE =~ s/ +/ /g;
 		my @tmp2=split(/\s+/,$LINE);
 		$seenmoltype{$tmp2[0]}=0;
@@ -629,7 +627,7 @@ while (<FILE>){
 		$LINEORIG=$LINE;
 		chomp($LINE);
 		$LINE =~ s/\t/ /g; 
-		$LINE =~ s/^\s+|\s+$//g;
+		$LINE = trim($LINE);
 		$LINE =~ s/ +/ /g;
 		until($LINE eq ""){
 			print TOPOUT "$LINEORIG"; 
@@ -638,7 +636,7 @@ while (<FILE>){
 			$LINEORIG=$LINE;
 			chomp($LINE);
 			$LINE =~ s/\t/ /g; 
-			$LINE =~ s/^\s+|\s+$//g;
+			$LINE = trim($LINE);
 			$LINE =~ s/ +/ /g;
 		}
 		print TOPOUT "$addname $addnum\n";

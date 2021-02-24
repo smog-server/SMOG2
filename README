@@ -47,7 +47,6 @@ This is a relatively simple process.
 following  modules to be installed (available through 
 cpan):
 
-String::Util
 XML::Simple
 Exporter
 perl PDL

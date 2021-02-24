@@ -32,8 +32,6 @@ use Exporter;
 use PDL; ## LOAD PDL MODULE
 use Storable qw(dclone);
 use smog_common;
-use String::Util qw(trim);
-
 
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
@@ -249,8 +247,7 @@ sub checkPDB
 	        	$lineNumber--;
 			$outLength = length($record);
 		 	## OBTAIN RESIDUE NAME ##
-			$residue = substr($record,17,4);
-			$residue =~ s/^\s+|\s+$//g;
+			$residue = trim(substr($record,17,4));
 			if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 			## if first iteration, save residueBackup, and use residues
 			#if(exists $residueBackup{$residue}){
@@ -266,7 +263,7 @@ sub checkPDB
 			my $atomsmatch=0;
 		 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 			my $resname=$residue;
-	        	my $resindex = int(substr($record,22,5));
+	        	my $resindex = trim(substr($record,22,5));
 			if ($lastresindex ne "null"){
 				my $diff;
 				if($largebase==1){
@@ -289,15 +286,14 @@ sub checkPDB
 				if($record =~ m/^ATOM|^HETATM/)
 				{
 	
-		   			$residue = substr($record,17,4);
-	        	        	$residue =~ s/^\s+|\s+$//g;
+		   			$residue = trim(substr($record,17,4));
 		   			my $altlocator = substr($record,16,1);
 					if($altlocator ne " "){
 						smog_quit("Alternate location indicator found at line $lineNumber.  Alt. Loc. Indic. not supported by SMOG.");
 					}
 	
 		        		if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
-	            			$interiorPdbResidueIndex = int(substr($record,22,5)); 
+	            			$interiorPdbResidueIndex = trim(substr($record,22,5)); 
 				} 
 				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex or  $record !~ m/^ATOM|^HETATM/){
 					my $linetemp=$lineNumber-1;
@@ -323,14 +319,12 @@ sub checkPDB
 					last;
 				}
 	
-				$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
 				unless($interiorPdbResidueIndex =~ /^\d+$/ ||  $largebase ==1){;
 					smog_quit ("Residue $residue$interiorPdbResidueIndex contains non integer value for the index, or an insertion code.");
 				}
 	
 				## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
-				$atom = substr($record, 12, 4);
-				$atom =~ s/^\s+|\s+$//g;
+				$atom = trim(substr($record, 12, 4));
 	
 				if(exists $uniqueAtom{$atom})
 				{
@@ -348,12 +342,11 @@ sub checkPDB
 				## CHECK IF ATOM EXISTS IN MODEL ##
 				if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
 				$atomsmatch++;
-				$x = substr($record, 30, 8);
-				$y = substr($record, 38, 8);
-				$z = substr($record, 46, 8);
+				$x = trim(substr($record, 30, 8));
+				$y = trim(substr($record, 38, 8));
+				$z = trim(substr($record, 46, 8));
 				$atomCounter++;
 				$atomSerial=$atomCounter;
-				$atomSerial =~ s/^\s+|\s+$//g;	
 				
 				$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 				$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
@@ -363,9 +356,8 @@ sub checkPDB
 				if($CGenabled==1){
 					$pdbIndex = $interiorPdbResidueIndex;
 				}else{
-					$pdbIndex = substr($record,6,5);
+					$pdbIndex = trim(substr($record,6,5));
 				}
-				$pdbIndex =~ s/^\s+|\s+$//g;
 				if(exists $indexMap{"$chainNumber-$pdbIndex"}){
 					smog_quit("Atom/Residue numbers must be unique within each chain. Offending line:\n$record");
 				}
@@ -529,8 +521,7 @@ sub parsePDBATOMS
 	        	$lineNumber--;
 			$outLength = length($record);
 		 	## OBTAIN RESIDUE NAME ##
-			$residue = substr($record,17,4);
-			$residue =~ s/^\s+|\s+$//g;
+			$residue = trim(substr($record,17,4));
 			## if first iteration, save residueBackup, and use residues
 			#if(exists $residueBackup{$residue}){
 			if($CGenabled == 1){
@@ -551,27 +542,22 @@ sub parsePDBATOMS
 				$record = <PDBFILE>;
 	 			$lineNumber++;
 	
-		   		$residue = substr($record,17,4);
-	        	        $residue =~ s/^\s+|\s+$//g;
+		   		$residue = trim(substr($record,17,4));
 		   		my $altlocator = substr($record,16,1);
 	
-	            		$interiorPdbResidueIndex = substr($record,22,5);  
-	
-				$interiorPdbResidueIndex =~ s/^\s+|\s+$//g;
-	
+	            $interiorPdbResidueIndex = trim(substr($record,22,5));  
+		
 				## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
-				$atom = substr($record, 12, 4);
-				$atom =~ s/^\s+|\s+$//g;
+				$atom = trim(substr($record, 12, 4));
 	
 				## CHECK IF ATOM EXISTS IN MODEL ##
 				if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
 				$atomsmatch++;
-				$x = substr($record, 30, 8);
-				$y = substr($record, 38, 8);
-				$z = substr($record, 46, 8);
+				$x = trim(substr($record, 30, 8));
+				$y = trim(substr($record, 38, 8));
+				$z = trim(substr($record, 46, 8));
 				$atomCounter++;
 				$atomSerial=$atomCounter;
-				$atomSerial =~ s/^\s+|\s+$//g;	
 				
 				$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 				$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
@@ -582,9 +568,8 @@ sub parsePDBATOMS
 				if($CGenabled==1){
 					$pdbIndex = $interiorPdbResidueIndex;
 				}else{
-					$pdbIndex = substr($record,6,5);
+					$pdbIndex = trim(substr($record,6,5));
 				}
-				$pdbIndex =~ s/^\s+|\s+$//g;
 				$temp[$putIndex]=[$x,$y,$z,$atomSerial];
 				$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			}
