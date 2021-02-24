@@ -1553,7 +1553,7 @@ sub parseCONTACT
 	                        		smog_note("Contact between atoms $contact1 $contact2 below threshold.\n-deleteshortcontact is being used, will exclude this contact.");
 						next;
 					}else{
-	                            		smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");
+	                            		smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value ". sprintf("%.3f",$dist));
 	 			  	}
 				}
 				push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
