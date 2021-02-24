@@ -261,8 +261,7 @@ sub adjustInputFile{
 	$k = 0;
 	while($k<$rows){
 		my $line=$pArr[$k];	
-		chomp($pArr[$k]);
-		$pArr[$k] =~ s/^\s+|\s+$//g;
+		trim(chomp($pArr[$k]));
 		
 		## If end of file: ##
 		if ($pArr[$k] =~ m/^END/){
@@ -304,8 +303,7 @@ sub adjustInputFile{
 		## If atom line: ##
 
 			$firstresidue++;
-			my $resNum = substr($pArr[$k],22,5);
-			$resNum =~ s/^\s+|\s+$//g;		
+			my $resNum = trim(substr($pArr[$k],22,5));
 			my $newResNum = $resNum;
 			if($resNum =~ /^\d+$|^-\d+$/ && $lastresidue =~ /^\d+$|^-\d+$/){
 				if(($resNum-$lastresidue > 1 || $resNum-$lastresidue < 0) && $firstresidue !=1){
@@ -321,8 +319,7 @@ sub adjustInputFile{
 				smog_quit("Residue IDs must be positive integers. Found: $resNum.");
 			}
 	
-			$resName = substr($pArr[$k],17,4);
-			$resName =~ s/^\s+|\s+$//g;
+			$resName = trim(substr($pArr[$k],17,4));
 			my $altLoc = substr($pArr[$k],16,1);
 			if ($altLoc ne " "){
 				smog_quit("Issue at line $k: Alternate location indicators are not supported by SMOG.");
@@ -344,10 +341,8 @@ sub adjustInputFile{
 					$atomCountBaseN=$atomCount;
 				}
 				## Obtain atom information ##
-				my $atomName = substr($pArr[$k],12,4);
-				$atomName =~ s/^\s+|\s+$//g;
-				my $resNametmp = substr($pArr[$k],17,4);
-				$resNametmp =~ s/^\s+|\s+$//g;
+				my $atomName = trim(substr($pArr[$k],12,4));
+				my $resNametmp = trim(substr($pArr[$k],17,4));
 				if($loopInd==0){
 					$lastresName=$resNametmp;
 				}elsif($lastresName ne $resNametmp){
@@ -370,8 +365,7 @@ sub adjustInputFile{
 					$firstresidue=0;
 				}	
 				else{
-					$newResNum = substr($pArr[$k],22,5);	#get next residue index
-					$newResNum =~ s/^\s+|\s+$//g;		
+					$newResNum = trim(substr($pArr[$k],22,5));	#get next residue index
 					if ($newResNum eq $resNum){
 						$loopInd++;
 					}

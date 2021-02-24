@@ -173,7 +173,7 @@ if(defined $nogro){
 	my $TMP=<GROFILE>;
 	chomp($TMP);
 	$TMP =~ s/\t/ /g; 
-	$TMP =~ s/^\s+|\s+$//g;
+	$TMP = trim($TMP);
 	$TMP =~ s/ +/ /g;
 	@A=split(/\s+/,$TMP);
 	my $NATOMS=$A[0];
