@@ -103,6 +103,9 @@ if (defined $removeH){
 	smog_note("The flag -removeH was selected. Will remove all H atoms.");
 }
 
+if (defined $PDBresnum){
+	smog_note("The flag -PDBresnum. Will preserve original residue numbers from PDB.\nOutput file will probably not be useful for simulations, but may be helpful for analysis.");
+}
 
 if (defined $insertTER){
 	smog_note("The flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.");
@@ -308,7 +311,7 @@ sub adjustInputFile{
 			if($resNum =~ /^\d+$|^-\d+$/ && $lastresidue =~ /^\d+$|^-\d+$/){
 				if(($resNum-$lastresidue > 1 || $resNum-$lastresidue < 0) && $firstresidue !=1){
 					my $chain=substr($pArr[$k],21,1);
-					if(!$renumber && !$insertTER){
+					if(!$renumber && !$insertTER && !$PDBresnum){
 						smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (chain $chain, near line $k).");
 					}elsif($insertTER){
 						print "Non-consecutive residue numbering detected.  -insertTER used.  TER will be inserted before:$line\n";
