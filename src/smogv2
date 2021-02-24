@@ -1222,7 +1222,6 @@ sub dihedralOutput
 			 	$paramArr[1]*=$ratio;
 				## Format output <i j k function p1 p2 ... pn>
 			 	for(my $I=0;$I<=$#paramArr;$I++){$paramFormat="$paramFormat %12.9e";}
-			 	#foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 
 				if($fType == 1 || $fType == 4) {
 					$paramFormat=" %12.9e %12.9e %u";
