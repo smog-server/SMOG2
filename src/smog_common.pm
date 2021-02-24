@@ -14,7 +14,7 @@ our @convarray;
 our %reverthash;
 our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI);
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim);
 our %supported_directives;
 
 #####################
@@ -97,8 +97,6 @@ sub checkForModules {
 		if($checkPackage > 0) { print "Perl module XML::Validator::Schema not installed!\n"; $sum++;}
 		$checkPackage=`\$perl4smog -e "use Exporter" 2>&1 | wc -l | awk '{print \$1}'`;
 		if($checkPackage > 0) { print "Perl module Exporter not installed!\n"; $sum++;}
-		$checkPackage=`\$perl4smog -e "use String::Util" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { print "Perl module String::Util not installed!\n"; $sum++;}
 		$checkPackage=`\$perl4smog -e "use PDL" 2>&1 | wc -l | awk '{print \$1}'`;
 		if($checkPackage > 0) { print "Perl Data Language not installed!\n"; $sum++;}
 	}
@@ -123,7 +121,7 @@ sub checkcomment
 	# remove comments
 	$LINE =~ s/;.*$//g; 
 	$LINE =~ s/\t/ /g; 
-	$LINE =~ s/^\s+|\s+$//g;
+	$LINE = trim($LINE);
 	$LINE =~ s/ +/ /g;
 	if( $LINE =~ m/[#!\^\$]/ ){
 		smog_quit("Special characters not recognized\n  Offending line: $LINE\n");
@@ -251,7 +249,7 @@ sub readindexfile
 		# in case we have a group directive w/o spaces
 		$LINE =~ s/\[/\[ /g;
 		$LINE =~ s/\]/ \]/g;
-		$LINE =~ s/^\s+|\s+$//g;
+		$LINE = trim($LINE);
 		$LINE =~ s/\s+|\t+/ /g;
 		my @A=split(/\s+/,$LINE);
 		if($#A == -1){
@@ -338,7 +336,7 @@ sub printcenter
 
 	foreach my $line(@textarray)
 	{
-        	$line =~ s/^\s+|\s+$//g;
+        	$line = trim($line);
 		my $L=length($line);
 		my $pad=int(($headw-$L)/2);
 		if($pad < 0)
@@ -423,6 +421,14 @@ sub whatAmI {
 	# there is certainly a more compact way of writing thie regex.  oh well, I'll come back to it...
 	if($_[0] =~ /^[+-]?[0-9]*\.[0-9]*[eE]?$/ ) {return 2;} #float
 	return 3; #not integer or float
+}
+
+#removes white space from the beginning and from the end of input string 
+#essentially String::Util trim()
+sub trim {
+	my $string = $_[0]; 
+	$string =~ s/^\s+|\s+$//g;
+	return $string;
 }
 
 1;

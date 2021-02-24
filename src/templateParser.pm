@@ -34,7 +34,6 @@ use warnings FATAL => 'all';
 ####################
 use XML::Simple qw(:strict);
 use Exporter;
-use String::Util 'trim';
 use Storable qw(dclone);
 use smog_common;
 

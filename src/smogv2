@@ -511,10 +511,8 @@ sub addExtras {
 			my ($A,$B)=checkcomment($line);
 			if($A eq ""){next;}  # skip the line if it is only a comment
 		    	@tokens = split('<',$line);
-			$directive = $tokens[0];
-			$directive =~ s/^\s+|\s+$//g;
-			$stuff = $tokens[1];
-			$stuff =~ s/^\s+|\s+$//g;
+			$directive = trim($tokens[0]);
+			$stuff = trim($tokens[1]);
 			# check that nonbonded params are only added if the atom types are present
 
 			if($directive eq "atomtypes"){
@@ -524,8 +522,7 @@ sub addExtras {
 					addToTop($directive,$stuff."\n");
 					next;	
 				}
-				my $lstuff=$ltokens[1];
-				$lstuff =~ s/^\s+|\s+$//g;
+				my $lstuff= trim($ltokens[1]);
 				my @entries = split(/\s+/,$lstuff);
 				if(defined $presentatomtypes{$entries[0]} ){
 					# this atomtype is found in the system. store the extra info
@@ -541,8 +538,7 @@ sub addExtras {
 					addToTop($directive,$stuff."\n");
 					next;	
 				}
-				my $lstuff=$ltokens[1];
-				$lstuff =~ s/^\s+|\s+$//g;
+				my $lstuff= trim($ltokens[1]);
 				my @tarray=split(/\s+/,$lstuff);
 				if(@tarray < 5){
 					smog_quit("nonbond_params defined in extras file, but too few parameters are given. Offending line:$line");
@@ -576,8 +572,7 @@ sub addExtras {
 					addToTop($directive,$stuff."\n");
 					next;	
 				}
-				my $lstuff=$ltokens[1];
-				$lstuff =~ s/^\s+|\s+$//g;
+				my $lstuff= trim($ltokens[1]);
 				my @tarray=split(/\s+/,$lstuff);
 				if(@tarray < 5 ){
 					smog_quit("bondtypes defined in extras file, but too few parameters are given. Offending line:$line");
@@ -603,8 +598,7 @@ sub addExtras {
 					addToTop($directive,$stuff."\n");
 					next;	
 				}
-				my $lstuff=$ltokens[1];
-				$lstuff =~ s/^\s+|\s+$//g;
+				my $lstuff= trim($ltokens[1]);
 				my @tarray=split(/\s+/,$lstuff);
 				if(@tarray < 6 ){
 					smog_quit("angletypes defined in extras file, but too few parameters are given. Offending line:$line");
@@ -630,8 +624,7 @@ sub addExtras {
 					addToTop($directive,$stuff."\n");
 					next;	
 				}
-				my $lstuff=$ltokens[1];
-				$lstuff =~ s/^\s+|\s+$//g;
+				my $lstuff= trim($ltokens[1]);
 				my @tarray=split(/\s+/,$lstuff);
 				if(@tarray < 7 ){
 					smog_quit("dihedraltypes defined in extras file, but too few parameters are given. Offending line:$line");
@@ -680,8 +673,7 @@ sub checkExtras {
 		if(scalar @tokens > 2) {
 			smog_quit("Line in extras file: $filename contains more than one instance of character '<'. Offending line:\n $line");
 		}
-		$directive = $tokens[0];
-		$directive =~ s/^\s+|\s+$//g;
+		$directive = trim($tokens[0]);
 		if(!exists $directives{$directive}) {
 			smog_quit("extras file: $filename has a non-valid directive \"$directive\". Check for typos or add directive to directivesList in src/smogv2.");			
 		}
@@ -780,8 +772,7 @@ sub bondOutput
 {
 	my($inputFunc,$i,$j,$values,$indexhandle,$allatoms) = @_;
 	if(!$inputFunc){smog_quit ("BONDOUTPUT::NO FUNCTION DEFINED");}
-	## Remove white spaces from string ##
-	$inputFunc =~ s/^\s+|\s+$//g;
+	$inputFunc = trim($inputFunc);
 	## If $input contains a + ##
 	my @funcs = split(/\+/,$inputFunc); ## split combination of functions
 	my $outputString="";
@@ -1032,8 +1023,7 @@ sub CalculateAnglesHelper
 sub angleOutput
 {
  	my($inputFunc,$i,$j,$k,$values,$indexhandle,$allatoms) = @_;
- ## Remove white spaces from string ##
- 	$inputFunc =~ s/^\s+|\s+$//g;
+ 	$inputFunc = trim($inputFunc);
  ## If $input contains a + ##
 	my @funcs = split(/\+/,$inputFunc);
 	my $outputString="";
@@ -1199,8 +1189,7 @@ sub CalculateDihedralsHelper
 sub dihedralOutput
 {
  	my($inputFunc,$ai,$aj,$ak,$al,$values,$ratio,$eG,$allatoms) = @_;
- 	## Remove white spaces from string ##
- 	$inputFunc =~ s/^\s+|\s+$//g;
+ 	$inputFunc = trim($inputFunc);
  	## If $input contains a + ##
  	my @funcs = split(/\+/,$inputFunc);
 	my $outputString="";
@@ -1400,7 +1389,7 @@ sub contactOutput
 {
 	my($inputFunc,$i,$j,$c0,$epsilon,$normalize) = @_;
 	if(!$inputFunc){smog_quit ("CONTACTOUTPUT::NO FUNCTION DEFINED");}
-	$inputFunc =~ s/^\s+|\s+$//g;
+	$inputFunc = trim($inputFunc);
 	## If $input contains a + ##
 	my @funcs = split(/\+/,$inputFunc); ## split combination of functions
 	my $outputString="";
@@ -1733,14 +1722,10 @@ sub readAtoms
 		{
 			$atomindex++;
 			$reflist{$atomindex}=$linenumber;
-			$atomName = substr($line, 12, 4);
-			$atomName =~ s/^\s+|\s+$//g;
-			#$atomNum = substr($line,6,5);
-			
-			$resName = substr($line,17,4);
-			$resName =~ s/^\s+|\s+$//g;
-			$resNum = substr($line,22,4);
-			$resNum =~ s/^\s+|\s+$//g;
+			$atomName = trim(substr($line, 12, 4));
+			$atomNum = trim(substr($line,6,5));
+			$resName = trim(substr($line,17,4));
+			$resNum = trim(substr($line,22,4));
 			if($resNumCurr eq "null"){
 				$resNumCurr=$resNum;
 			}
@@ -1813,10 +1798,8 @@ sub convertPDBToGroNdx
 	}
          if($line =~ m/^ATOM|^HETATM/)
          {
-		$atomName = substr($line, 12, 4);
-		$atomName =~ s/^\s+|\s+$//g;
-		$resName = substr($line,17,4);
-		$resName =~ s/^\s+|\s+$//g;
+		$atomName = trim(substr($line, 12, 4));
+		$resName = trim(substr($line,17,4));
         if(!exists $residues{$resName}->{"atoms"}->{$atomName})
 		{next;}
 		
@@ -1843,8 +1826,7 @@ sub convertPDBToGroNdx
 	
   		$chain = $chainCounter;
 		$counter++;$atomNum=$counter;
-		$resNum = substr($line,22,4);
-		$resNum =~ s/^\s+|\s+$//g;
+		$resNum = trim(substr($line,22,4));
 		if($atomNum == 1){$resNumCurr=$resNum;}
 		if($resNum ne $resNumCurr)
 			{
