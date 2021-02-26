@@ -27,11 +27,15 @@ my $default;
 my $large;
 my $sort;
 my $renumber;
+my $PDBresnum;
 my $removeH;
 my $mapOption;
 my $legacymatch;
 my $help;
 my $inputArguments=join(' ',@ARGV);
+
+my %supported_residue_tags = ( 'last' => '1','first' => '1');
+
 ## MODULE HEADERS ##
 
 # this is called after all subroutines are read in
@@ -58,7 +62,7 @@ quit_init();
 note_init();
 checkForModules();
 
-usage() if ( !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'large' => \$large, 'sort' => \$sort,  '<>' => \&usage) or defined $help); 
+usage() if ( !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'PDBresnum' => \$PDBresnum,'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'large' => \$large, 'sort' => \$sort,  '<>' => \&usage) or defined $help); 
 
 warninfo();
 
@@ -82,6 +86,14 @@ if(defined $renumber && defined $insertTER){
 	smog_quit("Simultaneous use of -renumber and -insertTER not supported");
 }
 
+if(defined $renumber && defined $PDBresnum){
+	smog_quit("Simultaneous use of -renumber and -PDBresnum not supported");
+}
+
+if(defined $large && defined $PDBresnum){
+	smog_quit("Simultaneous use of -large and -PDBresnum not supported");
+}
+
 if (defined $renumber){
 	smog_note("The flag -renumber was selected. Will assign consecutive residue numbering within each chain.");
 }
@@ -94,6 +106,9 @@ if (defined $removeH){
 	smog_note("The flag -removeH was selected. Will remove all H atoms.");
 }
 
+if (defined $PDBresnum){
+	smog_note("The flag -PDBresnum. Will preserve original residue numbers from PDB.\nOutput file will probably not be useful for simulations, but may be helpful for analysis.");
+}
 
 if (defined $insertTER){
 	smog_note("The flag -insertTER was selected. Will insert TER lines between non-consecutive residue numbers.");
@@ -157,6 +172,9 @@ usage: smog_adjustPDB .. options ..
 	-o [adjusted.pdb]       : output pdb file name
 	-renumber               : ignore any residue numbering inconsistencies 
                                      and renumber residues sequentially
+	-PDBresnum              : don't renumber residues. Keep original PDB numbering.
+                                     can be useful for analysis
+                                     output PDB probably won't be useful for smog2
 	-removeH                : strip the file of any atoms that begin with "H"
 	-large                  : use base-N (N>10) for indexing atom and residues
                                      Necessary if a single chain has more than 
@@ -296,7 +314,7 @@ sub adjustInputFile{
 			if($resNum =~ /^\d+$|^-\d+$/ && $lastresidue =~ /^\d+$|^-\d+$/){
 				if(($resNum-$lastresidue > 1 || $resNum-$lastresidue < 0) && $firstresidue !=1){
 					my $chain=substr($pArr[$k],21,1);
-					if(!$renumber && !$insertTER){
+					if(!$renumber && !$insertTER && !$PDBresnum){
 						smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (chain $chain, near line $k).");
 					}elsif($insertTER){
 						print "Non-consecutive residue numbering detected.  -insertTER used.  TER will be inserted before:$line\n";
@@ -362,22 +380,27 @@ sub adjustInputFile{
 			$lastresidue=$resNum;
 
 			my $printresidue;
-			my $resIndBaseN;
-			if(defined $large){
-				$resIndBaseN=BaseTentoLarge($resInd,4);
+			my $writeResNum;
+
+			if(defined $PDBresnum){
+				# write original PDB residue number
+				$writeResNum=$resNum;
+			}elsif(defined $large){
+				# use large base numbering
+				$writeResNum=BaseTentoLarge($resInd,4);
 			}else{
+				# standard sequential numbering
 				if($atomCount == 10000){
 					smog_quit("Too many residues in a single chain (max of 9999).  Try -large option.");
 				}	
-				$resIndBaseN=$resInd;
+				$writeResNum=$resInd;
 			}
-
 
 			if (defined $legacymatch) {
 				# conventional head/tail adjustments
-				($printresidue,$removestring)=legacymatching($resName,$resIndBaseN,$chainName,$isFirst,$isLast,$removestring);
+				($printresidue,$removestring)=legacymatching($resName,$writeResNum,$chainName,$isFirst,$isLast,$removestring);
 			} elsif (!defined $legacymatch) {
-				($printresidue,$removestring,$renamedstring)=exactmatching($k,$resName,$resIndBaseN,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring);
+				($printresidue,$removestring,$renamedstring)=exactmatching($k,$resName,$writeResNum,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring);
 			} else {
 				smog_quit("internal error 1");
 			}
@@ -589,6 +612,9 @@ sub makesubs
 		foreach my $I (sort @tmparr) {
 			if($I =~ m/^%/){
 				$I =~ s/%//g;
+				if(!exists $supported_residue_tags{"$I"}){
+					smog_quit("Residue tag \"\%$I\" is not supported");
+				}
 				$flag=" $I";
 			}else{
 				$str.="$I ";
