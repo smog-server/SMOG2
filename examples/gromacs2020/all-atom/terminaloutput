@@ -121,7 +121,7 @@ Starting contact calculations ...
 		80% done and 575 contacts.
 		90% done and 586 contacts.
 	Printing contacts to file: 2ci2.contacts.
-	******* Parameters Used for determination of contacts *********
+	******* Parameters used for determination of contacts *********
 	Using type: Shadow
 	Atom shadowing size: 1.0 angstrom
 	Shadowing size of bonded atom: 0.5 angstrom

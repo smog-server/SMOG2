@@ -71,7 +71,7 @@ Starting contact calculations ...
 		80% done and 599 contacts.
 		90% done and 599 contacts.
 	Printing contacts to file: smog.contacts.
-	******* Parameters Used for determination of contacts *********
+	******* Parameters used for determination of contacts *********
 	Atom shadowing size: 1.0 nm
 	Cutoff radius: 6.0 nm
 	Minimum sequence distance between protein contacts: 3
