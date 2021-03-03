@@ -10,7 +10,7 @@
 
 <xs:simpleType name="gmxType">
     <xs:restriction base="xs:integer">
-      <xs:pattern value="^[123]$"/>
+      <xs:pattern value="^[1234]$"/>
     </xs:restriction>
 </xs:simpleType>
 

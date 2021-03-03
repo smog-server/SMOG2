@@ -543,15 +543,17 @@ sub addExtras {
 				if(@tarray < 5){
 					smog_quit("nonbond_params defined in extras file, but too few parameters are given. Offending line:$line");
 				}
-				unless($tarray[2]  =~ /^[1-3]$/){
-					smog_quit("In extras file, only nonbond_param types 1-3 are supported. Offending line:$line");
+				unless($tarray[2]  =~ /^[1-4]$/){
+					smog_quit("In extras file, only nonbond_param types 1-4 are supported (1 and 2 are default Gromacs options. 3 and 4 are for use with unofficial (modified) versions of Gromacs. Offending line:$line");
 				}
 				if($tarray[2]==1 && @tarray!=5){
 					smog_quit("In extras file, nonbond_param defined with nbtype 1. Must have 5 parameters. Offending line:$line");
+				}elsif($tarray[2]==3 && @tarray!=21){
+					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 21 parameters. Offending line:$line");
+				}elsif($tarray[2]==4 && @tarray!=6){
+					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 21 parameters. Offending line:$line");
 				}
-				if($tarray[2]==3 && @tarray!=20){
-					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 20 parameters. Offending line:$line");
-				}
+
 				if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
 					next;
 				}	
