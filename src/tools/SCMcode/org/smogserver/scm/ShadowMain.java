@@ -344,7 +344,7 @@ public class ShadowMain {
 				outputFileIO.write("END snap "+groNum+"\n");
 			}
 		}
-		print2screen("******* Parameters Used for determination of contacts *********");
+		print2screen("******* Parameters used for determination of contacts *********");
 		if(ShadowSettings.USE_SHADOW_MAP) {
 			print2screen("Using type: Shadow");
 			print2screen("Atom shadowing size: "+ShadowSettings.SHADOW_RADIUS+" angstrom");

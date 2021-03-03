@@ -61,7 +61,7 @@ Starting contact calculations ...
 		80% done and 599 contacts.
 		90% done and 599 contacts.
 	Printing contacts to file: smog.contacts.
-	******* Parameters Used for determination of contacts *********
+	******* Parameters used for determination of contacts *********
 	Using type: Shadow
 	Atom shadowing size: 1.0 angstrom
 	Shadowing size of bonded atom: 0.5 angstrom
