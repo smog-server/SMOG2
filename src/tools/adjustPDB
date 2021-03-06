@@ -21,6 +21,7 @@ my $prevResTypeRNA;
 my $outputPDB="adjusted.pdb";
 my $inputPDB;
 my $insertTER;
+my $insertTERall;
 my $subALA;
 my $mapFile;
 my $default;
@@ -170,8 +171,13 @@ usage: smog_adjustPDB .. options ..
                                      Must be used in conjunction with -map
                                      Different mapping files used with -default
 	-o [adjusted.pdb]       : output pdb file name
+	-insertTER              : interactively determine whether to insert "TER" lines 
+                                     between any non-consecutive residue numbers.
 	-renumber               : ignore any residue numbering inconsistencies 
-                                     and renumber residues sequentially
+                                     and renumber residues sequentially. This option
+                                     can be dangerous. -insertTER is recommended, unless
+                                     you are certain that all numbering inconsistencies 
+                                     should be ignored 
 	-PDBresnum              : don't renumber residues. Keep original PDB numbering.
                                      can be useful for analysis
                                      output PDB probably won't be useful for smog2
@@ -180,8 +186,6 @@ usage: smog_adjustPDB .. options ..
                                      Necessary if a single chain has more than 
                                      9999 residues or 99999 atoms.
 	-sort                   : reorder atoms in each residue by name
-	-insertTER              : insert "TER" lines between any non-consecutive 
-                                     residue numbers
 	-subALA                 : if a residue only has C, CA, N, O, and CB atoms, 
                                      then rename it ALA 
 	-warn [0]               : convert first N errors to warnings (-1: convert 
@@ -317,8 +321,27 @@ sub adjustInputFile{
 					if(!$renumber && !$insertTER && !$PDBresnum){
 						smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (chain $chain, near line $k).");
 					}elsif($insertTER){
-						print "Non-consecutive residue numbering detected.  -insertTER used.  TER will be inserted before:$line\n";
-						print NEWPDB "TER\n";
+						if(defined $insertTERall){
+
+							print "Non-consecutive residue numbering detected.  -insertTER used with \"All\".  TER will be inserted before:$line\n";
+							print NEWPDB "TER\n";
+						}else{
+							print "Non-consecutive residue numbering detected at\n$pArr[$k-1]\n$pArr[$k]\n";
+							print "Would you like to insert a TER line? [yes/no/all]\n";
+							my $response=<STDIN>;
+							chomp($response);
+							until($response =~ m/^[Yy][Ee][Ss]$/ || $response =~ m/^[Nn][Oo]$/ || $response =~ m/^[Aa][Ll][Ll]$/){
+								print "Invalid response.  Yes, No and All are supported\n";
+								$response=<STDIN>;
+                                                        	chomp($response);
+							}
+							if($response =~ m/^[Yy][Ee][Ss]$/ || $response =~ m/^[Aa][Ll][Ll]$/){
+                                                        	print NEWPDB "TER\n";
+								if($response =~ m/^[Aa][Ll][Ll]$/){
+									$insertTERall=0;
+								}
+							}
+						}
 					}
 				}
 			}elsif(!$renumber){
