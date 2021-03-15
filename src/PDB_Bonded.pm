@@ -233,6 +233,9 @@ sub checkPDB
  			$lastresindex="null";
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
 			## CREATE INTERACTION ##
+			if(!defined $atomSerial){
+				smog_quit("TER or END line encountered prior to the first ATOM. This is probably a mistake in your PDB file.");
+			}
 			my $chainlength=$atomSerial-$lastchainstart;
 			$counter++;
         		@consecResidues = ();
@@ -685,7 +688,7 @@ sub GenerateBondedGeometry {
 	if($chainlength == 0){
 		smog_quit("Found 0 atoms in chain $chid.  Perhaps TER appears on consecutive lines, or TER is immediately followed by END.");
 	}elsif($chainlength != 1){
-		print "Attempting to connect all atoms in chain $chid to the first atom..\n";
+		print "Attempting to connect all atoms in chain $chid to the first atom...\n";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);
 		if($connected == -1){
 			print "\tChain $chid has no bonds. No connections possible. May be a listing of ions.\n\n";

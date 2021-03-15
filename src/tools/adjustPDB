@@ -330,12 +330,12 @@ sub adjustInputFile{
 							print "Would you like to insert a TER line? [yes/no/all]\n";
 							my $response=<STDIN>;
 							chomp($response);
-							until($response =~ m/^[Yy][Ee][Ss]$/ || $response =~ m/^[Nn][Oo]$/ || $response =~ m/^[Aa][Ll][Ll]$/){
+							until($response =~ m/^[Yy]$/ || $response =~ m/^[Nn]$/ || $response =~ m/^[Yy][Ee][Ss]$/ || $response =~ m/^[Nn][Oo]$/ || $response =~ m/^[Aa][Ll][Ll]$/){
 								print "Invalid response.  Yes, No and All are supported\n";
 								$response=<STDIN>;
                                                         	chomp($response);
 							}
-							if($response =~ m/^[Yy][Ee][Ss]$/ || $response =~ m/^[Aa][Ll][Ll]$/){
+							if($response =~ m/^[Yy][Ee][Ss]$/ || $response =~ m/^[Yy]$/ ||  $response =~ m/^[Aa][Ll][Ll]$/){
                                                         	print NEWPDB "TER\n";
 								if($response =~ m/^[Aa][Ll][Ll]$/){
 									$insertTERall=0;
