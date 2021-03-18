@@ -243,7 +243,7 @@ if($rescaleD == 1.0){
 				for(my $J=0;$J<=$#D;$J++){
 					print TOPOUT "$D[$J]\t";
 				}
-				print TOPOUT "$B ; scaled by $rescaleC\n";
+				print TOPOUT "$B ; scaled by $rescaleD\n";
 			}else{
 				print TOPOUT "$C[$JJ]\n";
 			}
