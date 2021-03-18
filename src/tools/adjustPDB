@@ -349,16 +349,13 @@ sub adjustInputFile{
 			}
 	
 			$resName = trim(substr($pArr[$k],17,4));
-			my $altLoc = substr($pArr[$k],16,1);
-			if ($altLoc ne " "){
-				smog_quit("Issue at line $k: Alternate location indicators are not supported by SMOG.");
-			}
 			
-			$chainName = substr($pArr[$k],21,1);
 			
 			## Loop through the residue ##
 			$loopInd = 0;
 			while ($newResNum eq $resNum){
+				checkaltloc($pArr[$k],$k);
+				$chainName = substr($pArr[$k],21,1);
 				$atomCount++;
 				my $atomCountBaseN;
 				if(defined $large){
@@ -445,6 +442,13 @@ sub adjustInputFile{
 	close NEWPDB;
 }
 
+sub checkaltloc {
+	my ($line,$k)=@_;
+	my $altLoc = substr($line,16,1);
+	if ($altLoc ne " "){
+		smog_quit("Issue at line $k: Alternate location indicators are not supported by SMOG. Offending line:\n$line");
+	}
+}
 sub readmap {
 	## CACHE MAP ##
 	#Note: Map files has to be in format <residue> <head_name> <tail_name>
