@@ -320,6 +320,7 @@ if($rescaleC !=0){
 			my $rescale=dorescaleC(\%atomgroup,$groupC1,$groupC2,$D[0],$D[1]);
 
 			if($rescale==1 && $rescaleC == 0){
+				print TOPOUT ";  $C[$JJ]  ; removed by smog_scale-energies\n";
 				next;
 			}else{
 				print TOPOUT "$C[$JJ]\n";
