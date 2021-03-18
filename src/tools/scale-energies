@@ -133,18 +133,18 @@ print "\nUsing $inputTOP and $indexFile to generate $outputTOP.\n";
 my $topbuff="";
 if($rescaleC != 1.0 && $rescaleC != 0.0){
 	print "Will rescale weights of contacts between atom groups \"$groupC1\" and \"$groupC2\" by $rescaleC.\n";
-	$topbuff .= ";Contact groups selected \"$groupC1\" and \"$groupC2\"\n";
+	$topbuff .= "; Contact groups selected \"$groupC1\" and \"$groupC2\"\n";
 }elsif($rescaleC == 0){
 	print "Will remove contacts between atom groups \"$groupC1\" and \"$groupC2\".\n";
-	$topbuff .= ";Contact groups selected \"$groupC1\" and \"$groupC2\"\n";
+	$topbuff .= "; Contact groups selected \"$groupC1\" and \"$groupC2\"\n";
 }
 
 if($rescaleD != 1.0 && $rescaleD != 0.0){
 	print "Will rescale weights of dihedrals for atom group \"$groupD\" by $rescaleD.\n";
-	$topbuff .= ";Dihedral group selected \"$groupD\"\n";
+	$topbuff .= "; Dihedral group selected \"$groupD\"\n";
 }elsif($rescaleD == 0){
 	print "Will remove dihedrals for atom group \"$groupD\".\n";
-	$topbuff .= ";Dihedral group selected \"$groupD\"\n";
+	$topbuff .= "; Dihedral group selected \"$groupD\"\n";
 }
 
 $topbuff .="; Below are any comments that were in the top file provided to scale-energies\n";
@@ -237,13 +237,15 @@ if($rescaleD == 1.0){
 
 			if($rescale == 4){
 				if($rescaleD ==0){
+					print TOPOUT ";  $C[$JJ]  ;  removed by smog_scale-energies\n";
 					next;
+				}else{
+					$D[6] *= $rescaleD;	
+					for(my $J=0;$J<=$#D;$J++){
+						print TOPOUT "$D[$J]\t";
+					}
+					print TOPOUT "$B ; scaled by $rescaleD\n";
 				}
-				$D[6] *= $rescaleD;	
-				for(my $J=0;$J<=$#D;$J++){
-					print TOPOUT "$D[$J]\t";
-				}
-				print TOPOUT "$B ; scaled by $rescaleD\n";
 			}else{
 				print TOPOUT "$C[$JJ]\n";
 			}
@@ -276,17 +278,18 @@ if($rescaleC == 1.0){
 			if($rescale==1){
 				if($rescaleC == 0){
 					#remove the contact
-					next;
+					print TOPOUT ";  $C[$JJ]  ;  removed by smog_scale-energies\n";
+				}else{
+					if($combrule == 1){
+						# if combrule is 1, then scale c6 and c12.  Otherwise, just scale epsilon
+						$D[3] *= $rescaleC;
+					}	
+					$D[4] *= $rescaleC;	
+					for(my $J=0;$J<=$#D;$J++){
+						print TOPOUT "$D[$J]\t";
+					}
+					print TOPOUT "$B ; scaled by $rescaleC\n";
 				}
-				if($combrule == 1){
-					# if combrule is 1, then scale c6 and c12.  Otherwise, just scale epsilon
-					$D[3] *= $rescaleC;
-				}	
-				$D[4] *= $rescaleC;	
-				for(my $J=0;$J<=$#D;$J++){
-					print TOPOUT "$D[$J]\t";
-				}
-				print TOPOUT "$B ; scaled by $rescaleC\n";
 			}else{
 				print TOPOUT "$C[$JJ]\n";
 			}
