@@ -47,6 +47,9 @@ our %supported_directives = ( 'defaults' => '1',
         'atomtypes' => '1',
         'moleculetype' => '1',
         'nonbond_params' => '2',
+        'bondtypes' => '2',
+        'angletypes' => '2',
+        'dihedraltypes' => '2',
         'atoms' => '1',
         'bonds' => '1',
         'angles' => '1',
@@ -289,6 +292,59 @@ if(exists $DIRLIST{"nonbond_params"}){
 	print TOPOUT "\n";
 }
 
+if(exists $DIRLIST{"bondtypes"}){
+	@C= split(/\n/,$DATA[$DIRLIST{"bondtypes"}]);
+	print TOPOUT "[ bondtypes ]\n";
+	for(my $II=1;$II<=$#C;$II++){
+		my ($A, $B)=checkcomment($C[$II]);
+		if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
+		if($A eq ""){
+			print TOPOUT "$C[$II]\n";
+		}else{
+			my @D=split(/\s+/,$A);
+			if(exists $typesinsystem{$D[0]} && exists $typesinsystem{$D[1]}){
+				print TOPOUT "$C[$II]\n";
+			}
+		}
+	}
+	print TOPOUT "\n";
+}
+
+if(exists $DIRLIST{"angletypes"}){
+	@C= split(/\n/,$DATA[$DIRLIST{"angletypes"}]);
+	print TOPOUT "[ angletypes ]\n";
+	for(my $II=1;$II<=$#C;$II++){
+		my ($A, $B)=checkcomment($C[$II]);
+		if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
+		if($A eq ""){
+			print TOPOUT "$C[$II]\n";
+		}else{
+			my @D=split(/\s+/,$A);
+			if(exists $typesinsystem{$D[0]} && exists $typesinsystem{$D[1]} && exists $typesinsystem{$D[2]}){
+				print TOPOUT "$C[$II]\n";
+			}
+		}
+	}
+	print TOPOUT "\n";
+}
+
+if(exists $DIRLIST{"dihedraltypes"}){
+	@C= split(/\n/,$DATA[$DIRLIST{"dihedraltypes"}]);
+	print TOPOUT "[ dihedraltypes ]\n";
+	for(my $II=1;$II<=$#C;$II++){
+		my ($A, $B)=checkcomment($C[$II]);
+		if(checkforinclude($C[$II],$A,*TOPOUT)){next;};
+		if($A eq ""){
+			print TOPOUT "$C[$II]\n";
+		}else{
+			my @D=split(/\s+/,$A);
+			if(exists $typesinsystem{$D[0]} && exists $typesinsystem{$D[1]} && exists $typesinsystem{$D[2]} && exists $typesinsystem{$D[3]}){
+				print TOPOUT "$C[$II]\n";
+			}
+		}
+	}
+	print TOPOUT "\n";
+}
 
 print TOPOUT "[ moleculetype ]\n";
 @C= split(/\n/,$DATA[$DIRLIST{"moleculetype"}]);
