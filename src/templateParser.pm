@@ -243,7 +243,7 @@ sub checkAngleFunctionDef
 	}
 }
 
-# checkDihedralFunctionDef: verifies that the contact function declaration satisfies some standards 
+# checkDihedralFunctionDef: verifies that the dihedral function declaration satisfies some standards 
 sub checkDihedralFunctionDef
 {
 	my($funcString,$eG) = @_;
