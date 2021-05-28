@@ -181,6 +181,7 @@ print "Will use C12=$addC12 E*nm^12 and C6=$addC6 E*nm^6\n";
 print "Will place ions at least $mindist nm from the existing system\n";
 print "Will write the new forcefield and configuration to $outputtop and $outputgro\n\n"; 
 
+$mindist*=2;
 
 ### make a new gro file 
 
@@ -300,7 +301,7 @@ for(my $I=1;$I<=$NATOMS-$addnum;$I++){
 	$Y[$I]=$YT;
 	$Z[$I]=$ZT;
 }
-print "adding ions to gro file...\n";
+print "preparing to add ions to gro file...\n";
 my $XTT;
 my $YTT;
 my $ZTT;
@@ -326,6 +327,12 @@ my $gridwidth1=$LENGTH1/$N1;
 my $N2=int($LENGTH2/$mindist);
 my $gridwidth2=$LENGTH2/$N2;
 
+if($NATOMS > 0.5*($N0+1)*($N1+1)*($N2+1)){
+	print "NOTE: Number of total atoms exceeds one half of all grid cells.  Placing ions may be slow.\n"; 
+}elsif($NATOMS > ($N0+1)*($N1+1)*($N2+1)){
+	smog_quit("Number of total atoms exceeds number of grid cells. Trying smaller value of -mindist may help.")
+}
+
 #later, we will compare distance squared
 $mindist*=$mindist;
 
@@ -338,112 +345,36 @@ for(my $I=1;$I<=$NATOMS-$addnum;$I++){
 	my ($C0,$C1,$C2)=getcell(\@UNIT0,\@UNIT1,\@UNIT2,$gridwidth0,$gridwidth1,$gridwidth2,$X[$I],$Y[$I],$Z[$I]);
 	$GRIDATOMS{"$C0-$C1-$C2"}{$I}=1;
 }
-
+print "adding ions to gro file...\n";
 for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 	$added++;
 	my $mindistt=0;
 	my $attempt=0;
+	my $CELL0;
+	my $CELL1;
+	my $CELL2;
 	until($mindistt == 1){
 		$attempt++;
 		$mindistt=1; # if any atoms are too close, this is set to 0, resulting in another attempt.
 		if($attempt ==1000){
 			smog_quit("Tried 1000 times to add ion number $added. Giving up.");
 		}
-		my $R1=rand();
-		my $R2=rand();
-		my $R3=rand();
-		# generate possible position
-		$XTT=$grobox[0]*$R1+$grobox[3]*$R2+$grobox[6]*$R3;
-		$YTT=$grobox[1]*$R1+$grobox[4]*$R2+$grobox[7]*$R3;
-		$ZTT=$grobox[2]*$R1+$grobox[5]*$R2+$grobox[8]*$R3;
 
-		# get cell of test atom		
-		my ($C0,$C1,$C2)=getcell(\@UNIT0,\@UNIT1,\@UNIT2,$gridwidth0,$gridwidth1,$gridwidth2,$XTT,$YTT,$ZTT);
 		# check the adjacent cells, account for PBCs
-		my $CELL0;
-		my $CELL1;
-		my $CELL2;
-		for(my $GC0=$C0-1;$GC0<=$C0+1;$GC0++){
-			if($GC0==-1){
-				$CELL0=$N0;
-			}elsif($GC0==$N0+1){
-				$CELL0=0;
-			}else{
-				$CELL0=$GC0;
-			}
-			for(my $GC1=$C1-1;$GC1<=$C1+1;$GC1++){
-				if($GC1==-1){
-					$CELL1=$N1;
-				}elsif($GC1==$N1+1){
-					$CELL1=0;
-				}else{
-					$CELL1=$GC1;
-				}
-				for(my $GC2=$C2-1;$GC2<=$C2+1;$GC2++){
-					if($GC2==-1){
-						$CELL2=$N2;
-					}elsif($GC2==$N2+1){
-						$CELL2=0;
-					}else{
-						$CELL2=$GC2;
-					}
-
-					# now go through the atoms in the relevant cell
-					foreach my $atomi(keys %{$GRIDATOMS{"$CELL0-$CELL1-$CELL2"}}){
-						$XT=$XTT-$X[$atomi];
-						$YT=$YTT-$Y[$atomi];
-						$ZT=$ZTT-$Z[$atomi];
-						while($ZT > $grobox[8]/2.0){
-				                        $XT-=$grobox[6];
-				                        $YT-=$grobox[7];
-				                        $ZT-=$grobox[8];
-						}
-						while($ZT < -$grobox[8]/2.0){
-				                        $XT+=$grobox[6];
-				                        $YT+=$grobox[7];
-				                        $ZT+=$grobox[8];
-						}
-						while($YT > $grobox[4]/2.0){
-				                        $XT-=$grobox[3];
-				                        $YT-=$grobox[4];
-				                        $ZT-=$grobox[5];
-						}
-						while($YT < -$grobox[4]/2.0){
-				                        $XT+=$grobox[3];
-				                        $YT+=$grobox[4];
-				                        $ZT+=$grobox[5];
-						}
-						while($XT > $grobox[0]/2.0){
-				                        $XT-=$grobox[0];
-				                        $YT-=$grobox[1];
-				                        $ZT-=$grobox[2];
-						}
-						while($XT < -$grobox[0]/2.0){
-				                        $XT+=$grobox[0];
-				                        $YT+=$grobox[1];
-				                        $ZT+=$grobox[2];
-						}
-
-						my $dist=($XT)**2+($YT)**2+($ZT)**2;
-						if($dist<$mindist){
-							$mindistt=0;
-							last;
-						}
-					}
-				}
-			}
+		$CELL0=int(rand()*($N0+1));
+		$CELL1=int(rand()*($N1+1));
+		$CELL2=int(rand()*($N2+1));
+		if(defined %{$GRIDATOMS{"$CELL0-$CELL1-$CELL2"}}{0}){
+			$mindistt=0;
 		}
 	}
 
 	# if kept, then add to the hash of gridded atoms
 
-	$X[$I]=$XTT;	
-	$Y[$I]=$YTT;	
-	$Z[$I]=$ZTT;
-	my ($C0,$C1,$C2)=getcell(\@UNIT0,\@UNIT1,\@UNIT2,$gridwidth0,$gridwidth1,$gridwidth2,$XTT,$YTT,$ZTT);
-	$GRIDATOMS{"$C0-$C1-$C2"}{$I}=1;
+	my ($XTT,$YTT,$ZTT)=getcellcenter(\@UNIT0,\@UNIT1,\@UNIT2,$gridwidth0,$gridwidth1,$gridwidth2,$CELL0,$CELL1,$CELL2);
+	$GRIDATOMS{"$CELL0-$CELL1-$CELL2"}{$I}=1;
 	my $J = $I % 100000;	
-	printf GROFILE "%5i%-5s%5s%5i%8.3f%8.3f%8.3f\n", $J,$addname, $addname, $J, $X[$I], $Y[$I], $Z[$I];
+	printf GROFILE "%5i%-5s%5s%5i%8.3f%8.3f%8.3f\n", $J,$addname, $addname, $J, $XTT, $YTT, $ZTT;
 
 }
 
@@ -675,6 +606,30 @@ sub getcell
 	return ($C0,$C1,$C2);
 
 }
+
+sub getcellcenter
+{
+	my ($UNIT0,$UNIT1,$UNIT2,$width0,$width1,$width2,$N0,$N1,$N2)=@_;
+	my @UNIT0=@{$UNIT0};
+	my @UNIT1=@{$UNIT1};
+	my @UNIT2=@{$UNIT2};
+	my $Xcenter=0;
+	my $Ycenter=0;
+	my $Zcenter=0;
+	$Xcenter+=$UNIT0[0]*($N0+0.5);
+	$Ycenter+=$UNIT0[1]*($N0+0.5);
+	$Zcenter+=$UNIT0[2]*($N0+0.5);
+	$Xcenter+=$UNIT1[0]*($N1+0.5);
+	$Ycenter+=$UNIT1[1]*($N1+0.5);
+	$Zcenter+=$UNIT1[2]*($N1+0.5);
+	$Xcenter+=$UNIT2[0]*($N2+0.5);
+	$Ycenter+=$UNIT2[1]*($N2+0.5);
+	$Zcenter+=$UNIT2[2]*($N2+0.5);
+
+	return ($Xcenter,$Ycenter,$Zcenter);
+
+}
+
 
 sub usage
 {
