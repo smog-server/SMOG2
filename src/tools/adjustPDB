@@ -280,6 +280,18 @@ sub adjustInputFile{
 			removesummary($removestring,$chainindex);
 			$renamedstring="";
 			$removestring="";
+			if($k<$rows-1){
+				my $nz=0;
+				for(my $I=$k+1;$I<$rows;$I++){
+					$pArr[$I] =~ s/\s+//g;
+					if(length($pArr[$I]) != 0){
+						$nz++;
+					}
+				}
+				if($nz >0 ){
+					print "\nNOTE: Non-blank lines appear after \"END\" line in input PDB.  Anything after END was removed in the output.  This may not be desirable.\n";
+				}
+			}
 			last;
 		}elsif($pArr[$k] =~ m/^TER/){
 			# if the next line has a TER, or END, then don't write the current TER.
