@@ -119,6 +119,7 @@ sub checkPDB
 	my $endfound=0;
 	my $residueSerial=0;
 	my $largebase=0;
+	my %duplicateatoms;
 	## OPEN .PDB FILE ##
 
 	unless (open(PDBFILE, $fileName)) {
@@ -350,7 +351,12 @@ sub checkPDB
 				$z = trim(substr($record, 46, 8));
 				$atomCounter++;
 				$atomSerial=$atomCounter;
-				
+
+				if(!exists $duplicateatoms{"$x$y$z"}){
+					$duplicateatoms{"$x$y$z"}=1;
+				}else{
+					smog_quit("Atom has identical coordinates as a previous atom. Error found at line:\n$record");
+				}				
 				$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
 				$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
 				$pairType = $residues{$residue}->{"atoms"}->{$atom}->{"pairType"};
@@ -383,6 +389,7 @@ sub checkPDB
 		$lastrecord=$record;
 		$record = "";
  	}
+
 	print "Done checking PDB formatting\n\n";
 }
 
