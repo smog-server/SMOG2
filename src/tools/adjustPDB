@@ -251,13 +251,19 @@ sub adjustInputFile{
 	# identify all TER and END lines.
 	my $k = 0;
 	my %isTEREND;
+	my $foundend=0;
 	while($k<$rows){
 		if ($pArr[$k] =~ m/^END/ || $pArr[$k] =~ m/^TER/){
 			$isTEREND{$k}=1;
+			if ($pArr[$k] =~ m/^END/){
+				$foundend=1;
+			}
 		}
 		$k++;
 	}
-
+	if($foundend==0){
+		smog_quit("END line not found in input PDB.");
+	}
 	my $hostname=`hostname`;
 	chomp($hostname);
 	my $date=`date`;
