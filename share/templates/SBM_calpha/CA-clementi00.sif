@@ -1,42 +1,33 @@
-<?xml version='1.0'?>
+<?xml version="1.0"?>
 <sif>
-
-<!-- templates compatible with SMOG version: -->
-<version min="2.3"/>
-
-<!-- FUNCTION DEFINITIONS -->
-<!-- NOTE: Function definitions should only be changed if you modify the source code.-->
-<functions>
-	<function name="bond_harmonic" directive="bonds"/>
-	<function name="angle_harmonic" directive="angles"/>
-	<function name="dihedral_cosine" directive="dihedrals"/>
-    	<function name="contact_1" directive="pairs" exclusions="1"/>
-</functions>
-<!-- HAMILTONIAN SETTINGS -->
-<settings>
-	<!-- ENERGY/CONTACT GROUPS -->
-<Groups>
-	<!-- AMINO ENERGY GROUPS --> 
-	<energyGroup residueType="amino" name="bb" normalize="0"/>
-
- <!-- Global Contacts Settings -->
-	<contactGroup name="c"  normalize="0"/>
-
- <!-- Contact/Dihedral Group ratio: This is only used if normalization is turned on-->
-       <groupRatios contacts="1" dihedrals="1"/>
-
-</Groups>
-
-<dihedralNormalization dihedralCounting="0"/>
-
-<!-- CONTACT MAP SETTINGS -->
-<!-- NOTE: If a different template is provided with the -t flag, then these settings will be ignored-->
-<Contacts method="shadow" contactDistance="6" shadowRadius="1" shadowRadiusBonded="0.5">
+  <!-- templates compatible with SMOG version: -->
+  <version min="2.3"/>
+  <!-- FUNCTION DEFINITIONS -->
+  <!-- NOTE: Function definitions should only be changed if you modify the source code.-->
+  <functions>
+    <function name="bond_harmonic" directive="bonds"/>
+    <function name="angle_harmonic" directive="angles"/>
+    <function name="dihedral_cosine" directive="dihedrals"/>
+    <function name="contact_1" directive="pairs" exclusions="1"/>
+  </functions>
+  <!-- HAMILTONIAN SETTINGS -->
+  <settings>
+    <!-- ENERGY/CONTACT GROUPS -->
+    <Groups>
+      <!-- AMINO ENERGY GROUPS -->
+      <energyGroup residueType="amino" name="bb" normalize="0"/>
+      <!-- Global Contacts Settings -->
+      <contactGroup name="c" normalize="0"/>
+      <!-- Contact/Dihedral Group ratio: This is only used if normalization is turned on-->
+      <groupRatios contacts="1" dihedrals="1"/>
+    </Groups>
+    <dihedralNormalization dihedralCounting="0"/>
+    <!-- CONTACT MAP SETTINGS -->
+    <!-- NOTE: If a different template is provided with the -t flag, then these settings will be ignored-->
+    <Contacts method="shadow" contactDistance="6" shadowRadius="1" shadowRadiusBonded="0.5">
 </Contacts>
-
-<bondsThreshold shortBond="0.08" longBond="0.5"/>
-<anglesThreshold smallAngles="30" largeAngles="150"/>
-<contactsThreshold shortContacts="0.2"/> 
-
-</settings>
+    <bondsThreshold shortBond="0.08" longBond="0.5"/>
+    <anglesThreshold smallAngles="30" largeAngles="150"/>
+    <contactsThreshold shortContacts="0.2"/>
+  </settings>
 </sif>
