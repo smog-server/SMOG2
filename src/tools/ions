@@ -95,7 +95,7 @@ if(defined $template){
 		smog_quit("When using the -t option, you may not provide the following additional flags: -ionC12, -ionC6, -ionq, -ionm.");
 	}
 	# read the definitions for ions from ions.def
-	my $ionfile="$template/ions.def";
+	my $ionfile=finddefs($template);
 	print "\nWill read definitions of ion parameters in $ionfile\n";
 	open(IONFILE,"$ionfile") or smog_quit("Can\'t open $ionfile");
 	my $ionmatch=0;
@@ -630,6 +630,28 @@ sub getcellcenter
 
 }
 
+sub finddefs
+{
+	my ($folderName)=@_;
+	my $defsexists=0;
+	my $defsfile;
+        opendir(my $folder,$folderName);
+	while(my $file = readdir($folder)){
+		if($file =~ m/ions.def$/) {
+			$defsexists++;
+			$defsfile = "$folderName/$file";
+			next;
+		}
+	}
+	if($defsexists ==0){
+		smog_quit ("No ion definition file found in directory $folderName");
+	}
+	if($defsexists >1){
+		smog_quit ("Found multiple ion definition files in directory $folderName");
+	}
+	return $defsfile;
+
+}
 
 sub usage
 {
