@@ -405,7 +405,12 @@ sub adjustInputFile{
 				## Check if next line is END or TER ##
 				if ($k == $rows || $pArr[$k] =~ /^END/ || $pArr[$k] =~ /^TER/){
 					$newResNum = "";
-					$isLast = 1;
+					if($isFirst == 1){
+						# this means it is the first and last residue.  i.e. it is a sgingle-residue chain.  In that case, we consider it neither first, nor last.
+						$isFirst = 0;
+					}else{
+						$isLast = 1;
+					}
 					$firstresidue=0;
 				}	
 				else{
