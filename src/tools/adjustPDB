@@ -15,6 +15,7 @@ my $resInd;
 my $chainName;
 my $resName;
 my @residue;
+my %atomsseen;
 my @pArr;
 my $loopInd;
 my $prevResTypeRNA;
@@ -593,6 +594,12 @@ sub readexactmap
 		# add residue definition to map hash.  Also, add all permutations of alternate atom names
 		checkDupGetAlt(\@entries,$line);
 	}
+	for my $I (values %rename){
+		if(!exists $atomsseen{$I}){
+			smog_quit("Unused new name: Rename defines $I as a target name, but that atom doesn\'t appear in any of the residue definitions. This is probably unintentional, or a mistake.");
+		}
+	}
+
 	close MAP;
 }
 
@@ -617,6 +624,7 @@ sub checkDupGetAlt
 					smog_quit("Mapping file missing closing \")\" on line:\n\t$line");
 				}
 				$tfound{$entries[$I]}=atomfound(\%tfound,$entries[$I],$line);
+				$atomsseen{$entries[$I]}=$tfound{$entries[$I]};
 			}
 			$altsets++;
 
@@ -624,9 +632,9 @@ sub checkDupGetAlt
 			$strippedlist[$strippedindex]=$entries[$I];
 			$strippedindex++;
 		}
-	
 		# if not seen, atomfound returns 0.  If found, smog_quit
 		$tfound{$entries[$I]}=atomfound(\%tfound,$entries[$I],$line);
+		$atomsseen{$entries[$I]}=$tfound{$entries[$I]};
 	}
 
 	for( my $I=0;$I<$altsets;$I++){
@@ -643,7 +651,6 @@ sub makesubs
 	my ($resname,$list,$alts,$altindex,$string)=@_;
 
 	my @alts=@{$alts};
-
 
 	if($altindex <= $#alts){
 		my @altlist=split(/\s+/,$alts[$altindex]);
@@ -669,6 +676,10 @@ sub makesubs
 			}else{
 				$str.="$I ";
 			}
+			if(exists $rename{$I}){
+				smog_quit("Conflicting attribute: Atom $I is defined for residue $resname, but it is also defined under \'rename\' (new name $rename{$I}). This is probably a mistake."); 
+			}
+
 		}
 		$str.="$flag";
 		if(!exists $map{$str}) {
