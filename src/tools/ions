@@ -451,16 +451,34 @@ while (<FILE>){
 
 		# append the new atomtype
 		$LINEORIG=$LINE;
-
+		my $extrafile = "";
+		my $extrasexists=0;
+		if(defined $template){
+        		opendir(my $folder,$template);
+        		while(my $file = readdir($folder)){
+        		        if($file =~ m/\.extras$/ || $file =~ m/^extras$/) {
+        		                $extrasexists++;
+        		                $extrafile = "$template/$file";
+					if($extrasexists>1){
+						smog_quit("More than one extras file found in $template");
+					}
+        		        }
+        		}
+			closedir($folder);
+		}
 		if($alreadypresent==1){
 			# since we have already defined the atomtype, we will not check for anything from extras
-			if(defined $template && -e "$template/extras"){
-				print "\nNote: Since $addname was defined in the original top file, we will not try to read $template/extras.\n";
+			if(defined $template && $extrasexists >0){
+				print "\nNote: Since $addname was defined in the original top file, we will not try to read $extrafile.\n";
 			}
 		}else{
 			# if -t is used and there is an extras file, read it
-			if(defined $template && -e "$template/extras"){
-		        	my $extrafile="$template/extras";
+			if(defined $template){
+		        	#my $extrafile="$template/extras";
+				if($extrasexists !=1){
+					smog_quit("No extras file found.  This is required when adding a new type of ion");
+					
+				}
 				print "Will check if we should add any nonbond_params from extras file $extrafile";
 				open(EXTRA,"$extrafile") or smog_quit("Unable to open $extrafile");
 				while(my $line = <EXTRA>)
@@ -637,7 +655,7 @@ sub finddefs
 	my $defsfile;
         opendir(my $folder,$folderName);
 	while(my $file = readdir($folder)){
-		if($file =~ m/ions.def$/) {
+		if($file =~ m/\.ions\.def$/ || $file =~ m/^ions\.def$/) {
 			$defsexists++;
 			$defsfile = "$folderName/$file";
 			next;

@@ -1955,7 +1955,7 @@ sub parseInputFolder
 			print "Validating XML format of $nb\n";
 			validateTemplate($nb,"nb");
 			next;
-		}elsif($file =~ m/extras$/) {
+		}elsif($file =~ m/\.extras$/ || $file =~ m/^extras$/) {
 			$extrasexists++;
 			$extrasfile = "$folderName/$file";
 			print "Found extras file $extrasfile\n";
