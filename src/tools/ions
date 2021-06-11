@@ -333,8 +333,6 @@ if($NATOMS > 0.5*($N0+1)*($N1+1)*($N2+1)){
 	smog_quit("Number of total atoms exceeds number of grid cells. Trying smaller value of -mindist may help.")
 }
 
-#later, we will compare distance squared
-$mindist*=$mindist;
 
 @UNIT0=($UNIT0[0]/$LENGTH0,$UNIT0[1]/$LENGTH0,$UNIT0[2]/$LENGTH0);
 @UNIT1=($UNIT1[0]/$LENGTH1,$UNIT1[1]/$LENGTH1,$UNIT1[2]/$LENGTH1);
@@ -360,9 +358,9 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 		}
 
 		# check the adjacent cells, account for PBCs
-		$CELL0=int(rand()*($N0+1));
-		$CELL1=int(rand()*($N1+1));
-		$CELL2=int(rand()*($N2+1));
+		$CELL0=int(rand()*$N0);
+		$CELL1=int(rand()*$N1);
+		$CELL2=int(rand()*$N2);
 		if(!defined $GRIDATOMS{"$CELL0-$CELL1-$CELL2"}){
 			$mindistt=1;
 		}
@@ -370,6 +368,7 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 
 	# if kept, then add to the hash of gridded atoms
 
+	print "$gridwidth0,$gridwidth1,$gridwidth2\n";
 	my ($XTT,$YTT,$ZTT)=getcellcenter(\@UNIT0,\@UNIT1,\@UNIT2,$gridwidth0,$gridwidth1,$gridwidth2,$CELL0,$CELL1,$CELL2);
 	$GRIDATOMS{"$CELL0-$CELL1-$CELL2"}=1;
 	my $J = $I % 100000;	
@@ -633,15 +632,15 @@ sub getcellcenter
 	my $Xcenter=0;
 	my $Ycenter=0;
 	my $Zcenter=0;
-	$Xcenter+=$UNIT0[0]*($N0+0.5);
-	$Ycenter+=$UNIT0[1]*($N0+0.5);
-	$Zcenter+=$UNIT0[2]*($N0+0.5);
-	$Xcenter+=$UNIT1[0]*($N1+0.5);
-	$Ycenter+=$UNIT1[1]*($N1+0.5);
-	$Zcenter+=$UNIT1[2]*($N1+0.5);
-	$Xcenter+=$UNIT2[0]*($N2+0.5);
-	$Ycenter+=$UNIT2[1]*($N2+0.5);
-	$Zcenter+=$UNIT2[2]*($N2+0.5);
+	$Xcenter+=$UNIT0[0]*($N0+0.5)*$width0;
+	$Ycenter+=$UNIT0[1]*($N0+0.5)*$width0;
+	$Zcenter+=$UNIT0[2]*($N0+0.5)*$width0;
+	$Xcenter+=$UNIT1[0]*($N1+0.5)*$width1;
+	$Ycenter+=$UNIT1[1]*($N1+0.5)*$width1;
+	$Zcenter+=$UNIT1[2]*($N1+0.5)*$width1;
+	$Xcenter+=$UNIT2[0]*($N2+0.5)*$width2;
+	$Ycenter+=$UNIT2[1]*($N2+0.5)*$width2;
+	$Zcenter+=$UNIT2[2]*($N2+0.5)*$width2;
 
 	return ($Xcenter,$Ycenter,$Zcenter);
 
