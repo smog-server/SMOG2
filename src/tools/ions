@@ -343,7 +343,7 @@ $mindist*=$mindist;
 # grid the current atoms
 for(my $I=1;$I<=$NATOMS-$addnum;$I++){
 	my ($C0,$C1,$C2)=getcell(\@UNIT0,\@UNIT1,\@UNIT2,$gridwidth0,$gridwidth1,$gridwidth2,$X[$I],$Y[$I],$Z[$I]);
-	$GRIDATOMS{"$C0-$C1-$C2"}{$I}=1;
+	$GRIDATOMS{"$C0-$C1-$C2"}=1;
 }
 print "adding ions to gro file...\n";
 for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
@@ -364,7 +364,7 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 		$CELL0=int(rand()*($N0+1));
 		$CELL1=int(rand()*($N1+1));
 		$CELL2=int(rand()*($N2+1));
-		if(defined %{$GRIDATOMS{"$CELL0-$CELL1-$CELL2"}}{0}){
+		if(defined $GRIDATOMS{"$CELL0-$CELL1-$CELL2"}){
 			$mindistt=0;
 		}
 	}
@@ -372,7 +372,7 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 	# if kept, then add to the hash of gridded atoms
 
 	my ($XTT,$YTT,$ZTT)=getcellcenter(\@UNIT0,\@UNIT1,\@UNIT2,$gridwidth0,$gridwidth1,$gridwidth2,$CELL0,$CELL1,$CELL2);
-	$GRIDATOMS{"$CELL0-$CELL1-$CELL2"}{$I}=1;
+	$GRIDATOMS{"$CELL0-$CELL1-$CELL2"}=1;
 	my $J = $I % 100000;	
 	printf GROFILE "%5i%-5s%5s%5i%8.3f%8.3f%8.3f\n", $J,$addname, $addname, $J, $XTT, $YTT, $ZTT;
 
