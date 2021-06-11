@@ -355,7 +355,6 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 	my $CELL2;
 	until($mindistt == 1){
 		$attempt++;
-		$mindistt=1; # if any atoms are too close, this is set to 0, resulting in another attempt.
 		if($attempt ==1000){
 			smog_quit("Tried 1000 times to add ion number $added. Giving up.");
 		}
@@ -364,8 +363,8 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 		$CELL0=int(rand()*($N0+1));
 		$CELL1=int(rand()*($N1+1));
 		$CELL2=int(rand()*($N2+1));
-		if(defined $GRIDATOMS{"$CELL0-$CELL1-$CELL2"}){
-			$mindistt=0;
+		if(!defined $GRIDATOMS{"$CELL0-$CELL1-$CELL2"}){
+			$mindistt=1;
 		}
 	}
 
