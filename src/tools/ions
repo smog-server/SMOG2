@@ -368,7 +368,6 @@ for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
 
 	# if kept, then add to the hash of gridded atoms
 
-	print "$gridwidth0,$gridwidth1,$gridwidth2\n";
 	my ($XTT,$YTT,$ZTT)=getcellcenter(\@UNIT0,\@UNIT1,\@UNIT2,$gridwidth0,$gridwidth1,$gridwidth2,$CELL0,$CELL1,$CELL2);
 	$GRIDATOMS{"$CELL0-$CELL1-$CELL2"}=1;
 	my $J = $I % 100000;	
