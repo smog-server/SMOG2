@@ -1254,7 +1254,6 @@ sub diheFuncParser
 	$params =~ s/\s+//g; 
 
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
-	if($directive ne "dihedrals"){smog_quit ("$funcName is not a valid dihedrals function");}
 	@paramArr = split(",",$params); ## Parse all parameters;
 	$dihParseSeen{$diheFunc}{"fType"}=$fType;
 	$dihParseSeen{$diheFunc}{"paramArr"}=\@paramArr;
@@ -1389,7 +1388,6 @@ sub calculateContacts
 sub contactOutput
 {
 	my($inputFunc,$i,$j,$c0,$epsilon,$normalize) = @_;
-	if(!$inputFunc){smog_quit ("CONTACTOUTPUT::NO FUNCTION DEFINED");}
 	$inputFunc = trim($inputFunc);
 	## If $input contains a + ##
 	my @funcs = split(/\+/,$inputFunc); ## split combination of functions
@@ -1421,7 +1419,7 @@ sub contactOutput
 			## harmonic bond type 6 ##
 			elsif($fname eq "bond_type6"){
 				contactParseBond6(\@paramArr,$c0,$epsilon);
-			}else{smog_quit("Contact function name $fname is not supported");}
+			}
 		 	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
 			$outputString = "$outputString$formattedString";
