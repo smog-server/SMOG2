@@ -1409,26 +1409,19 @@ sub contactOutput
 			$addNewline = "\n";
 			if($fname eq "contact_1"){
 				contactParseNM1(\@paramArr,$c0,$epsilon,$normalize);
-				if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_1")}
 			}
 			## LJ CONTACTS N-M polynomial, CN, CM usage ##	
 			elsif($fname eq "contact_2"){
 				contactParseNM2(\@paramArr,$c0,$epsilon,$normalize);
-				if($fType != 1){smog_quit ("Only fType=1 is supported with contacts contact_2")}
 			}
 			    ## Gaussian ##
 			elsif($fname eq "contact_gaussian"){
 				contactParseGaussian(\@paramArr,$c0,$epsilon,$normalize);
-				if($fType != 6){smog_quit ("Only fType=6 is supported with contacts contact_gaussian")}
 			}
 			## harmonic bond type 6 ##
 			elsif($fname eq "bond_type6"){
 				contactParseBond6(\@paramArr,$c0,$epsilon);
-    				if($fType != 6){smog_quit ("Only fType=6 is supported with contacts of bond_type6")}
-
 			}else{smog_quit("Contact function name $fname is not supported");}
-
- 	## Format output <i j function p1 p2 ... pn>
 		 	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
 			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
 			$outputString = "$outputString$formattedString";
