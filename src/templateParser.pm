@@ -342,6 +342,7 @@ sub checkContactFunctionDef
 	my ($name,$var)=splitFunction($funcString);
 	my @name=@{$name};
 	my @var=@{$var};
+
 	if($#name != 0){
 		smog_quit("Only single functions are allowed in contact declarations. Issue in .nb file: $funcString");
 	};
@@ -350,8 +351,26 @@ sub checkContactFunctionDef
 	my $funcname=$name[0];
 
         my $normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
+	if($funcname eq "contact_1" || $funcname eq "contact_2"){
+                if($vars[3] =~ /^\?$/)
+                {
+                        if(!$normalize){smog_quit("contact type $funcname can not have normalization turned off with epsilon=?")}
+                }
+                ## additional rescaling used
+                elsif($vars[3] =~ /\?/){
+                        smog_quit("Epsilon value used in $funcname interaction can not be an expression that includes ?.\n");
+                }else{
+                        if($normalize){smog_quit("Can\'t normalize a $funcname contact since the weight is not defined by a ? mark.")}
+                }
+	}
 
 	if($funcname eq "contact_1"){
+
+
+		if($interactions->{"gmx-combination-rule"} !~ m/^[12]$/){
+	        	smog_quit("Only gmx-combination-rule equal to 1 or 2 is supported with contact_1");
+		}
+
 		my $N=$vars[1];
 		my $M=$vars[0];
         	if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
