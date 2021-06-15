@@ -42,13 +42,19 @@ sub DiheCountsHelper
 	## Count number of dihedrals passing through a bond ##
 	my $tindex=0;
 	$counts[0]=1;
+	my @rescale;
 	for(my $i=0;$i<$size;$i++)
 	{
 		my @A = $diheArr->slice(":,$i:$i")->list;
 		if($#A == 0){
 			$countsIndex[$i]=-1;
+			$rescale[$i]=0;
 			next;
-		} 
+		}elsif($#A >= 6){ 
+			$rescale[$i]=1;
+		}else{
+			$rescale[$i]=0;
+		}
 		my $b=$A[1];
 		my $c=$A[2];
 		my $eG=$A[6];
@@ -76,11 +82,7 @@ sub DiheCountsHelper
 	
 	for(my $i=0;$i<$size;$i++)
 	{
-		if($countsIndex[$i]==-1){
-			next;
-		}
-		my @A = $diheArr->slice(":,$i:$i")->list;
-		unless($#A < 6){
+		if($rescale[$i]==1){
 			set($diheArr,5,$i,1/$counts[$countsIndex[$i]]);
 		}
 	}
