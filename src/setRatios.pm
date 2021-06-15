@@ -31,10 +31,10 @@ use smog_common;
 
 our @ISA = 'Exporter';
 our @EXPORT = qw(setRatios getSetDiheCounts %fTypes);
-my %uniqueBonds;
 
 sub DiheCountsHelper
 {
+	my %uniqueBonds;
 	my($diheArr,$inputPDL) = @_;
 	my @countsIndex;
 	my @counts;
@@ -52,8 +52,8 @@ sub DiheCountsHelper
 		my $b=$A[1];
 		my $c=$A[2];
 		my $eG=$A[6];
-		$b = sclr(slice($inputPDL,"3:3,$b,:"));
-		$c = sclr(slice($inputPDL,"3:3,$c,:"));
+	#	$b = sclr(slice($inputPDL,"3:3,$b,:"));
+	#	$c = sclr(slice($inputPDL,"3:3,$c,:"));
 		## only count the dihedral if it is not an improper
 		if($eG >= 0 ){	
 	
@@ -84,6 +84,7 @@ sub DiheCountsHelper
 			set($diheArr,5,$i,1/$counts[$countsIndex[$i]]);
 		}
 	}
+	undef %uniqueBonds;
 }
 
 # For each chain, count the total number of bonds through a dihedral,
@@ -103,7 +104,6 @@ sub setRatios
 	my($diheFunctHandle,$inputPDL,$atomNum,$atomTypes) = @_;
 	my %residueRatio;
 	my $sum; my $diheStrengthTotal;
-	undef %uniqueBonds;
 	my %rescalePDL;
 	foreach my $chain(keys %{$diheFunctHandle})
 	{
