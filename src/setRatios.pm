@@ -114,7 +114,7 @@ sub setRatios
 	
 	foreach my $chain(keys %{$diheFunctHandle})
 	{
-		adjustFactorsHelper2($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomNum,$atomTypes,$diheStrengthTotal,\$sum,\%rescalePDL,$chain);
+		adjustFactorsHelper2($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomNum,$atomTypes,$diheStrengthTotal,$sum,\%rescalePDL,$chain);
 	}
 }
 
@@ -125,68 +125,67 @@ sub adjustFactorsHelper1
 	my $relativeRatio;
  	my $size = $diheArr->dim(1);
 	my @tempArr;
+	my $tmpsum=${$sum};
  	for(my $i=0;$i<$size;$i++)
  	{
 
 		my @buffer=$diheArr->slice(":,$i:$i")->list;
-        	if($#buffer <6){next;}
+        	if($#buffer <6){
+			next;
+		}
         	my($a,$b,$c,$d,$func,$count,$eG) = @buffer;
 
 		## Convert from relative index to absolute indexing ##
-    		$a = sclr(slice($inputPDL,"3:3,$a,:"));
 		$b = sclr(slice($inputPDL,"3:3,$b,:"));
 		$c = sclr(slice($inputPDL,"3:3,$c,:"));
-		$d = sclr(slice($inputPDL,"3:3,$d,:"));
-		my $resnamea = $atomTypes->{$a}->[5];
-		my $resnameb = $atomTypes->{$b}->[5];
-		my $resnamec = $atomTypes->{$c}->[5];
-		my $resnamed = $atomTypes->{$d}->[5];
 		my $resTypeb = $atomTypes->{$b}->[1];
-		my $resTypec = $atomTypes->{$c}->[1];
     		my $resTypeUse;
 
  		## $eG == -1 is IMPROPER SKIP ##
 		if($eG < 0) 
 		{			
-		push(@tempArr,pdl($count,0));
-		 next;
+			push(@tempArr,pdl($count,0));
+			 next;
 		}
-		$eG = $eGTable{$eG}; ## Obtain user defined residue name ##
-   		if(!defined $termRatios->{$resTypeb}->{"energyGroup"}->{$eG})
+		$eG = $eGTable{$eG}; 
+   		if(defined $termRatios->{$resTypeb}->{"energyGroup"}->{$eG})
    		{
+       			$normalize = $termRatios->{$resTypeb}->{"energyGroup"}->{$eG}->{"normalize"};
+       			$resTypeUse = $resTypeb;
+		}else{
        			## CASE WHERE THERE IS A DIHEDRAL BETWEEN TWO DIFFERENT RESTYPES ##
+			my $resTypec = $atomTypes->{$c}->[1];
        			if(! defined $termRatios->{$resTypec}->{"energyGroup"}->{$eG})
        			{
+    				$a = sclr(slice($inputPDL,"3:3,$a,:"));
+				$c = sclr(slice($inputPDL,"3:3,$c,:"));
+				$d = sclr(slice($inputPDL,"3:3,$d,:"));
         	    		smog_quit("energyGroup $eG is not defined for $resTypeb-$resTypec ($a-$b-$c-$d)\n");
        			}
        			$normalize = $termRatios->{$resTypec}->{"energyGroup"}->{$eG}->{"normalize"};
+
+	 		if(!defined $normalize)
+			{
+	    			$a = sclr(slice($inputPDL,"3:3,$a,:"));
+	    			$c = sclr(slice($inputPDL,"3:3,$c,:"));
+				$d = sclr(slice($inputPDL,"3:3,$d,:"));
+	    			my $resTypea = $atomTypes->{$a}->[1];
+	    			my $resTypec = $atomTypes->{$c}->[1];
+	    			my $resTyped = $atomTypes->{$d}->[1];
+				smog_quit("Normalize option not set for $resTypea-$resTypeb-$resTypec-$resTyped of energyGroup $eG with atom indices $a-$b-$c-$d");
+			}
        			$resTypeUse = $resTypec;
    		}
-   		else{
-       			$normalize = $termRatios->{$resTypeb}->{"energyGroup"}->{$eG}->{"normalize"};
-       			$resTypeUse = $resTypeb;
-		}
- 		if(!defined $normalize)
-		{
-    			my $resTypea = $atomTypes->{$a}->[1];
-    			my $resTyped = $atomTypes->{$d}->[1];
-			smog_quit("Normalize option not set for $resTypea-$resTypeb-$resTypec-$resTyped of energyGroup $eG with atom indices $a-$b-$c-$d");
-		}
+
     		## Normalize option is set ##	
 		if($normalize eq 1) 
 		{
 			$relativeRatio=$termRatios->{$resTypeUse}->{"energyGroup"}->{$eG}->{"intraRelativeStrength"};
-			if(!defined $relativeRatio){
-				smog_quit("normalize=0, but intraRelativeStrength not defined for energyGroup $eG. Check .sif file");
-			}
-
 			$count*=$relativeRatio;
-			unless($residues{$resnamea}->{'atomCount'}==0 || $residues{$resnameb}->{'atomCount'}==0
-				|| $residues{$resnamec}->{'atomCount'}==0 || $residues{$resnamed}->{'atomCount'}==0){
-        			${$sum}+=$count;
+			if($residues{$atomTypes->{$b}->[5]}->{'atomCount'} !=0 and $residues{$atomTypes->{$c}->[5]}->{'atomCount'}!=0){
+        			$tmpsum+=$count;
 			}
         		set($diheArr,5,$i,$count);
-
 			push(@tempArr,pdl($count,1));
 		}else{
 			push(@tempArr,pdl($count,0));
@@ -196,6 +195,7 @@ sub adjustFactorsHelper1
 	if(@tempArr){
 		$rescalePDL->{$chain}=cat(@tempArr);
  	}
+        ${$sum}=$tmpsum;
 }
 
 sub adjustFactorsHelper2
@@ -205,7 +205,6 @@ sub adjustFactorsHelper2
 	my $contactTotal;
  	my $size = $diheArr->dim(1);
 	my $diheLeftOver = 0;
-
         ## epsilonC+epsilonD ##
 	$totalStrength = $termRatios->{"interRelativeTotal"};
 	## epsilonC ##			
@@ -223,7 +222,7 @@ sub adjustFactorsHelper2
 		if($normalize eq 1) 
 		{
 			my $count=sclr(slice($rescalePDL->{$chain},"0:0,$i:$i"));
-			$count = ($count/${$sum})*($diheLeftOver); 
+			$count = ($count/$sum)*($diheLeftOver); 
 			set($diheArr,5,$i,$count);
 		}
 	}
