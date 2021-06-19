@@ -11,6 +11,13 @@
     <function name="dihedral_cosine" directive="dihedrals"/>
     <function name="dihedral_harmonic" directive="dihedrals"/>
     <function name="contact_1" directive="pairs" exclusions="1"/>
+<!--
+    <function name="c8-12" directive="openSMOG" 
+      openSMOGtype="contact"
+      openSMOGfunction="epsilon*((sigma/r)^12-2*(sigma/r)^8)"
+      exclusions="1"
+    />
+-->
   </functions>
   <!-- HAMILTONIAN SETTINGS -->
   <settings>

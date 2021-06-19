@@ -62,6 +62,9 @@ my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $AAdefault = 0; 
 my $CAdefault = 0;
 my $AAGdefault = 0; 
+my $openSMOG; 
+my $openSMOGxml="smog.xml";
+my $OSref;
 my $CAGdefault = 0;
 my $saveSCMorig=0;
 my $printversion;
@@ -92,6 +95,8 @@ our %PAIRtypespresent;
 our %pairtypesused;
 our %fTypes;
 our %fTypesArgNum;
+our %openSMOGpot;
+our $openSMOGpothash;
 our %directives;
 our @directivesList;
 our %extraatomtypes;
@@ -101,8 +106,6 @@ our %dihParseSeen;
 our %contactParseSeen;
 our $normalizevals;
 #######END GLOBAL DEFS#######
-
-
 #######MAIN PROGRAM####### 
 
 quit_init();
@@ -149,6 +152,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
 
 printTop($topFile);
+openSMOGwriteXML();
 print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$ndxFile\n";
 	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
 	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
@@ -195,6 +199,13 @@ sub setglobals {
 		'contact_gaussian'=>'4'
 		);
 
+
+	$openSMOGpothash=\%openSMOGpot;
+	# predefine the mapping of openMM functions for common potentials
+	$openSMOGpothash->{contact_1}->{expression}="A/r^N-B/r^M";
+	push(@{$openSMOGpothash->{contact_1}->{parameters}},"A");
+	push(@{$openSMOGpothash->{contact_1}->{parameters}},"B");
+
 	## this is the topfile buffer stuff
 	%directives = ("comments",1,"defaults",2,"atomtypes",3,"bondtypes",4,"angletypes",5,"dihedraltypes",6,"nonbond_params",7,"moleculetype",8,"atoms",9,"bonds",10,"angles",11,"dihedrals",12,"pairs",13,"exclusions",14,"position_restraints",15,"system",16,"molecules",17);
 	@directivesList=("comments","defaults","atomtypes","bondtypes","angletypes","dihedraltypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
@@ -220,6 +231,8 @@ sub parse_args {
 		'AA' => \$AAdefault, 
 		'CAgaussian'=> \$CAGdefault, 
 		'AAgaussian' => \$AAGdefault, 
+		'openSMOG' => \$openSMOG, 
+		'openSMOGxml=s' => \$openSMOGxml, 
 		'dname=s' => \$DNAME, 
 		'warn=i' => \$maxwarn, 
 		'backup=s' => \$backup, 
@@ -249,7 +262,12 @@ sub parse_args {
 		smog_quit("Can not use -limitcontactlength and -deleteshortcontacts at the same time.");
 	}
 
-	
+	if(defined $openSMOG){
+		# create the hash ref that we will put data, so that we can dump it into an xml file later
+		my %OS;
+		$OSref   = \%OS;
+	}	
+
 	if(!defined $setContacttoLimit){
 		$setContacttoLimit=0;
 	}
@@ -379,12 +397,13 @@ sub parse_args {
 	$groFile=checksuffix($groFile,".gro");
 	$shadowFile=checksuffix($shadowFile,".contacts");
 	$ndxFile=checksuffix($ndxFile,".ndx");
+	$openSMOGxml=checksuffix($openSMOGxml,".xml");
 	
 	
 	## check if files exist
 	# things we don't want to overwrite
 	if($backup eq "yes"){
-		foreach my $filen($topFile, $groFile, $groFile4SCM, $shadowFile, $ndxFile){
+		foreach my $filen($topFile, $groFile, $groFile4SCM, $shadowFile, $ndxFile,$openSMOGxml){
 			checkalreadyexists($filen);
 		}
 	}
@@ -493,8 +512,14 @@ sub initializeDirectives {
 #adds something to the topfile at the bottom of a directive
 sub addToTop {
 	my($directive,$stuff) = @_;
-	$linesInDirectivesWithContent[$directives{$directive}]+= hascontent($stuff);
-	push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
+		
+	if($directive =~ m/^openSMOG$/){
+		# if $directive is openSMOG, then $stuff is the address of the array that contains the folloding information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
+		addOShash($directive,$stuff);
+        }else{
+		$linesInDirectivesWithContent[$directives{$directive}]+= hascontent($stuff);
+		push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
+	}
 }
 
 #read file "extras" in template directory
@@ -1420,30 +1445,38 @@ sub contactOutput
 			elsif($fname eq "bond_type6"){
 				contactParseBond6(\@paramArr,$c0,$epsilon);
 			}
-		 	foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
-			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
-			$outputString = "$outputString$formattedString";
+			if($paramArr[0] eq "openSMOG"){
+				# format for openSMOG
+				$directive="openSMOG";
+				$paramArr[0]=$j;
+				unshift(@paramArr,$i);
+				$outputString=\@paramArr;	
+ 			}else{
+		 		foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+				$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
+				$outputString = "$outputString$formattedString.$addNewline";
+			}
 		}
 	}
-	return ($directive,$addExclusions,$outputString.$addNewline);
+	return ($directive,$addExclusions,$outputString);
 }
 
 # Parse LJ NM sigma eps usage
 sub contactParseNM1
 {
 	my($paramArr,$r0,$epsilon,$normalize) = @_;
-	##pararArr holds N, M, and whether native distances and weights should be used.
+	##paramArr holds N, M, and whether native distances and weights should be used.
 	##epsilon
 	##r0 is native distance##
 	#
+
 	my $A; my $B;
 	my $N; my $M;
 	$M=$paramArr->[0];
 	$N=$paramArr->[1];
 	my $length=scalar @{$paramArr};
 
-
-	if($interactions->{"gmx-combination-rule"}==1){
+	if($interactions->{"gmx-combination-rule"}==1 || defined $openSMOG){
 	
 		$B=-1.0/($M/$N-1.0);
 		$A=$M/$N*$B;
@@ -1476,7 +1509,22 @@ sub contactParseNM1
 			$paramArr->[3]=$epsilon;
 		}
 	}
-
+	if(defined $openSMOG){
+		unless(openSMOGfunctionExists("contacts","contact_1-$M-$N")){
+			my $potential = $openSMOGpothash->{contact_1}->{expression};
+			$potential =~ s/N/$N/g;
+			$potential =~ s/M/$M/g;
+			
+			my $parhandle=\@{$openSMOGpothash->{contact_1}->{parameters}};
+			OShashAddFunction("contacts","contact_1-$M-$N","$potential",$parhandle);
+		}
+		# switch order for openSMOG, so that the first parameter is the 12 term
+		($paramArr->[2],$paramArr->[3])=($paramArr->[3],$paramArr->[2]);
+		unshift(@{$paramArr},"openSMOG");
+		$paramArr->[1]="contacts";
+		$paramArr->[2]="contact_1-$M-$N";
+		return;
+	}
 	## Shift first value off ##
 	shift @{$paramArr};
 	shift @{$paramArr};
@@ -2021,6 +2069,8 @@ usage: smog2 .. options ..
        -c <file name>          : input contact map file
        -SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  useful for debugging
        -dname [smog]           : default name to use for all output files
+       -openSMOG               : try to make files compatible with openMM  
+       -openSMOGxml [smog.xml] : if -openSMOG is used, write any custom potentials to this file
        -backup [yes]           : back up any pre-existing output files
 
      Force Field Designation
@@ -2031,20 +2081,20 @@ usage: smog2 .. options ..
        -t [templateFolder]     : folder containing templates of molecular and interaction definitions. required when defaults are not used
        -tCG [templateFolder]   : folder containing templates Coarse Graining. indicates that the program should coarse grain
        -nocheck                : turn off template cross-validation checks.  This can be useful
-                                       when using old templates with new versions of SMOG
+                                   when using old templates with new versions of SMOG
 
      Force Field Modifications/exceptions
-       -limitbondlength        : if a bond length is outside of the allowable range, set it to limiting value
-       -limitcontactlength     : if a contact length is too short, set it to the minimal value
-       -deleteshortcontact     : if a contact length is too short, don't include it in the model
+       -limitbondlength            : if a bond length is outside of the allowable range, set it to limiting value
+       -limitcontactlength         : if a contact length is too short, set it to the minimal value
+       -deleteshortcontact         : if a contact length is too short, don't include it in the model
 
      Misc. Options
-       -ignH                   : ignore any atoms with name starting with 'H' in the internal contact algorithm
-       -gen_map <out map file> : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
+       -ignH                       : ignore any atoms with name starting with 'H' in the internal contact algorithm
+       -gen_map <out map file>     : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
 
-       -warn [0]               : convert the first N fatal errors to warnings  
+       -warn [0]                   : convert the first N fatal errors to warnings  
                                        Convert all if N=-1 (Caution: Consult manual before using this option)
-       -help                   : show options 
+       -help                       : show options 
 EOT
 	if ( @_ ){
 		smog_quit("Flag \"@_\" not recognized, or is missing arguments.");
@@ -2287,4 +2337,51 @@ sub appendContacts {
 }
 
 
+########## openSMOG routines
+sub OShashAddFunction{
+	my ($type,$name,$expr,$params)=@_;
+	if($type ne "contacts"){
+		smog_quit("openSMOG currently only supports modified contact potentials.  Issue processing $name");
+	}
+	my @params=@{$params};
+	my $ref=\%{$OSref->{$type}->[0]->{$name}->[0]};
+	$ref->{expression}->[0]->{"expr"}=$expr;
+	foreach my $en(@params){
+		push(@{$ref->{parameters}},"$en");
+	}
+}
+
+sub openSMOGfunctionExists{
+	my ($type,$name)=@_;
+	if(exists $OSref->{$type}->[0]->{$name}){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+sub openSMOGwriteXML{
+	my $size = keys %{$OSref};
+	if($size != 0){
+		my $xml = XMLout($OSref, KeyAttr=>{expression=>"expr"},RootName => 'openSMOGforces',AttrIndent => 1, NoSort => 1,OutputFile => "$openSMOGxml");	
+	}
+
+}
+
+sub addOShash{
+	my ($directive,$stuff)=@_;
+	my @stuff=@{$stuff};
+	my $ref=\%{$OSref->{$stuff[2]}->[0]->{$stuff[3]}->[0]};
+# @stuff is the array that contains the folloding information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
+	my %tmphash;
+	$tmphash{"i"}=$stuff[0];
+	$tmphash{"j"}=$stuff[1];
+	my $parn=4;
+	foreach my $param(@{$ref->{parameters}}){
+		$tmphash{$param}=$stuff[$parn];
+		$parn++;
+	}
+	push(@{$ref->{interaction}},\%tmphash);
+
+}
 
