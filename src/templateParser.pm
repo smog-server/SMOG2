@@ -40,8 +40,10 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round compareFuncs);
+qw($openSMOG $openSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round compareFuncs);
 
+our $openSMOG;
+our $openSMOGpothash;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
@@ -349,7 +351,9 @@ sub checkContactFunctionDef
 	my @vars=split(/\,/,$var[0]);
 	my $nargs = $#vars + 1;
 	my $funcname=$name[0];
-
+	if(defined $openSMOG && !exists ${$openSMOGpothash}{$funcname}){
+		smog_quit("contact function $funcname not supported with -openSMOG");
+	}
         my $normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 	if($funcname eq "contact_1" || $funcname eq "contact_2"){
                 if($vars[3] =~ /^\?$/)

@@ -62,7 +62,7 @@ my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $AAdefault = 0; 
 my $CAdefault = 0;
 my $AAGdefault = 0; 
-my $openSMOG; 
+our $openSMOG; 
 my $openSMOGxml="";
 my $OSref;
 my $CAGdefault = 0;
