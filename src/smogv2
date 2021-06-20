@@ -2362,6 +2362,45 @@ sub openSMOGfunctionExists{
 }
 
 sub openSMOGwriteXML{
+	my $space=" ";
+	# this is a very limited XML writer that is made specifically for openSMOG-formatted contact hashes
+	# we will make a more versatile version later.
+	my $size = keys %{$OSref};
+	if($size != 0){
+		my $xmlout="<openSMOGforces>\n";
+		foreach my $type(keys %{$OSref}){
+			$xmlout .= "$space<$type>\n";
+			foreach my $name(keys %{$OSref->{$type}->[0]}){
+				$xmlout .= "$space$space<$name>\n";
+					my $expr=$OSref->{$type}->[0]->{$name}->[0]->{expression}->[0]->{"expr"};
+					$xmlout .= "$space$space$space<expression expr=\"$expr\" />\n";
+					foreach my $param(@{$OSref->{$type}->[0]->{$name}->[0]->{parameters}}){
+						$xmlout .= "$space$space$space<parameter>$param<parameter>\n";
+					}
+					foreach my $param(@{$OSref->{$type}->[0]->{$name}->[0]->{interaction}}){
+						$xmlout .="$space$space$space<interaction ";
+						my @tmparr=@{$param};
+						for(my $I=0;$I<$#tmparr;$I++){
+							$xmlout .="$tmparr[$I]=$tmparr[++$I] ";
+						}
+						$xmlout .=" />\n";
+					}
+
+				$xmlout .= "$space$space</$name>\n";
+			}
+
+			$xmlout .= "$space</$type>\n";
+		}	
+		$xmlout.="</openSMOGforces>\n";
+	open(XMLOO,">$openSMOGxml") or smog_quit("Unable to open $openSMOGxml for writing");
+	print XMLOO $xmlout;
+	close(XMLOO);
+	return "\t$openSMOGxml\n";
+	}
+	return "";
+}
+
+sub openSMOGwriteXMLold{
 	my $size = keys %{$OSref};
 	if($size != 0){
 		my $xml = XMLout($OSref, KeyAttr=>{expression=>"expr"},RootName => 'openSMOGforces',AttrIndent => 1, NoSort => 1,OutputFile => "$openSMOGxml");	
@@ -2369,7 +2408,6 @@ sub openSMOGwriteXML{
 	}
 	return "";
 }
-
 
 sub addOShash{
 	my ($directive,$stuff)=@_;
@@ -2379,12 +2417,19 @@ sub addOShash{
 	my %tmphash;
 	$tmphash{"i"}=$stuff[0];
 	$tmphash{"j"}=$stuff[1];
+	my @newstuff;
+	push(@newstuff,"i");
+	push(@newstuff,"$stuff[0]");
+	push(@newstuff,"j");
+	push(@newstuff,"$stuff[1]");
 	my $parn=4;
 	foreach my $param(@{$ref->{parameters}}){
+		push(@newstuff,"$param");
+		push(@newstuff,"$stuff[$parn]");
 		$tmphash{$param}=$stuff[$parn];
 		$parn++;
 	}
-	push(@{$ref->{interaction}},\%tmphash);
+	push(@{$ref->{interaction}},\@newstuff);
 
 }
 
