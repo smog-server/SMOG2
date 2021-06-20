@@ -63,7 +63,7 @@ my $AAdefault = 0;
 my $CAdefault = 0;
 my $AAGdefault = 0; 
 my $openSMOG; 
-my $openSMOGxml="smog.xml";
+my $openSMOGxml="";
 my $OSref;
 my $CAGdefault = 0;
 my $saveSCMorig=0;
@@ -152,8 +152,8 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
 
 printTop($topFile);
-openSMOGwriteXML();
-print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n\t$groFile\n\t$ndxFile\n";
+my $openSMOGwritten=openSMOGwriteXML();
+print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n$openSMOGwritten\t$groFile\n\t$ndxFile\n";
 	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
 	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
 	printCitation();
@@ -388,6 +388,7 @@ sub parse_args {
 	## Ensure we only write out files with gromacs-compatible suffices
 	if($topFile eq ""){$topFile=$DNAME};
 	if($groFile eq ""){$groFile=$DNAME};
+	if($openSMOGxml eq ""){$openSMOGxml=$DNAME};
 	$groFile4SCM=$groFile . "4SCM.gro";
 	$topFile4SCM=$topFile . "4SCM.top";
 	if($shadowFile eq ""){$shadowFile=$DNAME};
@@ -2364,9 +2365,11 @@ sub openSMOGwriteXML{
 	my $size = keys %{$OSref};
 	if($size != 0){
 		my $xml = XMLout($OSref, KeyAttr=>{expression=>"expr"},RootName => 'openSMOGforces',AttrIndent => 1, NoSort => 1,OutputFile => "$openSMOGxml");	
+	return "\t$openSMOGxml\n";
 	}
-
+	return "";
 }
+
 
 sub addOShash{
 	my ($directive,$stuff)=@_;
