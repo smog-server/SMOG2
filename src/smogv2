@@ -206,6 +206,11 @@ sub setglobals {
 	push(@{$openSMOGpothash->{contact_1}->{parameters}},"A");
 	push(@{$openSMOGpothash->{contact_1}->{parameters}},"B");
 
+	$openSMOGpothash->{bond_type6}->{expression}="k*(r-r0)^2";
+	push(@{$openSMOGpothash->{bond_type6}->{parameters}},"k");
+	push(@{$openSMOGpothash->{bond_type6}->{parameters}},"r0");
+
+
 	## this is the topfile buffer stuff
 	%directives = ("comments",1,"defaults",2,"atomtypes",3,"bondtypes",4,"angletypes",5,"dihedraltypes",6,"nonbond_params",7,"moleculetype",8,"atoms",9,"bonds",10,"angles",11,"dihedrals",12,"pairs",13,"exclusions",14,"position_restraints",15,"system",16,"molecules",17);
 	@directivesList=("comments","defaults","atomtypes","bondtypes","angletypes","dihedraltypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
@@ -1605,8 +1610,8 @@ sub contactParseGaussian
 # Parse Bond type 6
 sub contactParseBond6
 {
-my($paramArr,$r0,$epsilon) = @_;
-my $k;
+	my($paramArr,$r0,$epsilon) = @_;
+	my $k;
 	##i=0 is r##
 	##i=1 is k#
 	
@@ -1615,6 +1620,21 @@ my $k;
 	
 	## r ##
 	$paramArr->[0] = evalsub($paramArr->[0],$r0);
+
+        if(defined $openSMOG){
+                unless(openSMOGfunctionExists("contacts","bond_type6")){
+                        my $potential = $openSMOGpothash->{bond_type6}->{expression};
+
+                        my $parhandle=\@{$openSMOGpothash->{bond_type6}->{parameters}};
+                        OShashAddFunction("contacts","bond_type6","$potential",$parhandle);
+                }
+                # switch order for openSMOG, so that the first parameter is k
+                ($paramArr->[0],$paramArr->[1])=($paramArr->[1],$paramArr->[0]);
+                unshift(@{$paramArr},"bond_type6");
+                unshift(@{$paramArr},"contacts");
+                unshift(@{$paramArr},"openSMOG");
+                return;
+        }
 
 	($r0,$k) = ($paramArr->[0],$paramArr->[1]);
 	@{$paramArr}=($r0,$k);
