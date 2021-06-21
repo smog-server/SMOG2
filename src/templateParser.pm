@@ -173,6 +173,11 @@ sub compareFuncs
 			$string .="Function $i is defined in the .sif file, but not used in the .nb or .b files.\n";
 		}
 	}
+	foreach my $i(keys %usedFunctions){
+		if(!defined ${$functions}{$i}){
+			$string .="Function $i is defined in the .nb, or .b file, but not declared in the .sif file.\n";
+		}
+	}
 	return $string;
 }
 
@@ -406,9 +411,6 @@ sub checkContactFunctionDef
     	}
 
  	$usedFunctions{$funcname}=1;
-
-	# we had to put in a kludge to account for the fact that bond_type6 is also a contact potential
-        if($functions->{$funcname}->{"directive"}  ne "pairs" && $funcname ne "bond_type6"){smog_quit ("$funcname is not a valid contact function. Problematic declaration (in .nb file): $funcString");}
 
 	my $nargs_exp=$fTypesArgNum{"$funcname"};
 	if($nargs_exp != $nargs){

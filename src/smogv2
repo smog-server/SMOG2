@@ -210,7 +210,7 @@ sub setglobals {
 	push(@{$openSMOGpothash->{bond_type6}->{parameters}},"k");
 	push(@{$openSMOGpothash->{bond_type6}->{parameters}},"r0");
 
-	$openSMOGpothash->{contact_guassian}->{expression}="NEED TO ADD";
+	$openSMOGpothash->{contact_gaussian}->{expression}="-A*((1+a/(A*r^12))*(1-exp(-(r-r0)^2/(2*sigmaG^2)))-1)";
 	push(@{$openSMOGpothash->{contact_gaussian}->{parameters}},"A");
 	push(@{$openSMOGpothash->{contact_gaussian}->{parameters}},"r0");
 	push(@{$openSMOGpothash->{contact_gaussian}->{parameters}},"sigmaG");
@@ -1610,7 +1610,6 @@ sub contactParseGaussian
         if(defined $openSMOG){
                 unless(openSMOGfunctionExists("contacts","contact_gaussian")){
                         my $potential = $openSMOGpothash->{contact_gaussian}->{expression};
-
                         my $parhandle=\@{$openSMOGpothash->{contact_gaussian}->{parameters}};
                         OShashAddFunction("contacts","contact_gaussian","$potential",$parhandle);
                 }
