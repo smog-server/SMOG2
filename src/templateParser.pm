@@ -40,7 +40,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($openSMOG $openSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round compareFuncs);
+qw($openSMOG $openSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round checkFunctions);
 
 our $openSMOG;
 our $openSMOGpothash;
@@ -164,8 +164,8 @@ sub round
 	return $round;	
 }
 
-# compareFuncs checks to see if all defined functions in the .sif are used.
-sub compareFuncs
+# checkFunctions checks to see if all defined functions in the .sif are used.
+sub checkFunctions
 {
 	my $string="";
 	foreach my $i(keys %{$functions}){
@@ -408,7 +408,26 @@ sub checkContactFunctionDef
 		if($vars[1] =~ /\?/){smog_quit("value of (r_NC)^12 (second argument) in Gaussian can not be a ? mark. Problematic declaration (in .nb file): $funcString");}
 	}elsif($funcname eq "bond_type6"){
 		if($vars[1] =~ /\?/){smog_quit("bond_type6 can't have ? in the stiffness. Problematic declaration (in .nb file): $funcString");}
-    	}
+    	}elsif($funcname eq "contact_2"){
+		# nothing to check.
+	}else{
+		# if nothing matched, then we must be using an openSMOG potentials.  Let's check a few things.
+		# ? can't be used for the weight if normalization is turned off.
+		# if normalization is turned on, then the 
+		if($normalize){
+			if( !exists $openSMOGpothash->{$funcname}->{weight}){
+				smog_quit("$funcname contact type does not have a parameter called \"weight\", but this function is being used in a normalized contact group ($cG, in .nb file): $funcString")
+			}
+			if ($vars[$openSMOGpothash->{$funcname}->{weight}] !~ m/^\?$/){
+				smog_quit("$funcname contact type (defined in .sif) can not have normalization turned on without the \"weight\" parameter being given as \"?\". Problematic declaration in contact group $cG (in .nb file): $funcString")
+			}
+			my $pot=$functions->{$funcname}->{"openSMOGpotential"};
+			$pot =~ s/^weight\*//g;
+ 			if($pot !~ m/^(\((?:[^()]++|(?1))*\))$/ || $pot =~ m/weight/ ) {
+				smog_quit("If normalization is turned on for an openSMOG potential, then the functional form must be \"weight*(<function of coordinates and other parameters>)\". The definition for function $funcname in the .sif file appears to not comply with this standard, which could lead to issues. Found: $functions->{$funcname}->{\"openSMOGpotential\"}");	
+			}
+		}
+	}
 
  	$usedFunctions{$funcname}=1;
 
@@ -898,7 +917,13 @@ sub parseSif {
 	}
 	## Parse function data
 	$functions = $data->{"functions"}->[0]->{"function"};
+
 	foreach my $funcName(keys %{$functions}){
+
+		if($functions->{$funcName}->{"directive"} eq "openSMOG"){
+			newopenSMOGfunction($functions,$funcName);
+		}
+
 	        if(!exists $fTypes{"$funcName"}){smog_quit ("\"$funcName\" is not a supported function type in SMOG");}
 	
 		if($functions->{$funcName}->{"directive"} eq "pairs" 
@@ -1851,5 +1876,55 @@ sub createDihedralAngleFunctionals {
 
 }
 
+sub newopenSMOGfunction{
+	my ($fh,$fN)=@_;
+	# $fh is the functions handle
+	# is the new function name to add
+	if ( exists $fTypes{"$fN"}){
+		smog_quit("Can not create new openSMOG function. $fN is a protected name.");
+	}
+	# the fType array is the gromacs function type. But, this is not used in openSMOG.  We still use the array to keep track of defined functions, and use it as a tag for determining that this is an openSMOG potential.  But we don't use the value in the output
+	$fTypes{"$fN"}="-2";
+
+	# set the number of required parameters
+	my $parmstring=$functions->{$fN}->{"openSMOGparameters"};
+	if($parmstring =~ m/^\s+\,|\,\s+\,|\,\s+$/){
+		smog_quit("Incorrectly formatted parameter list given for function $fN. Found \"$parmstring\"\nCheck .sif file.");
+	}
+	$parmstring =~ s/\s+//g;
+	my @parmarr=split(/\,/,$parmstring);
+	$fTypesArgNum{"$fN"}=$#parmarr+1;
+
+	# even though openSMOG doesn't use gromacs directives, various checks in the code use the directive name for checking validity of function definitions.
+	if($functions->{$fN}->{"openSMOGtype"} eq "contact"){
+		$functions->{$fN}->{"directive"}="pairs";
+	}
+
+	my $pot=$functions->{$fN}->{"openSMOGpotential"};
+	my $pind=0;
+	my %seenparm;
+	foreach my $param(@parmarr){
+		if(exists $seenparm{$param}){
+			smog_quit("Function $fN defines $param as a parameter more than once. See .sif file. Found $functions->{$fN}->{\"openSMOGparameters\"}");
+		}else{
+			$seenparm{$param}=1;
+		}
+		if($param =~ m/^weight$/){
+			#keep track of which parameter is the weight, if any.
+			$openSMOGpothash->{$fN}->{weight}=$pind;
+		}
+		$pind++;
+		if($pot !~ m/$param/){
+			smog_quit("Function $fN defines $param as a parameter, but it does not appear in the definition of the potential. Found $functions->{$fN}->{\"openSMOGpotential\"}");
+		}
+	}
+
+	$openSMOGpothash->{$fN}->{expression}=$functions->{$fN}->{"openSMOGpotential"}  ;
+
+	foreach my $par(@parmarr){
+		push(@{$openSMOGpothash->{$fN}->{parameters}},"$par");
+	}
+
+}
 
 1;

@@ -165,6 +165,11 @@ warnsummary();
 ######SUBROUTINES######
 sub setglobals {
 	## this is the array that defines how function names are converted to gromacs function types
+	# special cases: 
+		# -2 means this is an openSMOG-specific function (defined in templates)
+		# -1 means used byType routined (e.g. nonbond_params in gromacs)
+		# 0 means don't assign an interaction (i.e. "free" terms)
+		
 	%fTypes = ('bond_harmonic' => '1',
 		'bond_bytype' => '-1',
 		'bond_type6' => '6',
@@ -526,7 +531,7 @@ sub addToTop {
 		
 	if($directive =~ m/^openSMOG$/){
 		# if $directive is openSMOG, then $stuff is the address of the array that contains the folloding information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
-		addOShash($directive,$stuff);
+		addOShash($stuff);
         }else{
 		$linesInDirectivesWithContent[$directives{$directive}]+= hascontent($stuff);
 		push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
@@ -1440,6 +1445,7 @@ sub contactOutput
 		($fType,$fname,$directive,$addExclusions,@paramArr) = contactFuncParser($fun);
 		## LJ CONTACTS N-M polynomial, sigma and epsilon usage ##	
 		if($fType != 0) {
+			# fType=0 means treat as free.  All other, we should process
 			$addNewline = "\n";
 			if($fname eq "contact_1"){
 				contactParseNM1(\@paramArr,$c0,$epsilon,$normalize);
@@ -1455,6 +1461,9 @@ sub contactOutput
 			## harmonic bond type 6 ##
 			elsif($fname eq "bond_type6"){
 				contactParseBond6(\@paramArr,$c0,$epsilon);
+			}else{
+				# if not one of the above functions, then it must be a custom potential
+				contactParseopenSMOG($fname,\@paramArr,$c0,$epsilon,$normalize);
 			}
 			if($paramArr[0] eq "openSMOG"){
 				# format for openSMOG
@@ -1658,6 +1667,51 @@ sub contactParseBond6
 	@{$paramArr}=($r0,$k);
 
 }
+
+# Parse custom openSMOG potentials
+sub contactParseopenSMOG
+{
+	my($fname,$paramArr,$r0,$epsilon,$normalize) = @_;
+	## fname is the name of the function.  this is used to get the parameter list
+	##paramArr holds the entries for the openSMOG parameter list
+	##epsilon is the normalize weight
+	# normalize indicates whether normalization is applied
+	##r0 is native distance##
+	#
+
+	if(exists $openSMOGpothash->{$fname}->{weight}){
+		# there is a weight variable
+		if($paramArr->[$openSMOGpothash->{$fname}->{weight}] =~ /^\?$/){
+			# the weight should be normalized, so set it to epsilon
+			$paramArr->[$openSMOGpothash->{$fname}->{weight}]=$epsilon;	
+		}
+	}
+
+	my $length=scalar @{$paramArr};
+
+	# replace all other ? marks in parameters with r0 
+	for(my $I=0;$I<$length;$I++){
+		$paramArr->[$I]=evalsub($paramArr->[$I],$r0);
+	}
+
+	if(!defined $openSMOG){
+		smog_quit("Function $fname only supported with -openSMOG flag");
+	}
+
+        unshift(@{$paramArr},"$fname");
+        unshift(@{$paramArr},"contacts");
+        unshift(@{$paramArr},"openSMOG");
+
+        unless(openSMOGfunctionExists("contacts","$fname")){
+                my $potential = $openSMOGpothash->{$fname}->{expression};
+
+                my $parhandle=\@{$openSMOGpothash->{$fname}->{parameters}};
+                OShashAddFunction("contacts","$fname","$potential",$parhandle);
+        }
+
+	return;
+}
+
 
 # Given a user defined contact function parse values
 sub contactFuncParser
@@ -2247,7 +2301,7 @@ sub parseTemplatesAndPDB
 		$checkmessage.=checkPAIRnames();
 		$checkmessage.=checkREScharges();
 		$checkmessage.=checkRESimpropers();
-		$checkmessage.=compareFuncs();
+		$checkmessage.=checkFunctions();
 		if($checkmessage ne ""){
 			smog_quit("Cross-comparison of templates failed. See messages below:\n\n$checkmessage");
 		}
@@ -2438,20 +2492,11 @@ sub openSMOGwriteXML{
 	return "";
 }
 
-sub openSMOGwriteXMLold{
-	my $size = keys %{$OSref};
-	if($size != 0){
-		my $xml = XMLout($OSref, KeyAttr=>{expression=>"expr"},RootName => 'openSMOGforces',AttrIndent => 1, NoSort => 1,OutputFile => "$openSMOGxml");	
-	return "\t$openSMOGxml\n";
-	}
-	return "";
-}
-
 sub addOShash{
-	my ($directive,$stuff)=@_;
+	my ($stuff)=@_;
 	my @stuff=@{$stuff};
 	my $ref=\%{$OSref->{$stuff[2]}->[0]->{$stuff[3]}->[0]};
-# @stuff is the array that contains the folloding information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
+# @stuff is the array that contains the following information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
 	my %tmphash;
 	$tmphash{"i"}=$stuff[0];
 	$tmphash{"j"}=$stuff[1];
