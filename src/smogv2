@@ -632,8 +632,8 @@ sub addExtras {
 				}	
 				# since they are both defined, we will keep a record of them.
 				# save the type hash
-				$foundBtype{"$tarray[0]-$tarray[1]"}=1;
-				$foundBtype{"$tarray[1]-$tarray[0]"}=1;
+				$foundBtype{"$tarray[0]-$tarray[1]"}=$tarray[2];
+				$foundBtype{"$tarray[1]-$tarray[0]"}=$tarray[2];
 			}
 			if($directive eq "angletypes"){
 		    		my @ltokens = split('<',$A);
@@ -831,9 +831,15 @@ sub bondOutput
 			# this mean bond_bytype was used
 			# don't write distances or strengths. Make gromacs use bondtype
 			# since we are not writing a distance, let's check and make sure this pair has a bondtype provided
-			&checkbondtype($i,$j,$allatoms); 
+			my $type=checkbondtype($i,$j,$allatoms); 
 			$formattedString = sprintf("%d\t%d",$i,$j);
-			$outputString = "$outputString$formattedString\n";
+			$outputString .= $formattedString;
+			if(defined $openSMOG && $type > 0){
+				#openMM requires that the function type is listed, even if relying on bonded_params
+				$outputString .= sprintf("\t%d\n",$type);
+			}else{
+				$outputString .= "\n";
+			}
         		if($values < $interactionThreshold->{"bonds"}->{"shortBond"}
         		|| $values > $interactionThreshold->{"bonds"}->{"longBond"}){
 				my $DIST=int($values*100)/100.0;
@@ -915,8 +921,7 @@ sub checkbondtype
 				my $nm="$I-$J";
 				if(defined $foundBtype{$nm})
 				{
-					$found=1;
-					return;
+					return $foundBtype{$nm};
 				}
 			}
 		}
