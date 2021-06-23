@@ -1415,7 +1415,7 @@ sub calculateContacts
 		if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
 	}
 
-	if(scalar keys %conttypeseen >1){
+	if(scalar keys %conttypeseen >1 && !defined $openSMOG){
 		my $L;
 		foreach my $CT(keys %conttypeseen){
 			$L .= $CT;
