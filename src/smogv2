@@ -1696,7 +1696,7 @@ sub contactParseopenSMOG
 	}
 
 	if(!defined $openSMOG){
-		smog_quit("Function $fname only supported with -openSMOG flag");
+		smog_quit("Function $fname only supported with the -openSMOG flag");
 	}
 
         unshift(@{$paramArr},"$fname");

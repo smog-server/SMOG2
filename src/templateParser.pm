@@ -922,6 +922,9 @@ sub parseSif {
 
 		if($functions->{$funcName}->{"directive"} eq "openSMOG"){
 			newopenSMOGfunction($functions,$funcName);
+		        if(!defined $openSMOG){
+				smog_quit("Function $funcName is defined in .sif file, but it is only supported with the -openSMOG flag. If your system will not use this function, then you are fine.  However, if you do use this function, SMOG 2 is going to exit without completing.",0);
+        		}
 		}
 
 	        if(!exists $fTypes{"$funcName"}){smog_quit ("\"$funcName\" is not a supported function type in SMOG");}
