@@ -35,6 +35,7 @@ Getopt::Long::Configure("pass_through");
 use Data::Dumper;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
+use XML::LibXML;
 use IPC::Open3;
 use smog_common;
 
@@ -2009,9 +2010,10 @@ sub evalsub
 	return $expression;
 }
 
-sub validateTemplate
+sub validateXML
 {
 	my ($file,$type) = @_;
+
 	my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/share/schemas/$type.xsd");
 	my $parser = XML::SAX::ParserFactory->parser(Handler => $validator);
 	eval { $parser->parse_uri($file) };
@@ -2046,28 +2048,28 @@ sub parseInputFolder
 			$bif = $file;$bif = "$folderName/$bif";
 			print "Found .bif file $bif\n";
 			print "Validating XML format of $bif\n";
-			validateTemplate($bif,"bif");
+			validateXML($bif,"bif");
 			next;
 		}elsif($file =~ m/\.sif$/){
 			$sifexists++;
 			$sif = $file;$sif = "$folderName/$sif";
 			print "Found .sif file $sif\n";
 			print "Validating XML format of $sif\n";
-			validateTemplate($sif,"sif");
+			validateXML($sif,"sif");
 			next;
 		}elsif($file =~ m/\.b$/){
 			$bexists++;
 			$b = $file;$b = "$folderName/$b";
 			print "Found .b file $b\n";
 			print "Validating XML format of $b\n";
-			validateTemplate($b,"b");
+			validateXML($b,"b");
 			next;
 		}elsif($file =~ m/\.nb$/){
 			$nbexists++;
 			$nb = $file;$nb = "$folderName/$nb";
 			print "Found .nb file $nb\n";
 			print "Validating XML format of $nb\n";
-			validateTemplate($nb,"nb");
+			validateXML($nb,"nb");
 			next;
 		}elsif($file =~ m/\.extras$/ || $file =~ m/^extras$/) {
 			$extrasexists++;
@@ -2455,6 +2457,9 @@ sub openSMOGfunctionExists{
 
 sub openSMOGwriteXML{
 	my $space=" ";
+	my $ones="$space";
+	my $twos="$space$space";
+	my $threes="$space$space$space";
 	# this is a very limited XML writer that is made specifically for openSMOG-formatted contact hashes
 	# we will make a more versatile version later.
 	my $size = keys %{$OSref};
@@ -2463,30 +2468,39 @@ sub openSMOGwriteXML{
 		foreach my $type(keys %{$OSref}){
 			$xmlout .= "$space<$type>\n";
 			foreach my $name(keys %{$OSref->{$type}->[0]}){
-				$xmlout .= "$space$space<$name>\n";
+				$xmlout .= "$twos<contact_potential name=\"$name\">\n";
 					my $expr=$OSref->{$type}->[0]->{$name}->[0]->{expression}->[0]->{"expr"};
-					$xmlout .= "$space$space$space<expression expr=\"$expr\" />\n";
+					$xmlout .= "$threes<expression expr=\"$expr\" />\n";
 					foreach my $param(@{$OSref->{$type}->[0]->{$name}->[0]->{parameters}}){
-						$xmlout .= "$space$space$space<parameter>$param<parameter>\n";
+						$xmlout .= "$threes<parameter>$param</parameter>\n";
 					}
 					foreach my $param(@{$OSref->{$type}->[0]->{$name}->[0]->{interaction}}){
-						$xmlout .="$space$space$space<interaction ";
+						$xmlout .="$threes<interaction ";
 						my @tmparr=@{$param};
 						for(my $I=0;$I<$#tmparr;$I++){
-							$xmlout .="$tmparr[$I]=$tmparr[++$I] ";
+							$tmparr[$I+1]=sprintf("%7.5e",$tmparr[$I+1]);
+							$xmlout .="$tmparr[$I]=\"$tmparr[$I+1]\" ";
+							$I++;
 						}
-						$xmlout .=" />\n";
+						$xmlout .="/>\n";
 					}
 
-				$xmlout .= "$space$space</$name>\n";
+				$xmlout .= "$twos</contact_potential>\n";
 			}
 
-			$xmlout .= "$space</$type>\n";
+			$xmlout .= "$ones</$type>\n";
 		}	
 		$xmlout.="</openSMOGforces>\n";
 	open(XMLOO,">$openSMOGxml") or smog_quit("Unable to open $openSMOGxml for writing");
 	print XMLOO $xmlout;
 	close(XMLOO);
+
+	# check that the written file aligned with the intended schema.
+	my $doc = XML::LibXML->new->parse_file($openSMOGxml);
+	my $xmlschema = XML::LibXML::Schema->new( location => "$ENV{SMOG_PATH}/share/schemas/openSMOG.xsd", no_network => 1 );
+	eval { $xmlschema->validate( $doc ); };
+ smog_quit("Failed to validate $openSMOGxml against schema file $ENV{SMOG_PATH}/share/schemas/openSMOG.xsd . $@ \nThis is due to an XML formatting issue, which is probably a bug in the code.  Please send a bug report to info\@smog-server.org") if $@;
+
 	return "\t$openSMOGxml\n";
 	}
 	return "";

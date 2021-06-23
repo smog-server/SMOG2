@@ -50,6 +50,7 @@ cpan):
 XML::Simple
 Exporter
 perl PDL
+XML::LibXML
 
 Note: If installing a module fails, it may be necessary 
 to use cpan to install additional modules, or perhaps use

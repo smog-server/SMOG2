@@ -93,6 +93,8 @@ sub checkForModules {
 	if($checkPackage < 2) { print "\nFailed to launch.\n\nEnvironment variable perl4smog not set, maybe you need to edit the configure.smog2 script and run it with \"source configure.smog2\"\n"; $sum++;}else{
 		$checkPackage=`\$perl4smog -e "use XML::Simple" 2>&1 | wc -l | awk '{print \$1}'`;
 		if($checkPackage > 0) { print "Perl module XML::Simple not installed!\n"; $sum++;}
+		$checkPackage=`\$perl4smog -e "use XML::LibXML" 2>&1 | wc -l | awk '{print \$1}'`;
+		if($checkPackage > 0) { print "Perl module XML::LibXML not installed!\n"; $sum++;}
 		$checkPackage=`\$perl4smog -e "use XML::Validator::Schema" 2>&1 | wc -l | awk '{print \$1}'`;
 		if($checkPackage > 0) { print "Perl module XML::Validator::Schema not installed!\n"; $sum++;}
 		$checkPackage=`\$perl4smog -e "use Exporter" 2>&1 | wc -l | awk '{print \$1}'`;
