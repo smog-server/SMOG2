@@ -978,8 +978,7 @@ sub checkdihedraltype
 					my $nm="$I-$J-$K-$L";
 					if(defined $foundDtype{$nm})
 					{
-						$found=1;
-						return;
+						return $foundDtype{$nm};
 					}
 				}
 			}
@@ -1257,9 +1256,15 @@ sub dihedralOutput
 		($fType,@paramArr) = diheFuncParser($fun);
 		if($fType ==-1){
 			 ## don't write angle. Make gromacs use dihedraltype
-			&checkdihedraltype($ai,$aj,$ak,$al,$allatoms);
+			my $type=checkdihedraltype($ai,$aj,$ak,$al,$allatoms);
 			$formattedString = sprintf("%d\t%d\t%d\t%d",$ai,$aj,$ak,$al);
-			$outputString = "$outputString$formattedString\n";
+			$outputString .= $formattedString;
+                        if(defined $openSMOG && $type > 0){
+                                #openMM requires that the function type is listed, even if relying on dihedraltypes
+                                $outputString .= sprintf("\t%d\n",$type);
+                        }else{
+                                $outputString .= "\n";
+                        }
 		}else{
 
 	 		if($fType !=0 && !exists $freeangles{"$ai-$aj-$ak"} && !exists $freeangles{"$ak-$aj-$ai"} && !exists $freeangles{"$aj-$ak-$al"} && !exists $freeangles{"$al-$ak-$aj"}  ){
