@@ -212,8 +212,8 @@ sub setglobals {
 	push(@{$openSMOGpothash->{contact_1}->{parameters}},"A");
 	push(@{$openSMOGpothash->{contact_1}->{parameters}},"B");
 
-	$openSMOGpothash->{bond_type6}->{expression}="k*(r-r0)^2";
-	push(@{$openSMOGpothash->{bond_type6}->{parameters}},"k");
+	$openSMOGpothash->{bond_type6}->{expression}="eps*(r-r0)^2";
+	push(@{$openSMOGpothash->{bond_type6}->{parameters}},"eps");
 	push(@{$openSMOGpothash->{bond_type6}->{parameters}},"r0");
 
 	$openSMOGpothash->{contact_gaussian}->{expression}="-A*((1+a/(A*r^12))*(1-exp(-(r-r0)^2/(2*sigmaG^2)))-1)";
@@ -2448,9 +2448,10 @@ sub OShashAddFunction{
 	if($type ne "contacts"){
 		smog_quit("openSMOG currently only supports modified contact potentials.  Issue processing $name");
 	}
-	my @params=@{$params};
 	my $ref=\%{$OSref->{$type}->[0]->{$name}->[0]};
 	$ref->{expression}->[0]->{"expr"}=$expr;
+
+	my @params=@{$params};
 	foreach my $en(@params){
 		push(@{$ref->{parameters}},"$en");
 	}

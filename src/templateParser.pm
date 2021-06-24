@@ -424,7 +424,7 @@ sub checkContactFunctionDef
 			my $pot=$functions->{$funcname}->{"openSMOGpotential"};
 			$pot =~ s/^weight\*//g;
  			if($pot !~ m/^(\((?:[^()]++|(?1))*\))$/ || $pot =~ m/weight/ ) {
-				smog_quit("If normalization is turned on for an openSMOG potential, then the functional form must be \"weight*(<function of coordinates and other parameters>)\". The definition for function $funcname in the .sif file appears to not comply with this standard, which could lead to issues. Found: $functions->{$funcname}->{\"openSMOGpotential\"}");	
+				smog_quit("If normalization is turned on for an openSMOG potential, then the functional form must be \"weight*(<function of coordinates and other parameters>)\". The definition for function $funcname in the .sif file appears to not comply with this standard, which could lead to issues. While the current format check is extremely rigid, if the potential is of the form weight*<any function>, then you can safely ignore this message. However, simply enclosing the function in parentheses would get rid of this error. Found: $functions->{$funcname}->{\"openSMOGpotential\"}");	
 			}
 		}
 	}
@@ -1907,6 +1907,11 @@ sub newopenSMOGfunction{
 	my $pind=0;
 	my %seenparm;
 	foreach my $param(@parmarr){
+
+                if($param =~ m/^[i-n]$/){
+                        smog_quit(".sif file defines function $fN with openSMOG parameter $param. openSMOG functions can not use i-n as parameters. These are reserved symbols for denoting atom indices.");
+                }
+
 		if(exists $seenparm{$param}){
 			smog_quit("Function $fN defines $param as a parameter more than once. See .sif file. Found $functions->{$fN}->{\"openSMOGparameters\"}");
 		}else{

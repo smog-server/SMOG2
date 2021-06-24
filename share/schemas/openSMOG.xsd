@@ -2,6 +2,8 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <!-- INTERACTION TYPE -->
   <xs:complexType name="interactionType">
+    <xs:attribute name="i" type="xs:integer" use="required"/>
+    <xs:attribute name="j" type="xs:integer" use="required"/>
     <xs:anyAttribute processContents="skip"/>
   </xs:complexType>
   <!-- PARAMETER TYPE -->
