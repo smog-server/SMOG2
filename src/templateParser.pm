@@ -1313,7 +1313,6 @@ sub parseBonds {
 			$funcTable{"impropers"}->{$func} = $counter;
 			$funcTableRev{"impropers"}->{$counter} = $func;
 			
-			
 			$counter++;
 		}
 	}	
