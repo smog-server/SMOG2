@@ -2488,7 +2488,14 @@ sub openSMOGwriteXML{
 						$xmlout .="$threes<interaction ";
 						my @tmparr=@{$param};
 						for(my $I=0;$I<$#tmparr;$I++){
-							$tmparr[$I+1]=sprintf("%7.5e",$tmparr[$I+1]);
+							my $fmt;
+							# write integers as integers.  Everything else as scientific notation
+							if($tmparr[$I+1] =~ m/^[0-9]*$/){
+								$fmt="%i";
+							}else{
+								$fmt="%7.5e";
+							}
+							$tmparr[$I+1]=sprintf("$fmt",$tmparr[$I+1]);
 							$xmlout .="$tmparr[$I]=\"$tmparr[$I+1]\" ";
 							$I++;
 						}
