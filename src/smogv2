@@ -835,7 +835,7 @@ sub bondOutput
 			$formattedString = sprintf("%d\t%d",$i,$j);
 			$outputString .= $formattedString;
 			if(defined $openSMOG && $type > 0){
-				#openMM requires that the function type is listed, even if relying on bonded_params
+				#openMM requires that the function type is listed, even if relying on bondtype
 				$outputString .= sprintf("\t%d\n",$type);
 			}else{
 				$outputString .= "\n";
@@ -948,8 +948,7 @@ sub checkangletype
 				my $nm="$I-$J-$K";
 				if(defined $foundAtype{$nm})
 				{
-					$found=1;
-					return;
+					return $foundAtype{$nm};
 				}
 			}
 		}
@@ -1086,9 +1085,15 @@ sub angleOutput
 
 		if($fType ==-1){
 			 ## don't write angle and constant. Make gromacs use angletype
-			&checkangletype($i,$j,$k,$allatoms); 
+			my $type=checkangletype($i,$j,$k,$allatoms); 
 			$formattedString = sprintf("%d\t%d\t%d",$i,$j,$k);
-			$outputString = "$outputString$formattedString\n";
+			$outputString .= $formattedString;
+                        if(defined $openSMOG && $type > 0){
+                                #openMM requires that the function type is listed, even if relying on angletypes
+                                $outputString .= sprintf("\t%d\n",$type);
+                        }else{
+                                $outputString .= "\n";
+                        }
 
 	 		if($values < $interactionThreshold->{"angles"}->{"smallAngles"} || $values > $interactionThreshold->{"angles"}->{"largeAngles"}){ 
 				my $THETA=int($values*100)/100.0;

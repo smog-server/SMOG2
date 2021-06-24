@@ -414,7 +414,7 @@ sub checkContactFunctionDef
 		# if nothing matched, then we must be using an openSMOG potentials.  Let's check a few things.
 		# ? can't be used for the weight if normalization is turned off.
 		# if normalization is turned on, then the 
-		if($normalize){
+		if($normalize && defined $openSMOG){
 			if( !exists $openSMOGpothash->{$funcname}->{weight}){
 				smog_quit("$funcname contact type does not have a parameter called \"weight\", but this function is being used in a normalized contact group ($cG, in .nb file): $funcString")
 			}
