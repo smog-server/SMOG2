@@ -35,7 +35,6 @@ Getopt::Long::Configure("pass_through");
 use Data::Dumper;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
-use XML::LibXML;
 use IPC::Open3;
 use smog_common;
 
@@ -2472,6 +2471,9 @@ sub openSMOGfunctionExists{
 }
 
 sub openSMOGwriteXML{
+
+	# Only load the module if we are writing an openSMOG file
+	use if defined $openSMOG, "XML::LibXML";
 	my $space=" ";
 	my $ones="$space";
 	my $twos="$space$space";

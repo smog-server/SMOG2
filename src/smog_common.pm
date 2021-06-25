@@ -94,7 +94,7 @@ sub checkForModules {
 		$checkPackage=`\$perl4smog -e "use XML::Simple" 2>&1 | wc -l | awk '{print \$1}'`;
 		if($checkPackage > 0) { print "Perl module XML::Simple not installed!\n"; $sum++;}
 		$checkPackage=`\$perl4smog -e "use XML::LibXML" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { print "Perl module XML::LibXML not installed!\n"; $sum++;}
+		if($checkPackage > 0) { smog_quit("Perl module XML::LibXML not installed. If you are using openSMOG, then SMOG2 will exit without completing.",1)}
 		$checkPackage=`\$perl4smog -e "use XML::Validator::Schema" 2>&1 | wc -l | awk '{print \$1}'`;
 		if($checkPackage > 0) { print "Perl module XML::Validator::Schema not installed!\n"; $sum++;}
 		$checkPackage=`\$perl4smog -e "use Exporter" 2>&1 | wc -l | awk '{print \$1}'`;
