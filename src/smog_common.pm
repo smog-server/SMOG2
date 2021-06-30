@@ -90,8 +90,8 @@ sub warnsummary
 
 sub checkForModules {
 	my $checkPackage; my $sum=0;
-	$checkPackage=`echo \$perl4smog | wc | awk '{print \$3}'`;
-	if($checkPackage < 2) { print "\nFailed to launch.\n\nEnvironment variable perl4smog not set, maybe you need to edit the configure.smog2 script and run it with \"source configure.smog2\"\n"; $sum++;}else{
+	$checkPackage=`echo \$perl4smog`;
+	if(length($checkPackage) < 2) { print "\nFailed to launch.\n\nEnvironment variable perl4smog not set, maybe you need to edit the configure.smog2 script and run it with \"source configure.smog2\"\n"; $sum++;}else{
 		$checkPackage=`\$perl4smog -e "use XML::Simple" 2>&1 `;
 		if(length($checkPackage) > 0) { print "Perl module XML::Simple not installed!\n"; $sum++;}
 		$checkPackage=`\$perl4smog -e "use XML::LibXML" 2>&1 `;
@@ -103,8 +103,8 @@ sub checkForModules {
 		$checkPackage=`\$perl4smog -e "use PDL" 2>&1 `;
 		if(length($checkPackage) > 0) { print "Perl Data Language not installed!\n"; $sum++;}
 	}
-	$checkPackage=`which java | wc -l | awk '{print \$1}'`;
-	if($checkPackage < 1) { print "Java might not be installed. This package assumes Java 1.7 or greater is in the path as 'java'.\n"; $sum++;}
+	$checkPackage=`which java `;
+	if(length($checkPackage) < 1) { print "Java might not be installed. This package assumes Java 1.7 or greater is in the path as 'java'.\n"; $sum++;}
 	if($sum > 0) { smog_quit("Need above packages before smog2, smog-check and smog tools can run. Some hints may be in the SMOG 2 manual."); }
 }
 
