@@ -29,7 +29,7 @@
   <!-- CONTACTS TYPE -->
   <xs:complexType name="contactsType">
     <xs:sequence>
-      <xs:element name="contact_potential" type="contpotType" maxOccurs="unbounded"/>
+      <xs:element name="contacts_type" type="contpotType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
   <!-- openSMOG TYPE -->

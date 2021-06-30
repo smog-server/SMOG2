@@ -437,7 +437,7 @@ sub trim {
 sub readopenSMOGxml {
 	my ($xmlfilename)=@_;
 	my $xml = new XML::Simple;
-        my $data = $xml->XMLin($xmlfilename,KeyAttr=>{contact_potential=>"name"},ForceArray=>1);
+        my $data = $xml->XMLin($xmlfilename,KeyAttr=>{contacts_type=>"name"},ForceArray=>1);
 	return $data;
 }
 
@@ -461,7 +461,7 @@ sub openSMOGwriteXML{
 		foreach my $type(keys %{$OSref}){
 			$xmlout .= "$space<$type>\n";
 			foreach my $name(keys %{$OSref->{$type}->[0]}){
-				$xmlout .= "$twos<contact_potential name=\"$name\">\n";
+				$xmlout .= "$twos<". $type . "_type name=\"$name\">\n";
 					my $expr=$OSref->{$type}->[0]->{$name}->[0]->{expression}->[0]->{"expr"};
 					$xmlout .= "$threes<expression expr=\"$expr\" />\n";
 					foreach my $param(@{$OSref->{$type}->[0]->{$name}->[0]->{parameters}}){
@@ -485,7 +485,7 @@ sub openSMOGwriteXML{
 						$xmlout .="/>\n";
 					}
 
-				$xmlout .= "$twos</contact_potential>\n";
+				$xmlout .= "$twos</" . $type . "_type>\n";
 			}
 
 			$xmlout .= "$ones</$type>\n";
