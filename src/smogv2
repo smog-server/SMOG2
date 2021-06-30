@@ -152,7 +152,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
 
 printTop($topFile);
-my $openSMOGwritten=openSMOGwriteXML();
+my $openSMOGwritten=openSMOGwriteXML($OSref,$openSMOGxml);
 print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n$openSMOGwritten\t$groFile\n\t$ndxFile\n";
 	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
 	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
@@ -2468,67 +2468,6 @@ sub openSMOGfunctionExists{
 	}else{
 		return 0;
 	}
-}
-
-sub openSMOGwriteXML{
-
-	# Only load the module if we are writing an openSMOG file
-	use if defined $openSMOG, "XML::LibXML";
-	my $space=" ";
-	my $ones="$space";
-	my $twos="$space$space";
-	my $threes="$space$space$space";
-	# this is a very limited XML writer that is made specifically for openSMOG-formatted contact hashes
-	# we will make a more versatile version later.
-	my $size = keys %{$OSref};
-	if($size != 0){
-		my $xmlout="<openSMOGforces>\n";
-		foreach my $type(keys %{$OSref}){
-			$xmlout .= "$space<$type>\n";
-			foreach my $name(keys %{$OSref->{$type}->[0]}){
-				$xmlout .= "$twos<contact_potential name=\"$name\">\n";
-					my $expr=$OSref->{$type}->[0]->{$name}->[0]->{expression}->[0]->{"expr"};
-					$xmlout .= "$threes<expression expr=\"$expr\" />\n";
-					foreach my $param(@{$OSref->{$type}->[0]->{$name}->[0]->{parameters}}){
-						$xmlout .= "$threes<parameter>$param</parameter>\n";
-					}
-					foreach my $param(@{$OSref->{$type}->[0]->{$name}->[0]->{interaction}}){
-						$xmlout .="$threes<interaction ";
-						my @tmparr=@{$param};
-						for(my $I=0;$I<$#tmparr;$I++){
-							my $fmt;
-							# write integers as integers.  Everything else as scientific notation
-							if($tmparr[$I+1] =~ m/^[0-9]*$/){
-								$fmt="%i";
-							}else{
-								$fmt="%7.5e";
-							}
-							$tmparr[$I+1]=sprintf("$fmt",$tmparr[$I+1]);
-							$xmlout .="$tmparr[$I]=\"$tmparr[$I+1]\" ";
-							$I++;
-						}
-						$xmlout .="/>\n";
-					}
-
-				$xmlout .= "$twos</contact_potential>\n";
-			}
-
-			$xmlout .= "$ones</$type>\n";
-		}	
-		$xmlout.="</openSMOGforces>\n";
-	open(XMLOO,">$openSMOGxml") or smog_quit("Unable to open $openSMOGxml for writing");
-	print XMLOO $xmlout;
-	close(XMLOO);
-
-	# check that the written file aligned with the intended schema.
-	my $doc = XML::LibXML->new->parse_file($openSMOGxml);
-	my $xmlschema = XML::LibXML::Schema->new( location => "$ENV{SMOG_PATH}/share/schemas/openSMOG.xsd", no_network => 1 );
-	eval { $xmlschema->validate( $doc ); };
- smog_quit("Failed to validate $openSMOGxml against schema file $ENV{SMOG_PATH}/share/schemas/openSMOG.xsd . $@ \nThis is due to an XML formatting issue, which is probably a bug in the code.  Please send a bug report to info\@smog-server.org") if $@;
-
-	return "\t$openSMOGxml\n";
-	}
-	return "";
 }
 
 sub addOShash{

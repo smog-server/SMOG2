@@ -2,6 +2,7 @@ package smog_common;
 use strict;
 use warnings FATAL => 'all';
 use Exporter;
+use XML::Simple qw(:strict);
 
 #####################
 # Init error vars   #
@@ -14,7 +15,7 @@ our @convarray;
 our %reverthash;
 our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim);
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim openSMOGwriteXML);
 our %supported_directives;
 
 #####################
@@ -91,16 +92,16 @@ sub checkForModules {
 	my $checkPackage; my $sum=0;
 	$checkPackage=`echo \$perl4smog | wc | awk '{print \$3}'`;
 	if($checkPackage < 2) { print "\nFailed to launch.\n\nEnvironment variable perl4smog not set, maybe you need to edit the configure.smog2 script and run it with \"source configure.smog2\"\n"; $sum++;}else{
-		$checkPackage=`\$perl4smog -e "use XML::Simple" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { print "Perl module XML::Simple not installed!\n"; $sum++;}
-		$checkPackage=`\$perl4smog -e "use XML::LibXML" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { smog_quit("Perl module XML::LibXML not installed. If you are using openSMOG, then SMOG2 will exit without completing.",1)}
-		$checkPackage=`\$perl4smog -e "use XML::Validator::Schema" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { print "Perl module XML::Validator::Schema not installed!\n"; $sum++;}
-		$checkPackage=`\$perl4smog -e "use Exporter" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { print "Perl module Exporter not installed!\n"; $sum++;}
-		$checkPackage=`\$perl4smog -e "use PDL" 2>&1 | wc -l | awk '{print \$1}'`;
-		if($checkPackage > 0) { print "Perl Data Language not installed!\n"; $sum++;}
+		$checkPackage=`\$perl4smog -e "use XML::Simple" 2>&1 `;
+		if(length($checkPackage) > 0) { print "Perl module XML::Simple not installed!\n"; $sum++;}
+		$checkPackage=`\$perl4smog -e "use XML::LibXML" 2>&1 `;
+		if(length($checkPackage) > 0) { smog_quit("Perl module XML::LibXML not installed. If you are using openSMOG, then SMOG2 will exit without completing.",1)}
+		$checkPackage=`\$perl4smog -e "use XML::Validator::Schema" 2>&1 `;
+		if(length($checkPackage) > 0) { print "Perl module XML::Validator::Schema not installed!\n"; $sum++;}
+		$checkPackage=`\$perl4smog -e "use Exporter" 2>&1 `;
+		if(length($checkPackage) > 0) { print "Perl module Exporter not installed!\n"; $sum++;}
+		$checkPackage=`\$perl4smog -e "use PDL" 2>&1 `;
+		if(length($checkPackage) > 0) { print "Perl Data Language not installed!\n"; $sum++;}
 	}
 	$checkPackage=`which java | wc -l | awk '{print \$1}'`;
 	if($checkPackage < 1) { print "Java might not be installed. This package assumes Java 1.7 or greater is in the path as 'java'.\n"; $sum++;}
@@ -432,5 +433,79 @@ sub trim {
 	$string =~ s/^\s+|\s+$//g;
 	return $string;
 }
+
+sub readopenSMOGxml {
+	my ($xmlfilename)=@_;
+	my $xml = new XML::Simple;
+        my $data = $xml->XMLin($xmlfilename,KeyAttr=>{contact_potential=>"name"},ForceArray=>1);
+	return $data;
+}
+
+sub openSMOGwriteXML{
+	my ($OSref,$openSMOGxml)=@_;
+        # the arg is a handle to the hash holding all information to be written.
+	# Only load the module if we are writing an openSMOG file
+ 	my $checkPackage=`\$perl4smog -e "use XML::LibXML" 2>&1`;
+        if(length($checkPackage) > 0) { smog_quit("Perl module XML::LibXML not installed. Since you are using openSMOG, we can not continue...")}
+        # this was a workaround to a cryptic shared variable error in perl
+	use if 0==0 , "XML::LibXML";
+	my $space=" ";
+	my $ones="$space";
+	my $twos="$space$space";
+	my $threes="$space$space$space";
+	# this is a very limited XML writer that is made specifically for openSMOG-formatted contact hashes
+	# we will make a more versatile version later.
+	my $size = keys %{$OSref};
+	if($size != 0){
+		my $xmlout="<openSMOGforces>\n";
+		foreach my $type(keys %{$OSref}){
+			$xmlout .= "$space<$type>\n";
+			foreach my $name(keys %{$OSref->{$type}->[0]}){
+				$xmlout .= "$twos<contact_potential name=\"$name\">\n";
+					my $expr=$OSref->{$type}->[0]->{$name}->[0]->{expression}->[0]->{"expr"};
+					$xmlout .= "$threes<expression expr=\"$expr\" />\n";
+					foreach my $param(@{$OSref->{$type}->[0]->{$name}->[0]->{parameters}}){
+						$xmlout .= "$threes<parameter>$param</parameter>\n";
+					}
+					foreach my $param(@{$OSref->{$type}->[0]->{$name}->[0]->{interaction}}){
+						$xmlout .="$threes<interaction ";
+						my @tmparr=@{$param};
+						for(my $I=0;$I<$#tmparr;$I++){
+							my $fmt;
+							# write integers as integers.  Everything else as scientific notation
+							if($tmparr[$I+1] =~ m/^[0-9]*$/){
+								$fmt="%i";
+							}else{
+								$fmt="%7.5e";
+							}
+							$tmparr[$I+1]=sprintf("$fmt",$tmparr[$I+1]);
+							$xmlout .="$tmparr[$I]=\"$tmparr[$I+1]\" ";
+							$I++;
+						}
+						$xmlout .="/>\n";
+					}
+
+				$xmlout .= "$twos</contact_potential>\n";
+			}
+
+			$xmlout .= "$ones</$type>\n";
+		}	
+		$xmlout.="</openSMOGforces>\n";
+	open(XMLOO,">$openSMOGxml") or smog_quit("Unable to open $openSMOGxml for writing");
+	print XMLOO $xmlout;
+	close(XMLOO);
+
+	# check that the written file aligned with the intended schema.
+	my $doc = XML::LibXML->new->parse_file($openSMOGxml);
+	my $xmlschema = XML::LibXML::Schema->new( location => "$ENV{SMOG_PATH}/share/schemas/openSMOG.xsd", no_network => 1 );
+	eval { $xmlschema->validate( $doc ); };
+ smog_quit("Failed to validate $openSMOGxml against schema file $ENV{SMOG_PATH}/share/schemas/openSMOG.xsd . $@ \nThis is due to an XML formatting issue, which is probably a bug in the code.  Please send a bug report to info\@smog-server.org") if $@;
+
+	return "\t$openSMOGxml\n";
+	}
+	return "";
+}
+
+
 
 1;
