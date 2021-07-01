@@ -2452,7 +2452,7 @@ sub OShashAddFunction{
 	if($type ne "contacts"){
 		smog_quit("openSMOG currently only supports modified contact potentials.  Issue processing $name");
 	}
-	my $ref=\%{$OSref->{$type}->[0]->{$name}->[0]};
+	my $ref=\%{$OSref->{$type}->[0]->{$type . "_type"}->[0]->{$name}->[0]};
 	$ref->{expression}->[0]->{"expr"}=$expr;
 
 	my @params=@{$params};
@@ -2463,7 +2463,7 @@ sub OShashAddFunction{
 
 sub openSMOGfunctionExists{
 	my ($type,$name)=@_;
-	if(exists $OSref->{$type}->[0]->{$name}){
+	if(exists $OSref->{$type}->[0]->{$type . "_type"}->[0]->{$name}){
 		return 1;
 	}else{
 		return 0;
@@ -2473,7 +2473,7 @@ sub openSMOGfunctionExists{
 sub addOShash{
 	my ($stuff)=@_;
 	my @stuff=@{$stuff};
-	my $ref=\%{$OSref->{$stuff[2]}->[0]->{$stuff[3]}->[0]};
+	my $ref=\%{$OSref->{$stuff[2]}->[0]->{$stuff[2] . "_type"}->[0]->{$stuff[3]}->[0]};
 # @stuff is the array that contains the following information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
 	my %tmphash;
 	$tmphash{"i"}=$stuff[0];

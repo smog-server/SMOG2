@@ -458,34 +458,41 @@ sub openSMOGwriteXML{
 	my $size = keys %{$OSref};
 	if($size != 0){
 		my $xmlout="<openSMOGforces>\n";
-		foreach my $type(keys %{$OSref}){
-			$xmlout .= "$space<$type>\n";
-			foreach my $name(keys %{$OSref->{$type}->[0]}){
-				$xmlout .= "$twos<". $type . "_type name=\"$name\">\n";
-					my $expr=$OSref->{$type}->[0]->{$name}->[0]->{expression}->[0]->{"expr"};
-					$xmlout .= "$threes<expression expr=\"$expr\" />\n";
-					foreach my $param(@{$OSref->{$type}->[0]->{$name}->[0]->{parameters}}){
-						$xmlout .= "$threes<parameter>$param</parameter>\n";
-					}
-					foreach my $param(@{$OSref->{$type}->[0]->{$name}->[0]->{interaction}}){
-						$xmlout .="$threes<interaction ";
-						my @tmparr=@{$param};
-						for(my $I=0;$I<$#tmparr;$I++){
-							my $fmt;
-							# write integers as integers.  Everything else as scientific notation
-							if($tmparr[$I+1] =~ m/^[0-9]*$/){
-								$fmt="%i";
-							}else{
-								$fmt="%7.5e";
-							}
-							$tmparr[$I+1]=sprintf("$fmt",$tmparr[$I+1]);
-							$xmlout .="$tmparr[$I]=\"$tmparr[$I+1]\" ";
-							$I++;
-						}
-						$xmlout .="/>\n";
-					}
+		my $handle0=$OSref;
 
-				$xmlout .= "$twos</" . $type . "_type>\n";
+		foreach my $type(keys %{$handle0}){
+			$xmlout .= "$space<$type>\n";
+			my $handle1=$handle0->{$type}->[0];
+			foreach my $subtype(keys %{$handle1}){
+			   	my $handle2=$handle1->{$subtype}->[0];
+			   	foreach my $name(keys %{$handle2}){
+			   		my $handle3=$handle2->{$name}->[0];
+			   	     	$xmlout .= "$twos<$subtype name=\"$name\">\n";
+			   	     	my $expr=$handle3->{expression}->[0]->{"expr"};
+			   	     	$xmlout .= "$threes<expression expr=\"$expr\" />\n";
+			   	     	foreach my $param(@{$handle3->{parameters}}){
+			   	     		$xmlout .= "$threes<parameter>$param</parameter>\n";
+			   	     	}
+			   	     	foreach my $param(@{$handle3->{interaction}}){
+			   	     		$xmlout .="$threes<interaction ";
+			   	     		my @tmparr=@{$param};
+			   	     		for(my $I=0;$I<$#tmparr;$I++){
+			   	     			my $fmt;
+			   	     			# write integers as integers.  Everything else as scientific notation
+			   	     			if($tmparr[$I+1] =~ m/^[0-9]*$/){
+			   	     				$fmt="%i";
+			   	     			}else{
+			   	     				$fmt="%7.5e";
+			   	     			}
+			   	     			$tmparr[$I+1]=sprintf("$fmt",$tmparr[$I+1]);
+			   	     			$xmlout .="$tmparr[$I]=\"$tmparr[$I+1]\" ";
+			   	     			$I++;
+			   	     		}
+			   	     		$xmlout .="/>\n";
+			   	     	}
+
+			   	     	$xmlout .= "$twos</$subtype>\n";
+                           	 }
 			}
 
 			$xmlout .= "$ones</$type>\n";
