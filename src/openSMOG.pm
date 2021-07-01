@@ -58,12 +58,15 @@ sub addOShash{
 
 }
 
-
 sub readopenSMOGxml {
-	my ($xmlfilename)=@_;
-	my $xml = new XML::Simple;
-        my $data = $xml->XMLin($xmlfilename,KeyAttr=>{contacts_type=>"name"},ForceArray=>1);
-	return $data;
+	my ($XMLin)=@_;
+	if(-f $XMLin){
+		my $xml = new XML::Simple;
+		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name"},ForceArray=>1);
+		return $data;
+	}else{
+		return 1;
+	}
 }
 
 sub openSMOGwriteXML{
