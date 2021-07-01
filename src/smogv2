@@ -37,7 +37,7 @@ use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
 use smog_common;
-
+use openSMOG;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
@@ -531,7 +531,7 @@ sub addToTop {
 		
 	if($directive =~ m/^openSMOG$/){
 		# if $directive is openSMOG, then $stuff is the address of the array that contains the folloding information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
-		addOShash($stuff);
+		addOShash($OSref,$stuff);
         }else{
 		$linesInDirectivesWithContent[$directives{$directive}]+= hascontent($stuff);
 		push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
@@ -1545,13 +1545,13 @@ sub contactParseNM1
 		}
 	}
 	if(defined $openSMOG){
-		unless(openSMOGfunctionExists("contacts","contact_1-$M-$N")){
+		unless(openSMOGfunctionExists($OSref,"contacts","contact_1-$M-$N")){
 			my $potential = $openSMOGpothash->{contact_1}->{expression};
 			$potential =~ s/N/$N/g;
 			$potential =~ s/M/$M/g;
 			
 			my $parhandle=\@{$openSMOGpothash->{contact_1}->{parameters}};
-			OShashAddFunction("contacts","contact_1-$M-$N","$potential",$parhandle);
+			OShashAddFunction($OSref,"contacts","contact_1-$M-$N","$potential",$parhandle);
 		}
 		# switch order for openSMOG, so that the first parameter is the 12 term
 		($paramArr->[2],$paramArr->[3])=($paramArr->[3],$paramArr->[2]);
@@ -1632,10 +1632,10 @@ sub contactParseGaussian
 	if($paramArr->[3] =~ /^?$/){$paramArr->[3]=$r0;}
 
         if(defined $openSMOG){
-                unless(openSMOGfunctionExists("contacts","contact_gaussian")){
+                unless(openSMOGfunctionExists($OSref,"contacts","contact_gaussian")){
                         my $potential = $openSMOGpothash->{contact_gaussian}->{expression};
                         my $parhandle=\@{$openSMOGpothash->{contact_gaussian}->{parameters}};
-                        OShashAddFunction("contacts","contact_gaussian","$potential",$parhandle);
+                        OShashAddFunction($OSref,"contacts","contact_gaussian","$potential",$parhandle);
                 }
                 # switch order for openSMOG, so that the first parameter is k
                 ($paramArr->[0],$paramArr->[1],$paramArr->[2],$paramArr->[3])=($paramArr->[0],$paramArr->[3],$paramArr->[2],$paramArr->[1]);
@@ -1664,11 +1664,11 @@ sub contactParseBond6
 	$paramArr->[0] = evalsub($paramArr->[0],$r0);
 
         if(defined $openSMOG){
-                unless(openSMOGfunctionExists("contacts","bond_type6")){
+                unless(openSMOGfunctionExists($OSref,"contacts","bond_type6")){
                         my $potential = $openSMOGpothash->{bond_type6}->{expression};
 
                         my $parhandle=\@{$openSMOGpothash->{bond_type6}->{parameters}};
-                        OShashAddFunction("contacts","bond_type6","$potential",$parhandle);
+                        OShashAddFunction($OSref,"contacts","bond_type6","$potential",$parhandle);
                 }
                 # switch order for openSMOG, so that the first parameter is k
                 ($paramArr->[0],$paramArr->[1])=($paramArr->[1],$paramArr->[0]);
@@ -1717,11 +1717,11 @@ sub contactParseopenSMOG
         unshift(@{$paramArr},"contacts");
         unshift(@{$paramArr},"openSMOG");
 
-        unless(openSMOGfunctionExists("contacts","$fname")){
+        unless(openSMOGfunctionExists($OSref,"contacts","$fname")){
                 my $potential = $openSMOGpothash->{$fname}->{expression};
 
                 my $parhandle=\@{$openSMOGpothash->{$fname}->{parameters}};
-                OShashAddFunction("contacts","$fname","$potential",$parhandle);
+                OShashAddFunction($OSref,"contacts","$fname","$potential",$parhandle);
         }
 
 	return;
@@ -2446,51 +2446,4 @@ sub appendContacts {
 }
 
 
-########## openSMOG routines
-sub OShashAddFunction{
-	my ($type,$name,$expr,$params)=@_;
-	if($type ne "contacts"){
-		smog_quit("openSMOG currently only supports modified contact potentials.  Issue processing $name");
-	}
-	my $ref=\%{$OSref->{$type}->[0]->{$type . "_type"}->[0]->{$name}->[0]};
-	$ref->{expression}->[0]->{"expr"}=$expr;
-
-	my @params=@{$params};
-	foreach my $en(@params){
-		push(@{$ref->{parameters}},"$en");
-	}
-}
-
-sub openSMOGfunctionExists{
-	my ($type,$name)=@_;
-	if(exists $OSref->{$type}->[0]->{$type . "_type"}->[0]->{$name}){
-		return 1;
-	}else{
-		return 0;
-	}
-}
-
-sub addOShash{
-	my ($stuff)=@_;
-	my @stuff=@{$stuff};
-	my $ref=\%{$OSref->{$stuff[2]}->[0]->{$stuff[2] . "_type"}->[0]->{$stuff[3]}->[0]};
-# @stuff is the array that contains the following information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
-	my %tmphash;
-	$tmphash{"i"}=$stuff[0];
-	$tmphash{"j"}=$stuff[1];
-	my @newstuff;
-	push(@newstuff,"i");
-	push(@newstuff,"$stuff[0]");
-	push(@newstuff,"j");
-	push(@newstuff,"$stuff[1]");
-	my $parn=4;
-	foreach my $param(@{$ref->{parameters}}){
-		push(@newstuff,"$param");
-		push(@newstuff,"$stuff[$parn]");
-		$tmphash{$param}=$stuff[$parn];
-		$parn++;
-	}
-	push(@{$ref->{interaction}},\@newstuff);
-
-}
 
