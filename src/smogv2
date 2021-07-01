@@ -32,7 +32,6 @@ use mathFunctions;
 use setRatios;
 use Getopt::Long;
 Getopt::Long::Configure("pass_through");
-use Data::Dumper;
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use IPC::Open3;
@@ -153,6 +152,8 @@ appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
 
 printTop($topFile);
 my $openSMOGwritten=openSMOGwriteXML($OSref,$openSMOGxml);
+        my $hand=readopenSMOGxml($openSMOGxml);
+        my $tmp=openSMOGwriteXML($hand,"file2");
 print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n$openSMOGwritten\t$groFile\n\t$ndxFile\n";
 	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
 	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }

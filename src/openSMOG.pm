@@ -16,18 +16,18 @@ sub OShashAddFunction{
 	if($type ne "contacts"){
 		smog_quit("openSMOG currently only supports modified contact potentials.  Issue processing $name");
 	}
-	my $ref=\%{$OSref->{$type}->[0]->{$type . "_type"}->[0]->{$name}->[0]};
-	$ref->{expression}->[0]->{"expr"}=$expr;
+	my $ref=\%{$OSref->{$type}->{$type . "_type"}->{$name}};
+	$ref->{expression}->{"expr"}=$expr;
 
 	my @params=@{$params};
 	foreach my $en(@params){
-		push(@{$ref->{parameters}},"$en");
+		push(@{$ref->{parameter}},"$en");
 	}
 }
 
 sub openSMOGfunctionExists{
 	my ($OSref,$type,$name)=@_;
-	if(exists $OSref->{$type}->[0]->{$type . "_type"}->[0]->{$name}){
+	if(exists $OSref->{$type}->{$type . "_type"}->{$name}){
 		return 1;
 	}else{
 		return 0;
@@ -37,8 +37,8 @@ sub openSMOGfunctionExists{
 sub addOShash{
 	my ($OSref,$stuff)=@_;
 	my @stuff=@{$stuff};
-	my $ref=\%{$OSref->{$stuff[2]}->[0]->{$stuff[2] . "_type"}->[0]->{$stuff[3]}->[0]};
-# @stuff is the array that contains the following information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
+	my $ref=\%{$OSref->{$stuff[2]}->{$stuff[2] . "_type"}->{$stuff[3]}};
+# @stuff is the array that contains the following information: i, j, interaction type, function name, @parameter (in the order found in $OSref->{$type}->{$name}->{parameters} array)
 	my %tmphash;
 	$tmphash{"i"}=$stuff[0];
 	$tmphash{"j"}=$stuff[1];
@@ -48,21 +48,24 @@ sub addOShash{
 	push(@newstuff,"j");
 	push(@newstuff,"$stuff[1]");
 	my $parn=4;
-	foreach my $param(@{$ref->{parameters}}){
+	foreach my $param(@{$ref->{parameter}}){
 		push(@newstuff,"$param");
 		push(@newstuff,"$stuff[$parn]");
 		$tmphash{$param}=$stuff[$parn];
 		$parn++;
 	}
-	push(@{$ref->{interaction}},\@newstuff);
+	#push(@{$ref->{interaction}},\@newstuff);
+	push(@{$ref->{interaction}},\%tmphash);
 
 }
 
 sub readopenSMOGxml {
 	my ($XMLin)=@_;
+	print "in $XMLin\n"; 
 	if(-f $XMLin){
 		my $xml = new XML::Simple;
-		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name"},ForceArray=>1);
+		#my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name"},ForceArray=>["contacts","contacts_type","parameter","interaction"]);
+		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name"},ForceArray=>["contacts_type","parameter","interaction"]);
 		return $data;
 	}else{
 		return 1;
@@ -71,6 +74,7 @@ sub readopenSMOGxml {
 
 sub openSMOGwriteXML{
 	my ($OSref,$openSMOGxml)=@_;
+	print "out $openSMOGxml\n";
         # OSref is a handle to the hash holding all information to be written.
         # $openSMOGxml is the output file name
 	# Only load the module if we are writing an openSMOG file
@@ -89,34 +93,51 @@ sub openSMOGwriteXML{
 		my $xmlout="<openSMOGforces>\n";
 		my $handle0=$OSref;
 
-		foreach my $type(keys %{$handle0}){
+		foreach my $type(sort keys %{$handle0}){
+				print "type $type\n";
 			$xmlout .= "$space<$type>\n";
-			my $handle1=$handle0->{$type}->[0];
-			foreach my $subtype(keys %{$handle1}){
-			   	my $handle2=$handle1->{$subtype}->[0];
-			   	foreach my $name(keys %{$handle2}){
-			   		my $handle3=$handle2->{$name}->[0];
+			my $handle1=$handle0->{$type};
+			foreach my $subtype(sort keys %{$handle1}){
+				print "sub $subtype\n";
+			   	my $handle2=$handle1->{$subtype};
+			   	foreach my $name(sort keys %{$handle2}){
+			   		my $handle3=$handle2->{"$name"};
 			   	     	$xmlout .= "$twos<$subtype name=\"$name\">\n";
-			   	     	my $expr=$handle3->{expression}->[0]->{"expr"};
+			   	     	my $expr=$handle3->{expression}->{"expr"};
 			   	     	$xmlout .= "$threes<expression expr=\"$expr\" />\n";
-			   	     	foreach my $param(@{$handle3->{parameters}}){
+					my @paramlist=@{$handle3->{parameter}};
+			   	     	foreach my $param(@paramlist){
 			   	     		$xmlout .= "$threes<parameter>$param</parameter>\n";
 			   	     	}
+
 			   	     	foreach my $param(@{$handle3->{interaction}}){
 			   	     		$xmlout .="$threes<interaction ";
-			   	     		my @tmparr=@{$param};
-			   	     		for(my $I=0;$I<$#tmparr;$I++){
-			   	     			my $fmt;
-			   	     			# write integers as integers.  Everything else as scientific notation
-			   	     			if($tmparr[$I+1] =~ m/^[0-9]*$/){
-			   	     				$fmt="%i";
-			   	     			}else{
-			   	     				$fmt="%7.5e";
-			   	     			}
-			   	     			$tmparr[$I+1]=sprintf("$fmt",$tmparr[$I+1]);
-			   	     			$xmlout .="$tmparr[$I]=\"$tmparr[$I+1]\" ";
-			   	     			$I++;
-			   	     		}
+			   	     		#my @tmparr=@{$param};
+			   	     		my %tmphash=%{$param};
+						foreach my $key("i","j",@paramlist){
+		   	     				my $fmt;
+		   	     				# write integers as integers.  Everything else as scientific notation
+		   	     				if($tmphash{$key} =~ m/^[0-9]*$/){
+		   	     					$fmt="%i";
+		   	     				}else{
+		   	     					$fmt="%7.5e";
+		   	     				}
+		   	     				my $val=sprintf("$fmt",$tmphash{$key});
+		   	     				$xmlout .="$key=\"$val\" ";
+						}
+
+#			   	     		#for(my $I=0;$I<$#tmparr;$I++){
+#			   	     			my $fmt;
+#			   	     			# write integers as integers.  Everything else as scientific notation
+#			   	     			if($tmparr[$I+1] =~ m/^[0-9]*$/){
+#			   	     				$fmt="%i";
+#			   	     			}else{
+#			   	     				$fmt="%7.5e";
+#			   	     			}
+#			   	     			$tmparr[$I+1]=sprintf("$fmt",$tmparr[$I+1]);
+#			   	     			$xmlout .="$tmparr[$I]=\"$tmparr[$I+1]\" ";
+#			   	     			$I++;
+			   	     		#}
 			   	     		$xmlout .="/>\n";
 			   	     	}
 
