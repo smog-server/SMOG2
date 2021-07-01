@@ -71,7 +71,8 @@ sub readopenSMOGxml {
 
 sub openSMOGwriteXML{
 	my ($OSref,$openSMOGxml)=@_;
-        # the arg is a handle to the hash holding all information to be written.
+        # OSref is a handle to the hash holding all information to be written.
+        # $openSMOGxml is the output file name
 	# Only load the module if we are writing an openSMOG file
  	my $checkPackage=`\$perl4smog -e "use XML::LibXML" 2>&1`;
         if(length($checkPackage) > 0) { smog_quit("Perl module XML::LibXML not installed. Since you are using openSMOG, we can not continue...")}
@@ -82,7 +83,7 @@ sub openSMOGwriteXML{
 	my $twos="$space$space";
 	my $threes="$space$space$space";
 	# this is a very limited XML writer that is made specifically for openSMOG-formatted contact hashes
-	# we will make a more versatile version later.
+	# we will make a more versatile version later. We will probably replace this with an XMLlib call, later. But, in order to format it exactly the way we want, directly writing it is ok.
 	my $size = keys %{$OSref};
 	if($size != 0){
 		my $xmlout="<openSMOGforces>\n";
@@ -130,7 +131,7 @@ sub openSMOGwriteXML{
 	print XMLOO $xmlout;
 	close(XMLOO);
 
-	# check that the written file aligned with the intended schema.
+	# check that the written file aligns with the intended schema.
 	my $doc = XML::LibXML->new->parse_file($openSMOGxml);
 	my $xmlschema = XML::LibXML::Schema->new( location => "$ENV{SMOG_PATH}/share/schemas/openSMOG.xsd", no_network => 1 );
 	eval { $xmlschema->validate( $doc ); };
