@@ -61,10 +61,8 @@ sub addOShash{
 
 sub readopenSMOGxml {
 	my ($XMLin)=@_;
-	print "in $XMLin\n"; 
 	if(-f $XMLin){
 		my $xml = new XML::Simple;
-		#my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name"},ForceArray=>["contacts","contacts_type","parameter","interaction"]);
 		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name"},ForceArray=>["contacts_type","parameter","interaction"]);
 		return $data;
 	}else{
@@ -74,7 +72,6 @@ sub readopenSMOGxml {
 
 sub openSMOGwriteXML{
 	my ($OSref,$openSMOGxml)=@_;
-	print "out $openSMOGxml\n";
         # OSref is a handle to the hash holding all information to be written.
         # $openSMOGxml is the output file name
 	# Only load the module if we are writing an openSMOG file
@@ -94,25 +91,22 @@ sub openSMOGwriteXML{
 		my $handle0=$OSref;
 
 		foreach my $type(sort keys %{$handle0}){
-				print "type $type\n";
 			$xmlout .= "$space<$type>\n";
 			my $handle1=$handle0->{$type};
 			foreach my $subtype(sort keys %{$handle1}){
-				print "sub $subtype\n";
 			   	my $handle2=$handle1->{$subtype};
 			   	foreach my $name(sort keys %{$handle2}){
 			   		my $handle3=$handle2->{"$name"};
 			   	     	$xmlout .= "$twos<$subtype name=\"$name\">\n";
 			   	     	my $expr=$handle3->{expression}->{"expr"};
-			   	     	$xmlout .= "$threes<expression expr=\"$expr\" />\n";
+			   	     	$xmlout .= "$threes<expression expr=\"$expr\"/>\n";
 					my @paramlist=@{$handle3->{parameter}};
 			   	     	foreach my $param(@paramlist){
 			   	     		$xmlout .= "$threes<parameter>$param</parameter>\n";
 			   	     	}
 
 			   	     	foreach my $param(@{$handle3->{interaction}}){
-			   	     		$xmlout .="$threes<interaction ";
-			   	     		#my @tmparr=@{$param};
+			   	     		$xmlout .="$threes<interaction";
 			   	     		my %tmphash=%{$param};
 						foreach my $key("i","j",@paramlist){
 		   	     				my $fmt;
@@ -123,42 +117,27 @@ sub openSMOGwriteXML{
 		   	     					$fmt="%7.5e";
 		   	     				}
 		   	     				my $val=sprintf("$fmt",$tmphash{$key});
-		   	     				$xmlout .="$key=\"$val\" ";
+		   	     				$xmlout .=" $key=\"$val\"";
 						}
-
-#			   	     		#for(my $I=0;$I<$#tmparr;$I++){
-#			   	     			my $fmt;
-#			   	     			# write integers as integers.  Everything else as scientific notation
-#			   	     			if($tmparr[$I+1] =~ m/^[0-9]*$/){
-#			   	     				$fmt="%i";
-#			   	     			}else{
-#			   	     				$fmt="%7.5e";
-#			   	     			}
-#			   	     			$tmparr[$I+1]=sprintf("$fmt",$tmparr[$I+1]);
-#			   	     			$xmlout .="$tmparr[$I]=\"$tmparr[$I+1]\" ";
-#			   	     			$I++;
-			   	     		#}
 			   	     		$xmlout .="/>\n";
 			   	     	}
-
 			   	     	$xmlout .= "$twos</$subtype>\n";
                            	 }
 			}
-
 			$xmlout .= "$ones</$type>\n";
 		}	
 		$xmlout.="</openSMOGforces>\n";
-	open(XMLOO,">$openSMOGxml") or smog_quit("Unable to open $openSMOGxml for writing");
-	print XMLOO $xmlout;
-	close(XMLOO);
+		open(XMLOO,">$openSMOGxml") or smog_quit("Unable to open $openSMOGxml for writing");
+		print XMLOO $xmlout;
+		close(XMLOO);
 
-	# check that the written file aligns with the intended schema.
-	my $doc = XML::LibXML->new->parse_file($openSMOGxml);
-	my $xmlschema = XML::LibXML::Schema->new( location => "$ENV{SMOG_PATH}/share/schemas/openSMOG.xsd", no_network => 1 );
-	eval { $xmlschema->validate( $doc ); };
- smog_quit("Failed to validate $openSMOGxml against schema file $ENV{SMOG_PATH}/share/schemas/openSMOG.xsd . $@ \nThis is due to an XML formatting issue, which is probably a bug in the code.  Please send a bug report to info\@smog-server.org") if $@;
+		# check that the written file aligns with the intended schema.
+		my $doc = XML::LibXML->new->parse_file($openSMOGxml);
+		my $xmlschema = XML::LibXML::Schema->new( location => "$ENV{SMOG_PATH}/share/schemas/openSMOG.xsd", no_network => 1 );
+		eval { $xmlschema->validate( $doc ); };
+		smog_quit("Failed to validate $openSMOGxml against schema file $ENV{SMOG_PATH}/share/schemas/openSMOG.xsd . $@ \nThis is due to an XML formatting issue, which is probably a bug in the code.  Please send a bug report to info\@smog-server.org") if $@;
 
-	return "\t$openSMOGxml\n";
+		return "\t$openSMOGxml\n";
 	}
 	return "";
 }
