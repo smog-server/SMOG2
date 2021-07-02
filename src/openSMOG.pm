@@ -42,19 +42,11 @@ sub addOShash{
 	my %tmphash;
 	$tmphash{"i"}=$stuff[0];
 	$tmphash{"j"}=$stuff[1];
-	my @newstuff;
-	push(@newstuff,"i");
-	push(@newstuff,"$stuff[0]");
-	push(@newstuff,"j");
-	push(@newstuff,"$stuff[1]");
 	my $parn=4;
 	foreach my $param(@{$ref->{parameter}}){
-		push(@newstuff,"$param");
-		push(@newstuff,"$stuff[$parn]");
 		$tmphash{$param}=$stuff[$parn];
 		$parn++;
 	}
-	#push(@{$ref->{interaction}},\@newstuff);
 	push(@{$ref->{interaction}},\%tmphash);
 
 }
@@ -64,6 +56,41 @@ sub readopenSMOGxml {
 	if(-f $XMLin){
 		my $xml = new XML::Simple;
 		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name"},ForceArray=>["contacts_type","parameter","interaction"]);
+		# this will return a hashtable with the following format:
+#<perldata>
+# <hashref memory_address="0x7fc4f2a25300">
+#  <item key="contacts">
+#   <hashref memory_address="0x7fc4f2a25a38">
+#    <item key="contacts_type">
+#     <hashref memory_address="0x7fc4f2a42e30">
+#      <item key="bond_type6">
+#       <hashref memory_address="0x7fc4f2a42e78">
+#        <item key="expression">
+#         <hashref memory_address="0x7fc4f2a8ef70">
+#          <item key="expr">eps*(r-r0)^2</item>
+#         </hashref>
+#        </item>
+#        <item key="interaction">
+#         <arrayref memory_address="0x7fc4f2a7ebd8">
+#          <item key="0">
+#           <hashref memory_address="0x7fc4f2a908e8">
+#            <item key="eps">200</item>
+#            <item key="i">1</item>
+#            <item key="j">2</item>
+#            <item key="r0">1.32823e-01</item>
+#           </hashref>
+#          </item>
+#         </arrayref>
+#        </item>
+#        <item key="parameter">
+#         <arrayref memory_address="0x7fc4f2a7eb60">
+#          <item key="0">eps</item>
+#          <item key="1">r0</item>
+#         </arrayref>
+#        </item>
+#       </hashref>
+#      </item>
+#      <item key="c8-c12">
 		return $data;
 	}else{
 		return 1;
