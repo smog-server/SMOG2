@@ -3,12 +3,16 @@ use strict;
 use warnings FATAL => 'all';
 use Exporter;
 use XML::Simple qw(:strict);
+use smog_common;
 
-#####################
-# Init error vars   #
-#####################
 our @ISA = 'Exporter';
-our @EXPORT = qw(OShashAddFunction openSMOGfunctionExists addOShash readopenSMOGxml openSMOGwriteXML);
+our @EXPORT = qw(OShashAddFunction openSMOGfunctionExists addOShash readopenSMOGxml openSMOGwriteXML openSMOGextractXML newopenSMOGfunction);
+our %fTypes;
+our $functions;
+our %fTypesArgNum;
+our $openSMOG;
+our $openSMOGpothash;
+our %openSMOGatoms2restrain;
 
 ########## openSMOG routines
 sub OShashAddFunction{
@@ -118,22 +122,37 @@ sub openSMOGwriteXML{
 		my $handle0=$OSref;
 
 		foreach my $type(sort keys %{$handle0}){
-			$xmlout .= "$space<$type>\n";
+			my $localxmlout = "$space<$type>\n";
 			my $handle1=$handle0->{$type};
 			foreach my $subtype(sort keys %{$handle1}){
 			   	my $handle2=$handle1->{$subtype};
 			   	foreach my $name(sort keys %{$handle2}){
 			   		my $handle3=$handle2->{"$name"};
-			   	     	$xmlout .= "$twos<$subtype name=\"$name\">\n";
+					my $anydefined=0;
+			   	     	foreach my $param(@{$handle3->{interaction}}){
+						if(defined $param){
+							$anydefined=1;
+							last;
+						}
+					}
+					if($anydefined==0){
+						# means none of the interactions exist in the final system.  So, don't write this type
+						next;
+					}
+
+			   	     	$localxmlout .= "$twos<$subtype name=\"$name\">\n";
 			   	     	my $expr=$handle3->{expression}->{"expr"};
-			   	     	$xmlout .= "$threes<expression expr=\"$expr\"/>\n";
+			   	     	$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
 					my @paramlist=@{$handle3->{parameter}};
 			   	     	foreach my $param(@paramlist){
-			   	     		$xmlout .= "$threes<parameter>$param</parameter>\n";
+			   	     		$localxmlout .= "$threes<parameter>$param</parameter>\n";
 			   	     	}
-
 			   	     	foreach my $param(@{$handle3->{interaction}}){
-			   	     		$xmlout .="$threes<interaction";
+						if(!defined $param){
+							#must have been deleted
+							next;
+						}
+			   	     		$localxmlout .="$threes<interaction";
 			   	     		my %tmphash=%{$param};
 						foreach my $key("i","j",@paramlist){
 		   	     				my $fmt;
@@ -144,14 +163,18 @@ sub openSMOGwriteXML{
 		   	     					$fmt="%7.5e";
 		   	     				}
 		   	     				my $val=sprintf("$fmt",$tmphash{$key});
-		   	     				$xmlout .=" $key=\"$val\"";
+		   	     				$localxmlout .=" $key=\"$val\"";
 						}
-			   	     		$xmlout .="/>\n";
+			   	     		$localxmlout .="/>\n";
 			   	     	}
-			   	     	$xmlout .= "$twos</$subtype>\n";
+			   	     	$localxmlout .= "$twos</$subtype>\n";
                            	 }
 			}
-			$xmlout .= "$ones</$type>\n";
+			$localxmlout .= "$ones</$type>\n";
+			if(scalar(split(/\s+/,$localxmlout)) > 3){	
+				# there must be some content, so write it.
+				$xmlout .=$localxmlout;
+			}
 		}	
 		$xmlout.="</openSMOGforces>\n";
 		open(XMLOO,">$openSMOGxml") or smog_quit("Unable to open $openSMOGxml for writing");
@@ -167,6 +190,117 @@ sub openSMOGwriteXML{
 		return "\t$openSMOGxml\n";
 	}
 	return "";
+}
+
+sub openSMOGextractXML{
+	my ($OSref,$openSMOGxml,$keepatoms)=@_;
+        # OSref is a handle to the hash holding all information to be written.
+        # $openSMOGxml is the output file name
+	# Only load the module if we are writing an openSMOG file
+ 	my $checkPackage=`\$perl4smog -e "use XML::LibXML" 2>&1`;
+        if(length($checkPackage) > 0) { smog_quit("Perl module XML::LibXML not installed. Since you are using openSMOG, we can not continue...")}
+        # this was a workaround to a cryptic shared variable error in perl
+	use if 0==0 , "XML::LibXML";
+	my $space=" ";
+	my $ones="$space";
+	my $twos="$space$space";
+	my $threes="$space$space$space";
+	# this is a very limited XML writer that is made specifically for openSMOG-formatted contact hashes
+	# we will make a more versatile version later. We will probably replace this with an XMLlib call, later. But, in order to format it exactly the way we want, directly writing it is ok.
+	my $size = keys %{$OSref};
+	if($size != 0){
+		my $handle0=$OSref;
+
+		foreach my $type(sort keys %{$handle0}){
+			my $handle1=$handle0->{$type};
+			foreach my $subtype(sort keys %{$handle1}){
+			   	my $handle2=$handle1->{$subtype};
+			   	foreach my $name(sort keys %{$handle2}){
+			   		my $handle3=$handle2->{"$name"}->{interaction};
+			   	     	#foreach my $param(@{$handle3->{interaction}}){
+			   	     	for (my $I=0;$I<=$#{$handle3};$I++){
+						if(openSMOGkeepinteraction(${$handle3}[$I],$keepatoms)){
+							delete ${$handle3}[$I];
+							# if evals to 1, then delete
+						}
+						# this renumbers, or removes the interaction
+			   	     	}
+                           	 }
+			}
+		}	
+	}
+	openSMOGwriteXML($OSref,$openSMOGxml);
+	return \%openSMOGatoms2restrain;
+}
+
+sub openSMOGkeepinteraction {
+	my ($tmphash,$keepatoms)=@_;
+        if(exists $keepatoms->{$tmphash->{"i"}} && exists $keepatoms->{$tmphash->{"j"}}){
+		$tmphash->{"i"}=$keepatoms->{$tmphash->{"i"}};
+		$tmphash->{"j"}=$keepatoms->{$tmphash->{"j"}};
+		return 0;
+	}elsif(exists $keepatoms->{$tmphash->{"i"}}){
+		$openSMOGatoms2restrain{$keepatoms->{$tmphash->{"i"}}}=1;
+	}elsif(exists $keepatoms->{$tmphash->{"j"}}){
+		$openSMOGatoms2restrain{$keepatoms->{$tmphash->{"j"}}}=1;
+	}
+	return 1;
+}
+
+sub newopenSMOGfunction{
+	my ($fh,$fN)=@_;
+	# $fh is the functions handle
+	# is the new function name to add
+	if ( exists $fTypes{"$fN"}){
+		smog_quit("Can not create new openSMOG function. $fN is a protected name.");
+	}
+	# the fType array is the gromacs function type. But, this is not used in openSMOG.  We still use the array to keep track of defined functions, and use it as a tag for determining that this is an openSMOG potential.  But we don't use the value in the output
+	$fTypes{"$fN"}="-2";
+
+	# set the number of required parameters
+	my $parmstring=$functions->{$fN}->{"openSMOGparameters"};
+	if($parmstring =~ m/^\s+\,|\,\s+\,|\,\s+$/){
+		smog_quit("Incorrectly formatted parameter list given for function $fN. Found \"$parmstring\"\nCheck .sif file.");
+	}
+	$parmstring =~ s/\s+//g;
+	my @parmarr=split(/\,/,$parmstring);
+	$fTypesArgNum{"$fN"}=$#parmarr+1;
+
+	# even though openSMOG doesn't use gromacs directives, various checks in the code use the directive name for checking validity of function definitions.
+	if($functions->{$fN}->{"openSMOGtype"} eq "contact"){
+		$functions->{$fN}->{"directive"}="pairs";
+	}
+
+	my $pot=$functions->{$fN}->{"openSMOGpotential"};
+	my $pind=0;
+	my %seenparm;
+	foreach my $param(@parmarr){
+
+                if($param =~ m/^[i-n]$/){
+                        smog_quit(".sif file defines function $fN with openSMOG parameter $param. openSMOG functions can not use i-n as parameters. These are reserved symbols for denoting atom indices.");
+                }
+
+		if(exists $seenparm{$param}){
+			smog_quit("Function $fN defines $param as a parameter more than once. See .sif file. Found $functions->{$fN}->{\"openSMOGparameters\"}");
+		}else{
+			$seenparm{$param}=1;
+		}
+		if($param =~ m/^weight$/){
+			#keep track of which parameter is the weight, if any.
+			$openSMOGpothash->{$fN}->{weight}=$pind;
+		}
+		$pind++;
+		if($pot !~ m/$param/){
+			smog_quit("Function $fN defines $param as a parameter, but it does not appear in the definition of the potential. Found $functions->{$fN}->{\"openSMOGpotential\"}");
+		}
+	}
+
+	$openSMOGpothash->{$fN}->{expression}=$functions->{$fN}->{"openSMOGpotential"}  ;
+
+	foreach my $par(@parmarr){
+		push(@{$openSMOGpothash->{$fN}->{parameters}},"$par");
+	}
+
 }
 
 1;
