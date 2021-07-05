@@ -1356,7 +1356,7 @@ sub GenAnglesDihedrals
 	
 	## Go through list of connected residues ##
 	for($i = 0;$i<=$#$connect;$i++)
-	{ 
+	{
   		my $resABonds = $dihedralAdjList{$connect->[$i]};
 		my $resAAtoms = $residues{$connect->[$i]}->{"atoms"};
 		## Atoms to mapCounter renaming ##
@@ -1383,6 +1383,9 @@ sub GenAnglesDihedrals
 			if(exists $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}}){
 				$connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
 	  			$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
+				if(! defined $bondMapHashRev{"$leftAtom-$i"}){
+					smog_quit("Unable to connect residues 0 and 1.  It appears that the connecting atom in residue 0 is missing. Connection expects there to be a $leftAtom atom.");
+				}
 	  			$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
 	 			$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});		
 			}
@@ -1394,6 +1397,10 @@ sub GenAnglesDihedrals
 		if(exists $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}}){
 			$connHandle = $connections{$residues{$connect->[$i-1]}->{"residueType"}}->{$residues{$connect->[$i]}->{"residueType"}};
 			$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
+			if(! defined $bondMapHashRev{"$rightAtom-$i"}){
+				my $j=$i-1;
+				smog_quit("Unable to connect residues $j and $i.  It appears that the connecting atom in residue $i is missing. Connection expects there to be a $rightAtom atom.");
+			}
 	    		$rightAtom = $bondMapHashRev{"$rightAtom-$i"};
 			push(@AtomsInConnections,$leftAtom);
 			push(@AtomsInConnections,$rightAtom);
