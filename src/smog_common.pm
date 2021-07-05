@@ -211,7 +211,7 @@ sub checkdirectives
 
 	for my $keys(keys %supported_directives){
 		if($supported_directives{$keys} == 1 && !exists $DIRLIST{$keys}){
-			smog_quit("Directive \"$keys\" not found in input .top file.");
+			smog_quit("Directive \"$keys\" not found in input .top file.",0);
 		}
 		if($supported_directives{$keys} == 0 && exists $DIRLIST{$keys}){
 			smog_quit("Directive \"$keys\" not supported by script.");
