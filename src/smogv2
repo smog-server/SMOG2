@@ -34,7 +34,6 @@ use Getopt::Long;
 Getopt::Long::Configure("pass_through");
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
-use IPC::Open3;
 use smog_common;
 use openSMOG;
 ######################
@@ -1521,7 +1520,7 @@ sub contactParseNM1
 		$B *= $epsilon*$r0**$M;
 		
 		## normalized option used
-		if($paramArr->[3] =~ /^\?$/)
+		if($paramArr->[3] =~ /^\?$/ || $paramArr->[3] =~ m/energynorm/i)
 		{
 			$paramArr->[3]=$A;
 			$paramArr->[2]=$B;
@@ -1538,7 +1537,7 @@ sub contactParseNM1
         	$paramArr->[2]=evalsub($paramArr->[2],$r0);
 		$paramArr->[2] /= (2.0)**(1.0/6.0);   
 		## normalized option used
-		if($paramArr->[3] =~ /^\?$/)
+		if($paramArr->[3] =~ /^\?$/ || $paramArr->[3] =~ m/energynorm/i )
 		{
 			$paramArr->[3]=$epsilon;
 		}
@@ -1586,7 +1585,7 @@ sub contactParseNM2
 	$B *= $epsilon; 
 	
 	## standard normalization used
-	if($paramArr->[3] =~ /^\?$/)
+	if($paramArr->[3] =~ /^\?$/ || $paramArr->[3] =~ m/energynorm/i)
 	{
 		$paramArr->[3]=$A;
 		$paramArr->[2]=$B;
@@ -1615,7 +1614,7 @@ sub contactParseGaussian
 	
 	
 	## Epsilon_c ##
-	if($paramArr->[0] =~ /^\?$/){
+	if($paramArr->[0] =~ /^\?$/ || $paramArr->[3] =~ m/energynorm/i ){
 		$paramArr->[0]=$epsilon;
 	}else{
 		$paramArr->[0]=$epsilon*($paramArr->[0]);
@@ -2013,14 +2012,6 @@ sub convertPDBToGroNdx
 	       print NDX "\n\n";
 	}
 	close(NDX);
-}
-
-sub evalsub
-{
-	my ($expression,$value)=@_;
-	$expression =~ s/\?/$value/g;
-	$expression = eval($expression);
-	return $expression;
 }
 
 sub validateXML

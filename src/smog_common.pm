@@ -15,7 +15,7 @@ our @convarray;
 our %reverthash;
 our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim);
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub);
 our %supported_directives;
 
 #####################
@@ -433,5 +433,15 @@ sub trim {
 	$string =~ s/^\s+|\s+$//g;
 	return $string;
 }
+
+sub evalsub
+{
+	my ($expression,$value)=@_;
+	$expression =~ s/\?/$value/g;
+	$expression = eval($expression);
+	return $expression;
+}
+
+
 
 1;

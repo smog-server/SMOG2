@@ -35,6 +35,7 @@ use warnings FATAL => 'all';
 use XML::Simple qw(:strict);
 use Exporter;
 use Storable qw(dclone);
+use Scalar::Util qw(looks_like_number);
 use smog_common;
 
 ## DECLARATION TO SHARE DATA STRUCTURES ##
@@ -363,18 +364,18 @@ sub checkContactFunctionDef
 	if($funcname eq "contact_1" || $funcname eq "contact_2"){
                 if($vars[3] =~ /^\?$/)
                 {
-                        if(!$normalize){smog_quit("contact type $funcname can not have normalization turned off with epsilon=?")}
-                }
-                ## additional rescaling used
-                elsif($vars[3] =~ /\?/){
-                        smog_quit("Epsilon value used in $funcname interaction can not be an expression that includes ?.\n");
+			smog_quit("When using $funcname, using \"?\" notation to turn on normalization of weights is not recommended. Preferred approach is to use \"energyNorm\" instead. Support for \"?\" will likely be removed in a future releases of SMOG 2.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. Third value is epsilon.",0);
+                        if(!$normalize){smog_quit("contact type $funcname can not have normalization turned off with epsilon=?\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. Fourth arg is epsilon.")}
+                }elsif($vars[3] =~ /^energynorm$/i){
+                        if(!$normalize){smog_quit("contact type $funcname can not have normalization turned off with epsilon=energyNorm.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. Fourth arg is epsilon.")}
+                }elsif(looks_like_number($vars[3])){
+                        if($normalize){smog_quit("Can\'t normalize a $funcname contact since the weight (fourth arg) is not defined by a ? mark.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. Third value is epsilon.")}
                 }else{
-                        if($normalize){smog_quit("Can\'t normalize a $funcname contact since the weight is not defined by a ? mark.")}
-                }
+			smog_quit("Unable to interpret a function definition.  Epsilon setting (fourth arg) can only be \"?\", \"energyNorm\", or a numeric value.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString."); 
+		}
 	}
 
 	if($funcname eq "contact_1"){
-
 
 		if($interactions->{"gmx-combination-rule"} !~ m/^[12]$/){
 	        	smog_quit("Only gmx-combination-rule equal to 1 or 2 is supported with contact_1");
@@ -383,33 +384,49 @@ sub checkContactFunctionDef
 		my $N=$vars[1];
 		my $M=$vars[0];
         	if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
-        	if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller. Problematic declaration (in .nb file): $funcString")}
+        	if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller. Problematic declaration (in .nb file): $funcString")};
+		unless(looks_like_number(evalsub($vars[2],1))){
+			smog_quit("Unable to interpret a function definition.  Sigma setting (third value) must be a number, or an expression that includes \"?\".\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString.");
+		}
+
 	}elsif($funcname eq "contact_2"){
 		if($interactions->{"gmx-combination-rule"}==2){
 			# the reason for this error is that contact_1 and contact_2 have identical behavior with combrule 2
 			smog_quit("contact_2 not supported with gmx-combination-rule=2. Problematic declaration (in .nb file): $funcString");
 		}
-		if($vars[3] !~ /^\?$/ && $vars[3] =~ /\?/)
-	 	{
-			smog_quit("Epsilon value used in contact_2 interaction can not be an expression that includes ?. Problematic declaration (in .nb file): $funcString");
+		for(my $I=0;$I<=2;$I++){
+			unless(looks_like_number(evalsub($vars[$I],1))){
+				smog_quit("Unable to interpret a function definition. First three args must be numbers, or mathematical expressions involving \"?\".\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString.");
+			}
 		}
 
 	}elsif($funcname eq "contact_gaussian"){
 		if($vars[0] =~ /^\?$/){
+			smog_quit("When using $funcname, using \"?\" notation to turn on normalization of weights is not recommended. Preferred approach is to use \"energyNorm\" instead. Support for \"?\" will likely be removed in a future releases of SMOG 2.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. Third value is epsilon.",0);
 			if(!$normalize){smog_quit("Gaussian contact type can not have normalization turned off with epsilon_C=?  Problematic declaration (in .nb file): $funcString")}
 		}
-		elsif($vars[0] =~ /\?/)
-		{
-			smog_quit("Epsilon_C used in Gaussian interaction can not be an expression that includes ?. Problematic declaration (in .nb file): $funcString");
-		}else{
-			if($normalize){smog_quit("Can\'t normalize a Gaussian contact since the weight is not defined by a ? mark. Problematic declaration (in .nb file): $funcString")}
+		elsif($vars[0] =~ /^energynorm$/i){
+			if(!$normalize){smog_quit("Gaussian contact type can not have normalization turned off with epsilon_C=?  Problematic declaration (in .nb file): $funcString")}
+                }elsif(looks_like_number($vars[0])){
+                        if($normalize){smog_quit("Can\'t normalize a $funcname contact since the weight (first arg) is not defined by a ? or energynorm.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. Third value is epsilon.")}
+                }else{
+			smog_quit("Unable to interpret a function definition.  Epsilon setting (fourth arg) can only be \"?\", \"energyNorm\", or a numeric value.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString."); 
 		}
+
 		## Epsilon_nc ##
 		if($vars[1] =~ /\?/){smog_quit("value of (r_NC)^12 (second argument) in Gaussian can not be a ? mark. Problematic declaration (in .nb file): $funcString");}
+		for(my $I=0;$I<=4;$I++){
+                	unless(looks_like_number(evalsub($vars[$I],1))){
+                        	smog_quit("Unable to interpret a function definition. Arguments args must be numbers, or mathematical expressions involving \"?\".\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString.");
+                	}
+                }
+
 	}elsif($funcname eq "bond_type6"){
 		if($vars[1] =~ /\?/){smog_quit("bond_type6 can't have ? in the stiffness. Problematic declaration (in .nb file): $funcString");}
-    	}elsif($funcname eq "contact_2"){
-		# nothing to check.
+                unless(looks_like_number($vars[1])){
+                       	smog_quit("bond_type6 must have a numeric value for the stiffness.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString.");
+                }
+                
 	}else{
 		# if nothing matched, then we must be using an openSMOG potentials.  Let's check a few things.
 		# ? can't be used for the weight if normalization is turned off.
@@ -1106,7 +1123,7 @@ sub parseSif {
        		smog_note("dihedralNormalization not given.  Will count dihedrals, by default.");
          	$countDihedrals=1;
         }
-# depricated options.  We have left them in the schemas so that the error that would be thrown when using an old template will not be cryptic.  However, the entries are optional 
+# deprecated options.  We have left them in the schemas so that the error that would be thrown when using an old template will not be cryptic.  However, the entries are optional 
 	if( $interactionThreshold->{"distance"}->{"tooShortDistance"} )
 	{
 		smog_quit("tooShortDistance found in .sif file. The use of tooShortDistance has been replaced with bondsThreshold. Please remove tooShortDistance from your .sif");

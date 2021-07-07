@@ -7,7 +7,7 @@
     <nbType>*</nbType>
   </nonbond>
   <!-- CONTACTS -->
-  <contact func="contact_gaussian(?,5.96046e-9,?/sqrt(34.6574),?)" contactGroup="c">
+  <contact func="contact_gaussian(energynorm,5.96046e-9,?/sqrt(34.6574),?)" contactGroup="c">
     <pairType>*</pairType>
     <pairType>*</pairType>
   </contact>
