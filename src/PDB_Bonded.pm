@@ -134,7 +134,7 @@ sub checkPDB
 			$endfound=1;
 			next;
 		}
-		if($lng eq "" || $record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/){
+		if($lng eq "" || $record =~ m/^comment/i){
 			next;
 		# make sure BOND appears after END
 		}
@@ -175,7 +175,7 @@ sub checkPDB
 		chomp($lng);
 		$lng =~ s/\s+//g;	
 		$lng =~ s/\t+//g;	
-		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $record =~ m/^LARGE/ || $lng eq ""){
+		if($record =~ m/^comment/i || $record =~ m/^LARGE/ || $lng eq ""){
 			next;
 		# make sure BOND appears after END
 		}elsif($record !~ m/^BOND/ && $endfound ==1){
@@ -439,7 +439,7 @@ sub parsePDBATOMS
 			$endfound=1;
 			next;
 		}
-		if($lng eq "" || $record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $record =~ m/^LARGE/){
+		if($lng eq "" || $record =~ m/^comment/i || $record =~ m/^LARGE/){
 			next;
 		# make sure BOND appears after END
 		}
@@ -462,7 +462,7 @@ sub parsePDBATOMS
 		chomp($lng);
 		$lng =~ s/\s+//g;	
 		$lng =~ s/\t+//g;	
-		if($record =~ m/^[Cc][Oo][Mm][Mm][Ee][Nn][Tt]/ || $lng eq "" || $record =~ m/^LARGE/ ){
+		if($record =~ m/^comment/i || $lng eq "" || $record =~ m/^LARGE/ ){
 			next;
 		# make sure BOND appears after END
 		}

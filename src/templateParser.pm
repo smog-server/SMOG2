@@ -415,7 +415,7 @@ sub checkContactFunctionDef
 
 		## Epsilon_nc ##
 		if($vars[1] =~ /\?/){smog_quit("value of (r_NC)^12 (second argument) in Gaussian can not be a ? mark. Problematic declaration (in .nb file): $funcString");}
-		for(my $I=0;$I<=4;$I++){
+		for(my $I=1;$I<4;$I++){
                 	unless(looks_like_number(evalsub($vars[$I],1))){
                         	smog_quit("Unable to interpret a function definition. Arguments args must be numbers, or mathematical expressions involving \"?\".\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString.");
                 	}

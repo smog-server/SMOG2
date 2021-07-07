@@ -349,14 +349,14 @@ sub adjustInputFile{
 							print "Would you like to insert a TER line? [yes/no/all]\n";
 							my $response=<STDIN>;
 							chomp($response);
-							until($response =~ m/^[Yy]$/ || $response =~ m/^[Nn]$/ || $response =~ m/^[Yy][Ee][Ss]$/ || $response =~ m/^[Nn][Oo]$/ || $response =~ m/^[Aa][Ll][Ll]$/){
+							until($response =~ m/^y$/i || $response =~ m/^n$/i || $response =~ m/^yes$/i || $response =~ m/^no$/i || $response =~ m/^all$/i){
 								print "Invalid response.  Yes, No and All are supported\n";
 								$response=<STDIN>;
                                                         	chomp($response);
 							}
-							if($response =~ m/^[Yy][Ee][Ss]$/ || $response =~ m/^[Yy]$/ ||  $response =~ m/^[Aa][Ll][Ll]$/){
+							if($response =~ m/^yes$/i || $response =~ m/^y$/i ||  $response =~ m/^all$/i){
                                                         	print NEWPDB "TER\n";
-								if($response =~ m/^[Aa][Ll][Ll]$/){
+								if($response =~ m/^all$/i){
 									$insertTERall=0;
 								}
 							}
@@ -519,7 +519,7 @@ sub readexactmap
 		my ($A,$B)=checkcomment($content[$cindex]);
 		if($A eq ""){next;}  # skip the line if it is only a comment
 		my @entries = split(/\s+/,$A);
-		if($entries[0] =~ /^[Ii][Gg][Nn][Oo][Rr][Ee][Rr][Ee][Ss]$/ || $entries[0] =~ /^[Rr][Ee][Nn][Aa][Mm][Ee]$/ || $entries[0] =~ /^[Rr][Ee][Ss][Ii][Dd][Uu][Ee]$/ ) {
+		if($entries[0] =~ m/^ignoreres$/i || $entries[0] =~ m/^rename$/i || $entries[0] =~ /^residue$/i ) {
 			$cindex++;
 		}else{
 			smog_quit("Exact map file only supports IgnoreRes, Residue and Rename line. Offending line:\n$content[$cindex]");
@@ -534,7 +534,7 @@ sub readexactmap
 		my ($A,$B)=checkcomment($line);
 		if($A eq ""){next;}  # skip the line if it is only a comment
 		my @entries = split(/\s+/,$A);
-		if($entries[0] =~ /^[Ii][Gg][Nn][Oo][Rr][Ee][Rr][Ee][Ss]$/) {
+		if($entries[0] =~ /^ignoreres$/i) {
 			if($#entries != 1 ){
 				my $count=$#entries+1;
 				smog_quit("When giving IgnoreRes in map file, must have 2 fields (IgnoreRes <RESNAME>). Offending line:\n$line");
@@ -555,7 +555,7 @@ sub readexactmap
 		my ($A,$B)=checkcomment($line);
 		if($A eq ""){next;}  # skip the line if it is only a comment
 		my @entries = split(/\s+/,$A);
-		if($entries[0] =~ /^[Rr][Ee][Nn][Aa][Mm][Ee]$/) {
+		if($entries[0] =~ /^rename$/i) {
 			if($#entries != 2){
 				my $count=$#entries+1;
 				smog_quit("When giving RENAME in map file, must have 3 fields (RENAME <ALTERNATE NAMES> <TARGET NAME>). Offending line:\n$line");
@@ -578,7 +578,7 @@ sub readexactmap
 		$A =~ s/\(/ \( /g;
 		$A =~ s/\)/ \) /g;
 		my @entries = split(/\s+/,$A);
-		if( $entries[0] !~ /^[Rr][Ee][Ss][Ii][Dd][Uu][Ee]$/) {
+		if( $entries[0] !~ /^residue$/i) {
 			next;
 		}
 		my @tmparr;

@@ -1614,7 +1614,7 @@ sub contactParseGaussian
 	
 	
 	## Epsilon_c ##
-	if($paramArr->[0] =~ /^\?$/ || $paramArr->[3] =~ m/energynorm/i ){
+	if($paramArr->[0] =~ /^\?$/ || $paramArr->[0] =~ m/energynorm/i ){
 		$paramArr->[0]=$epsilon;
 	}else{
 		$paramArr->[0]=$epsilon*($paramArr->[0]);

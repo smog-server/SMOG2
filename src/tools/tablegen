@@ -76,7 +76,7 @@ if(!defined $temperature){
 	$t_scale=$temperature/300;
 }
 
-if(! defined $unit or $unit =~ m/[kK][cC][aA][lL]/){
+if(! defined $unit or $unit =~ m/kcal/i){
 	$u_scale=33.20/138.935485;
 	$unit="kCal";
 }elsif($unit =~ m/[kK][jJ]/){
