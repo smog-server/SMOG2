@@ -95,6 +95,7 @@ sub parseExternalContacts
 ####################################################################
 sub checkPDB
 {
+	# load the PDB into memory and return a handle to the array.
 	print "Checking PDB formatting\n";	
 	my ($fileName,$CGenabled,$freecoor) = @_;
 	
@@ -102,11 +103,10 @@ sub checkPDB
 	my $counter = 0;
 	my @temp; my @union;
 	my @tempBond;
-	my @consecResidues;
 	my $x;my $y;my $z;
 	my $residue; my $atom;my $atomSerial;
 	my $atomsInRes; 
-	my $i; my $putIndex=0; 
+	my $i; 
 	my $headFlag=1;my $outLength;
 	$totalAtoms = 0;my $nbType;my $residueType; my $pairType;
 	my $atomCounter=0;
@@ -125,10 +125,17 @@ sub checkPDB
 	unless (open(PDBFILE, $fileName)) {
 		smog_quit ("Cannot read from '$fileName'.");
 	}
+
 	my $lastrecord="";
 	# first check and make sure there is an END and there are no ATOM lines afterwards
-	while(my $record = <PDBFILE>)
+	my @PDBDATA=();
+	while(<PDBFILE>)
 	{
+		push(@PDBDATA,$_);
+	}
+	close(PDBFILE);
+
+	foreach my $record(@PDBDATA){
 		my $lng = $record;
 		if($record =~m/^END/){
 			$endfound=1;
@@ -153,18 +160,14 @@ sub checkPDB
 			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$record\"\n");
 		}
 	}
-	close(PDBFILE);
 
         unless($endfound){smog_quit("PDB format error. END must appear at the end of the ATOM lines.")};
 
-	unless (open(PDBFILE, $fileName)) {
-		smog_quit ("Cannot read from '$fileName'.");
-	}
 	$endfound=0;
 	my $lastresindex="null";
 	 ## LOOP THROUGH EACH LINE ##
-	while(my $record = <PDBFILE>)
-	{
+	for (my $K=0;$K<=$#PDBDATA;$K++){
+		my $record=$PDBDATA[$K];
  		# when reading the file, check to see if the line is a BOND, then check if TER/END
 		# if neither, then read each residue and make sure they are only ATOM/HETATM
 		$lineNumber++;
@@ -215,14 +218,6 @@ sub checkPDB
 			my $idxB = $indexMap{"$chainb-$atomb"};
 			my $resA = $allAtoms{$idxA}->[5];
 			my $resB = $allAtoms{$idxB}->[5];
-			my $atomA = $allAtoms{$idxA}->[3];
-			my $atomB = $allAtoms{$idxB}->[3];
-			my $resAIdx = $allAtoms{$idxA}->[2];
-			my $resBIdx = $allAtoms{$idxB}->[2];
-			
-			my $sizeA = scalar(keys %{$residues{$resA}->{"atoms"}});
-			my $chaina1=$chaina+1;
-			my $chainb1=$chainb+1;
 			## Check if improper directive is present ##
 			$counter++;
 			next;
@@ -233,13 +228,11 @@ sub checkPDB
 		{
  			$lastresindex="null";
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
-			## CREATE INTERACTION ##
 			if(!defined $atomSerial){
 				smog_quit("TER or END line encountered prior to the first ATOM. This is probably a mistake in your PDB file.");
 			}
 			my $chainlength=$atomSerial-$lastchainstart;
 			$counter++;
-        		@consecResidues = ();
 			$lastchainstart=$atomSerial;
 			if($record =~ m/^END/){$endfound=1;}
 			next;
@@ -249,7 +242,6 @@ sub checkPDB
 		if($record =~ m/^ATOM/ || $record =~ m/^HETATM/)
 		{
 	        	$lineNumber--;
-			$outLength = length($record);
 		 	## OBTAIN RESIDUE NAME ##
 			$residue = trim(substr($record,17,4));
 			if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
@@ -265,7 +257,6 @@ sub checkPDB
 				smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
 			}
 			my $atomsmatch=0;
-		 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 			my $resname=$residue;
 	        	my $resindex = trim(substr($record,22,5));
 			if ($lastresindex ne "null"){
@@ -285,7 +276,8 @@ sub checkPDB
 			$residueSerial++;
 			for($i=0;$i<$atomsInRes;$i++)
 			{
-				$record = <PDBFILE>;
+				my $record = $PDBDATA[$K];
+				$K++;
 	 			$lineNumber++;
 				if($record =~ m/^ATOM|^HETATM/)
 				{
@@ -298,11 +290,10 @@ sub checkPDB
 	
 		        		if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 	            			$interiorPdbResidueIndex = trim(substr($record,22,5)); 
-				} 
+				}
 				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex or  $record !~ m/^ATOM|^HETATM/){
 					my $linetemp=$lineNumber-1;
 					my $missingatoms="";
-					$uniqueAtom{$atom}=1;
 				        if($CGenabled == 1){
 						foreach my $atomcheck(keys (%{$residueBackup{$resname}->{"atoms"}})){
 	                        			if(!exists $uniqueAtom{$atomcheck}){
@@ -318,7 +309,7 @@ sub checkPDB
 	                		}
 					smog_quit("It appears that a residue in the PDB file does not contain all of the atoms defined in the .bif file.\nOffending residue: $resname (ending at line $linetemp).  Missing atoms: $missingatoms");	
 					# these next lines only matter if errors are being reported as warnings
-		 			seek(PDBFILE, -length($record), 1); # place the same line in the handle
+		 			$K--;
 	        			$lineNumber--;
 					last;
 				}
@@ -329,7 +320,7 @@ sub checkPDB
 	
 				## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 				$atom = trim(substr($record, 12, 4));
-	
+
 				if(exists $uniqueAtom{$atom})
 				{
 					smog_quit("$atom appears twice in $residue at line $lineNumber\n");
@@ -344,7 +335,9 @@ sub checkPDB
 				}
 				
 				## CHECK IF ATOM EXISTS IN MODEL ##
-				if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
+				if(!exists $residues{$residue}->{"atoms"}->{$atom}){
+					smog_quit("PDB has $atom in residue $residue, but this is not defined in the .bif");
+				}
 				$atomsmatch++;
                                 if(defined $freecoor){
 					# Read the PDB coordinates as free-format.
@@ -365,10 +358,10 @@ sub checkPDB
 					$duplicateatoms{"$x$y$z"}=1;
 				}else{
 					smog_quit("Atom has identical coordinates as a previous atom. Error found at line:\n$record");
-				}				
-				$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
-				$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
-				$pairType = $residues{$residue}->{"atoms"}->{$atom}->{"pairType"};
+				}			
+				my $th=$residues{$residue}->{"atoms"}->{$atom};	
+				$nbType = $th->{"nbType"};
+				$pairType = $th->{"pairType"};
 				$residueType = $residues{$residue}->{"residueType"};
 				my $pdbIndex;
 				if($CGenabled==1){
@@ -383,6 +376,7 @@ sub checkPDB
 				# the atoms are now being stored in checkPDB, not parsePDB	
 				$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType,$pdbIndex];
 			}
+			$K--;
 			if($residues{$residue}->{"atomCount"} == -1){
 				$totalAtoms+=$atomsInRes;
 			}else{
@@ -566,11 +560,8 @@ sub parsePDBATOMS
 	
 	            		$interiorPdbResidueIndex = trim(substr($record,22,5));  
 		
-				## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 				$atom = trim(substr($record, 12, 4));
 	
-				## CHECK IF ATOM EXISTS IN MODEL ##
-				if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
 				$atomsmatch++;
                                 if(defined $freecoor){
 					# Read the PDB coordinates as free-format.
