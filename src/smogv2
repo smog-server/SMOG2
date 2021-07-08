@@ -1543,7 +1543,7 @@ sub contactParseNM1
 		}
 	}
 	if(defined $openSMOG){
-		unless(openSMOGfunctionExists($OSref,"contacts","contact_1-$M-$N")){
+		if(openSMOGfunctionExists($OSref,"contacts","contact_1-$M-$N") == 0){
 			my $potential = $openSMOGpothash->{contact_1}->{expression};
 			$potential =~ s/N/$N/g;
 			$potential =~ s/M/$M/g;
@@ -1630,7 +1630,7 @@ sub contactParseGaussian
 	if($paramArr->[3] =~ /^?$/){$paramArr->[3]=$r0;}
 
         if(defined $openSMOG){
-                unless(openSMOGfunctionExists($OSref,"contacts","contact_gaussian")){
+                if(openSMOGfunctionExists($OSref,"contacts","contact_gaussian") == 0){
                         my $potential = $openSMOGpothash->{contact_gaussian}->{expression};
                         my $parhandle=\@{$openSMOGpothash->{contact_gaussian}->{parameters}};
                         OShashAddFunction($OSref,"contacts","contact_gaussian","$potential",$parhandle);
@@ -1662,7 +1662,7 @@ sub contactParseBond6
 	$paramArr->[0] = evalsub($paramArr->[0],$r0);
 
         if(defined $openSMOG){
-                unless(openSMOGfunctionExists($OSref,"contacts","bond_type6")){
+                if(openSMOGfunctionExists($OSref,"contacts","bond_type6") == 0){
                         my $potential = $openSMOGpothash->{bond_type6}->{expression};
 
                         my $parhandle=\@{$openSMOGpothash->{bond_type6}->{parameters}};
@@ -1715,7 +1715,7 @@ sub contactParseopenSMOG
         unshift(@{$paramArr},"contacts");
         unshift(@{$paramArr},"openSMOG");
 
-        unless(openSMOGfunctionExists($OSref,"contacts","$fname")){
+        if(openSMOGfunctionExists($OSref,"contacts","$fname") == 0){
                 my $potential = $openSMOGpothash->{$fname}->{expression};
 
                 my $parhandle=\@{$openSMOGpothash->{$fname}->{parameters}};

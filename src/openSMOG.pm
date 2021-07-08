@@ -6,12 +6,10 @@ use XML::Simple qw(:strict);
 use smog_common;
 
 our @ISA = 'Exporter';
-our @EXPORT = qw(OShashAddFunction openSMOGfunctionExists addOShash readopenSMOGxml openSMOGwriteXML openSMOGextractXML newopenSMOGfunction);
+our @EXPORT = qw(OShashAddFunction openSMOGfunctionExists addOShash readopenSMOGxml openSMOGwriteXML openSMOGextractXML newopenSMOGfunction %fTypes %fTypesArgNum);
 our %fTypes;
-our $functions;
 our %fTypesArgNum;
 our $openSMOG;
-our $openSMOGpothash;
 our %openSMOGatoms2restrain;
 
 ########## openSMOG routines
@@ -248,9 +246,14 @@ sub openSMOGkeepinteraction {
 }
 
 sub newopenSMOGfunction{
-	my ($fh,$fN)=@_;
+	my ($openSMOGhandle,$fh,$fN)=@_;
 	# $fh is the functions handle
 	# is the new function name to add
+
+	if($fN =~ m/[\+\-\*\/]/){
+		smog_quit("openSMOG function names can not have +, -, * or /.  Problematic definition: $fN");
+	}
+
 	if ( exists $fTypes{"$fN"}){
 		smog_quit("Can not create new openSMOG function. $fN is a protected name.");
 	}
@@ -258,7 +261,7 @@ sub newopenSMOGfunction{
 	$fTypes{"$fN"}="-2";
 
 	# set the number of required parameters
-	my $parmstring=$functions->{$fN}->{"openSMOGparameters"};
+	my $parmstring=$fh->{$fN}->{"openSMOGparameters"};
 	if($parmstring =~ m/^\s+\,|\,\s+\,|\,\s+$/){
 		smog_quit("Incorrectly formatted parameter list given for function $fN. Found \"$parmstring\"\nCheck .sif file.");
 	}
@@ -267,11 +270,11 @@ sub newopenSMOGfunction{
 	$fTypesArgNum{"$fN"}=$#parmarr+1;
 
 	# even though openSMOG doesn't use gromacs directives, various checks in the code use the directive name for checking validity of function definitions.
-	if($functions->{$fN}->{"openSMOGtype"} eq "contact"){
-		$functions->{$fN}->{"directive"}="pairs";
+	if($fh->{$fN}->{"openSMOGtype"} eq "contact"){
+		$fh->{$fN}->{"directive"}="pairs";
 	}
 
-	my $pot=$functions->{$fN}->{"openSMOGpotential"};
+	my $pot=$fh->{$fN}->{"openSMOGpotential"};
 	my $pind=0;
 	my %seenparm;
 	foreach my $param(@parmarr){
@@ -281,24 +284,24 @@ sub newopenSMOGfunction{
                 }
 
 		if(exists $seenparm{$param}){
-			smog_quit("Function $fN defines $param as a parameter more than once. See .sif file. Found $functions->{$fN}->{\"openSMOGparameters\"}");
+			smog_quit("Function $fN defines $param as a parameter more than once. See .sif file. Found $fh->{$fN}->{\"openSMOGparameters\"}");
 		}else{
 			$seenparm{$param}=1;
 		}
 		if($param =~ m/^weight$/){
 			#keep track of which parameter is the weight, if any.
-			$openSMOGpothash->{$fN}->{weight}=$pind;
+			$openSMOGhandle->{$fN}->{weight}=$pind;
 		}
 		$pind++;
 		if($pot !~ m/$param/){
-			smog_quit("Function $fN defines $param as a parameter, but it does not appear in the definition of the potential. Found $functions->{$fN}->{\"openSMOGpotential\"}");
+			smog_quit("Function $fN defines $param as a parameter, but it does not appear in the definition of the potential. Found $fh->{$fN}->{\"openSMOGpotential\"}");
 		}
 	}
 
-	$openSMOGpothash->{$fN}->{expression}=$functions->{$fN}->{"openSMOGpotential"}  ;
+	$openSMOGhandle->{$fN}->{expression}=$fh->{$fN}->{"openSMOGpotential"}  ;
 
 	foreach my $par(@parmarr){
-		push(@{$openSMOGpothash->{$fN}->{parameters}},"$par");
+		push(@{$openSMOGhandle->{$fN}->{parameters}},"$par");
 	}
 
 }
