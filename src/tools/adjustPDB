@@ -395,9 +395,7 @@ sub adjustInputFile{
 				}	
 				$residue[$loopInd]->{"atomName"} = $atomName;
 				$residue[$loopInd]->{"atomIndex"} = $atomCountBaseN;
-				$residue[$loopInd]->{"x"} = substr($pArr[$k],30,8);   
-				$residue[$loopInd]->{"y"} = substr($pArr[$k],38,8);  
-				$residue[$loopInd]->{"z"} = substr($pArr[$k],46,8);  
+				$residue[$loopInd]->{"coords"} = substr($pArr[$k],30);   
 				$resIDorig = substr($pArr[$k],22,5);
 				$resIDorig =~ s/\s+//g;  
 				
@@ -751,13 +749,11 @@ sub legacymatching
 		if ($aName eq "OP3"){$aName="O3P"};
 		if (($resName eq "ILE" || $resName eq "ILET") &&  $aName eq "CD"){$aName="CD1"};
 		my $ind = $residue[$i]->{"atomIndex"};
-		my $x = $residue[$i]->{"x"};
-		my $y = $residue[$i]->{"y"};
-		my $z = $residue[$i]->{"z"};
+		my $x = $residue[$i]->{"coords"};
 		if(defined $removeH && $aName =~ m/^H/){
 			$removestring .= "$resName$resInd-$aName ";
 		}else{
-			$printthis.=sprintf("ATOM  %5d %4s %-4s%s%4d    %8.3f%8.3f%8.3f\n",$ind,$aName,$resName,$chainName,$resInd,$x,$y,$z);
+			$printthis.=sprintf("ATOM  %5d %4s %-4s%s%4d    %s\n",$ind,$aName,$resName,$chainName,$resInd,$x);
 		}
 	}
 	return($printthis,$removestring);
@@ -829,9 +825,7 @@ sub exactmatching
 	for(my $j=0; $j<=$loopInd; $j++){
 		my $i=$order[$j];
 		my $ind = $residue[$i]->{"atomIndex"};
-		my $x = $residue[$i]->{"x"};
-		my $y = $residue[$i]->{"y"};
-		my $z = $residue[$i]->{"z"};
+		my $x = $residue[$i]->{"coords"};
 		my $aName = $tmparr[$i];
 		
 		if(exists $altname{"$nres-$aName"} && !exists $ignorename{$resName}){
@@ -840,7 +834,7 @@ sub exactmatching
 		if(defined $removeH && $aName =~ m/^H/){
 			$removestring .= "$resName$resInd-$aName ";
 		}else{
-		    	$printthis.=sprintf("ATOM  %5s %4s %-4s%s%4s    %8.3f%8.3f%8.3f\n",$ind,$aName,$nres,$chainName,$resInd,$x,$y,$z);
+		    	$printthis.=sprintf("ATOM  %5s %4s %-4s%s%4s    %s\n",$ind,$aName,$nres,$chainName,$resInd,$x);
 		}
 	}
 	return($printthis,$removestring,$renamedstring);
