@@ -381,9 +381,14 @@ sub checkContactFunctionDef
 		if($interactions->{"gmx-combination-rule"} !~ m/^[12]$/){
 	        	smog_quit("Only gmx-combination-rule equal to 1 or 2 is supported with contact_1");
 		}
-
+		
 		my $N=$vars[1];
 		my $M=$vars[0];
+		if($interactions->{"gmx-combination-rule"} == 2){
+			if($N != 12 || $M != 6){
+				smog_quit("When gmx-combination-rule = 2, contact_1 may only be used to define a 6-12 potential.  Found $M-$N defined.");
+			}
+		}
         	if($N =~ /^\?$/ or $M =~ /^\?$/ or $N  !~ /^\d+$/ or $M  !~ /^\d+$/){smog_quit ("Must provide integers for exponents of function contact_1");}
         	if($M>=$N){smog_quit ("When using contact_1, the first exponent provided should be smaller. Problematic declaration (in .nb file): $funcString")};
 		unless(looks_like_number(evalsub($vars[2],1))){
