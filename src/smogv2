@@ -49,6 +49,7 @@ my $inputFolder=""; my $bifForSCM;
 my $userProvidedMap=0;
 my $topFile = "";
 my $groFile = "";
+my $g96File = "";
 my $groFile4SCM = "";
 my $topFile4SCM = "";
 my $ContactFile;
@@ -120,7 +121,7 @@ print "Parsing templates files...\n";
 parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
 if($CGenabled == 0 || ($CGenabled == 1 && $userProvidedMap == 0)) {
 	# either no CG, or CG and need to generate a map
-	printBondedTopOutput($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap);
+	printBondedTopOutput($inputPDB,$groFile,$g96File,$groFile4SCM,$ndxFile,$userProvidedMap);
 } 
 
 appendDefaults();
@@ -144,7 +145,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	print "\nParsing templates for coarse graining... ";
 	$inputFolder = $coarseFolder;
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
-	printBondedTopOutput($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap);
+	printBondedTopOutput($inputPDB,$groFile,$g96File,$groFile4SCM,$ndxFile,$userProvidedMap);
 	appendDefaults();
 }
 
@@ -152,7 +153,17 @@ appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
 
 printTop($topFile);
 my $openSMOGwritten=openSMOGwriteXML($OSref,$openSMOGxml);
-print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n$openSMOGwritten\t$groFile\n\t$ndxFile\n";
+my $cfile;
+if($groFile ne ""){
+	$cfile=$groFile;
+}elsif($g96File ne ""){
+	$cfile=$g96File;
+}else{
+	print "Internal error: Unable to write an output coordinate file.";
+	exit;
+}
+
+print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n$openSMOGwritten\t$cfile\n\t$ndxFile\n";
 	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
 	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
 	printCitation();
@@ -234,6 +245,7 @@ sub parse_args {
 		't=s' => \$inputFolder, 
 		'i=s' => \$inputPDB, 
 		'g=s' => \$groFile,
+		'g96=s' => \$g96File,
 		'c=s' => \$ContactFile, 
 		'SCMorig' => \$saveSCMorig, 
 		's=s' => \$shadowFile, 
@@ -402,7 +414,13 @@ sub parse_args {
 	
 	## Ensure we only write out files with gromacs-compatible suffices
 	if($topFile eq ""){$topFile=$DNAME};
-	if($groFile eq ""){$groFile=$DNAME};
+	if($groFile ne "" && $g96File ne ""){
+		smog_quit("can not use -g and -g96 flags together.");
+	}
+	if($groFile eq "" && $g96File eq ""){
+		# if no gro or g96 name is given, default to gro
+		$groFile=$DNAME
+	}
 	if($openSMOGxml eq ""){$openSMOGxml=$DNAME};
 	$groFile4SCM=$groFile . "4SCM.gro";
 	$topFile4SCM=$topFile . "4SCM.top";
@@ -410,7 +428,16 @@ sub parse_args {
 	if($ndxFile eq ""){$ndxFile=$DNAME};
 	
 	$topFile=checksuffix($topFile,".top");
-	$groFile=checksuffix($groFile,".gro");
+
+	if($groFile ne ""){
+		$groFile=checksuffix($groFile,".gro");
+	}elsif($g96File ne ""){
+		$g96File=checksuffix($g96File,".g96");
+	}else{
+		print "Internal error handing gro name\n";
+		exit;
+	}
+
 	$shadowFile=checksuffix($shadowFile,".contacts");
 	$ndxFile=checksuffix($ndxFile,".ndx");
 	$openSMOGxml=checksuffix($openSMOGxml,".xml");
@@ -419,7 +446,7 @@ sub parse_args {
 	## check if files exist
 	# things we don't want to overwrite
 	if($backup eq "yes"){
-		foreach my $filen($topFile, $groFile, $groFile4SCM, $shadowFile, $ndxFile,$openSMOGxml){
+		foreach my $filen($topFile, $g96File, $groFile, $groFile4SCM, $shadowFile, $ndxFile,$openSMOGxml){
 			checkalreadyexists($filen);
 		}
 	}
@@ -1897,7 +1924,7 @@ sub readAtoms
 # Store chain info to ndx file
 sub convertPDBToGroNdx
 {
-	my ($inputPDB,$outputGRO,$outputGRO4SCM,$outputNDX,$userProvidedMap,$freecoor) = @_;
+	my ($inputPDB,$outputGRO,$outputg96,$outputGRO4SCM,$outputNDX,$userProvidedMap,$freecoor) = @_;
 	my $counter = 0 ;	
 	my $line = "";
 	my $resName="";
@@ -1913,6 +1940,18 @@ sub convertPDBToGroNdx
 	my $boundflag=0;
 	my $lastTER=0;
 	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
+	my $grofmt="%5d%-5s%5s%5d%8.3f%8.3f%8.3f\n";
+	my $groSCMfmt="%5d%-5s%5s%5d%9.4f%9.4f%9.4f\n";
+	my $g96fmt="%5d %-5s %-5s %6d%15.9f%15.9f%15.9f\n";
+	my $usefmt;
+	my $atommod;
+	if($outputg96 ne ""){
+		$usefmt=$g96fmt;
+		$atommod=1000000;
+	}else{
+		$usefmt=$grofmt;
+		$atommod=100000;
+	}
  	open(PDB,"$inputPDB") or smog_quit("can not open $inputPDB"); ## INPUT PDB
 	my $atominfo="";
 	my $atominfo4SCM="";
@@ -1940,6 +1979,15 @@ sub convertPDBToGroNdx
                         $x=$coor[0];
                         $y=$coor[1];
                         $z=$coor[2];
+			if($outputGRO ne ""){
+				# only check sizes of coords if using a gro and freecoor
+				foreach my $n($x,$y,$z){
+					my @A=split(/\./,$n);
+					if(length($A[0])>4){
+						smog_quit("Coordinates are too large to write a .gro file. Gro format is fixed at f8.3.  Found coordinates:\n\t$line");
+					};
+				}
+			}
                 }else{
                         $x = trim(substr($line, 30, 8));
                         $y = trim(substr($line, 38, 8));
@@ -1981,10 +2029,11 @@ sub convertPDBToGroNdx
 
   		## Save atom index to chain ##
   		push(@{$chainHash{$chain}},$atomNum);
-		if($atomNum >= 100000){$atomNum = $atomNum%100000;}
+		if($atomNum >= $atommod){$atomNum = $atomNum%$atommod;}
 	        if($resCounter >= 100000){$resCounter = $resCounter%100000;}
-		$atominfo .= sprintf("%5d%-5s%5s%5d%8.3f%8.3f%8.3f\n",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
-		$atominfo4SCM .= sprintf("%5d%-5s%5s%5d%9.4f%9.4f%9.4f\n",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
+		
+		$atominfo     .= sprintf("$usefmt",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
+		$atominfo4SCM .= sprintf("$groSCMfmt",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
 		$lastTER=0;
 		
 	 }
@@ -1997,20 +2046,31 @@ sub convertPDBToGroNdx
 
  ## ADJUST GRO FILE ##
 	close(PDB);
-	open(GRO,">$outputGRO") or smog_quit("can not open $outputGRO for writing");
-	print GRO "Gro file for a structure based model, generated with SMOG Version $VERSION\n";
-	print GRO $counter,"\n";
+	if($outputGRO ne ""){
+		open(GRO,">$outputGRO") or smog_quit("can not open $outputGRO for writing");
+		print GRO "Gro file for a structure based model, generated with SMOG Version $VERSION\n";
+		print GRO $counter,"\n";
+		print GRO "$atominfo";
+		print GRO "$xrange $yrange $zrange\n";
+		close(GRO);
+	}
 
-	print GRO "$atominfo";
-	print GRO "$xrange $yrange $zrange\n";
-	close(GRO);
+	if($outputg96 ne ""){
+		open(G96,">$outputg96") or smog_quit("can not open $outputg96 for writing");
+		print G96 "TITLE\n";
+		print G96 "g96 file for a structure based model, generated with SMOG Version $VERSION\n";
+		print G96 "END\nPOSITION\n";
+		print G96 "$atominfo";
+		print G96 "END\nBOX\n";
+		printf G96 ("%15.9f%15.9f%15.9f\n",$xrange, $yrange, $zrange);
+		print G96 "END\n"; 
+	}
 
 	if($userProvidedMap==0){
 	# we are generating a map, so save full PDB-precision gro
 		open(GRO,">$outputGRO4SCM") or smog_quit("can not open $outputGRO4SCM for writing");
 		print GRO "Temp Gro file with PDB precision for SCM calculations.\n";
 		print GRO $counter,"\n";
-
 		print GRO "$atominfo4SCM";
 		print GRO "$xrange $yrange $zrange\n";
 		close(GRO);
@@ -2177,6 +2237,7 @@ usage: smog2 .. options ..
      I/O flags  
        -i [molecule.pdb]       : input PDB to generate Hamiltonian
        -g [smog.gro]           : output .gro file name
+       -g96 [smog.g96]         : output .g96 file name
        -o [smog.top]           : output .top file name
        -s [smog.contacts]      : output .contacts file name
        -n [smog.ndx]           : output .ndx file name
@@ -2353,7 +2414,7 @@ sub parseTemplatesAndPDB
 
 sub printBondedTopOutput {
 
-	my ($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap) = @_;
+	my ($inputPDB,$groFile,$g96File,$groFile4SCM,$ndxFile,$userProvidedMap) = @_;
         if($countDihedrals){
 		print "Counting dihedrals\n";
 		getSetDiheCounts(\%DihedralData,\%bondPDL);
@@ -2386,7 +2447,7 @@ sub printBondedTopOutput {
 	printOrderedDihedrals(\%DihedralData,\%bondPDL,\%allAtoms);
 
 	## CREATE GRO FILE ##
-	convertPDBToGroNdx($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap,$freecoor);
+	convertPDBToGroNdx($inputPDB,$groFile,$g96File,$groFile4SCM,$ndxFile,$userProvidedMap,$freecoor);
 	## print intermediate top for SCM.jar to read ##
 }
 
