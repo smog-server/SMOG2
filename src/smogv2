@@ -1945,12 +1945,18 @@ sub convertPDBToGroNdx
 	my $g96fmt="%5d %-5s %-5s %6d%15.9f%15.9f%15.9f\n";
 	my $usefmt;
 	my $atommod;
+	my $maxchar;
+	my $filetype;
 	if($outputg96 ne ""){
 		$usefmt=$g96fmt;
 		$atommod=1000000;
+		$maxchar=5;
+		$filetype="G96";
 	}else{
 		$usefmt=$grofmt;
 		$atommod=100000;
+		$maxchar=4;
+		$filetype="Gro";
 	}
  	open(PDB,"$inputPDB") or smog_quit("can not open $inputPDB"); ## INPUT PDB
 	my $atominfo="";
@@ -1979,14 +1985,12 @@ sub convertPDBToGroNdx
                         $x=$coor[0];
                         $y=$coor[1];
                         $z=$coor[2];
-			if($outputGRO ne ""){
-				# only check sizes of coords if using a gro and freecoor
-				foreach my $n($x,$y,$z){
-					my @A=split(/\./,$n);
-					if(length($A[0])>4){
-						smog_quit("Coordinates are too large to write a .gro file. Gro format is fixed at f8.3.  Found coordinates:\n\t$line");
-					};
-				}
+			# only check sizes of coords if using a gro and freecoor
+			foreach my $n($x,$y,$z){
+				my @A=split(/\./,$n);
+				if(length($A[0])>$maxchar){
+					smog_quit("Coordinates are too large to write a $filetype file. Found coordinates:\n\t$line");
+				};
 			}
                 }else{
                         $x = trim(substr($line, 30, 8));
