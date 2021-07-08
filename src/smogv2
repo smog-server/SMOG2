@@ -2168,8 +2168,7 @@ usage: smog2 .. options ..
        -c <file name>          : input contact map file
        -SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  useful for debugging
        -dname [smog]           : default name to use for all output files
-       -openSMOG               : try to make files compatible with openMM  
-       -openSMOGxml [smog.xml] : if -openSMOG is used, write any custom potentials to this file
+       -openSMOGxml [smog.xml] : file name for openSMOG xml file (requires use of -openSMOG)
        -backup [yes]           : back up any pre-existing output files
 
      Force Field Designation
@@ -2188,9 +2187,9 @@ usage: smog2 .. options ..
        -deleteshortcontact         : if a contact length is too short, don't include it in the model
 
      Misc. Options
+       -openSMOG                   : make files compatible with openMM  
        -ignH                       : ignore any atoms with name starting with 'H' in the internal contact algorithm
        -gen_map <out map file>     : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
-
        -warn [0]                   : convert the first N fatal errors to warnings  
                                        Convert all if N=-1 (Caution: Consult manual before using this option)
        -help                       : show options 
