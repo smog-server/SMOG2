@@ -730,7 +730,7 @@ sub printOrderedBonds
 
 	## Cache Bonds ##
 	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache,$indexhandle,$allatoms);
-	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache,$indexhandle);
+	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache,$indexhandle,$allatoms);
 	## Sort bonds by i then j ## 
 	@bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
 
@@ -754,10 +754,10 @@ sub calculateBonds1
 #call connCalculateBondsHelper() for each chain in PDB
 sub calculateBonds2
 {
-	my($bondHandle,$whichPDL,$bondCache,$indexhandle) = @_;
+	my($bondHandle,$whichPDL,$bondCache,$indexhandle,$allatoms) = @_;
 	foreach my $chain(keys %{$bondHandle})
 	{
-		calculateBondsHelper2($bondHandle->{$chain},$whichPDL->{$chain},$bondCache,$indexhandle);
+		calculateBondsHelper2($bondHandle->{$chain},$whichPDL->{$chain},$bondCache,$indexhandle,$allatoms);
 	
 	}
 }
@@ -791,7 +791,7 @@ sub calculateBondsHelper1
 
 sub calculateBondsHelper2
 {
-	my($bondInfo,$inputPDL,$bondCache,$indexhandle) = @_;
+	my($bondInfo,$inputPDL,$bondCache,$indexhandle,$allatoms) = @_;
 	my $size = $bondInfo->dim(1);
 	for(my $i=0;$i<$size;$i++)
 	{
@@ -802,7 +802,7 @@ sub calculateBondsHelper2
 		my $output = sclr(sqrt(inner($outer,$outer))*$angToNano);
 		$atomOne = sclr(slice($inputPDL,"3:3,$atomOne,:"));
 		$atomTwo = sclr(slice($inputPDL,"3:3,$atomTwo,:"));
-		my $val=bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output,$indexhandle,0);
+		my $val=bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output,$indexhandle,$allatoms);
 		if(!$val){next;}
 		push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => $val};
 	}
