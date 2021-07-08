@@ -136,7 +136,7 @@ public class ShadowMain {
 		parser.addOption("--showProgress %v #Prints incremental progress if you are running a big system and get worried nothing is happening.",showProgress);
 		parser.addOption("--volume %v #Prints the atomic volume.",volume);
 		parser.addOption("--correctedShadow %v #uses asin instead of atan.",runCorrectedShadow);
-		parser.addOption("--freeformcoords %v #coordinates in gro file are assumed space delimited floats",freeformcoords);
+		parser.addOption("--freecoor,-freecoor %v #coordinates in gro file are assumed space delimited floats",freeformcoords);
 		
 		//some default values;
 		ShadowSettings.SHADOW_RADIUS = 1.0;
