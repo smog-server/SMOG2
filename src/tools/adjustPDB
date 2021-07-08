@@ -277,7 +277,7 @@ sub adjustInputFile{
 	## Loops through all PDB rows ##
 	$k = 0;
 	while($k<$rows){
-		my $line=$pArr[$k];	
+		my $line=$pArr[$k];
 		trim(chomp($pArr[$k]));
 		
 		## If end of file: ##

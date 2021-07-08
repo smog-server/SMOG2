@@ -429,7 +429,7 @@ sub whatAmI {
 #removes white space from the beginning and from the end of input string 
 #essentially String::Util trim()
 sub trim {
-	my $string = $_[0]; 
+	my $string = $_[0];
 	$string =~ s/^\s+|\s+$//g;
 	return $string;
 }

@@ -96,7 +96,7 @@ sub parseExternalContacts
 sub checkPDB
 {
 	print "Checking PDB formatting\n";	
-	my ($fileName,$CGenabled) = @_;
+	my ($fileName,$CGenabled,$freecoor) = @_;
 	
 	## INTERNAL VARIABLES ##
 	my $counter = 0;
@@ -346,9 +346,18 @@ sub checkPDB
 				## CHECK IF ATOM EXISTS IN MODEL ##
 				if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
 				$atomsmatch++;
-				$x = trim(substr($record, 30, 8));
-				$y = trim(substr($record, 38, 8));
-				$z = trim(substr($record, 46, 8));
+                                if(defined $freecoor){
+					# Read the PDB coordinates as free-format.
+					my $string=trim(substr($record, 30));
+					my @coor=split(/\s+/,$string);
+					$x=$coor[0];
+					$y=$coor[1];
+					$z=$coor[2];
+				}else{
+					$x = trim(substr($record, 30, 8));
+					$y = trim(substr($record, 38, 8));
+					$z = trim(substr($record, 46, 8));
+				}
 				$atomCounter++;
 				$atomSerial=$atomCounter;
 
@@ -403,7 +412,7 @@ sub checkPDB
 sub parsePDBATOMS
 {
 	
-	my ($fileName,$CGenabled) = @_;
+	my ($fileName,$CGenabled,$freecoor) = @_;
 	
 	## INTERNAL VARIABLES ##
 	my $counter = 0;
@@ -555,7 +564,7 @@ sub parsePDBATOMS
 		   		$residue = trim(substr($record,17,4));
 		   		my $altlocator = substr($record,16,1);
 	
-	            $interiorPdbResidueIndex = trim(substr($record,22,5));  
+	            		$interiorPdbResidueIndex = trim(substr($record,22,5));  
 		
 				## CHECK IF ALL ATOMS CONFORM TO BIF RESIDUE DECLARATION ##
 				$atom = trim(substr($record, 12, 4));
@@ -563,9 +572,19 @@ sub parsePDBATOMS
 				## CHECK IF ATOM EXISTS IN MODEL ##
 				if(!exists $residues{$residue}->{"atoms"}->{$atom}){next;}
 				$atomsmatch++;
-				$x = trim(substr($record, 30, 8));
-				$y = trim(substr($record, 38, 8));
-				$z = trim(substr($record, 46, 8));
+                                if(defined $freecoor){
+					# Read the PDB coordinates as free-format.
+					my $string=trim(substr($record, 30));
+					my @coor=split(/\s+/,$string);
+					$x=$coor[0];
+					$y=$coor[1];
+					$z=$coor[2];
+				}else{
+					$x = trim(substr($record, 30, 8));
+					$y = trim(substr($record, 38, 8));
+					$z = trim(substr($record, 46, 8));
+				}
+
 				$atomCounter++;
 				$atomSerial=$atomCounter;
 				

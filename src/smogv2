@@ -69,6 +69,7 @@ my $printversion;
 my $ignoreHydrogen=0; #variable that is set when you don't want contact map generation to consider hydrogens
 my $DNAME="smog";
 my $backup="yes";
+my $freecoor;
 my $allowCG = 0;
 my $nocheck = "no";
 my $keep4SCM;
@@ -249,6 +250,7 @@ sub parse_args {
 		'dname=s' => \$DNAME, 
 		'warn=i' => \$maxwarn, 
 		'backup=s' => \$backup, 
+		'freecoor' => \$freecoor, 
 		'limitbondlength' => \$setBondtoLimit, 
 		'limitcontactlength' => \$setContacttoLimit, 
 		'deleteshortcontacts' => \$DeleteShortContact, 
@@ -1895,7 +1897,7 @@ sub readAtoms
 # Store chain info to ndx file
 sub convertPDBToGroNdx
 {
-	my ($inputPDB,$outputGRO,$outputGRO4SCM,$outputNDX,$userProvidedMap) = @_;
+	my ($inputPDB,$outputGRO,$outputGRO4SCM,$outputNDX,$userProvidedMap,$freecoor) = @_;
 	my $counter = 0 ;	
 	my $line = "";
 	my $resName="";
@@ -1930,10 +1932,23 @@ sub convertPDBToGroNdx
 		$resName = trim(substr($line,17,4));
         if(!exists $residues{$resName}->{"atoms"}->{$atomName})
 		{next;}
-		
-		$x = substr($line, 30, 8);$x*=0.10;
-		$y = substr($line, 38, 8);$y*=0.10;
-		$z = substr($line, 46, 8);$z*=0.10;
+	
+                if(defined $freecoor){
+                        # Read the PDB coordinates as free-format.
+                        my $string=trim(substr($line, 30));
+                        my @coor=split(/\s+/,$string);
+                        $x=$coor[0];
+                        $y=$coor[1];
+                        $z=$coor[2];
+                }else{
+                        $x = trim(substr($line, 30, 8));
+                        $y = trim(substr($line, 38, 8));
+                        $z = trim(substr($line, 46, 8));
+                }
+	
+		$x*=0.10;
+		$y*=0.10;
+		$z*=0.10;
 		
 		if($boundflag == 0){
 			$xmin=$x;
@@ -2170,6 +2185,7 @@ usage: smog2 .. options ..
        -dname [smog]           : default name to use for all output files
        -openSMOGxml [smog.xml] : file name for openSMOG xml file (requires use of -openSMOG)
        -backup [yes]           : back up any pre-existing output files
+       -freecoor               : allow for free-format (space/tab/etc delimited) coordinate fields in PDB
 
      Force Field Designation
        -AA                     : use default All-atom model
@@ -2330,8 +2346,8 @@ sub parseTemplatesAndPDB
     	## PARSE PDB ##
     	###############
 	print "\nReading $inputPDB\n\n";
-	checkPDB($inputPDB,$allowCG);
-	parsePDBATOMS($inputPDB,$allowCG);
+	checkPDB($inputPDB,$allowCG,$freecoor);
+	parsePDBATOMS($inputPDB,$allowCG,$freecoor);
 	catPDL();
 }
 
@@ -2370,7 +2386,7 @@ sub printBondedTopOutput {
 	printOrderedDihedrals(\%DihedralData,\%bondPDL,\%allAtoms);
 
 	## CREATE GRO FILE ##
-	convertPDBToGroNdx($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap);
+	convertPDBToGroNdx($inputPDB,$groFile,$groFile4SCM,$ndxFile,$userProvidedMap,$freecoor);
 	## print intermediate top for SCM.jar to read ##
 }
 
