@@ -11,6 +11,7 @@ class ShadowSettings {
 	public static boolean USE_SHADOW_MAP = false;
 	public static boolean USE_CUTOFF_MAP = false;
 	public static boolean LEGACY_SHADOW = true;
+	public static boolean FREE_FORM_COORDINATES = false;
 	
 	public static double SHADOW_RADIUS = 1.0;
 	public static double BONDED_RADIUS = 0.5;

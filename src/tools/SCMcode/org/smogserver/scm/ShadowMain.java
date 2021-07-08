@@ -45,6 +45,7 @@ public class ShadowMain {
 	static BooleanHolder showProgress;
 	static BooleanHolder volume;
 	static BooleanHolder runCorrectedShadow; 
+	static BooleanHolder freeformcoords;
 	
 	static double versionNum = 1.33;
 	
@@ -99,6 +100,7 @@ public class ShadowMain {
         volume = new BooleanHolder();
         smog2output = new BooleanHolder();
         runCorrectedShadow = new BooleanHolder();
+		freeformcoords = new BooleanHolder();
         
 		ArgParser parser = new ArgParser("java -jar SCM.jar");		
 		parser.addOption("-g,--gro %s #REQUIRED#Gromacs .gro file created by SMOG (for coordinates)", gro);
@@ -134,6 +136,7 @@ public class ShadowMain {
 		parser.addOption("--showProgress %v #Prints incremental progress if you are running a big system and get worried nothing is happening.",showProgress);
 		parser.addOption("--volume %v #Prints the atomic volume.",volume);
 		parser.addOption("--correctedShadow %v #uses asin instead of atan.",runCorrectedShadow);
+		parser.addOption("--freeformcoords %v #coordinates in gro file are assumed space delimited floats",freeformcoords);
 		
 		//some default values;
 		ShadowSettings.SHADOW_RADIUS = 1.0;
@@ -142,7 +145,6 @@ public class ShadowMain {
 		ShadowSettings.PROTEIN_DELTA = 3;
 		ShadowSettings.NUCLEIC_DELTA = 0;
 		ShadowSettings.USE_SHADOW_MAP = true;
-		ShadowSettings.GRO_PRECISION = 3;
 		//set up a way to recognize that these options were given
 		rnaDeltaArg.value = -1;
 		proteinDeltaArg.value = -1;		
@@ -166,6 +168,7 @@ public class ShadowMain {
 		if(ignoreHydrogen.value) { ShadowSettings.IGNORE_HYDROGEN = true; }
 		if(smog2output.value) { ShadowSettings.SMOG2_OUTPUT_ON = true; }
 		if(runCorrectedShadow.value) { ShadowSettings.LEGACY_SHADOW = false; }
+		if(freeformcoords.value) { ShadowSettings.FREE_FORM_COORDINATES = true; }
 		ShadowSettings.GRO_PRECISION = ndec.value;
 		if(bifFile.value != null) { 
 			ShadowSettings.BIF_PARSING = true;
