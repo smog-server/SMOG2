@@ -2065,6 +2065,7 @@ sub convertPDBToGroNdx
 		print GRO "$atominfo";
 		print GRO "$xrange $yrange $zrange\n";
 		close(GRO);
+		print "$outputGRO written\n"; 
 	}
 
 	if($outputg96 ne ""){
@@ -2075,7 +2076,9 @@ sub convertPDBToGroNdx
 		print G96 "$atominfo";
 		print G96 "END\nBOX\n";
 		printf G96 ("%15.9f%15.9f%15.9f\n",$xrange, $yrange, $zrange);
-		print G96 "END\n"; 
+		print G96 "END\n";
+		close(G96);
+		print "$outputg96 written\n"; 
 	}
 
 	if($userProvidedMap==0){
