@@ -241,12 +241,13 @@ sub parse_args {
 	## parse command line options ##
 	# -o output top file name, default is smog.top
 	my $tempcheckoff;
+	my $g96on;
 	usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 
 		'o=s' => \$topFile, 
 		't=s' => \$inputFolder, 
 		'i=s' => \$inputPDB, 
 		'g=s' => \$groFile,
-		'g96=s' => \$g96File,
+		'g96' => \$g96on,
 		'c=s' => \$ContactFile, 
 		'SCMorig' => \$saveSCMorig, 
 		's=s' => \$shadowFile, 
@@ -415,13 +416,16 @@ sub parse_args {
 	
 	## Ensure we only write out files with gromacs-compatible suffices
 	if($topFile eq ""){$topFile=$DNAME};
-	if($groFile ne "" && $g96File ne ""){
-		smog_quit("can not use -g and -g96 flags together.");
-	}
-	if($groFile eq "" && $g96File eq ""){
-		# if no gro or g96 name is given, default to gro
+	if($groFile eq ""){
 		$groFile=$DNAME
 	}
+	if(defined $g96on){
+		$groFile =~ s/\.gro$/\.g96/g;
+		$g96File = $groFile;
+		$groFile="";
+	}
+
+
 	if($openSMOGxml eq ""){$openSMOGxml=$DNAME};
 	$groFile4SCM=$groFile . "4SCM.gro";
 	$topFile4SCM=$topFile . "4SCM.top";
@@ -2245,7 +2249,7 @@ usage: smog2 .. options ..
      I/O flags  
        -i [molecule.pdb]       : input PDB to generate Hamiltonian
        -g [smog.gro]           : output .gro file name
-       -g96 [smog.g96]         : output .g96 file name
+       -g96                    : write a .g96 file, instead of a .gro
        -o [smog.top]           : output .top file name
        -s [smog.contacts]      : output .contacts file name
        -n [smog.ndx]           : output .ndx file name
