@@ -193,9 +193,18 @@ public class GroGro extends java.io.File implements Structure {
 				lastResNum = resNum; 			
 				//convert to angstroms
 				int coordLength = 5+prec;
-				double x = 10*Double.parseDouble(line.substring(20,20+coordLength).trim()); 
-				double y = 10*Double.parseDouble(line.substring(20+coordLength,20+coordLength*2).trim()); 
-				double z = 10*Double.parseDouble(line.substring(20+coordLength*2,20+coordLength*3).trim()); 
+				double x,y,z;
+				if(ShadowSettings.FREE_FORM_COORDINATES) {
+					String[] coor = FileIO.getTokens(line.substring(20,line.length()-1)," ");
+					//convert to angstroms
+					x = 10*Double.parseDouble(coor[0]);
+					y = 10*Double.parseDouble(coor[1]);
+					z = 10*Double.parseDouble(coor[2]);
+				} else {
+					x = 10*Double.parseDouble(line.substring(20,20+coordLength).trim()); 
+					y = 10*Double.parseDouble(line.substring(20+coordLength,20+coordLength*2).trim()); 
+					z = 10*Double.parseDouble(line.substring(20+coordLength*2,20+coordLength*3).trim()); 
+				}
 				Coordinates coords = new Coordinates(x,y,z);
 				atom[i] = new Atom(id, atomNum+correction, coords, resName, resNum+correctionR,i);
 				atom[i].setChain(1);
