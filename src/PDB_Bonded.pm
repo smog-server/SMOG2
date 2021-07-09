@@ -214,11 +214,6 @@ sub checkPDB
 				$chainb++;
 				smog_quit("Can not find atom $atomb in chain $chainb");
 			}
-			my $idxA = $indexMap{"$chaina-$atoma"};
-			my $idxB = $indexMap{"$chainb-$atomb"};
-			my $resA = $allAtoms{$idxA}->[5];
-			my $resB = $allAtoms{$idxB}->[5];
-			## Check if improper directive is present ##
 			$counter++;
 			next;
 		}
@@ -329,15 +324,16 @@ sub checkPDB
 					$uniqueAtom{$atom}=1;
 				}
 					
-				if($CGenabled == 0 && !exists $residues{$residue}->{"atoms"}->{$atom})
+				if(!exists $residues{$residue}->{"atoms"}->{$atom})
 				{
-					smog_quit ("\"$atom\" doesn't exist in .bif declaration of \"$residue\"");
+					if($CGenabled == 0){
+						smog_quit ("\"$atom\" doesn't exist in .bif declaration of \"$residue\"");
+					}else{
+						# if CG is turned on, skip atom
+						next;
+					}
 				}
 				
-				## CHECK IF ATOM EXISTS IN MODEL ##
-				if(!exists $residues{$residue}->{"atoms"}->{$atom}){
-					smog_quit("PDB has $atom in residue $residue, but this is not defined in the .bif");
-				}
 				$atomsmatch++;
                                 if(defined $freecoor){
 					# Read the PDB coordinates as free-format.
@@ -392,8 +388,8 @@ sub checkPDB
 		$lastrecord=$record;
 		$record = "";
  	}
-
 	print "Done checking PDB formatting\n\n";
+	return (\@PDBDATA);
 }
 
 
@@ -406,8 +402,8 @@ sub checkPDB
 sub parsePDBATOMS
 {
 	
-	my ($fileName,$CGenabled,$freecoor) = @_;
-	
+	my ($PDBDATA,$CGenabled,$freecoor) = @_;
+	my @PDBDATA=@{$PDBDATA};
 	## INTERNAL VARIABLES ##
 	my $counter = 0;
 	my @temp; my @union;
@@ -426,37 +422,24 @@ sub parsePDBATOMS
 	my $lineNumber = 0;
 	my %connectedatom;
 	my $lastchainstart=0;
-	my $endfound=0;
 	my $residueSerial=0;
 	## OPEN .PDB FILE ##
-
+	my $atominhash;
+	my $PDBresstart;
+	if($CGenabled == 1){
+		$atominhash=\%residueBackup;
+		$PDBresstart=22;
+	}else{
+		$atominhash=\%residues;
+		$PDBresstart=6;
+	}
 	# first check and make sure there is an END and there are no ATOM lines afterwards
-	unless (open(PDBFILE, $fileName)) {
-		smog_quit ("Cannot read from '$fileName'.");
-	}
 	my $lastrecord="";
-	while(my $record = <PDBFILE>)
-	{
-		my $lng = $record;
-		if($record =~m/^END/){
-			$endfound=1;
-			next;
-		}
-		if($lng eq "" || $record =~ m/^comment/i || $record =~ m/^LARGE/){
-			next;
-		# make sure BOND appears after END
-		}
-	}
-	close(PDBFILE);
 
-	unless (open(PDBFILE, $fileName)) {
-		smog_quit ("Cannot read from '$fileName'.");
-	}
-	$endfound=0;
 	my $lastresindex="null";
 	 ## LOOP THROUGH EACH LINE ##
-	while(my $record = <PDBFILE>)
-	{
+        for (my $K=0;$K<=$#PDBDATA;$K++){
+                my $record=$PDBDATA[$K];
 		$lineNumber++;
 	
 		my @impAtoms = ();
@@ -524,7 +507,6 @@ sub parsePDBATOMS
 			@union = ();$counter++;
         		@consecResidues = ();
 			$lastchainstart=$atomSerial;
-			if($record =~ m/^END/){$endfound=1;}
 			next;
 		} 
 	
@@ -535,16 +517,9 @@ sub parsePDBATOMS
 			$outLength = length($record);
 		 	## OBTAIN RESIDUE NAME ##
 			$residue = trim(substr($record,17,4));
-			## if first iteration, save residueBackup, and use residues
-			#if(exists $residueBackup{$residue}){
-			if($CGenabled == 1){
-				$atomsInRes = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
-			}else{
-				$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
-			}
+			$atomsInRes = scalar(keys(%{${$atominhash}{$residue}->{"atoms"}}));
 			my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
 			my $atomsmatch=0;
-		 	seek(PDBFILE, -$outLength, 1); # place the same line back onto the filehandle
 			my $resname=$residue;
 	        	my $resindex = substr($record,22,5);
 			$lastresindex=$resindex;
@@ -552,16 +527,18 @@ sub parsePDBATOMS
 			$residueSerial++;
 			for($i=0;$i<$atomsInRes;$i++)
 			{
-				$record = <PDBFILE>;
+				$record = $PDBDATA[$K];
+				$K++;
 	 			$lineNumber++;
-	
 		   		$residue = trim(substr($record,17,4));
 		   		my $altlocator = substr($record,16,1);
 	
-	            		$interiorPdbResidueIndex = trim(substr($record,22,5));  
-		
 				$atom = trim(substr($record, 12, 4));
-	
+				my $ahandle=$residues{$residue}->{"atoms"}->{$atom};	
+				if(!defined $ahandle){
+					# this must be something we are excluding because of CGing
+					next;
+				}	
 				$atomsmatch++;
                                 if(defined $freecoor){
 					# Read the PDB coordinates as free-format.
@@ -579,20 +556,17 @@ sub parsePDBATOMS
 				$atomCounter++;
 				$atomSerial=$atomCounter;
 				
-				$putIndex = $residues{$residue}->{"atoms"}->{$atom}->{"index"};
-				$nbType = $residues{$residue}->{"atoms"}->{$atom}->{"nbType"};
-				$pairType = $residues{$residue}->{"atoms"}->{$atom}->{"pairType"};
+				$putIndex = $ahandle->{"index"};
+				$nbType = $ahandle->{"nbType"};
+				$pairType = $ahandle->{"pairType"};
 				$residueType = $residues{$residue}->{"residueType"};
 				
 				my $pdbIndex;
-				if($CGenabled==1){
-					$pdbIndex = $interiorPdbResidueIndex;
-				}else{
-					$pdbIndex = trim(substr($record,6,5));
-				}
+				$pdbIndex = trim(substr($record,$PDBresstart,5));
 				$temp[$putIndex]=[$x,$y,$z,$atomSerial];
 				$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			}
+			$K--;
 			if($residues{$residue}->{"atomCount"} == -1){
 				$totalAtoms+=$atomsInRes;
 			}else{

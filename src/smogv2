@@ -2411,8 +2411,10 @@ sub parseTemplatesAndPDB
     	## PARSE PDB ##
     	###############
 	print "\nReading $inputPDB\n\n";
-	checkPDB($inputPDB,$allowCG,$freecoor);
-	parsePDBATOMS($inputPDB,$allowCG,$freecoor);
+	## CREATE GRO FILE ##
+	convertPDBToGroNdx($inputPDB,$groFile,$g96File,$groFile4SCM,$ndxFile,$userProvidedMap,$freecoor);
+	my $PDBhandle=checkPDB($inputPDB,$allowCG,$freecoor);
+	parsePDBATOMS($PDBhandle,$allowCG,$freecoor);
 	catPDL();
 }
 
@@ -2450,9 +2452,6 @@ sub printBondedTopOutput {
 	print "Checking and saving dihedrals\n";
 	printOrderedDihedrals(\%DihedralData,\%bondPDL,\%allAtoms);
 
-	## CREATE GRO FILE ##
-	convertPDBToGroNdx($inputPDB,$groFile,$g96File,$groFile4SCM,$ndxFile,$userProvidedMap,$freecoor);
-	## print intermediate top for SCM.jar to read ##
 }
 
 sub generateContactMap {
