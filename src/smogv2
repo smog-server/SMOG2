@@ -34,6 +34,7 @@ use Getopt::Long;
 Getopt::Long::Configure("pass_through");
 use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
+use Scalar::Util qw(looks_like_number);
 use smog_common;
 use openSMOG;
 ######################
@@ -1941,7 +1942,7 @@ sub convertPDBToGroNdx
 	my $lastTER=0;
 	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
 	my $grofmt="%5d%-5s%5s%5d%8.3f%8.3f%8.3f\n";
-	my $groSCMfmt="%5d%-5s%5s%5d%9.4f%9.4f%9.4f\n";
+	my $groSCMfmt="%5d%-5s%5s%5d %10.4f %10.4f %10.4f\n";
 	my $g96fmt="%5d %-5s %-5s %6d%15.9f%15.9f%15.9f\n";
 	my $usefmt;
 	my $atommod;
@@ -1950,12 +1951,12 @@ sub convertPDBToGroNdx
 	if($outputg96 ne ""){
 		$usefmt=$g96fmt;
 		$atommod=1000000;
-		$maxchar=5;
+		$maxchar=6;
 		$filetype="G96";
 	}else{
 		$usefmt=$grofmt;
 		$atommod=100000;
-		$maxchar=4;
+		$maxchar=5;
 		$filetype="Gro";
 	}
  	open(PDB,"$inputPDB") or smog_quit("can not open $inputPDB"); ## INPUT PDB
@@ -1997,6 +1998,9 @@ sub convertPDBToGroNdx
                         $y = trim(substr($line, 38, 8));
                         $z = trim(substr($line, 46, 8));
                 }
+		if(! looks_like_number($x) or ! looks_like_number($y) or ! looks_like_number($z)){
+			smog_quit("Unable to interpret coordinate in PDB file.  Perhaps you need to use -freecoor option. Problematic line:$line");
+		}
 	
 		$x*=0.10;
 		$y*=0.10;
@@ -2477,7 +2481,7 @@ sub generateContactMap {
 	
 	if((!exists $ENV{SMOG_PATH}) || !(-e "$ENV{SMOG_PATH}/src/tools/SCM.jar")){smog_quit ("Can't find Shadow executable. Make sure SMOG_PATH is set correctly.")}
 	print "Calling $ENV{SMOG_PATH}/src/tools/SCM.jar \n";
-	system("java $memoryMax -jar $ENV{SMOG_PATH}/src/tools/SCM.jar -g $groFile4SCM -ndec 4 -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
+	system("java $memoryMax -jar $ENV{SMOG_PATH}/src/tools/SCM.jar -g $groFile4SCM -freecoor -t $topFile -o $shadowFile -ch $ndxFile $SCMparams ");
 }
 
 sub appendDefaults
