@@ -169,7 +169,8 @@ sub openSMOGwriteXML{
                            	 }
 			}
 			$localxmlout .= "$ones</$type>\n";
-			if(scalar(split(/\s+/,$localxmlout)) > 3){	
+			my $num = () = split(/\s+/,$localxmlout);
+			if($num > 3){	
 				# there must be some content, so write it.
 				$xmlout .=$localxmlout;
 			}
