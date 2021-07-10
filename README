@@ -51,7 +51,7 @@ they are available through cpan:
 XML::Simple
 XML::SAX::ParserFactory;
 XML::Validator::Schema;
-XML::LibXML (only if using -openSMOG)
+XML::LibXML 
 Exporter
 PDL
 Getopt::Long
