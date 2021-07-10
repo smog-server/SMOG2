@@ -38,19 +38,24 @@ https://mailman.rice.edu/mailman/listinfo/smog-users
 ########################################################
 
 		  CONFIGURING SMOG 2
-
-Before using SMOG 2, you need to configure your 
-settings file and ensure all libraries are available. 
-This is a relatively simple process.
+If you are not using the Docker container of SMOG 2 that
+is available on at smog-server.org, then you will need to 
+configure your settings file and ensure all libraries are 
+available. This is a relatively simple process.
 
 1) SMOG 2 is written in Perl, and requires the 
-following  modules to be installed (available through 
-cpan):
+following external modules to be installed. Some of 
+these are probably already available on your system. If not, 
+they are available through cpan:
 
 XML::Simple
-Exporter
-perl PDL
+XML::SAX::ParserFactory;
+XML::Validator::Schema;
 XML::LibXML (only if using -openSMOG)
+Exporter
+PDL
+Getopt::Long
+Scalar::Util
 
 Note: If installing a module fails, it may be necessary 
 to use cpan to install additional modules, or perhaps use
