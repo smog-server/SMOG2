@@ -4,6 +4,7 @@ use warnings FATAL => 'all';
 use Exporter;
 use XML::Simple qw(:strict);
 use smog_common;
+use XML::LibXML;
 
 our @ISA = 'Exporter';
 our @EXPORT = qw(OShashAddFunction openSMOGfunctionExists addOShash readopenSMOGxml openSMOGwriteXML openSMOGextractXML newopenSMOGfunction %fTypes %fTypesArgNum);
@@ -103,11 +104,6 @@ sub openSMOGwriteXML{
 	my ($OSref,$openSMOGxml)=@_;
         # OSref is a handle to the hash holding all information to be written.
         # $openSMOGxml is the output file name
-	# Only load the module if we are writing an openSMOG file
- 	my $checkPackage=`\$perl4smog -e "use XML::LibXML" 2>&1`;
-        if(length($checkPackage) > 0) { smog_quit("Perl module XML::LibXML not installed. Since you are using openSMOG, we can not continue...")}
-        # this was a workaround to a cryptic shared variable error in perl
-	use if 0==0 , "XML::LibXML";
 	my $space=" ";
 	my $ones="$space";
 	my $twos="$space$space";
