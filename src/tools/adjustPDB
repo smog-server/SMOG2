@@ -158,6 +158,13 @@ print "\n\tAdjustment of PDB is complete.\n\n";
 
 #########SUBROUTINES#########
 
+sub completeline
+{
+	my ($line,$number)=@_;
+	if(length($line)<54){
+		smog_quit("To adhere to PDB conventions, ATOM/HETATM lines must have at least 54 characters. Issue on line $number:\n$line");
+	}
+}
 sub usage
 {
 
@@ -330,7 +337,7 @@ sub adjustInputFile{
 			next;
 		}elsif ($pArr[$k] =~ /^ATOM/ || $pArr[$k] =~ /^HETATM/){
 		## If atom line: ##
-
+			completeline($pArr[$k],$k);
 			$firstresidue++;
 			my $resNum = trim(substr($pArr[$k],22,5));
 			my $newResNum = $resNum;
@@ -373,6 +380,7 @@ sub adjustInputFile{
 			## Loop through the residue ##
 			$loopInd = 0;
 			while ($newResNum eq $resNum){
+				completeline($pArr[$k],$k);
 				checkaltloc($pArr[$k],$k);
 				$chainName = substr($pArr[$k],21,1);
 				$atomCount++;
