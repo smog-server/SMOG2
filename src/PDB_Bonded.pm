@@ -1515,17 +1515,19 @@ sub parseCONTACT
 	if(!$userProvidedMap){ #use shadow generated contact map
 		## OPEN .contact FILE ##
 		unless (open(CONTFILE, $fileName)) {
-			smog_quit ("Internal contact file cannot be read.  See shadow.log for more information.");
+			smog_quit ("Unable to read shadow-generated contact map. This typically means there was an issue running shadow.");
 		}
 		my $coarseFile = $fileName.".CG";
-		if($CGenabled == 1) { unless (open($COARSECONT,">$coarseFile")) {
-			smog_quit ("Internal contact file cannot be written.");
-		} }
+		if($CGenabled == 1) { 
+			unless (open($COARSECONT,">$coarseFile")) {
+				smog_quit ("Internal contact file cannot be written.");
+			} 
+		}
 		while($line = <CONTFILE>)
 		{
 			($chain1,$contact1,$chain2,$contact2) = split(/\s+/,$line);
 			if(whatAmI($chain1) !=1 || whatAmI($contact1) !=1 ||whatAmI($chain2) !=1 ||whatAmI($contact2) !=1 ){
-				smog_quit("non-integer value given for chain, or atom, in contact file.\n LINE: $line");
+				smog_quit("Internal error: Somehow, a non-integer value was found for a chain, or atom, in the contact file.\n LINE: $line");
 			}
 			if($CGenabled == 1) {
 				#if we are coarse graining then we need to map AA to residue contacts

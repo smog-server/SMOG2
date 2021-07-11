@@ -1,6 +1,6 @@
 ;Run control: A leap-frog algorithm for integrating Newton's equations. 
 integrator		 = sd
-:time step in femtoseconds 
+;time step in femtoseconds 
 dt			 = 0.002
 ;number of stepsi
 nsteps  		 = 100000

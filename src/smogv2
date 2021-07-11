@@ -232,6 +232,9 @@ sub setglobals {
 	push(@{$openSMOGpothash->{contact_gaussian}->{parameters}},"sigmaG");
 	push(@{$openSMOGpothash->{contact_gaussian}->{parameters}},"a");
 
+
+	$openSMOGpothash->{contact_free}->{expression}="null";
+
 	## this is the topfile buffer stuff
 	%directives = ("comments",1,"defaults",2,"atomtypes",3,"bondtypes",4,"angletypes",5,"dihedraltypes",6,"nonbond_params",7,"moleculetype",8,"atoms",9,"bonds",10,"angles",11,"dihedrals",12,"pairs",13,"exclusions",14,"position_restraints",15,"system",16,"molecules",17);
 	@directivesList=("comments","defaults","atomtypes","bondtypes","angletypes","dihedraltypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
@@ -1200,7 +1203,7 @@ sub printOrderedDihedrals
 	## Cache Bonds ##
 	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache,$allatoms);
 	## Sort dihedrals by i, then j then k then l ## 
-	@diheCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"l"} <=> $b->{"l"}) } @diheCache;
+	@diheCache = sort {($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @diheCache;
 	
 	## Print our sorted bonds ##
 	foreach my $p(@diheCache){
@@ -1223,8 +1226,6 @@ sub CalculateDihedralsHelper
 	 my $size = $diheArr->dim(1);
 	 for(my $i=0;$i<$size;$i++)
 	 {
-			my @TMP=$diheArr->slice(":,$i:$i")->list;
-			if(@TMP < 7){next;}
 			my ($atom1,$atom2,$atom3,$atom4,$func,$cD,$eG) = $diheArr->slice(":,$i:$i")->list;
 		
 		  	my $A1=slice($inputPDL,"0:2,$atom1,:"); 
@@ -1243,16 +1244,16 @@ sub CalculateDihedralsHelper
 			my $cos = atan2(inner($m1,$n2),inner($n1,$n2));
                         my $negcos = $cos;#$cos->where($cos < 0);
        
-                        $negcos*=-1;$negcos+=mathFunctions::pi();
+                        $negcos*=-1;
+			$negcos+=mathFunctions::pi();
 			my $acos = sclr(mathFunctions::rad_to_deg($cos))+180;
 		
 			my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
 			my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
 			my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
 			my $atomi4 = sclr(slice($inputPDL,"3:3,$atom4,:"));
-			if($atomi1 > $atomi4) { #then reverse order
-				my $temp = $atomi1; $atomi1 = $atomi4; $atomi4 = $temp;
-				$temp = $atomi2; $atomi2 = $atomi3; $atomi3 = $temp;
+			if($atomi2 > $atomi3) { #then reverse order
+				($atomi1,$atomi2,$atomi3,$atomi4)=($atomi4,$atomi3,$atomi2,$atomi1);
 			}
 			## $eG >=0 dihedral is proper dihedral of any functional form
 	        if($eG >= 0)
@@ -1260,12 +1261,12 @@ sub CalculateDihedralsHelper
 				my $val = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
 				if(!$val) {next;}
 				# i,j,k,l are meta data
-				push @{$diheCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'l' => $atomi4, 'v' => $val};
+				push @{$diheCache}, {'j' => $atomi2,'k' =>$atomi3, 'v' => $val};
 			}
 			## Improper dihedral
 			else
 			{
-				push @{$diheCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'l' => $atomi4, 'v' => dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1)};
+				push @{$diheCache}, {'j' => $atomi2,'k' =>$atomi3,'v' => dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1)};
 	 	   }
 	 }
 }
@@ -1298,7 +1299,8 @@ sub dihedralOutput
                         }
 		}else{
 
-	 		if($fType !=0 && !exists $freeangles{"$ai-$aj-$ak"} && !exists $freeangles{"$ak-$aj-$ai"} && !exists $freeangles{"$aj-$ak-$al"} && !exists $freeangles{"$al-$ak-$aj"}  ){
+	 		if($fType !=0 ){
+#&& !exists $freeangles{"$ai-$aj-$ak"} && !exists $freeangles{"$ak-$aj-$ai"} && !exists $freeangles{"$aj-$ak-$al"} && !exists $freeangles{"$al-$ak-$aj"}  ){
 				# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
 				$paramArr[0]=evalsub($paramArr[0],$values);
 				if( $fType == 1 || $fType == 4){
