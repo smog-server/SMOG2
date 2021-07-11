@@ -1227,10 +1227,6 @@ sub CalculateDihedralsHelper
 	 for(my $i=0;$i<$size;$i++)
 	 {
 			my ($atom1,$atom2,$atom3,$atom4,$func,$cD,$eG) = $diheArr->slice(":,$i:$i")->list;
-			if(!defined $eG){
-				next; 
-				# this is to make sure that free dihedrals are dropped
-			}
 		
 		  	my $A1=slice($inputPDL,"0:2,$atom1,:"); 
 		  	my $A2=slice($inputPDL,"0:2,$atom2,:"); 
