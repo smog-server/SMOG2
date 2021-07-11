@@ -433,6 +433,8 @@ sub checkContactFunctionDef
                        	smog_quit("bond_type6 must have a numeric value for the stiffness.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString.");
                 }
                 
+	}elsif($funcname eq "contact_free"){
+
 	}else{
 		# if nothing matched, then we must be using an openSMOG potentials.  Let's check a few things.
 		# ? can't be used for the weight if normalization is turned off.
