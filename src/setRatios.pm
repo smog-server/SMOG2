@@ -145,7 +145,7 @@ sub adjustFactorsHelper1
 		if($eG < 0) 
 		{			
 			push(@tempArr,pdl($count,0));
-			 next;
+			next;
 		}
 		$eG = $eGTable{$eG}; 
    		if(defined $termRatios->{$resTypeb}->{"energyGroup"}->{$eG})
@@ -213,9 +213,11 @@ sub adjustFactorsHelper2
 	$diheLeftOver = $totalAtoms*(1 - ($contactTotal/$totalStrength));
 
 
+	if(!defined $rescalePDL->{$chain}){
+		return;
+	}
 	for(my $i=0;$i<$size;$i++)
 	{
-		if(!defined $rescalePDL->{$chain}){next;}
 		my $normalize=sclr(slice($rescalePDL->{$chain},"1:1,$i:$i"));
 
     		## Normalize option is set ##	
