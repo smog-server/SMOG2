@@ -5,7 +5,7 @@
 #                     Jeffrey Noel, Mariana Levi, Mohit Ranghunathan,
 #                 Heiko Lammert, Ryan Hayes, Jose Onuchic & Paul Whitford
 #
-#                     Copyright (c) 2015, The SMOG development team at
+#            Copyright (c) 2015,2016,2018,2021, The SMOG development team at
 #                        Rice University and Northeastern University
 #
 #              SMOG 2 & Shadow are available at http://smog-server.org
