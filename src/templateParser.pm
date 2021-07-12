@@ -146,7 +146,7 @@ sub clearBifMemory {
 ## SET INPUTFILE NAME ##
 ########################
 sub setInputFileName {
-	my ($a,$b,$c,$d,$e) = @_;
+	my ($a,$b,$c,$d) = @_;
 	$bifxml = $a;
 	$sifxml = $b;
 	$bondxml = $c;

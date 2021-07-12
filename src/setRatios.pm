@@ -35,7 +35,7 @@ our @EXPORT = qw(setRatios getSetDiheCounts %fTypes);
 sub DiheCountsHelper
 {
 	my %uniqueBonds;
-	my($diheArr,$inputPDL) = @_;
+	my($diheArr) = @_;
 	my @countsIndex;
 	my @counts;
 	my $size = $diheArr->dim(1);
@@ -58,8 +58,6 @@ sub DiheCountsHelper
 		my $b=$A[1];
 		my $c=$A[2];
 		my $eG=$A[6];
-	#	$b = sclr(slice($inputPDL,"3:3,$b,:"));
-	#	$c = sclr(slice($inputPDL,"3:3,$c,:"));
 		## only count the dihedral if it is not an improper
 		if($eG >= 0 ){	
 	
@@ -93,10 +91,10 @@ sub DiheCountsHelper
 # utilizes getDiheCounts and setDiheCounts
 sub getSetDiheCounts
 {
-	my($diheFunctHandle,$whichPDL) = @_;
+	my($diheFunctHandle) = @_;
 	foreach my $chain(keys %{$diheFunctHandle})
 	{
-		DiheCountsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain});
+		DiheCountsHelper($diheFunctHandle->{$chain});
 	}	
 }
 
@@ -104,12 +102,11 @@ sub getSetDiheCounts
 sub setRatios	
 {
 	my($diheFunctHandle,$inputPDL,$atomNum,$atomTypes) = @_;
-	my %residueRatio;
 	my $sum; my $diheStrengthTotal;
 	my %rescalePDL;
 	foreach my $chain(keys %{$diheFunctHandle})
 	{
-		adjustFactorsHelper1($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomNum,$atomTypes,\%residueRatio,\$sum,\%rescalePDL,$chain);
+		adjustFactorsHelper1($diheFunctHandle->{$chain},$inputPDL->{$chain},$atomTypes,\$sum,\%rescalePDL,$chain);
 	}
 	
 	foreach my $chain(keys %{$diheFunctHandle})
@@ -120,7 +117,7 @@ sub setRatios
 
 sub adjustFactorsHelper1
 {
-	my($diheArr,$inputPDL,$totalAtoms,$atomTypes,$residueRatio,$sum,$rescalePDL,$chain) = @_;
+	my($diheArr,$inputPDL,$atomTypes,$sum,$rescalePDL,$chain) = @_;
 	my $normalize;
 	my $relativeRatio;
  	my $size = $diheArr->dim(1);

@@ -2437,7 +2437,7 @@ sub printBondedTopOutput {
 	my ($inputPDB,$groFile,$g96File,$groFile4SCM,$ndxFile,$userProvidedMap) = @_;
         if($countDihedrals){
 		print "Counting dihedrals\n";
-		getSetDiheCounts(\%DihedralData,\%bondPDL);
+		getSetDiheCounts(\%DihedralData);
         }else{
         	print "Will not count/rescale dihedrals with common middle bonds.\n";
         }

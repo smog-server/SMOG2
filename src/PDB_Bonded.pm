@@ -38,11 +38,6 @@ our @ISA = 'Exporter';
 our @EXPORT = 
 qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %bondFunctionals %AngleData %DihedralData %BondData %resPDL %bondPDL %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS checkPDB);
 
-my @vector;
-my $coorPDL;
-my %results;
-my %residuePDL=();
-
 our %tempPDL = ();
 our %resPDL;
 our %bondPDL;
@@ -77,16 +72,6 @@ undef %indexMap;
 %allAtomsBackup = %{ dclone (\%allAtoms) };
 undef %allAtoms; 
 }
-
-
-####################################################################
-# parseExternalContacts($filename)
-####################################################################
-sub parseExternalContacts
-{
-  my($file) = @_;
-}
-
 
 ####################################################################
 # checkPDB
