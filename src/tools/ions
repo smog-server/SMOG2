@@ -252,7 +252,7 @@ close(GROFILE);
 
 if(-e $outputgro){smog_quit("$outputgro already exists.")};
 open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
-print GROFILE "$groheader\n";
+print GROFILE "$groheader. Note: ions added with smog_ions (version $VERSION)\n";
 $NATOMS+=$addnum;
 print GROFILE "$NATOMS\n";
 for(my $I=1;$I<=$NATOMS-$addnum;$I++){
@@ -394,7 +394,7 @@ my %typesinsystem;
 my %seenmoltype;
 my $alreadypresent=0;
 
-print TOPOUT "; This is a top file generated with smog_ions, using the command:\n;";
+print TOPOUT "; This is a top file generated with smog_ions (version $VERSION), using the command:\n;";
 print TOPOUT "   smog_ions $inputArguments\n";
 my $date=printhostdate();
 print TOPOUT "$date";

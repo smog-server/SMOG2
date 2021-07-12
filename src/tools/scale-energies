@@ -190,7 +190,7 @@ for(my $JJ=1;$JJ<=$#C;$JJ++){
 open(TOPOUT,">$outputTOP") or smog_quit("Can\'t open $outputTOP for writing.");
 #copy header
 
-print TOPOUT "; This is a top file generated with smog_scale-energies using the command:\n;";
+print TOPOUT "; This is a top file generated with smog_scale-energies (version $VERSION) using the command:\n;";
 print TOPOUT "   smog_scale-energies $inputArguments\n";
 my $date=printhostdate();
 print TOPOUT "$date";

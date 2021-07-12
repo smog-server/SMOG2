@@ -208,7 +208,7 @@ if(defined $nogro){
 	close(GROFILE);
 	
 	open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
-	print GROFILE "$groheader\n";
+	print GROFILE "$groheader. Note: This file was processed by smog_extract (version $VERSION)\n";
 	print GROFILE "$KEEPN\n";
 	for(my $I=0;$I<$KEEPN;$I++){
 		if(!exists $GRODATA[$keepatoms2[$I]]){
@@ -234,8 +234,8 @@ print "Writing new top file\n";
 open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing.");
 #copy header
 
-print TOPOUT "; This is a top file generated with smog_extract, using the command:\n;";
-print TOPOUT "   smog_extract $inputArguments\n;";
+print TOPOUT "; This is a top file generated with smog_extract (version $VERSION), using the command:\n";
+print TOPOUT ";   smog_extract $inputArguments\n";
 print TOPOUT "; Selected group: $extgrp\n ";
 my $date=printhostdate();
 print TOPOUT "$date";
