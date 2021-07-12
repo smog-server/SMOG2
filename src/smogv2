@@ -1202,7 +1202,7 @@ sub printOrderedDihedrals
 	## Cache Bonds ##
 	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache,$allatoms);
 	## Sort dihedrals by i, then j then k then l ## 
-	@diheCache = sort {($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @diheCache;
+	@diheCache = sort {($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"f"} <=> $b->{"f"})} @diheCache;
 	
 	## Print our sorted bonds ##
 	foreach my $p(@diheCache){
@@ -1260,15 +1260,16 @@ sub CalculateDihedralsHelper
 			## $eG >=0 dihedral is proper dihedral of any functional form
 	        if($eG >= 0)
 			{
-				my $val = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
+				my ($val,$fType) = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
 				if(!$val) {next;}
-				# i,j,k,l are meta data
-				push @{$diheCache}, {'j' => $atomi2,'k' =>$atomi3, 'v' => $val};
+				# j,k,f are meta data
+				push @{$diheCache}, {'j' => $atomi2,'k' =>$atomi3, 'f' => $fType, 'v' => $val};
 			}
 			## Improper dihedral
 			else
 			{
-				push @{$diheCache}, {'j' => $atomi2,'k' =>$atomi3,'v' => dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1)};
+				my ($val,$fType)=dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1);
+				push @{$diheCache}, {'j' => $atomi2,'k' =>$atomi3,'f' => $fType, 'v' => $val};
 	 	   }
 	 }
 }
@@ -1327,7 +1328,7 @@ sub dihedralOutput
 			}
 		}
 	}
-		return $outputString;
+		return ($outputString,$fType);
 }
  
 # Given a user defined dihedral function, parse values
