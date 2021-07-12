@@ -46,7 +46,8 @@ my $OUTPUT;
 my $help;
 our $gen_map;
 my $inputPDB="molecule.pdb"; 
-my $inputFolder=""; my $bifForSCM;
+my $inputFolder=""; 
+my $bifForSCM;
 my $userProvidedMap=0;
 my $topFile = "";
 my $groFile = "";
@@ -56,7 +57,6 @@ my $topFile4SCM = "";
 my $ContactFile;
 my $shadowFile = "";
 my $ndxFile = "";
-my $mapOpt = "shadow";
 my $numContacts = 0;
 my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $AAdefault = 0; 
@@ -509,7 +509,6 @@ sub printTop {
 
 # utility method to set all the initial directive comments
 sub initializeDirectives {
-	my($inputFolder,$inputPDB) = @_;
 	for (keys %directives) { 
 		$linesInDirectives[$directives{$_}]=0; 
 		$linesInDirectivesWithContent[$directives{$_}]=0; 
@@ -2414,7 +2413,7 @@ sub parseTemplatesAndPDB
 		exit(0);
 	}else{
 		# no need to initialize these things if we are only making a map file
-		initializeDirectives($inputFolder,$inputPDB);
+		&initializeDirectives;
 	}
 
 	print "\nPre-processing templates\n";
