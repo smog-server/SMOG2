@@ -76,6 +76,7 @@ my $allowCG = 0;
 my $nocheck = "no";
 my $keep4SCM;
 my $extrasfile="";
+my $anyfree;
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
 our $setBondtoLimit=0;
@@ -761,12 +762,12 @@ sub checkExtras {
 sub printOrderedBonds
 {
 
-	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2,$indexhandle,$allatoms) = @_;
+	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2,$indexhandle,$allatoms,$bondvectors) = @_;
 	my @bondCache; ## CACHE BONDS TO ORDER
 
 	## Cache Bonds ##
-	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache,$indexhandle,$allatoms);
-	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache,$indexhandle,$allatoms);
+	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache,$indexhandle,$allatoms,$bondvectors);
+	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache,$indexhandle,$allatoms,$bondvectors);
 	## Sort bonds by i then j ## 
 	@bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
 
@@ -780,27 +781,27 @@ sub printOrderedBonds
 # call  calculateBondsHelper1() for each residue defined in templates
 sub calculateBonds1
 {
-	my($bondFunctHandle,$whichPDL,$bondCache,$indexhandle,$allatoms) = @_;
+	my($bondFunctHandle,$whichPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
 	foreach my $res(keys %{$bondFunctHandle}){
 	       if(!exists $whichPDL->{$res}){next;}
-	       calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache,$indexhandle,$allatoms);
+	       calculateBondsHelper1($bondFunctHandle->{$res},$whichPDL->{$res},$bondCache,$indexhandle,$allatoms,$bondvectors);
 	}
 }
 
 #call connCalculateBondsHelper() for each chain in PDB
 sub calculateBonds2
 {
-	my($bondHandle,$whichPDL,$bondCache,$indexhandle,$allatoms) = @_;
+	my($bondHandle,$whichPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
 	foreach my $chain(keys %{$bondHandle})
 	{
-		calculateBondsHelper2($bondHandle->{$chain},$whichPDL->{$chain},$bondCache,$indexhandle,$allatoms);
+		calculateBondsHelper2($bondHandle->{$chain},$whichPDL->{$chain},$bondCache,$indexhandle,$allatoms,$bondvectors);
 	
 	}
 }
 
 sub calculateBondsHelper1
 {
-	my($bondHash,$inputPDL,$bondCache,$indexhandle,$allatoms) = @_;
+	my($bondHash,$inputPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
 	my $bondArr = $bondHash->{"bonds"};
 	my $bondFunc =$bondHash->{"functions"};
 	my $bondIndex = 0;
@@ -811,10 +812,14 @@ sub calculateBondsHelper1
 	       my @bondList = (sqrt(inner($outer,$outer))*$angToNano)->flat()->list();
 	       my @indexList1 = slice($inputPDL,"3:3,$atomOne,:")->flat()->list();
 	       my @indexList2 = slice($inputPDL,"3:3,$atomTwo,:")->flat()->list();
+	       my @vecarr = $outer->flat()->list();
 	       for(my $i=0;$i<scalar(@bondList);$i++)
 	       {
 			my $I1=$indexList1[$i];
 			my $I2=$indexList2[$i];
+			my $normv=norm(pdl($vecarr[3*$i], $vecarr[3*$i+1], $vecarr[3*$i+2]));
+			$bondvectors->{"$I1-$I2"}=$normv;
+			$bondvectors->{"$I2-$I1"}=-$normv;
 			my $val=bondOutput($bondFunc->[$bondIndex],$I1,$I2,$bondList[$i],$indexhandle,$allatoms);
 			if(!$val){next;}
 			# i,j are meta data
@@ -827,8 +832,9 @@ sub calculateBondsHelper1
 
 sub calculateBondsHelper2
 {
-	my($bondInfo,$inputPDL,$bondCache,$indexhandle,$allatoms) = @_;
+	my($bondInfo,$inputPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
 	my $size = $bondInfo->dim(1);
+
 	for(my $i=0;$i<$size;$i++)
 	{
 		my $atomOne = sclr(slice($bondInfo,"0:0,$i:$i"));
@@ -838,6 +844,8 @@ sub calculateBondsHelper2
 		my $output = sclr(sqrt(inner($outer,$outer))*$angToNano);
 		$atomOne = sclr(slice($inputPDL,"3:3,$atomOne,:"));
 		$atomTwo = sclr(slice($inputPDL,"3:3,$atomTwo,:"));
+		$bondvectors->{"$atomOne-$atomTwo"}=norm($outer);
+		$bondvectors->{"$atomTwo-$atomOne"}=-norm($outer);
 		my $val=bondOutput(intToFunc("bonds",$func,""),$atomOne, $atomTwo,$output,$indexhandle,$allatoms);
 		if(!$val){next;}
 		push @{$bondCache}, {'i' => $atomOne,'j' => $atomTwo, 'v' => $val};
@@ -848,7 +856,6 @@ sub calculateBondsHelper2
 sub bondOutput
 {
 	my($inputFunc,$i,$j,$values,$indexhandle,$allatoms) = @_;
-	if(!$inputFunc){smog_quit ("BONDOUTPUT::NO FUNCTION DEFINED");}
 	$inputFunc = trim($inputFunc);
 	## If $input contains a + ##
 	my @funcs = split(/\+/,$inputFunc); ## split combination of functions
@@ -1047,11 +1054,11 @@ sub bondFuncParser
 # Combined bond calculation,sorting, and printing
 sub printOrderedAngles
 {
-	my($AngleData,$bondPDL,$indexhandle,$allatoms) = @_;
+	my($AngleData,$bondPDL,$indexhandle,$allatoms,$bondvectors) = @_;
 	my @angleCache; ## CACHE BONDS TO ORDER
 
 	## Cache Bonds ##
-	CalculateAngles($AngleData,$bondPDL,\@angleCache,$indexhandle,$allatoms);
+	CalculateAngles($AngleData,$bondPDL,\@angleCache,$indexhandle,$allatoms,$bondvectors);
 
 	## Sort angles by i,j then k ## 
 	@angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
@@ -1065,33 +1072,30 @@ sub printOrderedAngles
 # CalculateAnglesHelper() calculates the angles for each chain
 sub CalculateAngles
 {
-	my($angleFunctHandle,$whichPDL,$angleCache,$indexhandle,$allatoms) = @_;
+	my($angleFunctHandle,$whichPDL,$angleCache,$indexhandle,$allatoms,$bondvectors) = @_;
  
 	foreach my $chain(keys %{$angleFunctHandle}){
-		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache,$indexhandle,$allatoms);
+		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache,$indexhandle,$allatoms,$bondvectors);
 	}
 }
 
 sub CalculateAnglesHelper
 {
-	my($angleArr,$inputPDL,$angleCache,$indexhandle,$allatoms) = @_;
+	my($angleArr,$inputPDL,$angleCache,$indexhandle,$allatoms,$bondvectors) = @_;
 	my $size = $angleArr->dim(1);
 	for(my $i=0;$i<$size;$i++)
 	{
 		my ($atom1,$atom2,$atom3,$func) = $angleArr->slice(":,$i:$i")->list;
-		my $A1=slice($inputPDL,"0:2,$atom1,:");
-		my $A2=slice($inputPDL,"0:2,$atom2,:");
-		my $A3=slice($inputPDL,"0:2,$atom3,:");		
 		my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
 		my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
 		my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
-		my $left = norm($A1-$A2);
-		my $right = norm($A3-$A2);
-		my $outer = norm($A3-$A1);
-				
+		my $left = $bondvectors->{"$atomi1-$atomi2"};
+		my $right = $bondvectors->{"$atomi3-$atomi2"};
 		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
 		
-		if($atomi1 > $atomi3) { my $temp = $atomi1; $atomi1 = $atomi3; $atomi3 = $temp; }
+		if($atomi1 > $atomi3) { 
+			($atomi1,$atomi2,$atomi3)=($atomi3,$atomi2,$atomi1);
+		}
 		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos,$indexhandle,$allatoms);
 		if(!$val) {next;}
 			# i,j,k are meta data
@@ -1197,10 +1201,10 @@ sub angleFuncParser
 # Combined dihedral calculation,sorting, and printing
 sub printOrderedDihedrals
 {
-	my($DihedralData,$bondPDL,$allatoms) = @_;
+	my($DihedralData,$bondPDL,$allatoms,$bondvectors) = @_;
 	my @diheCache; ## CACHE BONDS TO ORDER
 	## Cache Bonds ##
-	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache,$allatoms);
+	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache,$allatoms,$bondvectors);
 	## Sort dihedrals by i, then j then k then l ## 
 	@diheCache = sort {($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"f"} <=> $b->{"f"})} @diheCache;
 	
@@ -1213,65 +1217,83 @@ sub printOrderedDihedrals
 # Setup the calculation of dihedral angles of all combined residues,
 sub CalculateDihedrals
 {
-	my($diheFunctHandle,$whichPDL,$diheCache,$allatoms) = @_;
+	my($diheFunctHandle,$whichPDL,$diheCache,$allatoms,$bondvectors) = @_;
 	foreach my $chain(keys %{$diheFunctHandle}){
-		CalculateDihedralsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain},$diheCache,$allatoms);
+		CalculateDihedralsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain},$diheCache,$allatoms,$bondvectors);
 	}
 }
 
 sub CalculateDihedralsHelper
 {
-	 my($diheArr,$inputPDL,$diheCache,$allatoms) = @_;
+	 my($diheArr,$inputPDL,$diheCache,$allatoms,$bondvectors) = @_;
+	 $anyfree=0;
+	 $anyfree=scalar(keys %freeangles);
 	 my $size = $diheArr->dim(1);
 	 for(my $i=0;$i<$size;$i++)
 	 {
-			my ($atom1,$atom2,$atom3,$atom4,$func,$cD,$eG) = $diheArr->slice(":,$i:$i")->list;
-	           	if(!defined $eG){
-                        	next; 
-                        	# not sure why this is needed.  Probably some old sloppiness.
-	             	}	
-		  	my $A1=slice($inputPDL,"0:2,$atom1,:"); 
-		  	my $A2=slice($inputPDL,"0:2,$atom2,:"); 
-		  	my $A3=slice($inputPDL,"0:2,$atom3,:"); 
-		  	my $A4=slice($inputPDL,"0:2,$atom4,:"); 
-
-			my $b1=$A2-$A1;
-			my $b2=$A3-$A2;
-			my $b3=$A4-$A3;
-		
-			my $n1 = norm(crossp($b1,$b2));
-			my $n2 = norm(crossp($b2,$b3));
-			my $m1 = crossp($n1,norm($b2));
-		
-			my $cos = atan2(inner($m1,$n2),inner($n1,$n2));
-                        my $negcos = $cos;#$cos->where($cos < 0);
-       
-                        $negcos*=-1;
-			$negcos+=mathFunctions::pi();
-			my $acos = sclr(mathFunctions::rad_to_deg($cos))+180;
-		
+		my ($atom1,$atom2,$atom3,$atom4,$func,$cD,$eG) = $diheArr->slice(":,$i:$i")->list;
+	        if(!defined $eG){
+                       	next; 
+                       	# This has to do with the functional array being used for the same purpose as the listing array. Some old sloppiness that should be cleaned up.
+	        }else{
+			# global atom indices. 
 			my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
 			my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
 			my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
 			my $atomi4 = sclr(slice($inputPDL,"3:3,$atom4,:"));
-			if($atomi2 > $atomi3) { #then reverse order
-				($atomi1,$atomi2,$atomi3,$atomi4)=($atomi4,$atomi3,$atomi2,$atomi1);
-			}
-			## $eG >=0 dihedral is proper dihedral of any functional form
-	        if($eG >= 0)
+
+			if($eG >= 0)
 			{
+				## $eG >=0 dihedral is proper dihedral of any functional form
+				# these can all be calculated based on saved bonded vectors.
+
+				my $b1=$bondvectors->{"$atomi2-$atomi1"};
+				my $b2=$bondvectors->{"$atomi3-$atomi2"};
+				my $b3=$bondvectors->{"$atomi4-$atomi3"};
+	
+				my $acos=dihfrombonds($b1,$b2,$b3);
+
+				if($atomi2 > $atomi3) { #then reverse order
+					($atomi1,$atomi2,$atomi3,$atomi4)=($atomi4,$atomi3,$atomi2,$atomi1);
+				}
 				my ($val,$fType) = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
 				if(!$val) {next;}
 				# j,k,f are meta data
 				push @{$diheCache}, {'j' => $atomi2,'k' =>$atomi3, 'f' => $fType, 'v' => $val};
-			}
-			## Improper dihedral
-			else
-			{
+			}else{
+				## Improper dihedral. must calculate everything
+
+		  		my $A1=slice($inputPDL,"0:2,$atom1,:");
+		  		my $A2=slice($inputPDL,"0:2,$atom2,:"); 
+		  		my $A3=slice($inputPDL,"0:2,$atom3,:"); 
+		  		my $A4=slice($inputPDL,"0:2,$atom4,:"); 
+
+				my $b1=$A2-$A1;
+				my $b2=norm($A3-$A2);
+				my $b3=$A4-$A3;
+				my $acos=dihfrombonds($b1,$b2,$b3);
+
 				my ($val,$fType)=dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1);
 				push @{$diheCache}, {'j' => $atomi2,'k' =>$atomi3,'f' => $fType, 'v' => $val};
+			}
 	 	   }
 	 }
+}
+
+sub dihfrombonds
+{
+	my ($b1,$b2,$b3)=@_;
+	my $n1 = norm(crossp($b1,$b2));
+	my $n2 = norm(crossp($b2,$b3));
+	my $m1 = crossp($n1,$b2);
+	
+	my $cos = atan2(inner($m1,$n2),inner($n1,$n2));
+        my $negcos = $cos;#$cos->where($cos < 0);
+       
+        $negcos*=-1;
+	$negcos+=mathFunctions::pi();
+	my $acos = sclr(mathFunctions::rad_to_deg($cos))+180;
+	return $acos;
 }
 
 sub dihedralOutput
@@ -1300,9 +1322,11 @@ sub dihedralOutput
                         }else{
                                 $outputString .= "\n";
                         }
-		}else{
+		}elsif($fType > 0){
 
-	 		if($fType !=0 && !exists $freeangles{"$ai-$aj-$ak"} && !exists $freeangles{"$ak-$aj-$ai"} && !exists $freeangles{"$aj-$ak-$al"} && !exists $freeangles{"$al-$ak-$aj"}  ){
+	 		if($anyfree!=0 and (exists $freeangles{"$ai-$aj-$ak"} or exists $freeangles{"$ak-$aj-$ai"} or exists $freeangles{"$aj-$ak-$al"} or exists $freeangles{"$al-$ak-$aj"})  ){
+				# skip
+			}else{
 				# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
 				$paramArr[0]=evalsub($paramArr[0],$values);
 				if( $fType == 1 || $fType == 4){
@@ -2457,15 +2481,16 @@ sub printBondedTopOutput {
 
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "Checking and saving bonds\n";
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL,\%atomIndex2Line,\%allAtoms);
+	my %bondvectors;
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL,\%atomIndex2Line,\%allAtoms,\%bondvectors);
 
 	## CALCULATE ANGLES ##
 	print "Checking and saving angles\n";
-	printOrderedAngles(\%AngleData,\%bondPDL,\%atomIndex2Line,\%allAtoms);
+	printOrderedAngles(\%AngleData,\%bondPDL,\%atomIndex2Line,\%allAtoms,\%bondvectors);
 
 	## CALCULATE DIHEDRALS ##
 	print "Checking and saving dihedrals\n";
-	printOrderedDihedrals(\%DihedralData,\%bondPDL,\%allAtoms);
+	printOrderedDihedrals(\%DihedralData,\%bondPDL,\%allAtoms,\%bondvectors);
 
 }
 
