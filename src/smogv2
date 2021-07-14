@@ -1206,7 +1206,7 @@ sub printOrderedDihedrals
 	## Cache Bonds ##
 	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache,$allatoms,$bondvectors);
 	## Sort dihedrals by i, then j then k then l ## 
-	@diheCache = sort {($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"f"} <=> $b->{"f"})} @diheCache;
+	@diheCache = sort {($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"f"} <=> $b->{"f"}) || ($a->{"i"} <=> $b->{"i"}) || ($a->{"l"} <=> $b->{"l"})} @diheCache;
 	
 	## Print our sorted bonds ##
 	foreach my $p(@diheCache){
@@ -1259,7 +1259,7 @@ sub CalculateDihedralsHelper
 				my ($val,$fType) = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
 				if(!$val) {next;}
 				# j,k,f are meta data
-				push @{$diheCache}, {'j' => $atomi2,'k' =>$atomi3, 'f' => $fType, 'v' => $val};
+				push @{$diheCache}, {'i'=> $atomi1,'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4, 'f' => $fType, 'v' => $val};
 			}else{
 				## Improper dihedral. must calculate everything
 
@@ -1274,7 +1274,7 @@ sub CalculateDihedralsHelper
 				my $acos=dihfrombonds($b1,$b2,$b3);
 
 				my ($val,$fType)=dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1);
-				push @{$diheCache}, {'j' => $atomi2,'k' =>$atomi3,'f' => $fType, 'v' => $val};
+				push @{$diheCache}, {'i'=> $atomi1, 'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4,'f' => $fType, 'v' => $val};
 			}
 	 	   }
 	 }
