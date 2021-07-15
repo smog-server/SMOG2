@@ -119,16 +119,20 @@ sub checkPDB
 		push(@PDBDATA,$_);
 	}
 	close(PDBFILE);
-
+	my $lastline="";
 	foreach my $record(@PDBDATA){
 		my $lng = $record;
+		chomp($lng);
+		if($lng eq ""  && $endfound!=1 && $lastline ne ""){
+			smog_quit("Blank line found before END.  This is generally not intentional. Blank line appears directly after:\n$lastline");		
+		}
+		$lastline=$record;	
 		if($record =~m/^END/){
 			$endfound=1;
 			next;
 		}
 		if($lng eq "" || $record =~ m/^comment/i){
 			next;
-		# make sure BOND appears after END
 		}
 
 		if($record =~ m/^LARGE/){
