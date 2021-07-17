@@ -884,7 +884,6 @@ sub connCreateInteractionsSingleBOND
 {
     	my($consecResiduesH,$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$bEG,$imp) = @_;
 	my @consecResidues = @{$consecResiduesH};
-
     	## AD-HOC BONDS ##
 	my($angH,$diheH,$adjList,$bondStrA,$bondStrB)=createConnection($consecResiduesH,0,$atomA,$atomB);
 	## BOND ##

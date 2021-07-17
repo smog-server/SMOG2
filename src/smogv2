@@ -772,9 +772,18 @@ sub printOrderedBonds
 	@bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
 
 	## Print our sorted bonds ##
+	my %bfound;
 	foreach my $p(@bondCache)
 	{
 		addToTop("bonds",$p->{"v"});
+		my $i=$p->{"i"};
+		my $j=$p->{"j"};	
+		if(exists $bfound{"$i-$j"}){
+			my $def1=$p->{"v"};
+			my $def2=$bfound{"$i-$j"};
+			smog_quit("Found duplicate bond definitions for atom pair $i-$j. Generally, this is due to a mistake, since there is no reason to define two bonds between the same atoms. Found the following parameters assigned for this bond in the top file:\n$def1\n$def2",1);	
+		}
+		$bfound{"$i-$j"}=$p->{"v"};
 	}
 }
 
