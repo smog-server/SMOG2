@@ -2031,7 +2031,7 @@ sub convertPDBToGroNdx
 			foreach my $n($x,$y,$z){
 				my @A=split(/\./,$n);
 				if(length($A[0])>$maxchar){
-					smog_quit("Coordinates are too large to write a $filetype file. Found coordinates:\n\t$line");
+					smog_quit("Coordinates are too large to write a $filetype file. Maybe try option -g96. Found coordinates:\n\t$line");
 				};
 			}
                 }else{
