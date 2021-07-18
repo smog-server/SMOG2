@@ -123,7 +123,7 @@ print "Parsing templates files...\n";
 parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
 if($CGenabled == 0 || ($CGenabled == 1 && $userProvidedMap == 0)) {
 	# either no CG, or CG and need to generate a map
-	printBondedTopOutput($inputPDB,$groFile,$g96File,$groFile4SCM,$ndxFile,$userProvidedMap);
+	printBondedTopOutput($inputPDB,$groFile,$g96File,$ndxFile,$userProvidedMap);
 } 
 
 appendDefaults();
@@ -147,7 +147,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	print "\nParsing templates for coarse graining... ";
 	$inputFolder = $coarseFolder;
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
-	printBondedTopOutput($inputPDB,$groFile,$g96File,$groFile4SCM,$ndxFile,$userProvidedMap);
+	printBondedTopOutput($inputPDB,$groFile,$g96File,$ndxFile,$userProvidedMap);
 	appendDefaults();
 }
 
@@ -423,6 +423,7 @@ sub parse_args {
 	if($groFile eq ""){
 		$groFile=$DNAME
 	}
+	$groFile4SCM=$groFile . "4SCM.gro";
 	if(defined $g96on){
 		$groFile =~ s/\.gro$/\.g96/g;
 		$g96File = $groFile;
@@ -431,7 +432,6 @@ sub parse_args {
 
 
 	if($openSMOGxml eq ""){$openSMOGxml=$DNAME};
-	$groFile4SCM=$groFile . "4SCM.gro";
 	$topFile4SCM=$topFile . "4SCM.top";
 	if($shadowFile eq ""){$shadowFile=$DNAME};
 	if($ndxFile eq ""){$ndxFile=$DNAME};
@@ -2468,7 +2468,7 @@ sub parseTemplatesAndPDB
 
 sub printBondedTopOutput {
 
-	my ($inputPDB,$groFile,$g96File,$groFile4SCM,$ndxFile,$userProvidedMap) = @_;
+	my ($inputPDB,$groFile,$g96File,$ndxFile,$userProvidedMap) = @_;
         if($countDihedrals){
 		print "Counting dihedrals\n";
 		getSetDiheCounts(\%DihedralData);
