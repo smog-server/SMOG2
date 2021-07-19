@@ -41,8 +41,7 @@
     <dihedralNormalization dihedralCounting="1"/>
     <!-- CONTACT MAP SETTINGS -->
     <!-- NOTE: If another template is provided with the -t_contacts flag, then these settings will be ignored-->
-    <Contacts method="shadow" contactDistance="6" shadowRadius="1" shadowRadiusBonded="0.5">
-</Contacts>
+    <Contacts method="shadow" contactDistance="6" shadowRadius="1" shadowRadiusBonded="0.5"/>
     <bondsThreshold shortBond="0.08" longBond="0.2"/>
     <anglesThreshold smallAngles="90" largeAngles="140"/>
     <contactsThreshold shortContacts="0.1"/>
