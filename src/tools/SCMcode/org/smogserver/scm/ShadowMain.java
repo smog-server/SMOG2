@@ -371,7 +371,7 @@ public class ShadowMain {
 		if(fileType == ShadowMain.GRO) {
 			printOpener();
 			
-			if(ShadowSettings.BIF_PARSING) print2screen("Using protein residue definitions from supplied .bif.");
+			if(ShadowSettings.BIF_PARSING) print2screen("Using residue definitions from supplied .bif.");
 			print2screen("Reading grofile: "+fileName+".");
 			grofile = new GroTrajectory(fileName);
 			atoms = grofile.getAtoms();
@@ -393,7 +393,7 @@ public class ShadowMain {
 		} else if(fileType == ShadowMain.PDB) {
 			printOpener();
 			
-			if(ShadowSettings.BIF_PARSING) print2screen("Using protein residue definitions from supplied .bif.");
+			if(ShadowSettings.BIF_PARSING) print2screen("Using residue definitions from supplied .bif.");
 			print2screen("Reading pdbfile: "+fileName+".");
 			//grofile = new GroTrajectory(fileName);
 			pdbfile = new PDBfile(fileName);

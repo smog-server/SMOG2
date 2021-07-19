@@ -965,7 +965,7 @@ public class WhamMain {
 	        double[] vals = new double[dim];
 	        int count = 0;
 	        while (line != null) {
-	            String[] tokens = FileIO.getTokens(line," ");
+	            String[] tokens = FileIO.getTokens(line," \t");
 	            //first token is assumed to be energy
 	            int i = 0;
 	            try {
