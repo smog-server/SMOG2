@@ -15,7 +15,7 @@ public class JGrid3D {
 	private ArrayList grid;
 
 	public JGrid3D(JGridable3D[] items, double gridsize) {
-		this.GRIDSIZE=gridsize;
+		this.GRIDSIZE=gridsize; //gridsize;
 		//find extremes
 		for(int i=0;i<items.length;i++){
 			Coordinates c=items[i].getCoords();
@@ -38,11 +38,24 @@ public class JGrid3D {
 		double xw=xmax-xmin;
 		double yw=ymax-ymin;
 		double zw=zmax-zmin;
-		XN=(int)(xw/gridsize)+1;
-		YN=(int)(yw/gridsize)+1;
-		ZN=(int)(zw/gridsize)+1;
+		//Ensure that Paul doesn't try to give a ridiculous system that breaks
+		//the gridding by increasing the gridsize to compensate
+		long testGridNum = 1000000000;
+		int timesthrough = 0;
+		while(testGridNum > 100000000) {
+			if(timesthrough>0) {
+				System.out.println("Too many grids: doubling gridsize from "+gridsize+" to "+(gridsize*2));
+				gridsize=gridsize*2;
+			}
+			XN=(int)(xw/gridsize)+1;
+			YN=(int)(yw/gridsize)+1;
+			ZN=(int)(zw/gridsize)+1;
+			testGridNum = ((long)XN)*((long)YN)*((long)ZN);
+			timesthrough++;
+		}
+		this.GRIDSIZE = gridsize;
 		TOTAL_GRID=XN*YN*ZN;
-		//System.out.println(XN+" "+YN+" "+ZN);
+		//System.out.println(XN+" "+YN+" "+ZN+" Total grids= "+TOTAL_GRID);
 
 		grid = new ArrayList(0);
 		//make grid
@@ -106,7 +119,7 @@ public class JGrid3D {
 	/*
 	 * Returns the number of grids
 	 */
-	public int getNumGrids() {
+	public long getNumGrids() {
 		return TOTAL_GRID;
 	}
 	/*

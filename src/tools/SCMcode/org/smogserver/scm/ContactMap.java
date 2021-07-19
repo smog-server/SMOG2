@@ -86,7 +86,8 @@ public class ContactMap {
 	 */ 
 	public static ContactMap createContactMap(Atom[] atom, BondedList list, double radius, double bondedRadius, double cutoff, int rnaDelta, int proteinDelta) {		
 		if(radius <= 0 && ShadowSettings.USE_SHADOW_MAP) {
-			System.out.println("Shadowing radius is <= 0, treating instead as a cutoff map.");
+			//smog2 explicitly sets shadowing radius to zero, but no need for this message
+			if(!ShadowSettings.SMOG2_OUTPUT_ON) System.out.println("Shadowing radius is <= 0, treating instead as a cutoff map.");
 			ShadowSettings.USE_SHADOW_MAP = false;
 			ShadowSettings.USE_CUTOFF_MAP = true;
 			ShadowSettings.BONDED_RADIUS = 0;
@@ -94,7 +95,9 @@ public class ContactMap {
 		}	
 		ContactMap map = new ContactMap(atom);
 		JGrid3D grid = new JGrid3D(atom,cutoff);
-		int total = grid.getNumGrids();
+		// if(ShadowSettings.GRID_CUTOFF > 0) grid = new JGrid3D(atom,ShadowSettings.GRID_CUTOFF);
+		// else grid = new JGrid3D(atom,cutoff);
+		long total = grid.getNumGrids();
 		Contact[] con = new Contact[0];
 		int count = 0;
 		int progressCount = 1;
@@ -483,7 +486,7 @@ public class ContactMap {
 	public static ContactMap createCutoffContactMap(Atom[] atom, BondedList list, double cutoff, int rnaDelta, int proteinDelta) {		
 		ContactMap map = new ContactMap(atom);
 		JGrid3D grid = new JGrid3D(atom,cutoff);
-		int total = grid.getNumGrids();
+		long total = grid.getNumGrids();
 		//System.out.println(total);
 		Contact[] con = new Contact[0];
 		int count = 0;
