@@ -396,7 +396,6 @@ sub parsePDBATOMS
 	## INTERNAL VARIABLES ##
 	my $counter = 0;
 	my @temp; my @union;
-	my @tempBond;
 	my @consecResidues;
 	my $x;my $y;my $z;
 	my $residue; my $atom;my $atomSerial;
@@ -529,6 +528,8 @@ sub parsePDBATOMS
 					next;
 				}	
 				$atomsmatch++;
+
+####  this info can be taken from allAtoms.  We don't need to reparse the PDB
                                 if(defined $freecoor){
 					# Read the PDB coordinates as free-format.
 					my $string=trim(substr($record, 30));
@@ -549,11 +550,7 @@ sub parsePDBATOMS
 				$nbType = $ahandle->{"nbType"};
 				$pairType = $ahandle->{"pairType"};
 				$residueType = $residues{$residue}->{"residueType"};
-				
-				my $pdbIndex;
-				$pdbIndex = trim(substr($record,$PDBresstart,5));
 				$temp[$putIndex]=[$x,$y,$z,$atomSerial];
-				$tempBond[$putIndex]=[$x,$y,$z,$atomSerial];
 			}
 			$K--;
 			if($residues{$residue}->{"atomCount"} == -1){
@@ -562,11 +559,12 @@ sub parsePDBATOMS
 				$totalAtoms+=$residues{$residue}->{"atomCount"};
 			}
 			## CONCAT RESIDUE ##
-		  	@union = (@union,@temp);@temp=();
+			push(@union,@temp);
+	        	$tempPDL{$residue}->{$residueIndex}=pdl(@temp);
+
+			@temp=();
 			push(@consecResidues,$residue);
 			$headFlag = 0;		
-	        	$tempPDL{$residue}->{$residueIndex}=pdl(@tempBond);
-			@tempBond = ();
 			$residueIndex++;
 				
 		}
