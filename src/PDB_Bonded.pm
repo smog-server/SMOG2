@@ -86,8 +86,6 @@ sub checkPDB
 	
 	## INTERNAL VARIABLES ##
 	my $counter = 0;
-	my @temp; my @union;
-	my @tempBond;
 	my $x;my $y;my $z;
 	my $residue; my $atom;my $atomSerial;
 	my $atomsInRes; 
@@ -414,6 +412,7 @@ sub parsePDBATOMS
 	## OPEN .PDB FILE ##
 	my $atominhash;
 	my $PDBresstart;
+	print "Organizing PDB data\n";
 	if($CGenabled == 1){
 		$atominhash=\%residueBackup;
 		$PDBresstart=22;
