@@ -42,7 +42,7 @@ public class JGrid3D {
 		//the gridding by increasing the gridsize to compensate
 		long testGridNum = 1000000000;
 		int timesthrough = 0;
-		while(testGridNum > 100000000) {
+		while(testGridNum > 10000000) {
 			if(timesthrough>0) {
 				System.out.println("Too many grids: doubling gridsize from "+gridsize+" to "+(gridsize*2));
 				gridsize=gridsize*2;
