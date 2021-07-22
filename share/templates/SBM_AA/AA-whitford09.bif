@@ -5359,7 +5359,7 @@
       </impropers>
     </residue>
     <!--DNA A5' 0 P-->
-    <residue name="DA0" residueType="nucleic">
+    <residue name="DA0P" residueType="nucleic">
       <atoms>
         <atom bType="B_1" nbType="NB_1" pairType="C_1">O5*</atom>
         <atom bType="B_1" nbType="NB_1" pairType="C_1">C5*</atom>
@@ -5780,7 +5780,7 @@
       </impropers>
     </residue>
     <!--DNA G5' 0 P-->
-    <residue name="DG0" residueType="nucleic">
+    <residue name="DG0P" residueType="nucleic">
       <atoms>
         <atom bType="B_1" nbType="NB_1" pairType="C_1">O5*</atom>
         <atom bType="B_1" nbType="NB_1" pairType="C_1">C5*</atom>
@@ -6197,7 +6197,7 @@
       </impropers>
     </residue>
     <!--DNA T5' 0 P-->
-    <residue name="DT0" residueType="nucleic">
+    <residue name="DT0P" residueType="nucleic">
       <atoms>
         <atom bType="B_1" nbType="NB_1" pairType="C_1">O5*</atom>
         <atom bType="B_1" nbType="NB_1" pairType="C_1">C5*</atom>
@@ -6581,7 +6581,7 @@
       </impropers>
     </residue>
     <!--DNA C5' 0 P-->
-    <residue name="DC0" residueType="nucleic">
+    <residue name="DC0P" residueType="nucleic">
       <atoms>
         <atom bType="B_1" nbType="NB_1" pairType="C_1">O5*</atom>
         <atom bType="B_1" nbType="NB_1" pairType="C_1">C5*</atom>

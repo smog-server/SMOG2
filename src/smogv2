@@ -1984,14 +1984,14 @@ sub convertPDBToGroNdx
 	my ($xmin, $xmax, $ymin,$ymax,$zmin,$zmax);
 	my $grofmt="%5d%-5s%5s%5d%8.3f%8.3f%8.3f\n";
 	my $groSCMfmt="%5d%-5s%5s%5d %10.4f %10.4f %10.4f\n";
-	my $g96fmt="%5d %-5s %-5s %6d%15.9f%15.9f%15.9f\n";
+	my $g96fmt="%5d %-5s %-5s%7d%15.9f%15.9f%15.9f\n";
 	my $usefmt;
 	my $atommod;
 	my $maxchar;
 	my $filetype;
 	if($outputg96 ne ""){
 		$usefmt=$g96fmt;
-		$atommod=1000000;
+		$atommod=10000000;
 		$maxchar=6;
 		$filetype="G96";
 	}else{
