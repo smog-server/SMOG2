@@ -129,7 +129,7 @@ sub checkPDB
 			$endfound=1;
 			next;
 		}
-		if($lng eq "" || $record =~ m/^comment/i){
+		if($lng eq "" || $record =~ m/^comment/i || $record =~ m/^remark/i){
 			next;
 		}
 
@@ -144,7 +144,7 @@ sub checkPDB
 
 
 		if($record !~ m/^BOND/ && $endfound ==1){
-			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$record\"\n");
+			smog_quit("PDB format issue: Only user-defined bonds given by BOND, COMMENT, or REMARK lines, may be listed after END. Offending line: \"$record\"\n");
 		}
 	}
 
@@ -165,11 +165,11 @@ sub checkPDB
 		chomp($lng);
 		$lng =~ s/\s+//g;	
 		$lng =~ s/\t+//g;	
-		if($record =~ m/^comment/i || $record =~ m/^LARGE/ || $lng eq ""){
+		if($record =~ m/^comment/i || $record =~ m/^remark/i || $record =~ m/^LARGE/ || $lng eq ""){
 			next;
 		# make sure BOND appears after END
 		}elsif($record !~ m/^BOND/ && $endfound ==1){
-			smog_quit("PDB format issue: Only user-defined bonds given by BOND, or COMMENT lines, may be listed after END. Offending line: \"$lng\"\n");
+			smog_quit("PDB format issue: Only user-defined bonds given by BOND, COMMENT, or REMARK lines, may be listed after END. Offending line: \"$lng\"\n");
 		}
 
 		# CHECK IF IT IS A BOND
@@ -435,7 +435,7 @@ sub parsePDBATOMS
 		chomp($lng);
 		$lng =~ s/\s+//g;	
 		$lng =~ s/\t+//g;	
-		if($record =~ m/^comment/i || $lng eq "" || $record =~ m/^LARGE/ ){
+		if($record =~ m/^comment/i || $record =~ m/^remark/i || $lng eq "" || $record =~ m/^LARGE/ ){
 			next;
 		# make sure BOND appears after END
 		}

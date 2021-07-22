@@ -276,8 +276,8 @@ sub adjustInputFile{
 	chomp($hostname);
 	my $date=`date`;
 	chomp($date);
-	print NEWPDB "COMMENT File generated with: smog_adjustPDB $inputArguments\n";
-	print NEWPDB "COMMENT Generated on $date. Hostname: $hostname\n";
+	print NEWPDB "REMARK File generated with: smog_adjustPDB $inputArguments\n";
+	print NEWPDB "REMARK Generated on $date. Hostname: $hostname\n";
 	if(defined $large){
 		print NEWPDB "LARGE - Use large base for res/atom numbering (don\'t delete, or smog2 will crash)\n";
 	}
@@ -331,7 +331,7 @@ sub adjustInputFile{
 			if (defined $sort || defined $renumber || defined $removeH ){
 				smog_quit("Issue at line $k: BOND lines can not be used in conjunction with -removeH, -sort, or -renumber, since the new atom numbers may differ from the input file.");
 			}
-		}elsif ($pArr[$k] =~ /^COMMENT/){
+		}elsif ($pArr[$k] =~ /^remark/i || $pArr[$k] =~ /^remark/i){
 			print NEWPDB "$pArr[$k]\n";
 			$k++;
 			next;
@@ -464,9 +464,9 @@ sub adjustInputFile{
 			$prevResTypeRNA = isRNA($resName);
 			undef @residue; 
 
-		## If the line is niether ATOM, BOND, COMMENT, TER or END - exit. ##
+		## If the line is niether ATOM, BOND, COMMENT/REMARK, TER or END - exit. ##
 		}else{
-			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM, HETATM, TER, BOND, COMMENT, END");
+			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM, HETATM, TER, BOND, COMMENT, REMARK, END");
 		}
 	}
 	close NEWPDB;
