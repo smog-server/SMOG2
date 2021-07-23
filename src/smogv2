@@ -1369,7 +1369,7 @@ sub dihedralOutput
 			}
 		}
 	}
-		return ($outputString,$fType);
+	return ($outputString,$fType);
 }
  
 # Given a user defined dihedral function, parse values
