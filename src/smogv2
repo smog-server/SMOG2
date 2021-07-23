@@ -802,8 +802,11 @@ sub calculateBonds1
 sub calculateBonds2
 {
 	my($bondHandle,$whichPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
-	foreach my $chain(keys %{$bondHandle})
+	print "Working on chain:\n";
+	foreach my $chain(sort keys %{$bondHandle})
 	{
+		my $chainn=$chain+1;
+		print "\t$chainn...\n";
 		calculateBondsHelper2($bondHandle->{$chain},$whichPDL->{$chain},$bondCache,$indexhandle,$allatoms,$bondvectors);
 	
 	}
@@ -1083,8 +1086,10 @@ sub printOrderedAngles
 sub CalculateAngles
 {
 	my($angleFunctHandle,$whichPDL,$angleCache,$indexhandle,$allatoms,$bondvectors) = @_;
- 
-	foreach my $chain(keys %{$angleFunctHandle}){
+	print "Working on chain:\n"; 
+	foreach my $chain(sort keys %{$angleFunctHandle}){
+		my $chainn=$chain+1;
+		print "\t$chainn...\n";
 		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache,$indexhandle,$allatoms,$bondvectors);
 	}
 }
@@ -1228,7 +1233,10 @@ sub printOrderedDihedrals
 sub CalculateDihedrals
 {
 	my($diheFunctHandle,$whichPDL,$diheCache,$allatoms,$bondvectors) = @_;
-	foreach my $chain(keys %{$diheFunctHandle}){
+	print "Working on chain:";
+	foreach my $chain(sort keys %{$diheFunctHandle}){
+		my $chainn=$chain+1;
+		print "\t$chainn...\n";
 		CalculateDihedralsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain},$diheCache,$allatoms,$bondvectors);
 	}
 }
