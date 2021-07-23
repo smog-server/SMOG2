@@ -107,6 +107,14 @@ our %angleParseSeen;
 our %dihParseSeen;
 our %contactParseSeen;
 our $normalizevals;
+
+my @formatvalues;
+   $formatvalues[0]=" %12.9e\n";
+   $formatvalues[1]=" %12.9e %12.9e\n";
+   $formatvalues[2]=" %12.9e %12.9e %12.9e\n";
+   $formatvalues[3]=" %12.9e %12.9e %12.9e %12.9e\n";
+   $formatvalues[4]=" %12.9e %12.9e %12.9e %12.9e %12.9e\n";
+   $formatvalues[5]=" %12.9e %12.9e %12.9e %12.9e %12.9e %12.9e\n";
 #######END GLOBAL DEFS#######
 #######MAIN PROGRAM####### 
 
@@ -803,7 +811,7 @@ sub calculateBonds2
 {
 	my($bondHandle,$whichPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
 	print "Working on chain:\n";
-	foreach my $chain(sort keys %{$bondHandle})
+	foreach my $chain(sort { $a <=> $b } keys %{$bondHandle})
 	{
 		my $chainn=$chain+1;
 		print "\t$chainn...\n";
@@ -877,7 +885,6 @@ sub bondOutput
 	my $fType=""; my $formattedString;
 	       ## Parse each part of the function ##
 	foreach my $fun(@funcs){
-		my $paramFormat="";
 		($fType,@paramArr) = bondFuncParser($fun);
 		## $paramArr[0] is bond length
 		if($fType == -1){
@@ -896,12 +903,11 @@ sub bondOutput
         		if($values < $interactionThreshold->{"bonds"}->{"shortBond"}
         		|| $values > $interactionThreshold->{"bonds"}->{"longBond"}){
 				my $DIST=int($values*100)/100.0;
-				my %reflist=%{$indexhandle};
-				if(!exists $reflist{$i} || !exists $reflist{$j}){
+				if(!exists ${$indexhandle}{$i} || !exists ${$indexhandle}{$j}){
 					smog_quit("Internal error 3.  Please inform smog team");
 				}
-				my $i1=$reflist{$i};
-				my $j1=$reflist{$j};
+				my $i1=$indexhandle->{$i};
+				my $j1=$indexhandle->{$j};
 				smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file) is outside of the bond threshold range. Since the parameters for this interaction will be read from bondtypes, energy minimization will fix the structure.  However, it is possible that there is a problem with the input PDB (e.g. residue numbering error).");
 			}
 		}else{
@@ -914,9 +920,8 @@ sub bondOutput
 			$paramArr[0]=evalsub($paramArr[0],$values);
 			if($dosub==1){
 				if(abs($paramArr[0]-$values)/$paramArr[0] > 0.1){
-					my %reflist=%{$indexhandle};
-					my $i1=$reflist{$i};
-					my $j1=$reflist{$j};
+					my $i1=$indexhandle->{$i};
+					my $j1=$indexhandle->{$j};
 					my $DIST=int($values*100)/100.0;
 					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates ($values). This may mean there is something strange with your structure.");
 				}
@@ -926,13 +931,12 @@ sub bondOutput
         		|| $values > $interactionThreshold->{"bonds"}->{"longBond"} && $dosub==0){
 				#note, only reset the distance and/or check it, if the templates don't define a specific value (i.e. $dosub==0)
 				my $DIST=int($values*100)/100.0;
-				my %reflist=%{$indexhandle};
 				if($setBondtoLimit){
-					if(!exists $reflist{$i} || !exists $reflist{$j}){
+					if(!exists ${$indexhandle}{$i} || !exists ${$indexhandle}{$j}){
 						smog_quit("Internal error 2.  Please inform smog team");
 					}
-					my $i1=$reflist{$i};
-					my $j1=$reflist{$j};
+					my $i1=$indexhandle->{$i};
+					my $j1=$indexhandle->{$j};
 	 				if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
 	  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
 	  					print "$paramArr[0] nm\n\n";
@@ -942,16 +946,16 @@ sub bondOutput
 	 				}
 					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range. -limitbondlength is being used, will set length to: $paramArr[0]");
 				}else{
-					if(!exists $reflist{$i} || !exists $reflist{$j}){
+					if(!exists ${$indexhandle}{$i} || !exists ${$indexhandle}{$j}){
 						smog_quit("Internal error 3.  Please inform smog team");
 					}
-					my $i1=$reflist{$i};
-					my $j1=$reflist{$j};
+					my $i1=$indexhandle->{$i};
+					my $j1=$indexhandle->{$j};
 					smog_quit("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range.");
 				}
         		}	
 ## Format output <i j function p1 p2 ... pn>
-			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+			my $paramFormat=$formatvalues[$#paramArr];
 			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
 			$outputString = "$outputString$formattedString\n";
        		}
@@ -1087,7 +1091,7 @@ sub CalculateAngles
 {
 	my($angleFunctHandle,$whichPDL,$angleCache,$indexhandle,$allatoms,$bondvectors) = @_;
 	print "Working on chain:\n"; 
-	foreach my $chain(sort keys %{$angleFunctHandle}){
+	foreach my $chain(sort { $a <=> $b } keys %{$angleFunctHandle}){
 		my $chainn=$chain+1;
 		print "\t$chainn...\n";
 		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache,$indexhandle,$allatoms,$bondvectors);
@@ -1131,7 +1135,6 @@ sub angleOutput
 	my $formattedString="";
 	foreach my $fun(@funcs)
 	{
-		my $paramFormat="";
 		($fType,@paramArr) = angleFuncParser($fun);
 
 		if($fType ==-1){
@@ -1148,10 +1151,9 @@ sub angleOutput
 
 	 		if($values < $interactionThreshold->{"angles"}->{"smallAngles"} || $values > $interactionThreshold->{"angles"}->{"largeAngles"}){ 
 				my $THETA=int($values*100)/100.0;
-				my %reflist=%{$indexhandle};
-				my $i1=$reflist{$i};
-				my $j1=$reflist{$j};
-				my $k1=$reflist{$k};
+				my $i1=$indexhandle->{$i};
+				my $j1=$indexhandle->{$j};
+				my $k1=$indexhandle->{$k};
 				smog_note("Angle formed by atoms $i $j $k (PDB lines $i1 $j1 $k1) outside of the range set by smallAngles and largeAngles (see .sif): theta=$THETA degrees\n\tWhile the interaction parameters will be defined by angletypes, this warning means there may be something strange about your input configuration.");
 			}
 	 		
@@ -1164,22 +1166,20 @@ sub angleOutput
 				## Check angles threshold ##
 		 		if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
 					my $THETA=int($paramArr[0]*100)/100.0;
-					my %reflist=%{$indexhandle};
-					my $i1=$reflist{$i};
-					my $j1=$reflist{$j};
-					my $k1=$reflist{$k};
+					my $i1=$indexhandle->{$i};
+					my $j1=$indexhandle->{$j};
+					my $k1=$indexhandle->{$k};
 					smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilities.",1);
 				}
 		 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
 					my $THETA=int($paramArr[0]*100)/100.0;
-					my %reflist=%{$indexhandle};
-					my $i1=$reflist{$i};
-					my $j1=$reflist{$j};
-					my $k1=$reflist{$k};
+					my $i1=$indexhandle->{$i};
+					my $j1=$indexhandle->{$j};
+					my $k1=$indexhandle->{$k};
 					smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
 				}
 	 		## Format output <i j k function p1 p2 ... pn>
-	 			foreach(@paramArr){$paramFormat="$paramFormat %12.9e";}
+				my $paramFormat=$formatvalues[$#paramArr];
 				$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
 				$outputString = "$outputString$formattedString\n";
 			}else{
@@ -1234,7 +1234,7 @@ sub CalculateDihedrals
 {
 	my($diheFunctHandle,$whichPDL,$diheCache,$allatoms,$bondvectors) = @_;
 	print "Working on chain:";
-	foreach my $chain(sort keys %{$diheFunctHandle}){
+	foreach my $chain(sort { $a <=> $b } keys %{$diheFunctHandle}){
 		my $chainn=$chain+1;
 		print "\t$chainn...\n";
 		CalculateDihedralsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain},$diheCache,$allatoms,$bondvectors);
@@ -1327,7 +1327,6 @@ sub dihedralOutput
 	my $funci=0; my @fTypei;
 	foreach my $fun(@funcs)
 	{
-		my $paramFormat="";
 		($fType,@paramArr) = diheFuncParser($fun);
 		if($fType ==-1){
 			 ## don't write angle. Make gromacs use dihedraltype
@@ -1357,7 +1356,7 @@ sub dihedralOutput
 				## If dihedral kd is normalized or has scaling&normalize ##
 			 	$paramArr[1]*=$ratio;
 				## Format output <i j k function p1 p2 ... pn>
-			 	for(my $I=0;$I<=$#paramArr;$I++){$paramFormat="$paramFormat %12.9e";}
+				my $paramFormat=$formatvalues[$#paramArr];
 
 				if($fType == 1 || $fType == 4) {
 					$paramFormat=" %12.9e %12.9e %u";
