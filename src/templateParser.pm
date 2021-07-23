@@ -1667,9 +1667,12 @@ sub getContactFunctionals
 sub adjListTraversalHelper
 {
 	my($listHandle,$atomParent,$visitedString,$diheStringList,$angleStringList,$visitedList,$counter) = @_;
-	my $limitCounter = $counter;
  	## End reached don't need to search further
- 	if($counter >=4){return;}
+ 	if($counter==4){return;}
+	$counter++;
+
+	my %sendHash = %{$visitedList};
+	$sendHash{$atomParent} = 1;	
  	## Given an atom loop through all the atoms it is bonded to
  	foreach my $atomIn(@{$listHandle->{$atomParent}})
  	{
@@ -1678,21 +1681,18 @@ sub adjListTraversalHelper
 		## Stitch dihedral string with atomIn
 		my $visitedStringNew = "$visitedString-$atomIn";
 		## Update counters, visitedList hash
-		$counter=$limitCounter+1;
-		my %sendHash = %{$visitedList};
-		$sendHash{$atomIn} = 1;	
 		## Traverse through the child of atomIn
 		adjListTraversalHelper($listHandle,$atomIn,$visitedStringNew,$diheStringList,$angleStringList,\%sendHash,$counter);
 	
+		if($counter == 3) {
 		## 3 atom count is reached, creating an angle
 		## add to angleStringList; continue
-		if($counter == 3) {push(@{$angleStringList},$visitedStringNew);$counter--;}
-	
+			push(@{$angleStringList},$visitedStringNew);
+		}elsif($counter == 4) {
 		## 4 atom count is reached, creating a dihedral;
 		## add to the diheStringList; exit out of traversing this branch
-		if($counter == 4) {push(@{$diheStringList}, $visitedStringNew);$counter--;}
-	
-		#if($counter == 4) {push(@{$diheStringList}, $visitedStringNew);last;}
+			push(@{$diheStringList}, $visitedStringNew);
+		}
 	}
 }
 

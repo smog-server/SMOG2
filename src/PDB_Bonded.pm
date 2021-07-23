@@ -333,6 +333,9 @@ sub checkPDB
 					$x = trim(substr($record, 30, 8));
 					$y = trim(substr($record, 38, 8));
 					$z = trim(substr($record, 46, 8));
+					if(whatAmI($x) > 2 || whatAmI($y) > 2 || whatAmI($z) > 2){
+						smog_quit("Coordinate read, but does not appear to be a number. Perhaps you are using free-formatted coordinates and should employ the -freecoor flag. Issue found at line:\n$record");
+					}
 				}
 				$atomCounter++;
 				$atomSerial=$atomCounter;

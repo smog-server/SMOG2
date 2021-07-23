@@ -568,8 +568,9 @@ sub addToTop {
 		# if $directive is openSMOG, then $stuff is the address of the array that contains the folloding information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
 		addOShash($OSref,$stuff);
         }else{
-		$linesInDirectivesWithContent[$directives{$directive}]+= hascontent($stuff);
-		push  @{$topFileBuffer[$directives{$directive}][$linesInDirectives[$directives{$directive}]++]}, $stuff;
+		my $dir=$directives{$directive};
+		$linesInDirectivesWithContent[$dir]+= hascontent($stuff);
+		push  @{$topFileBuffer[$dir][$linesInDirectives[$dir]++]}, $stuff;
 	}
 }
 
