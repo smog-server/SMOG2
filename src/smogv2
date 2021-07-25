@@ -259,7 +259,6 @@ sub parse_args {
 		't=s' => \$inputFolder, 
 		'i=s' => \$inputPDB, 
 		'g=s' => \$groFile,
-		'g96' => \$g96on,
 		'c=s' => \$ContactFile, 
 		'SCMorig' => \$saveSCMorig, 
 		's=s' => \$shadowFile, 
@@ -2297,7 +2296,6 @@ usage: smog2 .. options ..
      I/O flags  
        -i [molecule.pdb]       : input PDB to generate Hamiltonian
        -g [smog.gro]           : output .gro file name
-       -g96                    : write a .g96 file, instead of a .gro
        -o [smog.top]           : output .top file name
        -s [smog.contacts]      : output .contacts file name
        -n [smog.ndx]           : output .ndx file name
