@@ -595,6 +595,7 @@ sub addToTop {
 sub addExtras {
 	my ($filename) = @_;
 	my %foundNBe;
+	my $customerror="If you are using custom templates, then this definition may be intentional. Otherwise, there may be a mistake in your extras file.";
 	if( -e $filename){
 		print "\nAdding extras information\n\n";
 		open(EXTRA,"$filename");
@@ -635,17 +636,17 @@ sub addExtras {
 				my $lstuff= trim($ltokens[1]);
 				my @tarray=split(/\s+/,$lstuff);
 				if(@tarray < 5){
-					smog_quit("nonbond_params defined in extras file, but too few parameters are given. Offending line:$line");
+					smog_quit("nonbond_params defined in extras file, but too few parameters are given. $customerror Offending line:$line",0);
 				}
 				unless($tarray[2]  =~ /^[1-4]$/){
-					smog_quit("In extras file, only nonbond_param types 1-4 are supported (1 and 2 are default Gromacs options. 3 and 4 are for use with unofficial (modified) versions of Gromacs. Offending line:$line");
+					smog_quit("In extras file, only nonbond_param types 1-4 are supported (1 and 2 are default Gromacs options. 3 and 4 are for use with unofficial (modified) versions of Gromacs. $customerror Offending line:$line",0);
 				}
 				if($tarray[2]==1 && @tarray!=5){
-					smog_quit("In extras file, nonbond_param defined with nbtype 1. Must have 5 parameters. Offending line:$line");
+					smog_quit("In extras file, nonbond_param defined with nbtype 1. Must have 5 parameters. $customerror Offending line:$line",0);
 				}elsif($tarray[2]==3 && @tarray!=21){
-					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 21 parameters. Offending line:$line");
+					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 21 parameters. $customerror Offending line:$line",0);
 				}elsif($tarray[2]==4 && @tarray!=6){
-					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 21 parameters. Offending line:$line");
+					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 21 parameters. $customerror Offending line:$line",0);
 				}
 
 				if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
@@ -671,13 +672,13 @@ sub addExtras {
 				my $lstuff= trim($ltokens[1]);
 				my @tarray=split(/\s+/,$lstuff);
 				if(@tarray < 5 ){
-					smog_quit("bondtypes defined in extras file, but too few parameters are given. Offending line:$line");
+					smog_quit("bondtypes defined in extras file, but too few parameters are given. $customerror Offending line:$line",0);
 				}
 				unless($tarray[2]  =~ /^[1-9]$|^10$/){
-					smog_quit("In extras file, only bondtypes types 1-10 are supported. Offending line:$line");
+					smog_quit("In extras file, only bondtypes types 1-10 are supported. $customerror Offending line:$line",0);
 				}
 				if($tarray[2]==1 && @tarray!=5){
-					smog_quit("In extras file, bondtypes defined with nbtype 1. Must have 5 parameters. Offending line:$line");
+					smog_quit("In extras file, bondtypes defined with nbtype 1. Must have 5 parameters. $customerror Offending line:$line",0);
 				}
 				unless(defined $presentatomtypes{$tarray[0]} &&  defined $presentatomtypes{$tarray[1]}){
 					next;
@@ -697,13 +698,13 @@ sub addExtras {
 				my $lstuff= trim($ltokens[1]);
 				my @tarray=split(/\s+/,$lstuff);
 				if(@tarray < 6 ){
-					smog_quit("angletypes defined in extras file, but too few parameters are given. Offending line:$line");
+					smog_quit("angletypes defined in extras file, but too few parameters are given. $customerror Offending line:$line",0);
 				}
 				unless($tarray[3]  =~ /^[1-6]$|^8$|^10$/){
-					smog_quit("In extras file, only angletypes types 1-6, 8 and 10 are supported. Offending line:$line");
+					smog_quit("In extras file, only angletypes types 1-6, 8 and 10 are supported. $customerror Offending line:$line",0);
 				}
 				if($tarray[3]==1 && @tarray!=6){
-					smog_quit("In extras file, angletypes defined with nbtype 1. Must have 6 parameters. Offending line:$line");
+					smog_quit("In extras file, angletypes defined with nbtype 1. Must have 6 parameters. $customerror Offending line:$line",0);
 				}
 				unless(defined $presentatomtypes{$tarray[0]} && defined $presentatomtypes{$tarray[1]} && defined $presentatomtypes{$tarray[2]}){
 					next;
@@ -723,10 +724,10 @@ sub addExtras {
 				my $lstuff= trim($ltokens[1]);
 				my @tarray=split(/\s+/,$lstuff);
 				if(@tarray < 7 ){
-					smog_quit("dihedraltypes defined in extras file, but too few parameters are given. Offending line:$line");
+					smog_quit("dihedraltypes defined in extras file, but too few parameters are given. $customerror Offending line:$line",0);
 				}
 				unless($tarray[4]  =~ /^[1-5]$|^[89]$|^1[01]$/){
-					smog_quit("In extras file, only angletypes types 1-5, 8, 9, 10 and 11 are supported. Offending line:$line");
+					smog_quit("In extras file, only angletypes types 1-5, 8, 9, 10 and 11 are supported. $customerror Offending line:$line",0);
 				}
 				if((!defined $presentatomtypes{$tarray[0]} && $tarray[0] ne "X") || (!defined $presentatomtypes{$tarray[1]} && $tarray[1] ne "X") || (!defined $presentatomtypes{$tarray[2]} && $tarray[2] ne "X") || (!defined $presentatomtypes{$tarray[3]} && $tarray[3] ne "X") ){
 					next;
