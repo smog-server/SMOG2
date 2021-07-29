@@ -3,9 +3,10 @@
 #
 #                          Structure-based Model (SMOG) software
 #    This package is the product of contributions from a number of people, including:
-#                 Jeffrey Noel, Mariana Levi, Mohit Raghunathan, Joyce Yang           
-#                       Prasad Bandarkar, Udayan Mohanty, Ailun Wang
-#                 Heiko Lammert, Ryan Hayes, Jose Onuchic & Paul Whitford
+#            Jeffrey Noel, Mariana Levi, Antonio Oliveira, Vinícius Contessoto,
+#             Mohit Raghunathan, Joyce Yang, Prasad Bandarkar, Udayan Mohanty, 
+#                          Ailun Wang, Heiko Lammert, Ryan Hayes, 
+#                               Jose Onuchic & Paul Whitford
 #
 #            Copyright (c) 2015,2016,2018,2021, The SMOG development team at
 #                        Rice University and Northeastern University
@@ -2273,9 +2274,10 @@ sub header
 Thank you for using the Structure-based Model (SMOG) software
 
 This package is the product of contributions from a number of people, including:
-Jeffrey Noel, Mariana Levi, Mohit Raghunathan, Joyce Yang           
-Prasad Bandarkar, Udayan Mohanty, Ailun Wang        
-Ryan Hayes, Jose Onuchic & Paul Whitford         
+Jeffrey Noel, Mariana Levi, Antonio Oliveira, Vinícius Contessoto,
+Mohit Raghunathan, Joyce Yang, Prasad Bandarkar, Udayan Mohanty,
+Ailun Wang, Heiko Lammert, Ryan Hayes,
+Jose Onuchic & Paul Whitford         
 
 Copyright (c) 2015,2016,2018,2021, The SMOG development team at
 Rice University and Northeastern University
