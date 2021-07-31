@@ -1784,7 +1784,7 @@ sub contactParseopenSMOG
 
 	if(exists $openSMOGpothash->{$fname}->{weight}){
 		# there is a weight variable
-		if($paramArr->[$openSMOGpothash->{$fname}->{weight}] =~ /^\?$/){
+		if($paramArr->[$openSMOGpothash->{$fname}->{weight}] =~ /^\?$/ || $paramArr->[$openSMOGpothash->{$fname}->{weight}] =~ /^energynorm$/i){
 			# the weight should be normalized, so set it to epsilon
 			$paramArr->[$openSMOGpothash->{$fname}->{weight}]=$epsilon;	
 		}

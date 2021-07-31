@@ -443,8 +443,8 @@ sub checkContactFunctionDef
 			if( !exists $openSMOGpothash->{$funcname}->{weight}){
 				smog_quit("$funcname contact type does not have a parameter called \"weight\", but this function is being used in a normalized contact group ($cG, in .nb file): $funcString")
 			}
-			if ($vars[$openSMOGpothash->{$funcname}->{weight}] !~ m/^\?$/){
-				smog_quit("$funcname contact type (defined in .sif) can not have normalization turned on without the \"weight\" parameter being given as \"?\". Problematic declaration in contact group $cG (in .nb file): $funcString")
+			if ($vars[$openSMOGpothash->{$funcname}->{weight}] !~ m/^\?$/ && $vars[$openSMOGpothash->{$funcname}->{weight}] !~ m/^energynorm$/i){
+				smog_quit("$funcname contact type (defined in .sif) can not have normalization turned on without the \"weight\" parameter being given as \"energynorm\" or \"?\". Problematic declaration in contact group $cG (in .nb file): $funcString")
 			}
 			my $pot=$functions->{$funcname}->{"openSMOGpotential"};
 			$pot =~ s/^weight\*//g;
