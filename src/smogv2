@@ -1244,7 +1244,7 @@ sub printOrderedDihedrals
 sub CalculateDihedrals
 {
 	my($diheFunctHandle,$whichPDL,$diheCache,$allatoms,$bondvectors) = @_;
-	print "Working on chain:";
+	print "Working on chain:\n";
 	foreach my $chain(sort { $a <=> $b } keys %{$diheFunctHandle}){
 		my $chainn=$chain+1;
 		print "\t$chainn...\n";
