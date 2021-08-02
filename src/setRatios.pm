@@ -1,16 +1,18 @@
 #########################################################################################
-#
 #                          Structure-based Model (SMOG) software
 #    This package is the product of contributions from a number of people, including:
-#                     Jeffrey Noel, Mariana Levi, Mohit Ranghunathan,
-#                 Heiko Lammert, Ryan Hayes, Jose Onuchic & Paul Whitford
+#            Jeffrey Noel, Mariana Levi, Antonio Oliveira, Vinícius Contessoto,
+#             Mohit Raghunathan, Joyce Yang, Prasad Bandarkar, Udayan Mohanty,
+#                          Ailun Wang, Heiko Lammert, Ryan Hayes,
+#                               Jose Onuchic & Paul Whitford
 #
 #            Copyright (c) 2015,2016,2018,2021, The SMOG development team at
 #                        Rice University and Northeastern University
 #
-#              SMOG 2 & Shadow are available at http://smog-server.org
+#          SMOG 2, Shadow and openSMOG are available at http://smog-server.org
 #
-#                        Direct questions to: info@smog-server.org
+#          You can direct questions to info@smog-server.org, or the smog-users forum,
+#          which you can find at https://mailman.rice.edu/mailman/listinfo/smog-users
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
