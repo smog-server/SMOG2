@@ -568,8 +568,10 @@ sub initializeDirectives {
 	addToTop("atoms","\n[ atoms ]\n");
 	addToTop("atoms",";  nr        type   resnr residue atom   cgnr   charge\n");
 	addToTop("moleculetype","\n[ moleculetype ]\n");
-	addToTop("moleculetype","; name            nrexcl\n");
-	addToTop("moleculetype","  Macromolecule   3\n");
+	my $molname=$interactions->{"molname"};
+	my $nrexcl=$interactions->{"nrexcl"};
+	addToTop("moleculetype","; name       nrexcl\n");
+	addToTop("moleculetype"," $molname    $nrexcl\n");
 	addToTop("system","\n[ system ]\n");
 	addToTop("system","; name\n");
 	addToTop("system","  Macromolecule\n");
@@ -1503,6 +1505,9 @@ sub calculateContacts
 
 	# print everything
 
+	if(!defined $openSMOG){
+#		%excludebonded = ();
+	}
 	for(my $i=0;$i<$numCon;$i++){
 		my $outputString;
 		my $directive;my $addExclusions;
@@ -1514,6 +1519,7 @@ sub calculateContacts
 		}
 		($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
 		addToTop($directive,$outputString);
+		##if($addExclusions && !exists $excludebonded{"$atoma_array[$i] $atomb_array[$i]"}) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
 		if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
 	}
 

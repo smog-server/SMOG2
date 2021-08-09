@@ -52,7 +52,7 @@
     <xs:element name="nbType" type="nbTypeType" minOccurs="2" maxOccurs="2"/>
     <xs:attribute name="func" type="funcTypeTypeC"/>
   </xs:complexType>
-  <!--defauts TYPE -->
+  <!--defaults TYPE -->
   <xs:complexType name="defaultsType">
     <xs:attribute name="gmx-combination-rule" type="gmxTypeComb" use="optional"/>
     <xs:attribute name="nbfunc" type="gmxType" use="optional"/>
@@ -60,9 +60,15 @@
     <xs:attribute name="fudgeLJ" type="xs:decimal" use="optional"/>
     <xs:attribute name="fudgeQQ" type="xs:decimal" use="optional"/>
   </xs:complexType>
+  <!--molecule TYPE -->
+  <xs:complexType name="molType">
+    <xs:attribute name="molname" type="xs:string" use="required"/>
+    <xs:attribute name="nrexcl" type="xs:integer" use="required"/>
+  </xs:complexType>
   <!-- NB TYPE -->
   <xs:complexType name="nbTypes">
     <xs:element name="defaults" type="defaultsType" minOccurs="0" maxOccurs="1"/>
+    <xs:element name="moltype" type="molType" minOccurs="0" maxOccurs="1"/>
     <xs:element name="nonbond" type="nonbondType" maxOccurs="unbounded"/>
     <xs:element name="contact" type="contactType" maxOccurs="unbounded"/>
   </xs:complexType>

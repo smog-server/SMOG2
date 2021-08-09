@@ -1440,6 +1440,19 @@ sub parseNonBonds {
 		$interactions->{"fudgeQQ"}=-1;
 	}
 
+	# get/set molecule information
+	if(exists $data->{"moltype"}){
+		# molecule type information found in the templates, so use the values
+		@interHandle = @{$data->{"moltype"}};
+		$interactions->{"molname"}=$interHandle[0]->{"molname"};
+		$interactions->{"nrexcl"}=$interHandle[0]->{"nrexcl"};
+	}else{
+		smog_quit("name of moleculetype not given in .nb file. Will use \"Macromolecule\"",0);	
+		$interactions->{"molname"}="Macromolecule";
+		smog_quit("value of nrexcl not given in .nb file. Will use 3",0);	
+		$interactions->{"nrexcl"}=3;
+	}
+
 	## Loop over nonbonds, save in $interaction{nonbonds}{typeA} = func info.
 	@interHandle = @{$data->{"nonbond"}};
 	my $counter = 0;
