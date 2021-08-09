@@ -795,17 +795,23 @@ sub printOrderedBonds
 
 	## Print our sorted bonds ##
 	my %bfound;
+	my %blist;
 	foreach my $p(@bondCache)
 	{
 		addToTop("bonds",$p->{"v"});
 		my $i=$p->{"i"};
-		my $j=$p->{"j"};	
+		my $j=$p->{"j"};
+		$blist{"$i $j"}=0;	
+		$blist{"$j $i"}=0;	
 		if(exists $bfound{"$i-$j"}){
 			my $def1=$p->{"v"};
-			my $def2=$bfound{"$i-$j"};
+			my $def2=$bfound{"$i $j"};
 			smog_quit("Found duplicate bond definitions for atom pair $i-$j. Generally, this is due to a mistake, since there is no reason to define two bonds between the same atoms. Found the following parameters assigned for this bond in the top file:\n$def1\n$def2",1);	
 		}
-		$bfound{"$i-$j"}=$p->{"v"};
+		$bfound{"$i $j"}=$p->{"v"};
+	}
+	if(defined $openSMOG && $interactions->{"nrexcl"} >=1){
+		%excludebonded=%blist;
 	}
 }
 
@@ -1092,11 +1098,18 @@ sub printOrderedAngles
 
 	## Sort angles by i,j then k ## 
 	@angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
-
+	my %blist;
 	## Print our sorted bonds ##
   	foreach my $p(@angleCache){
   		addToTop("angles",$p->{"v"});
+                my $i=$p->{"i"};
+                my $k=$p->{"k"};
+                $blist{"$i $k"}=0;
+                $blist{"$k $i"}=0;
 	}
+        if(defined $openSMOG && $interactions->{"nrexcl"} >=2){
+                %excludebonded=(%excludebonded,%blist);
+        }
 }
 
 # CalculateAnglesHelper() calculates the angles for each chain
@@ -1235,11 +1248,19 @@ sub printOrderedDihedrals
 	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache,$allatoms,$bondvectors);
 	## Sort dihedrals by i, then j then k then l ## 
 	@diheCache = sort {($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"f"} <=> $b->{"f"}) || ($a->{"i"} <=> $b->{"i"}) || ($a->{"l"} <=> $b->{"l"})} @diheCache;
-	
+	my %blist;	
 	## Print our sorted bonds ##
 	foreach my $p(@diheCache){
+                my $i=$p->{"i"};
+                my $l=$p->{"l"};
+                $blist{"$i $l"}=0;
+                $blist{"$l $i"}=0;
+
 		addToTop("dihedrals",$p->{"v"});
 	}
+        if(defined $openSMOG && $interactions->{"nrexcl"} >=3){
+                %excludebonded=(%excludebonded,%blist);
+        }
 }
 
 # Setup the calculation of dihedral angles of all combined residues,
@@ -1506,7 +1527,7 @@ sub calculateContacts
 	# print everything
 
 	if(!defined $openSMOG){
-#		%excludebonded = ();
+		%excludebonded = ();
 	}
 	for(my $i=0;$i<$numCon;$i++){
 		my $outputString;
@@ -1519,8 +1540,7 @@ sub calculateContacts
 		}
 		($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
 		addToTop($directive,$outputString);
-		##if($addExclusions && !exists $excludebonded{"$atoma_array[$i] $atomb_array[$i]"}) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
-		if($addExclusions) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
+		if($addExclusions && !exists $excludebonded{"$atoma_array[$i] $atomb_array[$i]"}) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
 	}
 
 	if(scalar keys %conttypeseen >1 && !defined $openSMOG){

@@ -43,7 +43,7 @@ use openSMOG;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($openSMOG $openSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round checkFunctions);
+qw($openSMOG $openSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round checkFunctions);
 
 our $openSMOG;
 our $openSMOGpothash;
@@ -78,6 +78,7 @@ our $normalizevals;
 our $energyGroups;
 my $settings; our $termRatios;
 our $interactions;
+our %excludebonded;
 our %funcTable;our %funcTableRev;
 our %eGTable;our %eGRevTable;
 our @topFileBuffer;our @linesInDirectives;
@@ -126,6 +127,7 @@ sub clearBifMemory {
 	undef $contactSettings;
 	undef $termRatios;
 	undef $interactions;
+	undef %excludebonded;
 	undef %funcTable;
 	undef %funcTableRev;
 	undef %eGRevTable;
@@ -1446,6 +1448,9 @@ sub parseNonBonds {
 		@interHandle = @{$data->{"moltype"}};
 		$interactions->{"molname"}=$interHandle[0]->{"molname"};
 		$interactions->{"nrexcl"}=$interHandle[0]->{"nrexcl"};
+		if ($interactions->{"nrexcl"} > 3){
+			smog_quit("nrexcl must be less than or equal to 3. While larger values may work, it can also lead to somewhat unpredictable results.");
+		}
 	}else{
 		smog_quit("name of moleculetype not given in .nb file. Will use \"Macromolecule\"",0);	
 		$interactions->{"molname"}="Macromolecule";
