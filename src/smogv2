@@ -1393,13 +1393,13 @@ sub dihedralOutput
 				my $paramFormat=$formatvalues[$#paramArr];
 
 				if($fType == 1 || $fType == 4) {
-					$paramFormat=" %12.9e %12.9e %u";
+					$paramFormat=" %12.9e %12.9e %u\n";
 				}elsif($fType == 2){    
                                ### CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
                                        if($paramArr[0]>180){$paramArr[0]-=360;}elsif($paramArr[0]<-180){$paramArr[0]+=360;}
 				}
 				$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
-				$outputString = "$outputString$formattedString\n";
+				$outputString = "$outputString$formattedString";
 			}
 		}
 	}
