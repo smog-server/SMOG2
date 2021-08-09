@@ -574,10 +574,10 @@ sub initializeDirectives {
 	addToTop("moleculetype"," $molname    $nrexcl\n");
 	addToTop("system","\n[ system ]\n");
 	addToTop("system","; name\n");
-	addToTop("system","  Macromolecule\n");
+	addToTop("system","  $molname\n");
 	addToTop("molecules","\n[ molecules ]\n");
 	addToTop("molecules","; name            #molec\n");
-	addToTop("molecules","  Macromolecule   1\n");
+	addToTop("molecules","  $molname   1\n");
 }
 
 #adds something to the topfile at the bottom of a directive
@@ -958,10 +958,8 @@ sub bondOutput
 					my $j1=$indexhandle->{$j};
 	 				if($paramArr[0] < $interactionThreshold->{"bonds"}->{"shortBond"}){
 	  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"shortBond"};
-	  					print "$paramArr[0] nm\n\n";
 	 				}elsif($paramArr[0] > $interactionThreshold->{"bonds"}->{"longBond"}){
 	  					$paramArr[0]=$interactionThreshold->{"bonds"}->{"longBond"};
-	  					print "$paramArr[0] nm\n\n";
 	 				}
 					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This is outside of bond threshold range. -limitbondlength is being used, will set length to: $paramArr[0]");
 				}else{
@@ -976,7 +974,7 @@ sub bondOutput
 ## Format output <i j function p1 p2 ... pn>
 			my $paramFormat=$formatvalues[$#paramArr];
 			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
-			$outputString = "$outputString$formattedString\n";
+			$outputString = "$outputString$formattedString";
        		}
 	}
 	return $outputString;
@@ -1207,7 +1205,7 @@ sub angleOutput
 	 		## Format output <i j k function p1 p2 ... pn>
 				my $paramFormat=$formatvalues[$#paramArr];
 				$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
-				$outputString = "$outputString$formattedString\n";
+				$outputString = "$outputString$formattedString";
 			}else{
 				$freeangles{"$i-$j-$k"}=1;
 				$freeangles{"$k-$j-$i"}=1;
