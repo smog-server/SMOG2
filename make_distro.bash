@@ -54,6 +54,7 @@ cat > dontkeep << EOF
 ^./.git
 ^./dontkeep
 ^./MANIFEST
+^./make_distro.bash
 optim
 EOF
 
