@@ -33,7 +33,7 @@ use XML::Simple qw(:strict);
 #####################
 # Init error vars   #
 #####################
-our $VERSION="2.4-pre1";
+our $VERSION="2.4beta";
 our $maxwarn;
 our $warncount;
 our $allwarncount;
