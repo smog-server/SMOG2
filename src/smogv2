@@ -2419,7 +2419,16 @@ sub printCitation
 	{
 		$citationFile = "";
 	}
-       
+      	my $osref;
+	if(defined $openSMOG){
+		$osref="--openSMOG--
+Oliveira AB, Contessoto VG, Hassan A, Byju S, Wang A, Wang Y, Dodero-Rojas E,
+Mohanty U, Noel JK, Onuchic JN, Whitford PC.
+SMOG 2 and openSMOG: Extending the limits of structure-based models.
+DOI: available soon
+"
+	}else{
+	} 
 
 print <<EOT;
 
@@ -2433,6 +2442,7 @@ Noel JK, Levi M, Raghunathan M, Lammert H, Hayes R, Onuchic JN, and Whitford PC.
 SMOG V2, A Versatile Software Package for Generating Structure-Based Models.
 PLoS Comput Biol 12(3): e1004794. doi:10.1371/journal.pcbi.1004794
 
+$osref
 $citationFile
 ########################################################################################
 
