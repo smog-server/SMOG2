@@ -9,7 +9,7 @@
 #            Copyright (c) 2015,2016,2018,2021, The SMOG development team at
 #                        Rice University and Northeastern University
 #
-#          SMOG 2, Shadow and openSMOG are available at http://smog-server.org
+#          SMOG 2, Shadow and OpenSMOG are available at http://smog-server.org
 #
 #          You can direct questions to info@smog-server.org, or the smog-users forum,
 #          which you can find at https://mailman.rice.edu/mailman/listinfo/smog-users
@@ -38,15 +38,15 @@ use Exporter;
 use Storable qw(dclone);
 use Scalar::Util qw(looks_like_number);
 use smog_common;
-use openSMOG;
+use OpenSMOG;
 
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($openSMOG $openSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round checkFunctions);
+qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round checkFunctions);
 
-our $openSMOG;
-our $openSMOGpothash;
+our $OpenSMOG;
+our $OpenSMOGpothash;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
@@ -361,8 +361,8 @@ sub checkContactFunctionDef
 	my @vars=split(/\,/,$var[0]);
 	my $nargs = $#vars + 1;
 	my $funcname=$name[0];
-	if(defined $openSMOG && !exists ${$openSMOGpothash}{$funcname}){
-		smog_quit("contact function $funcname not supported with -openSMOG");
+	if(defined $OpenSMOG && !exists ${$OpenSMOGpothash}{$funcname}){
+		smog_quit("contact function $funcname not supported with -OpenSMOG");
 	}
         my $normalize = $termRatios->{"contactGroup"}->{$cG}->{"normalize"};
 	if($funcname eq "contact_1" || $funcname eq "contact_2"){
@@ -439,19 +439,19 @@ sub checkContactFunctionDef
 	}elsif($funcname eq "contact_free"){
 
 	}else{
-		# if nothing matched, then we must be using an openSMOG potentials.  Let's check a few things.
+		# if nothing matched, then we must be using an OpenSMOG potentials.  Let's check a few things.
 		# energynorm can't be used for the weight if normalization is turned off.
 		if($normalize){
-			if( !exists $openSMOGpothash->{$funcname}->{weight}){
+			if( !exists $OpenSMOGpothash->{$funcname}->{weight}){
 				smog_quit("$funcname contact type does not have a parameter called \"weight\", but this function is being used in a normalized contact group ($cG, in .nb file): $funcString")
 			}
-			if ($vars[$openSMOGpothash->{$funcname}->{weight}] !~ m/^energynorm$/i){
+			if ($vars[$OpenSMOGpothash->{$funcname}->{weight}] !~ m/^energynorm$/i){
 				smog_quit("$funcname contact type (defined in .sif) can not have normalization turned on without the \"weight\" parameter being given as \"energynorm\". Problematic declaration in contact group $cG (in .nb file): $funcString")
 			}
-			my $pot=$functions->{$funcname}->{"openSMOGpotential"};
+			my $pot=$functions->{$funcname}->{"OpenSMOGpotential"};
 			$pot =~ s/^(-?)weight[\*\/]//g;
  			if($pot !~ m/^(\((?:[^()]++|(?1))*\))$/ || $pot =~ m/weight/ ) {
-				smog_quit("If normalization is turned on for an openSMOG potential, then the functional form must be \"+/-weight[*/](<function of coordinates and other parameters>)\". The definition for function $funcname in the .sif file appears to not comply with this standard, which could lead to issues. While the current format check is extremely rigid, if the potential is of the form weight*<any function>, then you can safely ignore this message. However, in that case, simply enclosing the function in parentheses would get rid of this error.\nFound: $functions->{$funcname}->{\"openSMOGpotential\"}");	
+				smog_quit("If normalization is turned on for an OpenSMOG potential, then the functional form must be \"+/-weight[*/](<function of coordinates and other parameters>)\". The definition for function $funcname in the .sif file appears to not comply with this standard, which could lead to issues. While the current format check is extremely rigid, if the potential is of the form weight*<any function>, then you can safely ignore this message. However, in that case, simply enclosing the function in parentheses would get rid of this error.\nFound: $functions->{$funcname}->{\"OpenSMOGpotential\"}");	
 			}
 		}
 	}
@@ -947,10 +947,10 @@ sub parseSif {
 
 	foreach my $funcName(keys %{$functions}){
 
-		if($functions->{$funcName}->{"directive"} eq "openSMOG"){
-			newopenSMOGfunction($openSMOGpothash,$functions,$funcName);
-		        if(!defined $openSMOG){
-				smog_quit("Function $funcName is defined in .sif file, but it is only supported with the -openSMOG flag. If your system will not use this function, then you are fine.  However, if you do use this function, SMOG 2 is going to exit without completing.",0);
+		if($functions->{$funcName}->{"directive"} eq "OpenSMOG"){
+			newOpenSMOGfunction($OpenSMOGpothash,$functions,$funcName);
+		        if(!defined $OpenSMOG){
+				smog_quit("Function $funcName is defined in .sif file, but it is only supported with the -OpenSMOG flag. If your system will not use this function, then you are fine.  However, if you do use this function, SMOG 2 is going to exit without completing.",0);
         		}
 		}
 

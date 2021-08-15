@@ -49,10 +49,10 @@
   <!-- DIRECTIVE TYPE -->
   <xs:simpleType name="directiveType">
     <xs:restriction base="xs:string">
-      <xs:pattern value="^bonds$|^angles$|^pairs$|^dihedrals$|^openSMOG$"/>
+      <xs:pattern value="^bonds$|^angles$|^pairs$|^dihedrals$|^OpenSMOG$"/>
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="openSMOGType">
+  <xs:simpleType name="OpenSMOGType">
     <xs:restriction base="xs:string">
       <xs:pattern value="^contact$"/>
     </xs:restriction>
@@ -62,9 +62,9 @@
     <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="directive" type="directiveType" use="required"/>
     <xs:attribute name="exclusions" type="booleanType" use="optional"/>
-    <xs:attribute name="openSMOGtype" type="openSMOGType" use="optional"/>
-    <xs:attribute name="openSMOGpotential" type="xs:string" use="optional"/>
-    <xs:attribute name="openSMOGparameters" type="xs:string" use="optional"/>
+    <xs:attribute name="OpenSMOGtype" type="OpenSMOGType" use="optional"/>
+    <xs:attribute name="OpenSMOGpotential" type="xs:string" use="optional"/>
+    <xs:attribute name="OpenSMOGparameters" type="xs:string" use="optional"/>
   </xs:complexType>
   <!-- GROUPS TYPE -->
   <xs:complexType name="groupsType">

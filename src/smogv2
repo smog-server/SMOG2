@@ -11,7 +11,7 @@
 #            Copyright (c) 2015,2016,2018,2021, The SMOG development team at
 #                        Rice University and Northeastern University
 #
-#          SMOG 2, Shadow and openSMOG are available at http://smog-server.org
+#          SMOG 2, Shadow and OpenSMOG are available at http://smog-server.org
 #
 #          You can direct questions to info@smog-server.org, or the smog-users forum, 
 #          which you can find at https://mailman.rice.edu/mailman/listinfo/smog-users
@@ -37,7 +37,7 @@ use XML::SAX::ParserFactory;
 use XML::Validator::Schema; 
 use Scalar::Util qw(looks_like_number);
 use smog_common;
-use openSMOG;
+use OpenSMOG;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
@@ -63,8 +63,8 @@ my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $AAdefault = 0; 
 my $CAdefault = 0;
 my $AAGdefault = 0; 
-our $openSMOG; 
-my $openSMOGxml="";
+our $OpenSMOG; 
+my $OpenSMOGxml="";
 my $OSref;
 my $CAGdefault = 0;
 my $saveSCMorig=0;
@@ -98,8 +98,8 @@ our %PAIRtypespresent;
 our %pairtypesused;
 our %fTypes;
 our %fTypesArgNum;
-our %openSMOGpot;
-our $openSMOGpothash;
+our %OpenSMOGpot;
+our $OpenSMOGpothash;
 our %directives;
 our @directivesList;
 our %extraatomtypes;
@@ -163,7 +163,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
 
 my $comments=printTop($topFile);
-my $openSMOGwritten=openSMOGwriteXML($OSref,$openSMOGxml,$comments);
+my $OpenSMOGwritten=OpenSMOGwriteXML($OSref,$OpenSMOGxml,$comments);
 my $cfile;
 if($groFile ne ""){
 	$cfile=$groFile;
@@ -174,7 +174,7 @@ if($groFile ne ""){
 	exit;
 }
 
-print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n$openSMOGwritten\t$cfile\n\t$ndxFile\n";
+print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n$OpenSMOGwritten\t$cfile\n\t$ndxFile\n";
 	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
 	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
 	printCitation();
@@ -187,7 +187,7 @@ warnsummary();
 sub setglobals {
 	## this is the array that defines how function names are converted to gromacs function types
 	# special cases: 
-		# -2 means this is an openSMOG-specific function (defined in templates)
+		# -2 means this is an OpenSMOG-specific function (defined in templates)
 		# -1 means used byType routined (e.g. nonbond_params in gromacs)
 		# 0 means don't assign an interaction (i.e. "free" terms)
 		
@@ -226,24 +226,24 @@ sub setglobals {
 		);
 
 
-	$openSMOGpothash=\%openSMOGpot;
+	$OpenSMOGpothash=\%OpenSMOGpot;
 	# predefine the mapping of openMM functions for common potentials
-	$openSMOGpothash->{contact_1}->{expression}="A/r^N-B/r^M";
-	push(@{$openSMOGpothash->{contact_1}->{parameters}},"A");
-	push(@{$openSMOGpothash->{contact_1}->{parameters}},"B");
+	$OpenSMOGpothash->{contact_1}->{expression}="A/r^N-B/r^M";
+	push(@{$OpenSMOGpothash->{contact_1}->{parameters}},"A");
+	push(@{$OpenSMOGpothash->{contact_1}->{parameters}},"B");
 
-	$openSMOGpothash->{bond_type6}->{expression}="eps*(r-r0)^2";
-	push(@{$openSMOGpothash->{bond_type6}->{parameters}},"eps");
-	push(@{$openSMOGpothash->{bond_type6}->{parameters}},"r0");
+	$OpenSMOGpothash->{bond_type6}->{expression}="eps*(r-r0)^2";
+	push(@{$OpenSMOGpothash->{bond_type6}->{parameters}},"eps");
+	push(@{$OpenSMOGpothash->{bond_type6}->{parameters}},"r0");
 
-	$openSMOGpothash->{contact_gaussian}->{expression}="-A*((1+a/(A*r^12))*(1-exp(-(r-r0)^2/(2*sigmaG^2)))-1)";
-	push(@{$openSMOGpothash->{contact_gaussian}->{parameters}},"A");
-	push(@{$openSMOGpothash->{contact_gaussian}->{parameters}},"r0");
-	push(@{$openSMOGpothash->{contact_gaussian}->{parameters}},"sigmaG");
-	push(@{$openSMOGpothash->{contact_gaussian}->{parameters}},"a");
+	$OpenSMOGpothash->{contact_gaussian}->{expression}="-A*((1+a/(A*r^12))*(1-exp(-(r-r0)^2/(2*sigmaG^2)))-1)";
+	push(@{$OpenSMOGpothash->{contact_gaussian}->{parameters}},"A");
+	push(@{$OpenSMOGpothash->{contact_gaussian}->{parameters}},"r0");
+	push(@{$OpenSMOGpothash->{contact_gaussian}->{parameters}},"sigmaG");
+	push(@{$OpenSMOGpothash->{contact_gaussian}->{parameters}},"a");
 
 
-	$openSMOGpothash->{contact_free}->{expression}="";
+	$OpenSMOGpothash->{contact_free}->{expression}="";
 
 	## this is the topfile buffer stuff
 	%directives = ("comments",1,"defaults",2,"atomtypes",3,"bondtypes",4,"angletypes",5,"dihedraltypes",6,"nonbond_params",7,"moleculetype",8,"atoms",9,"bonds",10,"angles",11,"dihedrals",12,"pairs",13,"exclusions",14,"position_restraints",15,"system",16,"molecules",17);
@@ -271,8 +271,8 @@ sub parse_args {
 		'AA' => \$AAdefault, 
 		'CAgaussian'=> \$CAGdefault, 
 		'AAgaussian' => \$AAGdefault, 
-		'openSMOG' => \$openSMOG, 
-		'openSMOGxml=s' => \$openSMOGxml, 
+		'OpenSMOG' => \$OpenSMOG, 
+		'OpenSMOGxml=s' => \$OpenSMOGxml, 
 		'dname=s' => \$DNAME, 
 		'warn=i' => \$maxwarn, 
 		'backup=s' => \$backup, 
@@ -303,7 +303,7 @@ sub parse_args {
 		smog_quit("Can not use -limitcontactlength and -deleteshortcontacts at the same time.");
 	}
 
-	if(defined $openSMOG){
+	if(defined $OpenSMOG){
 		# create the hash ref that we will put data, so that we can dump it into an xml file later
 		my %OS;
 		$OSref   = \%OS;
@@ -439,7 +439,7 @@ sub parse_args {
 	}
 
 
-	if($openSMOGxml eq ""){$openSMOGxml=$DNAME};
+	if($OpenSMOGxml eq ""){$OpenSMOGxml=$DNAME};
 	$topFile4SCM=$topFile . "4SCM.top";
 	if($shadowFile eq ""){$shadowFile=$DNAME};
 	if($ndxFile eq ""){$ndxFile=$DNAME};
@@ -457,13 +457,13 @@ sub parse_args {
 
 	$shadowFile=checksuffix($shadowFile,".contacts");
 	$ndxFile=checksuffix($ndxFile,".ndx");
-	$openSMOGxml=checksuffix($openSMOGxml,".xml");
+	$OpenSMOGxml=checksuffix($OpenSMOGxml,".xml");
 	
 	
 	## check if files exist
 	# things we don't want to overwrite
 	if($backup eq "yes"){
-		foreach my $filen($topFile, $g96File, $groFile, $groFile4SCM, $shadowFile, $ndxFile,$openSMOGxml){
+		foreach my $filen($topFile, $g96File, $groFile, $groFile4SCM, $shadowFile, $ndxFile,$OpenSMOGxml){
 			checkalreadyexists($filen);
 		}
 	}
@@ -529,7 +529,7 @@ sub initializeDirectives {
 	}
 	my $hostdate=printhostdate();
 	my $software;
-	if(defined $openSMOG){
+	if(defined $OpenSMOG){
 		# this is for openMM, only
 		$software="openMM";
 	}else{
@@ -584,8 +584,8 @@ sub initializeDirectives {
 sub addToTop {
 	my($directive,$stuff) = @_;
 		
-	if($directive =~ m/^openSMOG$/){
-		# if $directive is openSMOG, then $stuff is the address of the array that contains the folloding information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
+	if($directive =~ m/^OpenSMOG$/){
+		# if $directive is OpenSMOG, then $stuff is the address of the array that contains the folloding information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
 		addOShash($OSref,$stuff);
         }else{
 		my $dir=$directives{$directive};
@@ -810,7 +810,7 @@ sub printOrderedBonds
 		}
 		$bfound{"$i $j"}=$p->{"v"};
 	}
-	if(defined $openSMOG && $interactions->{"nrexcl"} >=1){
+	if(defined $OpenSMOG && $interactions->{"nrexcl"} >=1){
 		%excludebonded=%blist;
 	}
 }
@@ -913,7 +913,7 @@ sub bondOutput
 			my $type=checkbondtype($i,$j,$allatoms); 
 			$formattedString = sprintf("%d\t%d",$i,$j);
 			$outputString .= $formattedString;
-			if(defined $openSMOG && $type > 0){
+			if(defined $OpenSMOG && $type > 0){
 				#openMM requires that the function type is listed, even if relying on bondtype
 				$outputString .= sprintf("\t%d\n",$type);
 			}else{
@@ -1105,7 +1105,7 @@ sub printOrderedAngles
                 $blist{"$i $k"}=0;
                 $blist{"$k $i"}=0;
 	}
-        if(defined $openSMOG && $interactions->{"nrexcl"} >=2){
+        if(defined $OpenSMOG && $interactions->{"nrexcl"} >=2){
                 %excludebonded=(%excludebonded,%blist);
         }
 }
@@ -1166,7 +1166,7 @@ sub angleOutput
 			my $type=checkangletype($i,$j,$k,$allatoms); 
 			$formattedString = sprintf("%d\t%d\t%d",$i,$j,$k);
 			$outputString .= $formattedString;
-                        if(defined $openSMOG && $type > 0){
+                        if(defined $OpenSMOG && $type > 0){
                                 #openMM requires that the function type is listed, even if relying on angletypes
                                 $outputString .= sprintf("\t%d\n",$type);
                         }else{
@@ -1256,7 +1256,7 @@ sub printOrderedDihedrals
 
 		addToTop("dihedrals",$p->{"v"});
 	}
-        if(defined $openSMOG && $interactions->{"nrexcl"} >=3){
+        if(defined $OpenSMOG && $interactions->{"nrexcl"} >=3){
                 %excludebonded=(%excludebonded,%blist);
         }
 }
@@ -1365,7 +1365,7 @@ sub dihedralOutput
 			my $type=checkdihedraltype($ai,$aj,$ak,$al,$allatoms);
 			$formattedString = sprintf("%d\t%d\t%d\t%d",$ai,$aj,$ak,$al);
 			$outputString .= $formattedString;
-                        if(defined $openSMOG && $type > 0){
+                        if(defined $OpenSMOG && $type > 0){
                                 #openMM requires that the function type is listed, even if relying on dihedraltypes
                                 $outputString .= sprintf("\t%d\n",$type);
                         }else{
@@ -1524,7 +1524,7 @@ sub calculateContacts
 
 	# print everything
 
-	if(!defined $openSMOG){
+	if(!defined $OpenSMOG){
 		%excludebonded = ();
 	}
 	for(my $i=0;$i<$numCon;$i++){
@@ -1541,7 +1541,7 @@ sub calculateContacts
 		if($addExclusions && !exists $excludebonded{"$atoma_array[$i] $atomb_array[$i]"}) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
 	}
 
-	if(scalar keys %conttypeseen >1 && !defined $openSMOG){
+	if(scalar keys %conttypeseen >1 && !defined $OpenSMOG){
 		my $L;
 		foreach my $CT(keys %conttypeseen){
 			$L .= $CT;
@@ -1590,11 +1590,11 @@ sub contactOutput
 				contactParseBond6(\@paramArr,$c0,$epsilon);
 			}else{
 				# if not one of the above functions, then it must be a custom potential
-				contactParseopenSMOG($fname,\@paramArr,$c0,$epsilon,$normalize);
+				contactParseOpenSMOG($fname,\@paramArr,$c0,$epsilon,$normalize);
 			}
-			if($paramArr[0] eq "openSMOG"){
-				# format for openSMOG
-				$directive="openSMOG";
+			if($paramArr[0] eq "OpenSMOG"){
+				# format for OpenSMOG
+				$directive="OpenSMOG";
 				$paramArr[0]=$j;
 				unshift(@paramArr,$i);
 				$outputString=\@paramArr;	
@@ -1623,7 +1623,7 @@ sub contactParseNM1
 	$N=$paramArr->[1];
 	my $length=scalar @{$paramArr};
 
-	if($interactions->{"gmx-combination-rule"}==1 || defined $openSMOG){
+	if($interactions->{"gmx-combination-rule"}==1 || defined $OpenSMOG){
 	
 		$B=-1.0/($M/$N-1.0);
 		$A=$M/$N*$B;
@@ -1656,18 +1656,18 @@ sub contactParseNM1
 			$paramArr->[3]=$epsilon;
 		}
 	}
-	if(defined $openSMOG){
-		if(openSMOGfunctionExists($OSref,"contacts","contact_1-$M-$N") == 0){
-			my $potential = $openSMOGpothash->{contact_1}->{expression};
+	if(defined $OpenSMOG){
+		if(OpenSMOGfunctionExists($OSref,"contacts","contact_1-$M-$N") == 0){
+			my $potential = $OpenSMOGpothash->{contact_1}->{expression};
 			$potential =~ s/N/$N/g;
 			$potential =~ s/M/$M/g;
 			
-			my $parhandle=\@{$openSMOGpothash->{contact_1}->{parameters}};
+			my $parhandle=\@{$OpenSMOGpothash->{contact_1}->{parameters}};
 			OShashAddFunction($OSref,"contacts","contact_1-$M-$N","$potential",$parhandle);
 		}
-		# switch order for openSMOG, so that the first parameter is the 12 term
+		# switch order for OpenSMOG, so that the first parameter is the 12 term
 		($paramArr->[2],$paramArr->[3])=($paramArr->[3],$paramArr->[2]);
-		unshift(@{$paramArr},"openSMOG");
+		unshift(@{$paramArr},"OpenSMOG");
 		$paramArr->[1]="contacts";
 		$paramArr->[2]="contact_1-$M-$N";
 		return;
@@ -1743,17 +1743,17 @@ sub contactParseGaussian
 	}
 	if($paramArr->[3] =~ /^?$/){$paramArr->[3]=$r0;}
 
-        if(defined $openSMOG){
-                if(openSMOGfunctionExists($OSref,"contacts","contact_gaussian") == 0){
-                        my $potential = $openSMOGpothash->{contact_gaussian}->{expression};
-                        my $parhandle=\@{$openSMOGpothash->{contact_gaussian}->{parameters}};
+        if(defined $OpenSMOG){
+                if(OpenSMOGfunctionExists($OSref,"contacts","contact_gaussian") == 0){
+                        my $potential = $OpenSMOGpothash->{contact_gaussian}->{expression};
+                        my $parhandle=\@{$OpenSMOGpothash->{contact_gaussian}->{parameters}};
                         OShashAddFunction($OSref,"contacts","contact_gaussian","$potential",$parhandle);
                 }
-                # switch order for openSMOG, so that the first parameter is k
+                # switch order for OpenSMOG, so that the first parameter is k
                 ($paramArr->[0],$paramArr->[1],$paramArr->[2],$paramArr->[3])=($paramArr->[0],$paramArr->[3],$paramArr->[2],$paramArr->[1]);
                 unshift(@{$paramArr},"contact_gaussian");
                 unshift(@{$paramArr},"contacts");
-                unshift(@{$paramArr},"openSMOG");
+                unshift(@{$paramArr},"OpenSMOG");
                 return;
         }	
 	($A,$r0,$sigma_G,$a) = ($paramArr->[0],$paramArr->[3],$paramArr->[2],$paramArr->[1]);
@@ -1775,18 +1775,18 @@ sub contactParseBond6
 	## r ##
 	$paramArr->[0] = evalsub($paramArr->[0],$r0);
 
-        if(defined $openSMOG){
-                if(openSMOGfunctionExists($OSref,"contacts","bond_type6") == 0){
-                        my $potential = $openSMOGpothash->{bond_type6}->{expression};
+        if(defined $OpenSMOG){
+                if(OpenSMOGfunctionExists($OSref,"contacts","bond_type6") == 0){
+                        my $potential = $OpenSMOGpothash->{bond_type6}->{expression};
 
-                        my $parhandle=\@{$openSMOGpothash->{bond_type6}->{parameters}};
+                        my $parhandle=\@{$OpenSMOGpothash->{bond_type6}->{parameters}};
                         OShashAddFunction($OSref,"contacts","bond_type6","$potential",$parhandle);
                 }
-                # switch order for openSMOG, so that the first parameter is k
+                # switch order for OpenSMOG, so that the first parameter is k
                 ($paramArr->[0],$paramArr->[1])=($paramArr->[1],$paramArr->[0]);
                 unshift(@{$paramArr},"bond_type6");
                 unshift(@{$paramArr},"contacts");
-                unshift(@{$paramArr},"openSMOG");
+                unshift(@{$paramArr},"OpenSMOG");
                 return;
         }
 
@@ -1795,22 +1795,22 @@ sub contactParseBond6
 
 }
 
-# Parse custom openSMOG potentials
-sub contactParseopenSMOG
+# Parse custom OpenSMOG potentials
+sub contactParseOpenSMOG
 {
 	my($fname,$paramArr,$r0,$epsilon,$normalize) = @_;
 	## fname is the name of the function.  this is used to get the parameter list
-	##paramArr holds the entries for the openSMOG parameter list
+	##paramArr holds the entries for the OpenSMOG parameter list
 	##epsilon is the normalize weight
 	# normalize indicates whether normalization is applied
 	##r0 is native distance##
 	#
 
-	if(exists $openSMOGpothash->{$fname}->{weight}){
+	if(exists $OpenSMOGpothash->{$fname}->{weight}){
 		# there is a weight variable
-		if($paramArr->[$openSMOGpothash->{$fname}->{weight}] =~ /^\?$/ || $paramArr->[$openSMOGpothash->{$fname}->{weight}] =~ /^energynorm$/i){
+		if($paramArr->[$OpenSMOGpothash->{$fname}->{weight}] =~ /^\?$/ || $paramArr->[$OpenSMOGpothash->{$fname}->{weight}] =~ /^energynorm$/i){
 			# the weight should be normalized, so set it to epsilon
-			$paramArr->[$openSMOGpothash->{$fname}->{weight}]=$epsilon;	
+			$paramArr->[$OpenSMOGpothash->{$fname}->{weight}]=$epsilon;	
 		}
 	}
 
@@ -1821,18 +1821,18 @@ sub contactParseopenSMOG
 		$paramArr->[$I]=evalsub($paramArr->[$I],$r0);
 	}
 
-	if(!defined $openSMOG){
-		smog_quit("Function $fname only supported with the -openSMOG flag");
+	if(!defined $OpenSMOG){
+		smog_quit("Function $fname only supported with the -OpenSMOG flag");
 	}
 
         unshift(@{$paramArr},"$fname");
         unshift(@{$paramArr},"contacts");
-        unshift(@{$paramArr},"openSMOG");
+        unshift(@{$paramArr},"OpenSMOG");
 
-        if(openSMOGfunctionExists($OSref,"contacts","$fname") == 0){
-                my $potential = $openSMOGpothash->{$fname}->{expression};
+        if(OpenSMOGfunctionExists($OSref,"contacts","$fname") == 0){
+                my $potential = $OpenSMOGpothash->{$fname}->{expression};
 
-                my $parhandle=\@{$openSMOGpothash->{$fname}->{parameters}};
+                my $parhandle=\@{$OpenSMOGpothash->{$fname}->{parameters}};
                 OShashAddFunction($OSref,"contacts","$fname","$potential",$parhandle);
         }
 
@@ -2306,7 +2306,7 @@ Jose Onuchic & Paul Whitford
 Copyright (c) 2015,2016,2018,2021, The SMOG development team at
 Rice University and Northeastern University
 
-SMOG v$VERSION, Shadow and openSMOG are available at http://smog-server.org
+SMOG v$VERSION, Shadow and OpenSMOG are available at http://smog-server.org
 
 You can direct questions to info\@smog-server.org, or the smog-users forum, 
 which can be found at https://mailman.rice.edu/mailman/listinfo/smog-users
@@ -2339,7 +2339,7 @@ usage: smog2 .. options ..
        -c <file name>          : input contact map file
        -SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  useful for debugging
        -dname [smog]           : default name to use for all output files
-       -openSMOGxml [smog.xml] : file name for openSMOG xml file (requires use of -openSMOG)
+       -OpenSMOGxml [smog.xml] : file name for OpenSMOG xml file (requires use of -OpenSMOG)
        -backup [yes]           : back up any pre-existing output files
        -freecoor               : allow for free-format (space/tab/etc delimited) coordinate fields in PDB
 
@@ -2359,7 +2359,7 @@ usage: smog2 .. options ..
        -deleteshortcontact         : if a contact length is too short, don't include it in the model
 
      Misc. Options
-       -openSMOG                   : make files compatible with openMM  
+       -OpenSMOG                   : make files compatible with openMM  
        -ignH                       : ignore any atoms with name starting with 'H' in the internal contact algorithm
        -gen_map <out map file>     : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
        -warn [0]                   : convert the first N fatal errors to warnings  
@@ -2420,11 +2420,11 @@ sub printCitation
 		$citationFile = "";
 	}
       	my $osref="";
-	if(defined $openSMOG){
-		$osref="--openSMOG--
+	if(defined $OpenSMOG){
+		$osref="--OpenSMOG--
 Oliveira AB, Contessoto VG, Hassan A, Byju S, Wang A, Wang Y, Dodero-Rojas E,
 Mohanty U, Noel JK, Onuchic JN, Whitford PC.
-SMOG 2 and openSMOG: Extending the limits of structure-based models.
+SMOG 2 and OpenSMOG: Extending the limits of structure-based models.
 DOI: available soon
 "
 	}

@@ -9,7 +9,7 @@
 #            Copyright (c) 2015,2016,2018,2021, The SMOG development team at
 #                        Rice University and Northeastern University
 #
-#          SMOG 2, Shadow and openSMOG are available at http://smog-server.org
+#          SMOG 2, Shadow and OpenSMOG are available at http://smog-server.org
 #
 #          You can direct questions to info@smog-server.org, or the smog-users forum,
 #          which you can find at https://mailman.rice.edu/mailman/listinfo/smog-users
