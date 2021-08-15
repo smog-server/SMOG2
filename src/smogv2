@@ -2419,7 +2419,7 @@ sub printCitation
 	{
 		$citationFile = "";
 	}
-      	my $osref;
+      	my $osref="";
 	if(defined $openSMOG){
 		$osref="--openSMOG--
 Oliveira AB, Contessoto VG, Hassan A, Byju S, Wang A, Wang Y, Dodero-Rojas E,
@@ -2427,8 +2427,7 @@ Mohanty U, Noel JK, Onuchic JN, Whitford PC.
 SMOG 2 and openSMOG: Extending the limits of structure-based models.
 DOI: available soon
 "
-	}else{
-	} 
+	}
 
 print <<EOT;
 
