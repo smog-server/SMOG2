@@ -49,8 +49,8 @@ these are probably already available on your system. If not,
 they are available through cpan:
 
 XML::Simple
-XML::SAX::ParserFactory;
-XML::Validator::Schema;
+XML::SAX::ParserFactory
+XML::Validator::Schema
 XML::LibXML 
 Exporter
 PDL
