@@ -197,7 +197,7 @@ share/java/ral/Real.java
 share/schemas/sif.xsd
 share/schemas/nb.xsd
 share/schemas/b.xsd
-share/schemas/openSMOG.xsd
+share/schemas/OpenSMOG.xsd
 share/schemas/bif.xsd
 share/mapfiles/rigidmap
 share/mapfiles/sbmMap
@@ -272,7 +272,7 @@ src/tools/tablegen
 src/tools/scale-energies
 src/tools/adjustPDB
 src/templateParser.pm
-src/openSMOG.pm
+src/OpenSMOG.pm
 src/mathFunctions.pm
 src/smogv2
 src/smog_common.pm
