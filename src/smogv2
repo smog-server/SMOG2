@@ -236,7 +236,7 @@ sub setglobals {
 	push(@{$OpenSMOGpothash->{bond_type6}->{parameters}},"eps");
 	push(@{$OpenSMOGpothash->{bond_type6}->{parameters}},"r0");
 
-	$OpenSMOGpothash->{contact_gaussian}->{expression}="-A*((1+a/(A*r^12))*(1-exp(-(r-r0)^2/(2*sigmaG^2)))-1)";
+	$OpenSMOGpothash->{contact_gaussian}->{expression}="A*((1+a/(A*r^12))*(1-exp(-(r-r0)^2/(2*sigmaG^2)))-1)";
 	push(@{$OpenSMOGpothash->{contact_gaussian}->{parameters}},"A");
 	push(@{$OpenSMOGpothash->{contact_gaussian}->{parameters}},"r0");
 	push(@{$OpenSMOGpothash->{contact_gaussian}->{parameters}},"sigmaG");
