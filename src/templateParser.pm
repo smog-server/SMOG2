@@ -53,7 +53,7 @@ our $OpenSMOGpothash;
 
 my %SMOGversions;
 my $smi=0;
-foreach my $ver("2.0", "2.0.1", "2.0.2", "2.0.3", "2.1", "2.2", "2.3", "2.4"){
+foreach my $ver("2.0", "2.0.1", "2.0.2", "2.0.3", "2.1", "2.2", "2.3", "2.4", "2.4.1"){
  $SMOGversions{$ver}=$smi;
  $smi++; 
 }
