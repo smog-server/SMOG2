@@ -136,7 +136,7 @@ if($rc <= $r1 && $rc != 0){
 
 $outfilename=checksuffix($outfilename,".xvg");
 print "Parameter used to generate table file $outfilename\n";
-print "\tM=$exponent1\n\tN=$exponent2\n\tmonovalent ion conc.=$conc\n\tkappa=$kappa\n\tbegin switching function=$r1\n\tend switching function=$rc\n\tLength of table=$Rtable nm\n\tTemperature=$temperature\n\tUnits: $unit\n";
+print "\tM=$exponent1\n\tN=$exponent2\n\tmonovalent ion conc.=$conc M\n\tkappa=$kappa/nm\n\tbegin switching function=$r1 nm\n\tend switching function=$rc nm\n\tLength of table=$Rtable nm\n\tTemperature=$temperature K\n\tUnits: $unit\n";
 
 checkalreadyexists($outfilename);
 
