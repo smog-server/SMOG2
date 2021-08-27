@@ -363,6 +363,10 @@ sub checkPDB
 				$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType,$pdbIndex];
 			}
 			$K--;
+			if(!defined $residues{$residue}->{"atomCount"}){
+				smog_quit("Residue $residue found in PDB, but it does not appear to be defined in the .bif file.  This issue is usually detected when using smog_adjustPDB. Issue found at line:\n$record");
+
+			}
 			if($residues{$residue}->{"atomCount"} == -1){
 				$totalAtoms+=$atomsInRes;
 			}else{
