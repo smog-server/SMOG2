@@ -42,7 +42,7 @@ our @convarray;
 our %reverthash;
 our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub $VERSION);
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub validateXML $VERSION);
 our %supported_directives;
 
 #####################
@@ -457,6 +457,25 @@ sub evalsub
 	return $expression;
 }
 
+sub validateXML
+{
+	my ($file,$type) = @_;
 
+	my $validator = XML::Validator::Schema->new(file => "$ENV{SMOG_PATH}/share/schemas/$type.xsd");
+	my $parser = XML::SAX::ParserFactory->parser(Handler => $validator);
+	eval { $parser->parse_uri($file) };
+ smog_quit("Failed at validating $file: $@ \nThis is due to an XML formatting issue.  The most common issue is that an element is missing a tagline. For example, something like this may appear in your file,
+  <child>
+    <subchild>.....
+  </child>
+
+whereas the following would be appropriate:
+  <child>
+    <subchild>.....
+
+    </subchild>
+  </child>") if $@;
+
+}
 
 1;
