@@ -1452,9 +1452,9 @@ sub parseNonBonds {
 			smog_quit("nrexcl must be less than or equal to 3. While larger values may work, it can also lead to somewhat unpredictable results.");
 		}
 	}else{
-		smog_quit("name of moleculetype not given in .nb file. Will use \"Macromolecule\"",0);	
+		smog_note("name of moleculetype not given in .nb file. Will use \"Macromolecule\"");	
 		$interactions->{"molname"}="Macromolecule";
-		smog_quit("value of nrexcl not given in .nb file. Will use 3",0);	
+		smog_note("value of nrexcl not given in .nb file. Will use 3");	
 		$interactions->{"nrexcl"}=3;
 	}
 
