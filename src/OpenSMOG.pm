@@ -145,60 +145,10 @@ sub OpenSMOGwriteXML{
 		my $handle0=$OSref;
 
 		foreach my $type(sort keys %{$handle0}){
-			my $localxmlout = "$space<$type>\n";
-			my $handle1=$handle0->{$type};
-			foreach my $subtype(sort keys %{$handle1}){
-			   	my $handle2=$handle1->{$subtype};
-			   	foreach my $name(sort keys %{$handle2}){
-			   		my $handle3=$handle2->{"$name"};
-					my $anydefined=0;
-			   	     	foreach my $param(@{$handle3->{interaction}}){
-						if(defined $param){
-							$anydefined=1;
-							last;
-						}
-					}
-					if($anydefined==0){
-						# means none of the interactions exist in the final system.  So, don't write this type
-						next;
-					}
-
-			   	     	$localxmlout .= "$twos<$subtype name=\"$name\">\n";
-			   	     	my $expr=$handle3->{expression}->{"expr"};
-			   	     	$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
-					my @paramlist=@{$handle3->{parameter}};
-			   	     	foreach my $param(@paramlist){
-			   	     		$localxmlout .= "$threes<parameter>$param</parameter>\n";
-			   	     	}
-			   	     	foreach my $param(@{$handle3->{interaction}}){
-						if(!defined $param){
-							#must have been deleted
-							next;
-						}
-			   	     		$localxmlout .="$threes<interaction";
-			   	     		my %tmphash=%{$param};
-						foreach my $key("i","j",@paramlist){
-		   	     				my $fmt;
-		   	     				# write integers as integers.  Everything else as scientific notation
-		   	     				if($tmphash{$key} =~ m/^[0-9]*$/){
-		   	     					$fmt="%i";
-		   	     				}else{
-		   	     					$fmt="%7.5e";
-		   	     				}
-		   	     				my $val=sprintf("$fmt",$tmphash{$key});
-		   	     				$localxmlout .=" $key=\"$val\"";
-						}
-			   	     		$localxmlout .="/>\n";
-			   	     	}
-			   	     	$localxmlout .= "$twos</$subtype>\n";
-                           	 }
-			}
-			$localxmlout .= "$ones</$type>\n";
-			my @num=split(/\s+/,$localxmlout);
-			my $num = @num; 
-			if($num > 3){	
-				# there must be some content, so write it.
-				$xmlout .=$localxmlout;
+			if($type eq "contacts"){
+				$xmlout .= OpenSMOGwriteXMLcontacts($handle0,$type,$space);
+			}else{
+				smog_quit("When writing OpenSMOG XML file, type $type not supported.");
 			}
 		}	
 		$xmlout.="</OpenSMOGforces>\n";
@@ -215,6 +165,71 @@ sub OpenSMOGwriteXML{
 		return "\t$OpenSMOGxml\n";
 	}
 	return "";
+}
+
+sub OpenSMOGwriteXMLcontacts{
+	my ($handle0,$type,$space)=@_;
+        my $ones="$space";
+        my $twos="$space$space";
+        my $threes="$space$space$space";
+
+	my $localxmlout = "$space<$type>\n";
+	my $handle1=$handle0->{$type};
+	foreach my $subtype(sort keys %{$handle1}){
+	   	my $handle2=$handle1->{$subtype};
+	   	foreach my $name(sort keys %{$handle2}){
+	   		my $handle3=$handle2->{"$name"};
+			my $anydefined=0;
+	   	     	foreach my $param(@{$handle3->{interaction}}){
+				if(defined $param){
+					$anydefined=1;
+					last;
+				}
+			}
+			if($anydefined==0){
+				# means none of the interactions exist in the final system.  So, don't write this type
+				next;
+			}
+
+	   	     	$localxmlout .= "$twos<$subtype name=\"$name\">\n";
+	   	     	my $expr=$handle3->{expression}->{"expr"};
+	   	     	$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
+			my @paramlist=@{$handle3->{parameter}};
+	   	     	foreach my $param(@paramlist){
+	   	     		$localxmlout .= "$threes<parameter>$param</parameter>\n";
+	   	     	}
+	   	     	foreach my $param(@{$handle3->{interaction}}){
+				if(!defined $param){
+					#must have been deleted
+					next;
+				}
+	   	     		$localxmlout .="$threes<interaction";
+	   	     		my %tmphash=%{$param};
+				foreach my $key("i","j",@paramlist){
+   	     				my $fmt;
+   	     				# write integers as integers.  Everything else as scientific notation
+   	     				if($tmphash{$key} =~ m/^[0-9]*$/){
+   	     					$fmt="%i";
+   	     				}else{
+   	     					$fmt="%7.5e";
+   	     				}
+   	     				my $val=sprintf("$fmt",$tmphash{$key});
+   	     				$localxmlout .=" $key=\"$val\"";
+				}
+	   	     		$localxmlout .="/>\n";
+	   	     	}
+	   	     	$localxmlout .= "$twos</$subtype>\n";
+           	 }
+	}
+	$localxmlout .= "$ones</$type>\n";
+	my @num=split(/\s+/,$localxmlout);
+	my $num = @num; 
+	if($num > 3){	
+		# there must be some content, so write it.
+		return $localxmlout;
+	}else{
+		return "";
+	}
 }
 
 sub OpenSMOGextractXML{
