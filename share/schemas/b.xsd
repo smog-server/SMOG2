@@ -23,47 +23,65 @@
   </xs:complexType>
   <!--bond TYPE -->
   <xs:complexType name="bondType">
-    <xs:element name="bType" type="bTypeType" minOccurs="2" maxOccurs="2"/>
+    <xs:sequence>
+      <xs:element name="bType" type="bTypeType" minOccurs="2" maxOccurs="2"/>
+    </xs:sequence>
     <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
   </xs:complexType>
   <!--angle TYPE -->
   <xs:complexType name="angleType">
-    <xs:element name="bType" type="bTypeType" minOccurs="3" maxOccurs="3"/>
+    <xs:sequence>
+      <xs:element name="bType" type="bTypeType" minOccurs="3" maxOccurs="3"/>
+    </xs:sequence>
     <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
   </xs:complexType>
   <!--dihedral TYPE -->
   <xs:complexType name="dihedralType">
-    <xs:element name="bType" type="bTypeType" minOccurs="4" maxOccurs="4"/>
+    <xs:sequence>
+      <xs:element name="bType" type="bTypeType" minOccurs="4" maxOccurs="4"/>
+    </xs:sequence>
     <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
     <xs:attribute name="energyGroup" type="xs:string" use="required"/>
   </xs:complexType>
   <!--improper TYPE -->
   <xs:complexType name="improperType">
-    <xs:element name="bType" type="bTypeType" minOccurs="4" maxOccurs="4"/>
+    <xs:sequence>
+      <xs:element name="bType" type="bTypeType" minOccurs="4" maxOccurs="4"/>
+    </xs:sequence>
     <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
   </xs:complexType>
   <!--bonds TYPE -->
   <xs:complexType name="bondsType">
-    <xs:element name="bond" type="bondType" minOccurs="1" maxOccurs="unbounded"/>
+    <xs:sequence>
+      <xs:element name="bond" type="bondType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
   </xs:complexType>
   <!--angles TYPE -->
   <xs:complexType name="anglesType">
-    <xs:element name="angle" type="angleType" minOccurs="1" maxOccurs="unbounded"/>
+    <xs:sequence>
+      <xs:element name="angle" type="angleType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
   </xs:complexType>
   <!--dihedrals TYPE -->
   <xs:complexType name="dihedralsType">
-    <xs:element name="dihedral" type="dihedralType" minOccurs="1" maxOccurs="unbounded"/>
+    <xs:sequence>
+      <xs:element name="dihedral" type="dihedralType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
   </xs:complexType>
   <!--impropers TYPE -->
   <xs:complexType name="impropersType">
-    <xs:element name="improper" type="improperType" minOccurs="1" maxOccurs="unbounded"/>
+    <xs:sequence>
+      <xs:element name="improper" type="improperType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
   </xs:complexType>
   <!-- B TYPE -->
   <xs:complexType name="bTypes">
-    <xs:element name="bonds" type="bondsType"/>
-    <xs:element name="angles" type="anglesType"/>
-    <xs:element name="dihedrals" type="dihedralsType"/>
-    <xs:element name="impropers" type="impropersType" minOccurs="0"/>
+    <xs:all>
+      <xs:element name="bonds" type="bondsType"/>
+      <xs:element name="angles" type="anglesType"/>
+      <xs:element name="dihedrals" type="dihedralsType"/>
+      <xs:element name="impropers" type="impropersType" minOccurs="0"/>
+    </xs:all>
   </xs:complexType>
   <!-- nb SCHEMA -->
   <xs:element name="b" type="bTypes"/>

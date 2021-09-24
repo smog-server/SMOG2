@@ -33,7 +33,9 @@
     <xs:attribute name="contactDistance" type="xs:decimal" use="required"/>
     <xs:attribute name="shadowRadius" type="xs:decimal" use="optional"/>
     <xs:attribute name="shadowRadiusBonded" type="xs:decimal" use="optional"/>
-    <xs:element name="contactScaling" type="contactScalingType" minOccurs="0" maxOccurs="unbounded"/>
+    <xs:sequence>
+      <xs:element name="contactScaling" type="contactScalingType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
   </xs:complexType>
   <!-- groupRatio TYPE -->
   <xs:complexType name="groupRatioType">
@@ -68,9 +70,11 @@
   </xs:complexType>
   <!-- GROUPS TYPE -->
   <xs:complexType name="groupsType">
-    <xs:element name="energyGroup" type="energyGroupType" minOccurs="1" maxOccurs="unbounded"/>
-    <xs:element name="contactGroup" type="contactGroupType" minOccurs="1" maxOccurs="unbounded"/>
-    <xs:element name="groupRatios" type="groupRatioType" minOccurs="1" maxOccurs="1"/>
+    <xs:sequence>
+      <xs:element name="energyGroup" type="energyGroupType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="contactGroup" type="contactGroupType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="groupRatios" type="groupRatioType" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
   </xs:complexType>
   <!--bondsThresholdType -->
   <xs:complexType name="bondsThresholdType">
@@ -96,13 +100,32 @@
   </xs:complexType>
   <!-- SETTINGS TYPE -->
   <xs:complexType name="settingsType">
-    <xs:element name="Groups" type="groupsType"/>
-    <xs:element name="Contacts" type="contactType"/>
-    <xs:element name="bondsThreshold" type="bondsThresholdType" minOccurs="0" maxOccurs="1"/>
-    <xs:element name="anglesThreshold" type="anglesThresholdType" minOccurs="0" maxOccurs="1"/>
-    <xs:element name="contactsThreshold" type="contactsThresholdType" minOccurs="0" maxOccurs="1"/>
-    <xs:element name="dihedralNormalization" type="dihedralNormalizationType" minOccurs="0" maxOccurs="1"/>
-    <xs:element name="distanceThreshold" type="distanceThresholdType" minOccurs="0" maxOccurs="1"/>
+    <xs:all>
+      <xs:element name="Groups" type="groupsType"/>
+      <xs:element name="dihedralNormalization" type="dihedralNormalizationType"/>
+      <xs:element name="Contacts" type="contactType"/>
+      <xs:element name="bondsThreshold" type="bondsThresholdType" minOccurs="0"/>
+      <xs:element name="anglesThreshold" type="anglesThresholdType" minOccurs="0"/>
+      <xs:element name="contactsThreshold" type="contactsThresholdType" minOccurs="0"/>
+      <xs:element name="distanceThreshold" type="distanceThresholdType" minOccurs="0"/>
+    </xs:all>
+  </xs:complexType>
+  <!-- OPEN CONSTANT TYPE -->
+  <xs:complexType name="OPENconstantType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="value" type="xs:decimal" use="required"/>
+  </xs:complexType>
+  <!-- OPEN CONSTANTS TYPE -->
+  <xs:complexType name="OPENconstantsType">
+    <xs:sequence>
+      <xs:element name="constant" type="OPENconstantType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <!-- OPENSETTINGS TYPE - i.e. OpenSMOG-specific settings-->
+  <xs:complexType name="OPENsettingsType">
+    <xs:sequence>
+      <xs:element name="constants" type="OPENconstantsType" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
   </xs:complexType>
   <!-- FUNCTIONS TYPE -->
   <xs:complexType name="functionsType">
@@ -110,9 +133,12 @@
   </xs:complexType>
   <!-- SIF TYPE -->
   <xs:complexType name="sifType">
-    <xs:element name="version" type="versionType" minOccurs="0" maxOccurs="1"/>
-    <xs:element name="functions" type="functionsType"/>
-    <xs:element name="settings" type="settingsType"/>
+    <xs:all>
+      <xs:element name="version" type="versionType" minOccurs="0"/>
+      <xs:element name="functions" type="functionsType" minOccurs="1"/>
+      <xs:element name="settings" type="settingsType" minOccurs="1"/>
+      <xs:element name="OpenSMOGsettings" type="OPENsettingsType" minOccurs="0"/>
+    </xs:all>
   </xs:complexType>
   <!-- BIF SCHEMA -->
   <xs:element name="sif" type="sifType"/>

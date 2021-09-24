@@ -32,11 +32,23 @@
       <xs:element name="contacts_type" type="contpotType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
+  <!-- CONSTANT TYPE -->
+  <xs:complexType name="constantType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="value" type="xs:decimal" use="required"/>
+  </xs:complexType>
+  <!-- CONSTANTS TYPE -->
+  <xs:complexType name="constantsType">
+    <xs:sequence>
+      <xs:element name="constant" type="constantType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
   <!-- OpenSMOG TYPE -->
   <xs:complexType name="OpenSMOGType">
-    <xs:sequence>
+    <xs:all>
       <xs:element name="contacts" type="contactsType" minOccurs="0" maxOccurs="1"/>
-    </xs:sequence>
+      <xs:element name="constants" type="constantsType" minOccurs="0" maxOccurs="1"/>
+    </xs:all>
   </xs:complexType>
   <!-- OpenSMOG SCHEMA -->
   <xs:element name="OpenSMOGforces" type="OpenSMOGType"/>

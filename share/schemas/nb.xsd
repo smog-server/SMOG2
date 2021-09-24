@@ -43,13 +43,17 @@
   </xs:complexType>
   <!--contacts TYPE -->
   <xs:complexType name="contactType">
-    <xs:element name="pairType" type="pairTypeType" minOccurs="2" maxOccurs="2"/>
+    <xs:sequence>
+      <xs:element name="pairType" type="pairTypeType" minOccurs="2" maxOccurs="2"/>
+    </xs:sequence>
     <xs:attribute name="func" type="funcTypeTypeC" use="required"/>
     <xs:attribute name="contactGroup" type="xs:string" use="required"/>
   </xs:complexType>
   <!--pairs TYPE -->
   <xs:complexType name="pairType">
-    <xs:element name="nbType" type="nbTypeType" minOccurs="2" maxOccurs="2"/>
+    <xs:sequence>
+      <xs:element name="nbType" type="nbTypeType" minOccurs="2" maxOccurs="2"/>
+    </xs:sequence>
     <xs:attribute name="func" type="funcTypeTypeC"/>
   </xs:complexType>
   <!--defaults TYPE -->
@@ -67,10 +71,12 @@
   </xs:complexType>
   <!-- NB TYPE -->
   <xs:complexType name="nbTypes">
-    <xs:element name="defaults" type="defaultsType" minOccurs="0" maxOccurs="1"/>
-    <xs:element name="moltype" type="molType" minOccurs="0" maxOccurs="1"/>
-    <xs:element name="nonbond" type="nonbondType" maxOccurs="unbounded"/>
-    <xs:element name="contact" type="contactType" maxOccurs="unbounded"/>
+    <xs:sequence>
+      <xs:element name="defaults" type="defaultsType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="moltype" type="molType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="nonbond" type="nonbondType" maxOccurs="unbounded"/>
+      <xs:element name="contact" type="contactType" maxOccurs="unbounded"/>
+    </xs:sequence>
   </xs:complexType>
   <!-- nb SCHEMA -->
   <xs:element name="nb" type="nbTypes"/>

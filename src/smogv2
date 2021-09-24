@@ -585,8 +585,8 @@ sub addToTop {
 	my($directive,$stuff) = @_;
 		
 	if($directive =~ m/^OpenSMOG$/){
-		# if $directive is OpenSMOG, then $stuff is the address of the array that contains the folloding information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
-		addOShash($OSref,$stuff);
+		# if $directive is OpenSMOG, then $stuff is the address of the array that contains the following information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
+		AddBondedOShash($OSref,$stuff);
         }else{
 		my $dir=$directives{$directive};
 		$linesInDirectivesWithContent[$dir]+= hascontent($stuff);
@@ -2449,7 +2449,7 @@ sub parseTemplatesAndPDB
     	## PARSE TEMPLATES ##
     	#####################
 	## parse .sif File ##
-	parseSif();
+	parseSif($OSref);
 	## parse .nb file  ##
 	parseNonBonds();
 	## parse .b file   ##

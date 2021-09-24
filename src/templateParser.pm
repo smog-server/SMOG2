@@ -931,7 +931,7 @@ sub parseBif {
 }
 
 sub parseSif {
-
+	my ($OSref)=@_;
 	## Read .sif file ##
 	$data = $xml->XMLin($sifxml,KeyAttr => ['name'],ForceArray=>1);
 	if(!exists $data->{"version"}->[0]->{"min"}){
@@ -941,6 +941,9 @@ sub parseSif {
 		if(!exists $SMOGversions{"$minver"}){
 			smog_quit("These templates require SMOG v$minver, or newer (defined in .sif file).");
 		}
+	}
+	if(defined $data->{"OpenSMOGsettings"}){
+		AddSettingsOShash($OSref,$data->{"OpenSMOGsettings"});
 	}
 	## Parse function data
 	$functions = $data->{"functions"}->[0]->{"function"};

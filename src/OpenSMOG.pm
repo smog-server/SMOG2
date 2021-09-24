@@ -35,7 +35,7 @@ use smog_common;
 use XML::LibXML;
 
 our @ISA = 'Exporter';
-our @EXPORT = qw(OShashAddFunction OpenSMOGfunctionExists addOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction %fTypes %fTypesArgNum);
+our @EXPORT = qw(OShashAddFunction OpenSMOGfunctionExists AddBondedOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction %fTypes %fTypesArgNum);
 our %fTypes;
 our %fTypesArgNum;
 our $OpenSMOG;
@@ -65,7 +65,7 @@ sub OpenSMOGfunctionExists{
 	}
 }
 
-sub addOShash{
+sub AddBondedOShash{
 	my ($OSref,$stuff)=@_;
 	my @stuff=@{$stuff};
 	my $ref=\%{$OSref->{$stuff[2]}->{$stuff[2] . "_type"}->{$stuff[3]}};
@@ -82,6 +82,23 @@ sub addOShash{
 
 }
 
+sub AddSettingsOShash{
+	my ($OSref,$addstuff)=@_;
+	if(defined $addstuff->[0]->{"constants"}){
+		AddConstantsOShash($OSref,$addstuff->[0]->{"constants"})
+	}
+# @stuff is the array that contains the constants
+
+}
+
+sub AddConstantsOShash{
+	my ($OSref,$addstuff)=@_;
+	my $ref=\%{$OSref->{"constants"}};
+	my $get=$addstuff->[0]->{"constant"};
+	for my $i (keys %{$get}){
+		$ref->{$i}=$get->{$i}->{"value"};
+	}
+}
 sub readOpenSMOGxml {
 	my ($XMLin)=@_;
 	if(-f $XMLin){
@@ -147,6 +164,8 @@ sub OpenSMOGwriteXML{
 		foreach my $type(sort keys %{$handle0}){
 			if($type eq "contacts"){
 				$xmlout .= OpenSMOGwriteXMLcontacts($handle0,$type,$space);
+			}elsif($type eq "constants"){
+				$xmlout .= OpenSMOGwriteXMLconstants($handle0,$type,$space);
 			}else{
 				smog_quit("When writing OpenSMOG XML file, type $type not supported.");
 			}
@@ -165,6 +184,30 @@ sub OpenSMOGwriteXML{
 		return "\t$OpenSMOGxml\n";
 	}
 	return "";
+}
+
+sub OpenSMOGwriteXMLconstants{
+	my ($handle0,$type,$space)=@_;
+        my $ones="$space";
+        my $twos="$space$space";
+        my $threes="$space$space$space";
+
+	my $localxmlout = "$space<$type>\n";
+	my $handle1=$handle0->{$type};
+
+	foreach my $name(sort keys %{$handle1}){
+		$localxmlout .= "$twos<constant name=\"$name\" value=\"$handle1->{$name}\"/>\n";
+	}
+
+	$localxmlout .= "$ones</$type>\n";
+	my @num=split(/\s+/,$localxmlout);
+	my $num = @num; 
+	if($num > 3){	
+		# there must be some content, so write it.
+		return $localxmlout;
+	}else{
+		return "";
+	}
 }
 
 sub OpenSMOGwriteXMLcontacts{
