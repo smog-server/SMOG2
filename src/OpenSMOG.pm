@@ -35,7 +35,7 @@ use smog_common;
 use XML::LibXML;
 
 our @ISA = 'Exporter';
-our @EXPORT = qw(OShashAddFunction OShashAddNBFunction OpenSMOGfunctionExists AddBondedOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction %fTypes %fTypesArgNum);
+our @EXPORT = qw(OShashAddFunction OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddBondedOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction %fTypes %fTypesArgNum);
 our %fTypes;
 our %fTypesArgNum;
 our $OpenSMOG;
@@ -45,7 +45,7 @@ our %OpenSMOGatoms2restrain;
 sub OShashAddFunction{
 	my ($OSref,$type,$name,$expr,$params)=@_;
 	if($type ne "contacts"){
-		smog_quit("OpenSMOG currently only supports modified contact potentials.  Issue processing $name");
+		smog_quit("OpenSMOG currently only supports modified contact potentials through \"functions\" declarations. Nonbonded custom potentials may be defined in the .nb file. Issue processing $name");
 	}
 	my $ref=\%{$OSref->{$type}->{$type . "_type"}->{$name}};
 	$ref->{expression}->{"expr"}=$expr;
@@ -109,7 +109,6 @@ sub AddNonbondOShash{
 
 }
 
-
 sub AddSettingsOShash{
 	my ($OSref,$addstuff)=@_;
 	if(defined $addstuff->[0]->{"constants"}){
@@ -127,12 +126,13 @@ sub AddConstantsOShash{
 		$ref->{$i}=$get->{$i}->{"value"};
 	}
 }
+
 sub readOpenSMOGxml {
 	my ($XMLin)=@_;
 	if(-f $XMLin){
 		my $xml = new XML::Simple;
 		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name"},ForceArray=>["contacts_type","parameter","interaction"]);
-		# this will return a hashtable with the following format:
+		# this will return a hashtable with the following format (this only defined contacts.  need to add constants and nonbond terms:
 #<perldata>
 # <hashref memory_address="0x7fc4f2a25300">
 #  <item key="contacts">
@@ -197,7 +197,7 @@ sub OpenSMOGwriteXML{
 			}elsif($type eq "nonbond"){
                                 $xmlout .= OpenSMOGwriteXMLnonbond($handle0,$type,$space);
                         }else{
-				smog_quit("When writing OpenSMOG XML file, type $type not supported.");
+				smog_quit("Internal Error: When writing OpenSMOG XML file, type $type not supported.");
 			}
 		}	
 		$xmlout.="</OpenSMOGforces>\n";
@@ -359,7 +359,6 @@ sub OpenSMOGwriteXMLnonbond{
 	}
 }
 
-
 sub OpenSMOGextractXML{
 	my ($OSref,$OpenSMOGxml,$keepatoms)=@_;
         # OSref is a handle to the hash holding all information to be written.
@@ -423,6 +422,7 @@ sub newOpenSMOGfunction{
 	if($fN =~ m/[\+\-\*\/]/){
 		smog_quit("OpenSMOG function names can not have +, -, * or /.  Problematic definition: $fN");
 	}
+        checkOpenSMOGparam("function",$fN);
 
 	if ( exists $fTypes{"$fN"}){
 		smog_quit("Can not create new OpenSMOG function. $fN is a protected name.");
@@ -453,7 +453,7 @@ sub newOpenSMOGfunction{
                 if($param =~ m/^[i-n]$/){
                         smog_quit(".sif file defines function $fN with OpenSMOG parameter $param. OpenSMOG functions can not use i-n as parameters. These are reserved symbols for denoting atom indices.");
                 }
-
+		checkOpenSMOGparam($fN,$param);
 		if(exists $seenparm{$param}){
 			smog_quit("Function $fN defines $param as a parameter more than once. See .sif file. Found $fh->{$fN}->{\"OpenSMOGparameters\"}");
 		}else{
@@ -475,6 +475,19 @@ sub newOpenSMOGfunction{
 		push(@{$OpenSMOGhandle->{$fN}->{parameters}},"$par");
 	}
 
+}
+
+sub checkOpenSMOGparam{
+	my ($term,$param)=@_;
+	if($param !~ m/^[a-zA-Z]([a-zA-Z0-9_]+)?$/){
+		my $message;
+		if($term eq "function"){
+			$message="Function names must begin with a letter, and be followed by any number of letters, numbers, or underscores. Offending parameter: $param";
+		}else{
+			$message="Parameters with $term custom potential must begin with a letter, and be followed by any number of letters, numbers, or underscores. Offending parameter: $param";
+		}
+		smog_quit("OpenSMOG issue. $message");
+	}
 }
 
 1;

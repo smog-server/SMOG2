@@ -1487,6 +1487,7 @@ sub parseNonBonds {
 			if($param =~ m/^type[12]$/ && exists $interHandle[0]->{"OpenSMOGenergy"}){
 				smog_quit(".nb file defines CustomPotential with the parameter $param, while an OpenSMOGenergy function is defined. type1 and type2 are reserved to refer to atom types, if OpenSMOGenergy is defined.");
 			}
+			checkOpenSMOGparam("nonbond",$param);
 			if(exists $seenparm{$param}){
 				smog_quit("CustomPotential defines $param as a parameter more than once. See .nb file. Found $interactions->{\"CustomPotential\"}->{\"parameters\"}");
 			}else{
