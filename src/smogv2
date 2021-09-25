@@ -612,6 +612,7 @@ sub addExtras {
 			$directive = trim($tokens[0]);
 			$stuff = trim($tokens[1]);
 			# check that nonbonded params are only added if the atom types are present
+			my $writetoXML="no";
 
 			if($directive eq "atomtypes"){
 		    		my @ltokens = split('<',$A);
@@ -641,17 +642,36 @@ sub addExtras {
 				if(@tarray < 5){
 					smog_quit("nonbond_params defined in extras file, but too few parameters are given. $customerror Offending line:$line",0);
 				}
-				unless($tarray[2]  =~ /^[1-4]$/){
-					smog_quit("In extras file, only nonbond_param types 1-4 are supported (1 and 2 are default Gromacs options. 3 and 4 are for use with unofficial (modified) versions of Gromacs. $customerror Offending line:$line",0);
+				if(exists $interactions->{"CustomPotential"}){
+					# do checks for custom potentials
+					if(exists $interactions->{"CustomPotential"}->{"parameters"}){
+						if(@tarray -3 != @{$interactions->{"CustomPotential"}->{"parameters"}}){
+							my $tarray=scalar(@tarray)-3;
+							my $parray=scalar(@{$interactions->{"CustomPotential"}->{"parameters"}});
+							smog_quit("A custom potential is being used, and $parray parameters are expected (as defined in the .nb file), but $tarray parameters found on a nonbond_params entry of the extras file. Problematic line:$line");
+						}
+					}else{
+						smog_quit("A custom potential is being used for nonbonded terms, and your extras file defines nonbond_params. However, the parameter list for your custom potential is not given in the .nb file. Your extras file may be ok, but SMOG 2 can\'t determine if you have the correct number of parameters listed. It is strongly recommended that you give the parameter list, in order to avoid this warning.",0)	
+					}
+					if(defined $OpenSMOG){
+						# Since we are using OpenSMOG with a Custom Potential, then we don't want 
+						# to write the nonbond_params in the top file. Instead, we want to add it to 
+						# the OpenSMOG hash, so that it will be written to the output XML
+						$writetoXML="yes"; #ensures that we don't write to top
+						
+						# now, populate hash 
+						splice(@tarray,2,1);
+						AddNonbondOShash($OSref,\@tarray);
+					}
+				}else{
+					# do standard gromacs format checks
+					unless($tarray[2]  =~ /^[12]$/){
+						smog_quit("In extras file, only nonbond_param types 1 and 2 are supported (default Gromacs options), unless a CustomPotential is defined in the .nb file. $customerror Offending line:$line");
+					}
+					if($tarray[2]==1 && @tarray!=5){
+						smog_quit("In extras file, nonbond_param defined with nbtype 1. Must have 5 parameters. $customerror Offending line:$line",0);
+					}
 				}
-				if($tarray[2]==1 && @tarray!=5){
-					smog_quit("In extras file, nonbond_param defined with nbtype 1. Must have 5 parameters. $customerror Offending line:$line",0);
-				}elsif($tarray[2]==3 && @tarray!=21){
-					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 21 parameters. $customerror Offending line:$line",0);
-				}elsif($tarray[2]==4 && @tarray!=6){
-					smog_quit("In extras file, nonbond_param defined with nbtype 3. Must have 21 parameters. $customerror Offending line:$line",0);
-				}
-
 				if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
 					next;
 				}	
@@ -663,7 +683,6 @@ sub addExtras {
 					$f = $tarray[1] . "-" . $tarray[0];
 				}
 				$foundNBe{$f}=1;
-
 			}
 			if($directive eq "bondtypes"){
 		    		my @ltokens = split('<',$A);
@@ -739,11 +758,17 @@ sub addExtras {
 				$foundDtype{"$tarray[0]-$tarray[1]-$tarray[2]-$tarray[3]"}=1;
 				$foundDtype{"$tarray[3]-$tarray[2]-$tarray[1]-$tarray[0]"}=1;
 			}
-			addToTop($directive,$stuff."\n");
+			if($writetoXML eq "yes"){
+				next;
+			}elsif($writetoXML ne "no"){
+				smog_quit("Internal error 1. Contact SMOG team.");
+			}else{
+				addToTop($directive,$stuff."\n");
+			}
 		}
 	}
-	if(exists $interactions->{"nbfunc"} && $interactions->{"nbfunc"} == 3){
-	# type 3 is not defined for official versions of gromacs. We have added routines in a SMOG-supported version, in which effective potentials are defined for nonbonded interactions. These effective potentials are defined as type 3. Since there are no known combination rules for the effective potentials, the nonbonded params need to be given for every possible type of combination.  We will check that this condition is satisfied, here.
+	if(exists $interactions->{"nbfunc"} && $interactions->{"nbfunc"} > 2){
+	# types gt 2 are not defined for official versions of gromacs. We have added routines in a SMOG-supported version, that allow for more flexible definitions to be used. However, since they do not support combination rules, we restrict SMOG2, so that all possible nonbond_params are defined in the extras file. In the future, we may relax this condition.
 		foreach my $t1(keys %presentatomtypes){	
 			foreach my $t2(keys %presentatomtypes){	
 				my $f;
@@ -753,7 +778,7 @@ sub addExtras {
 					$f = $t2 . "-" . $t1;
 				}
 				if(!exists $foundNBe{$f}){
-					smog_quit("nbtype 3 is being used, yet not all possible nonbond_params are given in extras file. Did not find params for atomtype pair $f");
+					smog_quit("nbtype $interactions->{\"nbfunc\"} is being used, yet not all possible nonbond_params are given in extras file. Did not find params for atomtype pair $f");
 				}
 			}
 		}
@@ -2451,7 +2476,7 @@ sub parseTemplatesAndPDB
 	## parse .sif File ##
 	parseSif($OSref);
 	## parse .nb file  ##
-	parseNonBonds();
+	parseNonBonds($OSref);
 	## parse .b file   ##
 	parseBonds();
 	## parse .bif File ##
@@ -2567,18 +2592,22 @@ sub appendDefaults
 	my $genpairs = $interactions->{"gen-pairs"};
 	my $fudgeLJ = $interactions->{"fudgeLJ"};
 	my $fudgeQQ = $interactions->{"fudgeQQ"};
-
+	my $nbfuncv=$nbfunc;
+	if(exists $interactions->{"CustomPotential"} && defined $OpenSMOG){
+		# if we are using a CustomPotential with OpenSMOG, then we will need to give a nbfunc that can be understood by the gromacs top parser.  But, the function type listed will be deleted and replaced in openSMOG.
+		$nbfuncv=1;
+	}
 	if($fudgeLJ == -1 && $fudgeQQ == -1){
 		addToTop("defaults", "; nbfunc comb-rule gen-pairs\n");
-		addToTop("defaults", "  $nbfunc      $combrule         $genpairs\n");
+		addToTop("defaults", "  $nbfuncv      $combrule         $genpairs\n");
 	}
 	if($fudgeLJ != -1 && $fudgeQQ == -1){
 		addToTop("defaults", "; nbfunc comb-rule gen-pairs fudgeLJ\n");
-		addToTop("defaults", "  $nbfunc      $combrule         $genpairs        $fudgeLJ\n");
+		addToTop("defaults", "  $nbfuncv      $combrule         $genpairs        $fudgeLJ\n");
 	}
 	if($fudgeQQ != -1){
 		addToTop("defaults", "; nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ\n");
-		addToTop("defaults", "  $nbfunc      $combrule         $genpairs        $fudgeLJ       $fudgeQQ\n");
+		addToTop("defaults", "  $nbfuncv      $combrule         $genpairs        $fudgeLJ       $fudgeQQ\n");
 	}
 }
 

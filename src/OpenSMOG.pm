@@ -35,7 +35,7 @@ use smog_common;
 use XML::LibXML;
 
 our @ISA = 'Exporter';
-our @EXPORT = qw(OShashAddFunction OpenSMOGfunctionExists AddBondedOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction %fTypes %fTypesArgNum);
+our @EXPORT = qw(OShashAddFunction OShashAddNBFunction OpenSMOGfunctionExists AddBondedOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction %fTypes %fTypesArgNum);
 our %fTypes;
 our %fTypesArgNum;
 our $OpenSMOG;
@@ -50,6 +50,16 @@ sub OShashAddFunction{
 	my $ref=\%{$OSref->{$type}->{$type . "_type"}->{$name}};
 	$ref->{expression}->{"expr"}=$expr;
 
+	my @params=@{$params};
+	foreach my $en(@params){
+		push(@{$ref->{parameter}},"$en");
+	}
+}
+
+sub OShashAddNBFunction{
+	my ($OSref,$expr,$params)=@_;
+	my $ref=\%{$OSref->{nonbond}};
+	$ref->{expression}->{"expr"}=$expr;
 	my @params=@{$params};
 	foreach my $en(@params){
 		push(@{$ref->{parameter}},"$en");
@@ -81,6 +91,24 @@ sub AddBondedOShash{
 	push(@{$ref->{interaction}},\%tmphash);
 
 }
+
+sub AddNonbondOShash{
+	my ($OSref,$stuff)=@_;
+	my @stuff=@{$stuff};
+	my $ref=\%{$OSref->{nonbond}};
+# @stuff is the array that contains the following information: type1,type2, @parameter (in the order found in $OSref->{$type}->{$name}->{parameters} array)
+	my %tmphash;
+	$tmphash{"type1"}=$stuff[0];
+	$tmphash{"type2"}=$stuff[1];
+	my $parn=2;
+	foreach my $param(@{$ref->{parameter}}){
+		$tmphash{$param}=$stuff[$parn];
+		$parn++;
+	}
+	push(@{$ref->{nonbond_param}},\%tmphash);
+
+}
+
 
 sub AddSettingsOShash{
 	my ($OSref,$addstuff)=@_;
@@ -166,7 +194,9 @@ sub OpenSMOGwriteXML{
 				$xmlout .= OpenSMOGwriteXMLcontacts($handle0,$type,$space);
 			}elsif($type eq "constants"){
 				$xmlout .= OpenSMOGwriteXMLconstants($handle0,$type,$space);
-			}else{
+			}elsif($type eq "nonbond"){
+                                $xmlout .= OpenSMOGwriteXMLnonbond($handle0,$type,$space);
+                        }else{
 				smog_quit("When writing OpenSMOG XML file, type $type not supported.");
 			}
 		}	
@@ -275,6 +305,61 @@ sub OpenSMOGwriteXMLcontacts{
 	}
 }
 
+sub OpenSMOGwriteXMLnonbond{
+	my ($handle0,$type,$space)=@_;
+        my $ones="$space";
+        my $twos="$space$space";
+        my $threes="$space$space$space";
+
+	my $localxmlout = "$space<$type>\n";
+	my $handle3=$handle0->{$type};
+	$localxmlout .= "$twos<nonbond_bytype>\n";
+
+	my $expr=$handle3->{expression}->{"expr"};
+	$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
+
+	my @paramlist=@{$handle3->{parameter}};
+	foreach my $param(@paramlist){
+		$localxmlout .= "$threes<parameter>$param</parameter>\n";
+	}
+	foreach my $param(@{$handle3->{nonbond_param}}){
+		if(!defined $param){
+			#must have been deleted
+			next;
+		}
+		$localxmlout .="$threes<nonbond_param";
+		my %tmphash=%{$param};
+		foreach my $key("type1","type2"){
+			my $fmt="%s";
+			my $val=sprintf("$fmt",$tmphash{$key});
+			$localxmlout .=" $key=\"$val\"";
+		}
+		foreach my $key(@paramlist){
+			my $fmt;
+			# write integers as integers.  Everything else as scientific notation
+			if($tmphash{$key} =~ m/^[0-9]*$/){
+				$fmt="%i";
+			}else{
+				$fmt="%7.5e";
+			}
+			my $val=sprintf("$fmt",$tmphash{$key});
+			$localxmlout .=" $key=\"$val\"";
+		}
+		$localxmlout .="/>\n";
+	}
+	$localxmlout .= "$twos</nonbond_bytype>\n";
+	$localxmlout .= "$ones</$type>\n";
+	my @num=split(/\s+/,$localxmlout);
+	my $num = @num; 
+	if($num > 3){	
+		# there must be some content, so write it.
+		return $localxmlout;
+	}else{
+		return "";
+	}
+}
+
+
 sub OpenSMOGextractXML{
 	my ($OSref,$OpenSMOGxml,$keepatoms)=@_;
         # OSref is a handle to the hash holding all information to be written.
@@ -347,10 +432,11 @@ sub newOpenSMOGfunction{
 
 	# set the number of required parameters
 	my $parmstring=$fh->{$fN}->{"OpenSMOGparameters"};
-	if($parmstring =~ m/^\s+\,|\,\s+\,|\,\s+$/){
+        my $parmstringorig=$parmstring;
+        $parmstring =~ s/\s+//g;
+	if($parmstring =~ m/^\,|\,\,|\,$/){
 		smog_quit("Incorrectly formatted parameter list given for function $fN. Found \"$parmstring\"\nCheck .sif file.");
 	}
-	$parmstring =~ s/\s+//g;
 	my @parmarr=split(/\,/,$parmstring);
 	$fTypesArgNum{"$fN"}=$#parmarr+1;
 
