@@ -1379,224 +1379,11 @@ sub parseBonds {
 sub parseNonBonds {
 	my ($OSref)=@_;
 	$data = $xml->XMLin($nbondxml,KeyAttr => ['name'],ForceArray=>1);
-
-	my @interHandle;
-	## Obtain default options ##
-	if(exists $data->{"defaults"}){
-		# defaults found in the templates, so use the values
-		@interHandle = @{$data->{"defaults"}};
-	}
-	if(exists $interHandle[0]->{"gen-pairs"}) {
-		if($interHandle[0]->{"gen-pairs"}==0){
-			$interactions->{"gen-pairs"}="no";
-		}else{
-			$interactions->{"gen-pairs"}="yes";
-		}
-	}else{
-		smog_note("gen-pairs not defined in templates.  Will assume no.");
-		$interactions->{"gen-pairs"}="no";
-	}
-
-	if(exists $interHandle[0]->{"nbfunc"}) {
-		$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
-	}else{
-		smog_note("nbfunc not defined in templates.  Will assume a value of 1.");
-		$interactions->{"nbfunc"}=1;
-	}
-	if(exists $interHandle[0]->{"gmx-combination-rule"}) {
-		$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
-	}else{
-		smog_note("gmx-combination-rule not defined in templates.  Will assume a value of 1.");
-		$interactions->{"gmx-combination-rule"}=1;
-	}
-
-	if(exists $interHandle[0]->{"fudgeLJ"}) {
-		$interactions->{"fudgeLJ"} = $interHandle[0]->{"fudgeLJ"};
-		my $tmp=$interactions->{"fudgeLJ"};
-		if($tmp < 0 ){
-			smog_quit("fudgeLJ must be greater than, or equal to, 0.  Found $tmp.");
-		}
-
-		if($interactions->{"gen-pairs"} eq "no" && $tmp != 1.0){
-			smog_quit("fudgeLJ is set to $tmp, but this value is not applied when gen-pairs=no.");
-		}
-	}else{
-		smog_note("fudgeLJ not defined in templates. Will assume a value of 1.");
-		# we are setting to -1, to indicate that we don't want to write it later.
-		$interactions->{"fudgeLJ"}=-1;
-	}
-
-	if(exists $interHandle[0]->{"fudgeQQ"}) {
-		$interactions->{"fudgeQQ"} = $interHandle[0]->{"fudgeQQ"};
-		if($interactions->{"fudgeQQ"} < 0 ){
-			my $tmp=$interactions->{"fudgeQQ"};
-			smog_quit("fudgeQQ must be greater than, or equal to, 0.  Found $tmp.");
-		}
-		if($interactions->{"fudgeLJ"}==-1){
-			# since we gave a value for fudgeQQ and not fudgeLJ, we need to set the latter to 1, 
-			# in order to write it properly, later
-			$interactions->{"fudgeLJ"}=1;
-			if($interactions->{"gen-pairs"} ne "no"){
-				print "\nNote: Since fudgeQQ was set and gen-pairs=no, fudgeLJ will be written to the top file.\nHowever, this parameter has no effect, and is only written as a placeholder\n\n.";
-			}
-		}
-	}else{
-		smog_note("fudgeQQ not defined in templates. Will assume a value of 1.");
-		# we are setting to -1, to indicate that we don't want to write it later.
-		$interactions->{"fudgeQQ"}=-1;
-	}
-
-	# get/set molecule information
-	if(exists $data->{"moltype"}){
-		# molecule type information found in the templates, so use the values
-		@interHandle = @{$data->{"moltype"}};
-		$interactions->{"molname"}=$interHandle[0]->{"molname"};
-		$interactions->{"nrexcl"}=$interHandle[0]->{"nrexcl"};
-		if ($interactions->{"nrexcl"} > 3){
-			smog_quit("nrexcl must be less than or equal to 3. While larger values may work, it can also lead to somewhat unpredictable results.");
-		}
-	}else{
-		smog_note("name of moleculetype not given in .nb file. Will use \"Macromolecule\".");	
-		$interactions->{"molname"}="Macromolecule";
-		smog_note("value of nrexcl not given in .nb file. Will use 3.");	
-		$interactions->{"nrexcl"}=3;
-	}
-
-	# get CustomPotential information
-	if(exists $data->{"CustomPotential"}){
-		# CustomPotential information found in the templates, so use the values
-		@interHandle = @{$data->{"CustomPotential"}};
-
-		# parameters required for any custom potential definition
-		$interactions->{"CustomPotential"}->{"parameters"}=$interHandle[0]->{"parameters"};
-		# set the number of required parameters
-		my $parmstring=$interactions->{"CustomPotential"}->{"parameters"};
-		my $parmstringorig=$parmstring;
-		$parmstring =~ s/\s+//g;
-		if($parmstring =~ m/^\,|\,\,|\,$/){
-			smog_quit("Incorrectly formatted parameter list given for nonbonded CustomPotential. Found \"$parmstringorig\"\nCheck .nb file.");
-		}
-		my @parmarr=split(/\,/,$parmstring);
-
-		# these are only used if using OpenSMOG - even when using OpenSMOG, these may not be needed
-		# but, they must be given together, or both omitted
-		if(exists $interHandle[0]->{"OpenSMOGenergy"} && exists $interHandle[0]->{"OpenSMOGcombrule"}){
-			$interactions->{"CustomPotential"}->{"OpenSMOGenergy"}=$interHandle[0]->{"OpenSMOGenergy"};
-			$interactions->{"CustomPotential"}->{"OpenSMOGcombrule"}=$interHandle[0]->{"OpenSMOGcombrule"};
-			$interactions->{"CustomPotential"}->{"OpenSMOGcombrule"} =~ s/^\s+|\s+$//g;
-			if($interactions->{"CustomPotential"}->{"OpenSMOGcombrule"} ne "none"){
-				smog_quit("CustomPotential defined in .nb file. Only OpenSMOGcombrule==none is currently supported. Found \"$interactions->{\"CustomPotential\"}->{\"OpenSMOGcombrule\"}\"");
-			}
-
-			my $pind=0;
-			my %seenparm;
-			foreach my $param(@parmarr){
-				if($param =~ m/^q[12]$/ && exists $interHandle[0]->{"OpenSMOGenergy"} ){
-					smog_quit(".nb file defines CustomPotential with the parameter $param, while an OpenSMOGenergy function is defined. q1 and q2 are reserved to refer to charges, if OpenSMOGenergy is defined.");
-				}
-				if($param =~ m/^type[12]$/ && exists $interHandle[0]->{"OpenSMOGenergy"}){
-					smog_quit(".nb file defines CustomPotential with the parameter $param, while an OpenSMOGenergy function is defined. type1 and type2 are reserved to refer to atom types, if OpenSMOGenergy is defined.");
-				}
-				checkOpenSMOGparam("nonbond",$param);
-				if(exists $seenparm{$param}){
-					smog_quit("CustomPotential defines $param as a parameter more than once. See .nb file. Found $interactions->{\"CustomPotential\"}->{\"parameters\"}");
-				}else{
-					$seenparm{$param}=1;
-				}
-				$pind++;
-				if(exists $interHandle[0]->{"OpenSMOGenergy"}){
-					if($interHandle[0]->{"OpenSMOGenergy"} =~ m/([^0-9a-zA-Z]|^)$param([^0-9a-zA-Z]|$)/){
-						if($interactions->{"CustomPotential"}->{"OpenSMOGcombrule"} eq "none"){
-							# since we are not using a combination rule, we must be using arrays to 
-							# reference the parameters.  OpenSMOG expects the arrays to indexed 
-							#by type1 and type2.
-							$interactions->{"CustomPotential"}->{"OpenSMOGenergy"}=~ s/$param/$param\(type1,type2\)/g;
-						}
-					}else{
-						smog_quit("CustomPotential defines $param as a parameter, but it does not appear in the definition of the OpenSMOGenergy expression. $interHandle[0]->{\"OpenSMOGenergy\"}");
-					}
-				}
-			}
-			# save the array of parsed parameters
-			$interactions->{"CustomPotential"}->{"parameters"}=\@parmarr;
-
-			OShashAddNBFunction($OSref,$interactions->{"CustomPotential"}->{"OpenSMOGenergy"},\@parmarr);
-		}elsif(exists $interHandle[0]->{"OpenSMOGenergy"} || exists $interHandle[0]->{"OpenSMOGcombrule"}){
-			smog_quit("CustomPotential defined in .nb file. OpenSMOGenergy and OpenSMOGcombrule must be given together, or not at all.");
-		}
-
-	}
-
-	## Loop over nonbonds, save in $interaction{nonbonds}{typeA} = func info.
-	@interHandle = @{$data->{"nonbond"}};
-	my $counter = 0;
-	foreach my $inter(@interHandle)
-	{
-		my $typeA = $inter->{"nbType"}->[0];
-		my $func;
-		if($inter->{"mass"} <=0){
-			my $M=$inter->{"mass"};
-			smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
-		}
-
-		if($interactions->{"gmx-combination-rule"}==1){
-			if(!exists $inter->{"c6"} || !exists $inter->{"c12"}){
-				smog_quit ("nonbonded parameters issue for nbType $typeA. c6, c12 must be provided when using gmx-combination-rule=1. Check .nb file.");
-			}
-			if(exists $inter->{"sigma"} || exists $inter->{"epsilon"}){
-				smog_quit ("nonbonded parameters issue for nbType $typeA. sigma and epsilon can not be provided when using gmx-combination-rule=1. Check .nb file.");
-			}	
-			$func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
-			"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
-		}
-
-		if($interactions->{"gmx-combination-rule"}==2){
-			if(!exists $inter->{"sigma"} || !exists $inter->{"epsilon"}){
-				smog_quit ("nonbonded parameters issue for nbType $typeA. sigma and epsilon must be provided when using gmx-combination-rule=2. Check .nb file.");
-			}
-			if(exists $inter->{"c6"} || exists $inter->{"c12"}){
-				smog_quit ("nonbonded parameters issue for nbType $typeA. c6, c12 sigma and epsilon can not be provided when using gmx-combination-rule=2. Check .nb file.");
-			}	
-			$func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
-			"ptype"=>$inter->{"ptype"},"sigma"=>$inter->{"sigma"},"epsilon"=>$inter->{"epsilon"}};
-		}
-
-		if(exists $interactions->{"nonbonds"}->{$typeA}){
-			smog_quit ("nonbonded parameters defined multiple times for nbType $typeA. Check .nb file.");
-		}
-		$interactions->{"nonbonds"}->{$typeA} = $func;
-		$funcTable{"nonbonds"}->{$func} = $counter;
-		$funcTableRev{"nonbonds"}->{$counter} = $func;
-		$counter++;
-	}
-	
-	@interHandle = @{$data->{"contact"}};
-	## Loop over contacts, save in $interaction{contacts}{typeA}{typeB} = func info.
-	$counter = 0;
-	foreach my $inter(@interHandle)
-	{
-		my $nbtype;my $type;
-	 	$nbtype = $inter->{"pairType"};$type = "pairType";
-		my $typeA = $inter->{$type}->[0];
-		my $typeB = $inter->{$type}->[1];
-	 	$pairtypesused{$typeA}=1;
-	 	$pairtypesused{$typeB}=1;
-		my $func = $inter->{"func"};
-	 	my $cG = $inter->{"contactGroup"};
-		&checkContactFunctionDef($func,$cG);
-		if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
-			smog_quit ("contact parameters defined multiple times for types $typeA-$typeB. Check .nb file.");
-		}
-		$interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB} = $func;
-		$interactions->{"contacts"}->{"func"}->{$typeB}->{$typeA} = $func;
-		$interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{$typeB} = $cG;
-		$interactions->{"contacts"}->{"contactGroup"}->{$typeB}->{$typeA} = $cG;
-		$funcTable{"contacts"}->{"func"}->{$func} = $counter;
-		$funcTable{"contacts"}->{"contactGroup"}->{$cG} = $counter;
-		$funcTableRev{"contacts"}->{$counter}->{"func"} = $func;
-		$funcTableRev{"contacts"}->{$counter}->{"contactGroup"} = $cG;
-		$counter++;
-	}
+	getNBdefaults($data);
+	getMolInfo($data);
+	CustomPotentialCheckAdjust($data,$OSref);
+	NonBondLoop($data);
+	ContactLoop($data);	
 }
 
 ######################
@@ -1990,5 +1777,240 @@ sub createDihedralAngleFunctionals {
 
 }
 
+sub getNBdefaults{
+	my ($data)=@_;
+	my @interHandle;
+	## Obtain default options ##
+	if(exists $data->{"defaults"}){
+		# defaults found in the templates, so use the values
+		@interHandle = @{$data->{"defaults"}};
+	}
+	if(exists $interHandle[0]->{"gen-pairs"}) {
+		if($interHandle[0]->{"gen-pairs"}==0){
+			$interactions->{"gen-pairs"}="no";
+		}else{
+			$interactions->{"gen-pairs"}="yes";
+		}
+	}else{
+		smog_note("gen-pairs not defined in templates.  Will assume no.");
+		$interactions->{"gen-pairs"}="no";
+	}
+
+	if(exists $interHandle[0]->{"nbfunc"}) {
+		$interactions->{"nbfunc"} = $interHandle[0]->{"nbfunc"};
+	}else{
+		smog_note("nbfunc not defined in templates.  Will assume a value of 1.");
+		$interactions->{"nbfunc"}=1;
+	}
+	if(exists $interHandle[0]->{"gmx-combination-rule"}) {
+		$interactions->{"gmx-combination-rule"} = $interHandle[0]->{"gmx-combination-rule"};
+	}else{
+		smog_note("gmx-combination-rule not defined in templates.  Will assume a value of 1.");
+		$interactions->{"gmx-combination-rule"}=1;
+	}
+
+	if(exists $interHandle[0]->{"fudgeLJ"}) {
+		$interactions->{"fudgeLJ"} = $interHandle[0]->{"fudgeLJ"};
+		my $tmp=$interactions->{"fudgeLJ"};
+		if($tmp < 0 ){
+			smog_quit("fudgeLJ must be greater than, or equal to, 0.  Found $tmp.");
+		}
+
+		if($interactions->{"gen-pairs"} eq "no" && $tmp != 1.0){
+			smog_quit("fudgeLJ is set to $tmp, but this value is not applied when gen-pairs=no.");
+		}
+	}else{
+		smog_note("fudgeLJ not defined in templates. Will assume a value of 1.");
+		# we are setting to -1, to indicate that we don't want to write it later.
+		$interactions->{"fudgeLJ"}=-1;
+	}
+
+	if(exists $interHandle[0]->{"fudgeQQ"}) {
+		$interactions->{"fudgeQQ"} = $interHandle[0]->{"fudgeQQ"};
+		if($interactions->{"fudgeQQ"} < 0 ){
+			my $tmp=$interactions->{"fudgeQQ"};
+			smog_quit("fudgeQQ must be greater than, or equal to, 0.  Found $tmp.");
+		}
+		if($interactions->{"fudgeLJ"}==-1){
+			# since we gave a value for fudgeQQ and not fudgeLJ, we need to set the latter to 1, 
+			# in order to write it properly, later
+			$interactions->{"fudgeLJ"}=1;
+			if($interactions->{"gen-pairs"} ne "no"){
+				print "\nNote: Since fudgeQQ was set and gen-pairs=no, fudgeLJ will be written to the top file.\nHowever, this parameter has no effect, and is only written as a placeholder\n\n.";
+			}
+		}
+	}else{
+		smog_note("fudgeQQ not defined in templates. Will assume a value of 1.");
+		# we are setting to -1, to indicate that we don't want to write it later.
+		$interactions->{"fudgeQQ"}=-1;
+	}
+
+
+}
+
+sub getMolInfo{
+	my ($data)=@_;
+	# get/set molecule information
+	if(exists $data->{"moltype"}){
+		# molecule type information found in the templates, so use the values
+		my @interHandle = @{$data->{"moltype"}};
+		$interactions->{"molname"}=$interHandle[0]->{"molname"};
+		$interactions->{"nrexcl"}=$interHandle[0]->{"nrexcl"};
+		if ($interactions->{"nrexcl"} > 3){
+			smog_quit("nrexcl must be less than or equal to 3. While larger values may work, it can also lead to somewhat unpredictable results.");
+		}
+	}else{
+		smog_note("name of moleculetype not given in .nb file. Will use \"Macromolecule\".");	
+		$interactions->{"molname"}="Macromolecule";
+		smog_note("value of nrexcl not given in .nb file. Will use 3.");	
+		$interactions->{"nrexcl"}=3;
+	}
+
+
+}
+sub CustomPotentialCheckAdjust{
+	my ($data,$OSref)=@_;
+	if(exists $data->{"CustomPotential"}){
+		my @interHandle = @{$data->{"CustomPotential"}};
+
+		# parameters required for any custom potential definition
+		$interactions->{"CustomPotential"}->{"parameters"}=$interHandle[0]->{"parameters"};
+		# set the number of required parameters
+		my $parmstring=$interactions->{"CustomPotential"}->{"parameters"};
+		my $parmstringorig=$parmstring;
+		$parmstring =~ s/\s+//g;
+		if($parmstring =~ m/^\,|\,\,|\,$/){
+			smog_quit("Incorrectly formatted parameter list given for nonbonded CustomPotential. Found \"$parmstringorig\"\nCheck .nb file.");
+		}
+		my @parmarr=split(/\,/,$parmstring);
+
+		# these are only used if using OpenSMOG - even when using OpenSMOG, these may not be needed
+		# but, they must be given together, or both omitted
+		if(exists $interHandle[0]->{"OpenSMOGenergy"} && exists $interHandle[0]->{"OpenSMOGcombrule"}){
+			$interactions->{"CustomPotential"}->{"OpenSMOGenergy"}=$interHandle[0]->{"OpenSMOGenergy"};
+			$interactions->{"CustomPotential"}->{"OpenSMOGcombrule"}=$interHandle[0]->{"OpenSMOGcombrule"};
+			$interactions->{"CustomPotential"}->{"OpenSMOGcombrule"} =~ s/^\s+|\s+$//g;
+			if($interactions->{"CustomPotential"}->{"OpenSMOGcombrule"} ne "none"){
+				smog_quit("CustomPotential defined in .nb file. Only OpenSMOGcombrule==none is currently supported. Found \"$interactions->{\"CustomPotential\"}->{\"OpenSMOGcombrule\"}\"");
+			}
+
+			my $pind=0;
+			my %seenparm;
+			foreach my $param(@parmarr){
+				if($param =~ m/^q[12]$/ && exists $interHandle[0]->{"OpenSMOGenergy"} ){
+					smog_quit(".nb file defines CustomPotential with the parameter $param, while an OpenSMOGenergy function is defined. q1 and q2 are reserved to refer to charges, if OpenSMOGenergy is defined.");
+				}
+				if($param =~ m/^type[12]$/ && exists $interHandle[0]->{"OpenSMOGenergy"}){
+					smog_quit(".nb file defines CustomPotential with the parameter $param, while an OpenSMOGenergy function is defined. type1 and type2 are reserved to refer to atom types, if OpenSMOGenergy is defined.");
+				}
+				checkOpenSMOGparam("nonbond",$param);
+				if(exists $seenparm{$param}){
+					smog_quit("CustomPotential defines $param as a parameter more than once. See .nb file. Found $interactions->{\"CustomPotential\"}->{\"parameters\"}");
+				}else{
+					$seenparm{$param}=1;
+				}
+				$pind++;
+				if(exists $interHandle[0]->{"OpenSMOGenergy"}){
+					if($interHandle[0]->{"OpenSMOGenergy"} =~ m/([^0-9a-zA-Z]|^)$param([^0-9a-zA-Z]|$)/){
+						if($interactions->{"CustomPotential"}->{"OpenSMOGcombrule"} eq "none"){
+							# since we are not using a combination rule, we must be using arrays to 
+							# reference the parameters.  OpenSMOG expects the arrays to indexed 
+							#by type1 and type2.
+							$interactions->{"CustomPotential"}->{"OpenSMOGenergy"}=~ s/$param/$param\(type1,type2\)/g;
+						}
+					}else{
+						smog_quit("CustomPotential defines $param as a parameter, but it does not appear in the definition of the OpenSMOGenergy expression. $interHandle[0]->{\"OpenSMOGenergy\"}");
+					}
+				}
+			}
+			# save the array of parsed parameters
+			$interactions->{"CustomPotential"}->{"parameters"}=\@parmarr;
+
+			OShashAddNBFunction($OSref,$interactions->{"CustomPotential"}->{"OpenSMOGenergy"},\@parmarr);
+		}elsif(exists $interHandle[0]->{"OpenSMOGenergy"} || exists $interHandle[0]->{"OpenSMOGcombrule"}){
+			smog_quit("CustomPotential defined in .nb file. OpenSMOGenergy and OpenSMOGcombrule must be given together, or not at all.");
+		}
+	}
+}
+
+sub NonBondLoop{
+	my ($data)=@_;
+	## Loop over nonbonds, save in $interaction{nonbonds}{typeA} = func info.
+	my @interHandle = @{$data->{"nonbond"}};
+	my $counter = 0;
+	foreach my $inter(@interHandle)
+	{
+		my $typeA = $inter->{"nbType"}->[0];
+		my $func;
+		if($inter->{"mass"} <=0){
+			my $M=$inter->{"mass"};
+			smog_quit("The mass of each atom must be positive. $M given for nbType=$typeA.");
+		}
+
+		if($interactions->{"gmx-combination-rule"}==1){
+			if(!exists $inter->{"c6"} || !exists $inter->{"c12"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. c6, c12 must be provided when using gmx-combination-rule=1. Check .nb file.");
+			}
+			if(exists $inter->{"sigma"} || exists $inter->{"epsilon"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. sigma and epsilon can not be provided when using gmx-combination-rule=1. Check .nb file.");
+			}	
+			$func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
+			"ptype"=>$inter->{"ptype"},"c6"=>$inter->{"c6"},"c12"=>$inter->{"c12"}};
+		}
+
+		if($interactions->{"gmx-combination-rule"}==2){
+			if(!exists $inter->{"sigma"} || !exists $inter->{"epsilon"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. sigma and epsilon must be provided when using gmx-combination-rule=2. Check .nb file.");
+			}
+			if(exists $inter->{"c6"} || exists $inter->{"c12"}){
+				smog_quit ("nonbonded parameters issue for nbType $typeA. c6, c12 sigma and epsilon can not be provided when using gmx-combination-rule=2. Check .nb file.");
+			}	
+			$func = {"mass" => $inter->{"mass"},"charge" => $inter->{"charge"},
+			"ptype"=>$inter->{"ptype"},"sigma"=>$inter->{"sigma"},"epsilon"=>$inter->{"epsilon"}};
+		}
+
+		if(exists $interactions->{"nonbonds"}->{$typeA}){
+			smog_quit ("nonbonded parameters defined multiple times for nbType $typeA. Check .nb file.");
+		}
+		$interactions->{"nonbonds"}->{$typeA} = $func;
+		$funcTable{"nonbonds"}->{$func} = $counter;
+		$funcTableRev{"nonbonds"}->{$counter} = $func;
+		$counter++;
+	}
+
+
+}
+
+sub ContactLoop{
+	my ($data)=@_;
+	my @interHandle = @{$data->{"contact"}};
+	## Loop over contacts, save in $interaction{contacts}{typeA}{typeB} = func info.
+	my $counter = 0;
+	foreach my $inter(@interHandle)
+	{
+		my $nbtype;my $type;
+	 	$nbtype = $inter->{"pairType"};$type = "pairType";
+		my $typeA = $inter->{$type}->[0];
+		my $typeB = $inter->{$type}->[1];
+	 	$pairtypesused{$typeA}=1;
+	 	$pairtypesused{$typeB}=1;
+		my $func = $inter->{"func"};
+	 	my $cG = $inter->{"contactGroup"};
+		&checkContactFunctionDef($func,$cG);
+		if(exists $interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB}){
+			smog_quit ("contact parameters defined multiple times for types $typeA-$typeB. Check .nb file.");
+		}
+		$interactions->{"contacts"}->{"func"}->{$typeA}->{$typeB} = $func;
+		$interactions->{"contacts"}->{"func"}->{$typeB}->{$typeA} = $func;
+		$interactions->{"contacts"}->{"contactGroup"}->{$typeA}->{$typeB} = $cG;
+		$interactions->{"contacts"}->{"contactGroup"}->{$typeB}->{$typeA} = $cG;
+		$funcTable{"contacts"}->{"func"}->{$func} = $counter;
+		$funcTable{"contacts"}->{"contactGroup"}->{$cG} = $counter;
+		$funcTableRev{"contacts"}->{$counter}->{"func"} = $func;
+		$funcTableRev{"contacts"}->{$counter}->{"contactGroup"} = $cG;
+		$counter++;
+	}
+
+}
 
 1;
