@@ -53,7 +53,7 @@ our $OpenSMOGpothash;
 
 my %SMOGversions;
 my $smi=0;
-foreach my $ver("2.0", "2.0.1", "2.0.2", "2.0.3", "2.1", "2.2", "2.3", "2.4", "2.4.1"){
+foreach my $ver("2.0", "2.0.1", "2.0.2", "2.0.3", "2.1", "2.2", "2.3", "2.4", "2.4.1", "2.5beta"){
  $SMOGversions{$ver}=$smi;
  $smi++; 
 }
@@ -1888,6 +1888,7 @@ sub CustomPotentialCheckAdjust{
 		# but, they must be given together, or both omitted
 		if(exists $interHandle[0]->{"OpenSMOGenergy"} && exists $interHandle[0]->{"OpenSMOGcombrule"}){
 			$interactions->{"CustomPotential"}->{"OpenSMOGenergy"}=$interHandle[0]->{"OpenSMOGenergy"};
+			$interactions->{"CustomPotential"}->{"OpenSMOGenergy"} =~ s/\s+//g;
 			$interactions->{"CustomPotential"}->{"OpenSMOGcombrule"}=$interHandle[0]->{"OpenSMOGcombrule"};
 			$interactions->{"CustomPotential"}->{"OpenSMOGcombrule"} =~ s/^\s+|\s+$//g;
 			if($interactions->{"CustomPotential"}->{"OpenSMOGcombrule"} ne "none"){
@@ -1916,7 +1917,7 @@ sub CustomPotentialCheckAdjust{
 							# since we are not using a combination rule, we must be using arrays to 
 							# reference the parameters.  OpenSMOG expects the arrays to indexed 
 							#by type1 and type2.
-							$interactions->{"CustomPotential"}->{"OpenSMOGenergy"}=~ s/$param/$param\(type1,type2\)/g;
+							$interactions->{"CustomPotential"}->{"OpenSMOGenergy"}=~ s/([^0-9a-zA-Z]|^)$param([^0-9a-zA-Z]|$)/$1$param\(type1,type2\)$2/g;
 						}
 					}else{
 						smog_quit("CustomPotential defines $param as a parameter, but it does not appear in the definition of the OpenSMOGenergy expression. $interHandle[0]->{\"OpenSMOGenergy\"}");
