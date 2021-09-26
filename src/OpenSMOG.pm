@@ -41,6 +41,10 @@ our %fTypesArgNum;
 our $OpenSMOG;
 our %OpenSMOGatoms2restrain;
 
+# make a list of names that can't be used as parameters in OpenSMOG.
+our %OSrestrict;
+foreach my $i ("q1", "q2", "r", "r_c", "i", "j", "k", "l", "m", "n", "type1", "type2", "sqrt", "exp", "log", "sin", "cos", "sec", "csc", "tan", "cot", "asin", "acos", "atan", "sinh", "cosh", "tanh", "erf", "erfc", "min", "max", "abs", "floor", "ceil", "step", "delta", "select"){ $OSrestrict{$i}=0;}
+
 ########## OpenSMOG routines
 sub OShashAddFunction{
 	my ($OSref,$type,$name,$expr,$params)=@_;
@@ -449,10 +453,6 @@ sub newOpenSMOGfunction{
 	my $pind=0;
 	my %seenparm;
 	foreach my $param(@parmarr){
-
-                if($param =~ m/^[i-n]$/){
-                        smog_quit(".sif file defines function $fN with OpenSMOG parameter $param. OpenSMOG functions can not use i-n as parameters. These are reserved symbols for denoting atom indices.");
-                }
 		checkOpenSMOGparam($fN,$param);
 		if(exists $seenparm{$param}){
 			smog_quit("Function $fN defines $param as a parameter more than once. See .sif file. Found $fh->{$fN}->{\"OpenSMOGparameters\"}");
@@ -488,6 +488,10 @@ sub checkOpenSMOGparam{
 		}
 		smog_quit("OpenSMOG issue. $message");
 	}
+	if($term ne "function" && exists $OSrestrict{$param}){
+		smog_quit("Parameters \"$param\" used with $term custom potential is a reserved name (i.e. may denote a function, charge, index, distance, etc).");
+	}
+
 }
 
 1;
