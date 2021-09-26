@@ -128,6 +128,7 @@ sub AddConstantsOShash{
 	my $get=$addstuff->[0]->{"constant"};
 	for my $i (keys %{$get}){
 		$ref->{$i}=$get->{$i}->{"value"};
+		$OSrestrict{$i}=0;
 	}
 }
 
