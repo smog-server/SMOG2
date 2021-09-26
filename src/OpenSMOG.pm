@@ -196,7 +196,7 @@ sub OpenSMOGwriteXML{
 				$xmlout .= OpenSMOGwriteXMLconstants($handle0,$type,$space);
 			}elsif($type eq "nonbond"){
                                 $xmlout .= OpenSMOGwriteXMLnonbond($handle0,$type,$space);
-                        }else{
+			}else{
 				smog_quit("Internal Error: When writing OpenSMOG XML file, type $type not supported.");
 			}
 		}	
@@ -218,10 +218,10 @@ sub OpenSMOGwriteXML{
 
 sub OpenSMOGwriteXMLconstants{
 	my ($handle0,$type,$space)=@_;
-        my $ones="$space";
-        my $twos="$space$space";
-        my $threes="$space$space$space";
-
+	my $ones="$space";
+	my $twos="$space$space";
+	my $threes="$space$space$space";
+	
 	my $localxmlout = "$space<$type>\n";
 	my $handle1=$handle0->{$type};
 
@@ -242,10 +242,10 @@ sub OpenSMOGwriteXMLconstants{
 
 sub OpenSMOGwriteXMLcontacts{
 	my ($handle0,$type,$space)=@_;
-        my $ones="$space";
-        my $twos="$space$space";
-        my $threes="$space$space$space";
-
+	my $ones="$space";
+	my $twos="$space$space";
+	my $threes="$space$space$space";
+	
 	my $localxmlout = "$space<$type>\n";
 	my $handle1=$handle0->{$type};
 	foreach my $subtype(sort keys %{$handle1}){
@@ -307,10 +307,10 @@ sub OpenSMOGwriteXMLcontacts{
 
 sub OpenSMOGwriteXMLnonbond{
 	my ($handle0,$type,$space)=@_;
-        my $ones="$space";
-        my $twos="$space$space";
-        my $threes="$space$space$space";
-
+	my $ones="$space";
+	my $twos="$space$space";
+	my $threes="$space$space$space";
+	
 	my $localxmlout = "$space<$type>\n";
 	my $handle3=$handle0->{$type};
 	$localxmlout .= "$twos<nonbond_bytype>\n";
@@ -432,8 +432,8 @@ sub newOpenSMOGfunction{
 
 	# set the number of required parameters
 	my $parmstring=$fh->{$fN}->{"OpenSMOGparameters"};
-        my $parmstringorig=$parmstring;
-        $parmstring =~ s/\s+//g;
+	my $parmstringorig=$parmstring;
+	$parmstring =~ s/\s+//g;
 	if($parmstring =~ m/^\,|\,\,|\,$/){
 		smog_quit("Incorrectly formatted parameter list given for function $fN. Found \"$parmstring\"\nCheck .sif file.");
 	}
@@ -464,7 +464,7 @@ sub newOpenSMOGfunction{
 			$OpenSMOGhandle->{$fN}->{weight}=$pind;
 		}
 		$pind++;
-		if($pot !~ m/$param/){
+		if($pot !~ m/([^0-9a-zA-Z]|^)$param([^0-9a-zA-Z]|$)/){
 			smog_quit("Function $fN defines $param as a parameter, but it does not appear in the definition of the potential. Found $fh->{$fN}->{\"OpenSMOGpotential\"}");
 		}
 	}

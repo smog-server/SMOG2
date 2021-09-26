@@ -659,7 +659,7 @@ sub addExtras {
 						# the OpenSMOG hash, so that it will be written to the output XML
 						$writetoXML="yes"; #ensures that we don't write to top
 						
-						# now, populate hash 
+						# now, populate hash. remove type, since that is not used by OpenSMOG 
 						splice(@tarray,2,1);
 						AddNonbondOShash($OSref,\@tarray);
 					}
@@ -667,6 +667,10 @@ sub addExtras {
 					# do standard gromacs format checks
 					unless($tarray[2]  =~ /^[12]$/){
 						smog_quit("In extras file, only nonbond_param types 1 and 2 are supported (default Gromacs options), unless a CustomPotential is defined in the .nb file. $customerror Offending line:$line");
+					}
+					
+					if($tarray[2]==2){
+						smog_note("Nonbond function type 2 is defined in extras file. This has not been tested by the SMOG team. It may work, but you should consider any such applications as experimental.");
 					}
 					if($tarray[2]==1 && @tarray!=5){
 						smog_quit("In extras file, nonbond_param defined with nbtype 1. Must have 5 parameters. $customerror Offending line:$line",0);

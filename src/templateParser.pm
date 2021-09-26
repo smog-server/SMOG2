@@ -1477,29 +1477,7 @@ sub parseNonBonds {
 			smog_quit("Incorrectly formatted parameter list given for nonbonded CustomPotential. Found \"$parmstringorig\"\nCheck .nb file.");
 		}
 		my @parmarr=split(/\,/,$parmstring);
-			
-		my $pind=0;
-		my %seenparm;
-		foreach my $param(@parmarr){
-			if($param =~ m/^q[12]$/ && exists $interHandle[0]->{"OpenSMOGenergy"} ){
-				smog_quit(".nb file defines CustomPotential with the parameter $param, while an OpenSMOGenergy function is defined. q1 and q2 are reserved to refer to charges, if OpenSMOGenergy is defined.");
-			}
-			if($param =~ m/^type[12]$/ && exists $interHandle[0]->{"OpenSMOGenergy"}){
-				smog_quit(".nb file defines CustomPotential with the parameter $param, while an OpenSMOGenergy function is defined. type1 and type2 are reserved to refer to atom types, if OpenSMOGenergy is defined.");
-			}
-			checkOpenSMOGparam("nonbond",$param);
-			if(exists $seenparm{$param}){
-				smog_quit("CustomPotential defines $param as a parameter more than once. See .nb file. Found $interactions->{\"CustomPotential\"}->{\"parameters\"}");
-			}else{
-				$seenparm{$param}=1;
-			}
-			$pind++;
-			if(exists $interHandle[0]->{"OpenSMOGenergy"}){
-				if($interHandle[0]->{"OpenSMOGenergy"} !~ m/$param/){
-					smog_quit("CustomPotential defines $param as a parameter, but it does not appear in the definition of the OpenSMOGenergy expression. $interHandle[0]->{\"OpenSMOGenergy\"}");
-				}
-			}
-		}
+
 		# these are only used if using OpenSMOG - even when using OpenSMOG, these may not be needed
 		# but, they must be given together, or both omitted
 		if(exists $interHandle[0]->{"OpenSMOGenergy"} && exists $interHandle[0]->{"OpenSMOGcombrule"}){
@@ -1509,18 +1487,44 @@ sub parseNonBonds {
 			if($interactions->{"CustomPotential"}->{"OpenSMOGcombrule"} ne "none"){
 				smog_quit("CustomPotential defined in .nb file. Only OpenSMOGcombrule==none is currently supported. Found \"$interactions->{\"CustomPotential\"}->{\"OpenSMOGcombrule\"}\"");
 			}
+
+			my $pind=0;
+			my %seenparm;
+			foreach my $param(@parmarr){
+				if($param =~ m/^q[12]$/ && exists $interHandle[0]->{"OpenSMOGenergy"} ){
+					smog_quit(".nb file defines CustomPotential with the parameter $param, while an OpenSMOGenergy function is defined. q1 and q2 are reserved to refer to charges, if OpenSMOGenergy is defined.");
+				}
+				if($param =~ m/^type[12]$/ && exists $interHandle[0]->{"OpenSMOGenergy"}){
+					smog_quit(".nb file defines CustomPotential with the parameter $param, while an OpenSMOGenergy function is defined. type1 and type2 are reserved to refer to atom types, if OpenSMOGenergy is defined.");
+				}
+				checkOpenSMOGparam("nonbond",$param);
+				if(exists $seenparm{$param}){
+					smog_quit("CustomPotential defines $param as a parameter more than once. See .nb file. Found $interactions->{\"CustomPotential\"}->{\"parameters\"}");
+				}else{
+					$seenparm{$param}=1;
+				}
+				$pind++;
+				if(exists $interHandle[0]->{"OpenSMOGenergy"}){
+					if($interHandle[0]->{"OpenSMOGenergy"} =~ m/([^0-9a-zA-Z]|^)$param([^0-9a-zA-Z]|$)/){
+						if($interactions->{"CustomPotential"}->{"OpenSMOGcombrule"} eq "none"){
+							# since we are not using a combination rule, we must be using arrays to 
+							# reference the parameters.  OpenSMOG expects the arrays to indexed 
+							#by type1 and type2.
+							$interactions->{"CustomPotential"}->{"OpenSMOGenergy"}=~ s/$param/$param\(type1,type2\)/g;
+						}
+					}else{
+						smog_quit("CustomPotential defines $param as a parameter, but it does not appear in the definition of the OpenSMOGenergy expression. $interHandle[0]->{\"OpenSMOGenergy\"}");
+					}
+				}
+			}
+			# save the array of parsed parameters
+			$interactions->{"CustomPotential"}->{"parameters"}=\@parmarr;
+
 			OShashAddNBFunction($OSref,$interactions->{"CustomPotential"}->{"OpenSMOGenergy"},\@parmarr);
 		}elsif(exists $interHandle[0]->{"OpenSMOGenergy"} || exists $interHandle[0]->{"OpenSMOGcombrule"}){
 			smog_quit("CustomPotential defined in .nb file. OpenSMOGenergy and OpenSMOGcombrule must be given together, or not at all.");
 		}
 
-
-
-
-		# save the array of parsed parameters
-		$interactions->{"CustomPotential"}->{"parameters"}=\@parmarr;
-
-		# add checks for proper definitions and save the number of parameters, if given.  Also, make sure that parameter names start with characters. Then we can search for (non letter)(string)() in the potential
 	}
 
 	## Loop over nonbonds, save in $interaction{nonbonds}{typeA} = func info.

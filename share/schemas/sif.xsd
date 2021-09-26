@@ -102,7 +102,7 @@
   <xs:complexType name="settingsType">
     <xs:all>
       <xs:element name="Groups" type="groupsType"/>
-      <xs:element name="dihedralNormalization" type="dihedralNormalizationType"/>
+      <xs:element name="dihedralNormalization" type="dihedralNormalizationType" minOccurs="0"/>
       <xs:element name="Contacts" type="contactType"/>
       <xs:element name="bondsThreshold" type="bondsThresholdType" minOccurs="0"/>
       <xs:element name="anglesThreshold" type="anglesThresholdType" minOccurs="0"/>
