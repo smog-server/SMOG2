@@ -317,7 +317,6 @@ sub OpenSMOGwriteXMLnonbond{
 	my $threes="$space$space$space";
 	
 	my $localxmlout = "$space<$type>\n";
-	my $handle2=$handle0->{$type};
 
         my $handle1=$handle0->{$type};
         foreach my $subtype(sort keys %{$handle1}){
@@ -373,7 +372,7 @@ sub OpenSMOGwriteXMLnonbond{
 }
 
 sub OpenSMOGextractXML{
-	my ($OSref,$OpenSMOGxml,$keepatoms)=@_;
+	my ($OSref,$OpenSMOGxml,$keepatoms,$typesinsystem)=@_;
         # OSref is a handle to the hash holding all information to be written.
         # $OpenSMOGxml is the output file name
 	# Only load the module if we are writing an OpenSMOG file
@@ -387,6 +386,7 @@ sub OpenSMOGextractXML{
 	my $threes="$space$space$space";
 	# this is a very limited XML writer that is made specifically for OpenSMOG-formatted contact hashes
 	OpenSMOGextractContacts($OSref,$keepatoms);
+	OpenSMOGextractNonBonds($OSref,$keepatoms,$typesinsystem);
 	OpenSMOGwriteXML($OSref,$OpenSMOGxml,"This file was generated using smog_extract");
 	return \%OpenSMOGatoms2restrain;
 }
@@ -395,7 +395,7 @@ sub OpenSMOGextractContacts{
 	my ($OSref,$keepatoms)=@_;
 	my $type="contacts";
 	if(defined $OSref->{$type}){
-		print "Contacts found in OpenSMOG XML file.  Will extract\n";
+		print "Contacts found in OpenSMOG XML file.  Will extract.\n";
 		my $handle1=$OSref->{$type};
 		foreach my $subtype(sort keys %{$handle1}){
 		   	my $handle2=$handle1->{$subtype};
@@ -410,6 +410,30 @@ sub OpenSMOGextractContacts{
 					# this renumbers, or removes the interaction
 		   	     	}
         	   	 }
+		}
+	}
+}
+
+sub OpenSMOGextractNonBonds{
+	my ($OSref,$keepatoms,$typesinsystem)=@_;
+	my %typesinsystem=%{$typesinsystem};
+	my $type="nonbond";
+	if(defined $OSref->{$type}){
+		print "Nonbonded terms found in OpenSMOG XML file.  Will extract.\n";
+        	my $handle1=$OSref->{$type};
+        	foreach my $subtype(sort keys %{$handle1}){
+			if($subtype ne "nonbond_bytype"){
+				smog_quit("Only nonbond_bytype is currently supported for non-bonded custom potentials in OpenSMOG. Found $subtype");
+			}
+        	        my $handle3=$handle1->{$subtype}->{nonbond_param};
+			for (my $I=0;$I<=$#{$handle3};$I++){
+				my $type1=${$handle3}[$I]->{"type1"};
+				my $type2=${$handle3}[$I]->{"type2"};
+
+				unless(exists $typesinsystem{$type1} && exists $typesinsystem{$type2}){
+					delete ${$handle3}[$I];
+        	   	 	}
+			}
 		}
 	}
 }

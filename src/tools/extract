@@ -632,12 +632,12 @@ if(exists $DIRLIST{"exclusions"}){
 
 # information about any OpenSMOG terms 
 if(defined $OpenSMOG){
-	print "Extracting parameters from OpenSMOG XML file\n";
+	print "\nExtracting parameters from OpenSMOG XML file\n";
 	my $xmldata=readOpenSMOGxml($OpenSMOG);
 	if($xmldata == 1){
 		smog_quit("File $OpenSMOG can not be opened.");
 	}
-	my $OpenSMOGatoms2restrain=OpenSMOGextractXML($xmldata,$OpenSMOGout,\%keepatoms);
+	my $OpenSMOGatoms2restrain=OpenSMOGextractXML($xmldata,$OpenSMOGout,\%keepatoms,\%typesinsystem);
 	my %OpenSMOGatoms2restrain=%{$OpenSMOGatoms2restrain};
 	foreach my $I (keys %OpenSMOGatoms2restrain){
 		$atoms2restrain{$I}=1;

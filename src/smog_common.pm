@@ -290,7 +290,10 @@ sub readindexfile
 	
 			next; # this is a new group, so go to next line.
 		}
-	
+
+		if(!defined $groupname){
+			smog_quit("Index file doesn\'t have any group names listed.");
+		}	
 		for(my $I=0;$I<=$#A;$I++){
 			unless($A[$I] =~ m/^\d+$/){
 				smog_quit("Non-numerical value for atom number in index file: $A[$I]");
