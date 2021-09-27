@@ -69,19 +69,11 @@
     <xs:attribute name="molname" type="xs:string" use="required"/>
     <xs:attribute name="nrexcl" type="xs:integer" use="required"/>
   </xs:complexType>
-  <!--CustomPotential TYPE -->
-  <xs:complexType name="customPotType">
-    <xs:attribute name="OpenSMOGenergy" type="xs:string" use="optional"/>
-    <xs:attribute name="OpenSMOGcombrule" type="xs:string" use="optional"/>
-    <xs:attribute name="parameters" type="xs:string" use="required"/>
-  </xs:complexType>
-
   <!-- NB TYPE -->
   <xs:complexType name="nbTypes">
     <xs:sequence>
       <xs:element name="defaults" type="defaultsType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="moltype" type="molType" minOccurs="0" maxOccurs="1"/>
-      <xs:element name="CustomPotential" type="customPotType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="nonbond" type="nonbondType" maxOccurs="unbounded"/>
       <xs:element name="contact" type="contactType" maxOccurs="unbounded"/>
     </xs:sequence>

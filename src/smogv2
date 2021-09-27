@@ -638,12 +638,12 @@ sub addExtras {
 				if(@tarray < 5){
 					smog_quit("nonbond_params defined in extras file, but too few parameters are given. $customerror Offending line:$line",0);
 				}
-				if(exists $interactions->{"CustomPotential"}){
+				if(exists $interactions->{"CustomNonBonded"}){
 					# do checks for custom potentials
-					if(exists $interactions->{"CustomPotential"}->{"parameters"}){
-						if(@tarray -3 != @{$interactions->{"CustomPotential"}->{"parameters"}}){
+					if(exists $interactions->{"CustomNonBonded"}->{"parameters"}){
+						if(@tarray -3 != @{$interactions->{"CustomNonBonded"}->{"parameters"}}){
 							my $tarray=scalar(@tarray)-3;
-							my $parray=scalar(@{$interactions->{"CustomPotential"}->{"parameters"}});
+							my $parray=scalar(@{$interactions->{"CustomNonBonded"}->{"parameters"}});
 							smog_quit("A custom potential is being used, and $parray parameters are expected (as defined in the .nb file), but $tarray parameters found on a nonbond_params entry of the extras file. Problematic line:$line");
 						}
 					}else{
@@ -662,7 +662,7 @@ sub addExtras {
 				}else{
 					# do standard gromacs format checks
 					unless($tarray[2]  =~ /^[12]$/){
-						smog_quit("In extras file, only nonbond_param types 1 and 2 are supported (default Gromacs options), unless a CustomPotential is defined in the .nb file. $customerror Offending line:$line");
+						smog_quit("In extras file, only nonbond_param types 1 and 2 are supported (default Gromacs options), unless a CustomNonBonded is defined in the .nb file. $customerror Offending line:$line");
 					}
 					
 					if($tarray[2]==2){
@@ -2586,8 +2586,8 @@ sub appendDefaults
 	my $fudgeLJ = $interactions->{"fudgeLJ"};
 	my $fudgeQQ = $interactions->{"fudgeQQ"};
 	my $nbfuncv=$nbfunc;
-	if(exists $interactions->{"CustomPotential"} && defined $OpenSMOG){
-		# if we are using a CustomPotential with OpenSMOG, then we will need to give a nbfunc that can be understood by the gromacs top parser.  But, the function type listed will be deleted and replaced in openSMOG.
+	if(exists $interactions->{"CustomNonBonded"} && defined $OpenSMOG){
+		# if we are using a CustomNonBonded with OpenSMOG, then we will need to give a nbfunc that can be understood by the gromacs top parser.  But, the function type listed will be deleted and replaced in openSMOG.
 		$nbfuncv=1;
 	}
 	if($fudgeLJ == -1 && $fudgeQQ == -1){
