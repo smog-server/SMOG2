@@ -386,34 +386,32 @@ sub OpenSMOGextractXML{
 	my $twos="$space$space";
 	my $threes="$space$space$space";
 	# this is a very limited XML writer that is made specifically for OpenSMOG-formatted contact hashes
-	# we will make a more versatile version later. We will probably replace this with an XMLlib call, later. But, in order to format it exactly the way we want, directly writing it is ok.
-	my $size = keys %{$OSref};
-	if($size != 0){
-		my $handle0=$OSref;
-
-		foreach my $type(sort keys %{$handle0}){
-			unless ($type eq "contacts"){
-				next;
-			}
-			my $handle1=$handle0->{$type};
-			foreach my $subtype(sort keys %{$handle1}){
-			   	my $handle2=$handle1->{$subtype};
-			   	foreach my $name(sort keys %{$handle2}){
-			   		my $handle3=$handle2->{"$name"}->{interaction};
-			   	     	#foreach my $param(@{$handle3->{interaction}}){
-			   	     	for (my $I=0;$I<=$#{$handle3};$I++){
-						if(OpenSMOGkeepinteraction(${$handle3}[$I],$keepatoms)){
-							delete ${$handle3}[$I];
-							# if evals to 1, then delete
-						}
-						# this renumbers, or removes the interaction
-			   	     	}
-                           	 }
-			}
-		}	
-	}
+	OpenSMOGextractContacts($OSref,$keepatoms);
 	OpenSMOGwriteXML($OSref,$OpenSMOGxml,"This file was generated using smog_extract");
 	return \%OpenSMOGatoms2restrain;
+}
+
+sub OpenSMOGextractContacts{
+	my ($OSref,$keepatoms)=@_;
+	my $type="contacts";
+	if(defined $OSref->{$type}){
+		print "Contacts found in OpenSMOG XML file.  Will extract\n";
+		my $handle1=$OSref->{$type};
+		foreach my $subtype(sort keys %{$handle1}){
+		   	my $handle2=$handle1->{$subtype};
+		   	foreach my $name(sort keys %{$handle2}){
+		   		my $handle3=$handle2->{"$name"}->{interaction};
+		   	     	#foreach my $param(@{$handle3->{interaction}}){
+		   	     	for (my $I=0;$I<=$#{$handle3};$I++){
+					if(OpenSMOGkeepinteraction(${$handle3}[$I],$keepatoms)){
+						delete ${$handle3}[$I];
+						# if evals to 1, then delete
+					}
+					# this renumbers, or removes the interaction
+		   	     	}
+        	   	 }
+		}
+	}
 }
 
 sub OpenSMOGkeepinteraction {
