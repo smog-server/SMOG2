@@ -412,7 +412,7 @@ sub checkContactFunctionDef
 	if($funcname eq "contact_1" || $funcname eq "contact_2"){
                 if($vars[3] =~ /^\?$/)
                 {
-			smog_quit("When using $funcname, using \"?\" notation to turn on normalization of weights is not recommended. Preferred approach is to use \"energyNorm\" instead. Support for \"?\" will likely be removed in a future releases of SMOG 2.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. Fourth value is epsilon.",0);
+			smog_note("When using $funcname, using \"?\" notation to turn on normalization of weights is not recommended. Preferred approach is to use \"energyNorm\" instead. Support for \"?\" will likely be removed in a future releases of SMOG 2.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. Fourth value is epsilon.");
                         if(!$normalize){smog_quit("contact type $funcname can not have normalization turned off with epsilon=?\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. Fourth arg is epsilon.")}
                 }elsif($vars[3] =~ /^energynorm$/i){
                         if(!$normalize){smog_quit("contact type $funcname can not have normalization turned off with epsilon=energyNorm.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. Fourth arg is epsilon.")}
@@ -455,7 +455,7 @@ sub checkContactFunctionDef
 
 	}elsif($funcname eq "contact_gaussian"){
 		if($vars[0] =~ /^\?$/){
-			smog_quit("When using $funcname, using \"?\" notation to turn on normalization of weights is not recommended. Preferred approach is to use \"energyNorm\" instead. Support for \"?\" will likely be removed in a future releases of SMOG 2.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. First value is epsilon.",0);
+			smog_note("When using $funcname, using \"?\" notation to turn on normalization of weights is not recommended. Preferred approach is to use \"energyNorm\" instead. Support for \"?\" will likely be removed in a future releases of SMOG 2.\nProblematic declaration in .nb file:\n\tContact group $cG uses $funcString. First value is epsilon.");
 			if(!$normalize){smog_quit("Gaussian contact type can not have normalization turned off with epsilon_C=?  Problematic declaration (in .nb file): $funcString")}
 		}
 		elsif($vars[0] =~ /^energynorm$/i){

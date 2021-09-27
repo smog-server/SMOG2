@@ -635,9 +635,6 @@ sub addExtras {
 				}
 				my $lstuff= trim($ltokens[1]);
 				my @tarray=split(/\s+/,$lstuff);
-				if(@tarray < 5){
-					smog_quit("nonbond_params defined in extras file, but too few parameters are given. $customerror Offending line:$line",0);
-				}
 				if(exists $interactions->{"CustomNonBonded"}){
 					# do checks for custom potentials
 					if(exists $interactions->{"CustomNonBonded"}->{"parameters"}){
