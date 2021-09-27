@@ -219,8 +219,11 @@ if(defined $nogro){
 	my $NATOMS=$A[0];
 	my @GRODATA;
 	unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
-	
-	print "\n\nUsing $inputTOP, $inputGRO and $indexFile to generate extracted system...\n\n";
+	my $inputXML="";
+	if(defined $OpenSMOG){
+		$inputXML="$OpenSMOG, ";
+	}	
+	print "\n\nUsing $inputTOP, $inputXML$inputGRO and $indexFile to generate extracted system...\n\n";
 	
 	print "Processing gro file\n";
 	for(my $I=0;$I<$NATOMS;$I++){

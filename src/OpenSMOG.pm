@@ -63,7 +63,7 @@ sub OShashAddFunction{
 
 sub OShashAddNBFunction{
 	my ($OSref,$expr,$params)=@_;
-	my $ref=\%{$OSref->{nonbond}};
+	my $ref=\%{$OSref->{nonbond}->{nonbond_bytype}};
 	$ref->{expression}->{"expr"}=$expr;
 	my @params=@{$params};
 	foreach my $en(@params){
@@ -100,7 +100,7 @@ sub AddBondedOShash{
 sub AddNonbondOShash{
 	my ($OSref,$stuff)=@_;
 	my @stuff=@{$stuff};
-	my $ref=\%{$OSref->{nonbond}};
+	my $ref=\%{$OSref->{nonbond}->{nonbond_bytype}};
 # @stuff is the array that contains the following information: type1,type2, @parameter (in the order found in $OSref->{$type}->{$name}->{parameters} array)
 	my %tmphash;
 	$tmphash{"type1"}=$stuff[0];
@@ -122,7 +122,7 @@ sub OShashAddConstants{
 		my $ref=\%{$OSref->{"constants"}};
 		my $get=$data->{"OpenSMOGsettings"}->[0]->{"constants"}->[0]->{"constant"};
 		for my $i (keys %{$get}){
-			$ref->{$i}=$get->{$i}->{"value"};
+			$ref->{"constant"}->{$i}->{"value"}=$get->{$i}->{"value"};
 			$OSrestrict{$i}=0;
 		}
 	}
@@ -132,7 +132,7 @@ sub readOpenSMOGxml {
 	my ($XMLin)=@_;
 	if(-f $XMLin){
 		my $xml = new XML::Simple;
-		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name"},ForceArray=>["contacts_type","parameter","interaction"]);
+		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name",constant=>"name"},ForceArray=>["contacts_type","constant","parameter","interaction"]);
 		# this will return a hashtable with the following format (this only defined contacts.  need to add constants and nonbond terms:
 #<perldata>
 # <hashref memory_address="0x7fc4f2a25300">
@@ -199,6 +199,8 @@ sub OpenSMOGwriteXML{
 				$xmlout .= OpenSMOGwriteXMLconstants($handle0,$type,$space);
 			}elsif($type eq "nonbond"){
                                 $xmlout .= OpenSMOGwriteXMLnonbond($handle0,$type,$space);
+			}elsif($type eq "OpenSMOGminVersion"){
+				next;
 			}else{
 				smog_quit("Internal Error: When writing OpenSMOG XML file, type $type not supported.");
 			}
@@ -226,10 +228,10 @@ sub OpenSMOGwriteXMLconstants{
 	my $threes="$space$space$space";
 	
 	my $localxmlout = "$space<$type>\n";
-	my $handle1=$handle0->{$type};
 
+	my $handle1=$handle0->{$type}->{constant};
 	foreach my $name(sort keys %{$handle1}){
-		$localxmlout .= "$twos<constant name=\"$name\" value=\"$handle1->{$name}\"/>\n";
+		$localxmlout .= "$twos<constant name=\"$name\" value=\"$handle1->{$name}->{\"value\"}\"/>\n";
 	}
 
 	$localxmlout .= "$ones</$type>\n";
@@ -268,7 +270,7 @@ sub OpenSMOGwriteXMLcontacts{
 			}
 
 	   	     	$localxmlout .= "$twos<$subtype name=\"$name\">\n";
-	   	     	my $expr=$handle3->{expression}->{"expr"};
+			my $expr=$handle3->{expression}->{"expr"};
 	   	     	$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
 			my @paramlist=@{$handle3->{parameter}};
 	   	     	foreach my $param(@paramlist){
@@ -315,42 +317,50 @@ sub OpenSMOGwriteXMLnonbond{
 	my $threes="$space$space$space";
 	
 	my $localxmlout = "$space<$type>\n";
-	my $handle3=$handle0->{$type};
-	$localxmlout .= "$twos<nonbond_bytype>\n";
+	my $handle2=$handle0->{$type};
 
-	my $expr=$handle3->{expression}->{"expr"};
-	$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
+        my $handle1=$handle0->{$type};
+        foreach my $subtype(sort keys %{$handle1}){
+		if($subtype ne "nonbond_bytype"){
+			smog_quit("Only nonbond_bytype is currently supported for non-bonded custom potentials in OpenSMOG. Found $subtype");
+		}
+                my $handle3=$handle1->{$subtype};
+		$localxmlout .= "$twos<$subtype>\n";
 
-	my @paramlist=@{$handle3->{parameter}};
-	foreach my $param(@paramlist){
-		$localxmlout .= "$threes<parameter>$param</parameter>\n";
-	}
-	foreach my $param(@{$handle3->{nonbond_param}}){
-		if(!defined $param){
-			#must have been deleted
-			next;
+		my $expr=$handle3->{expression}->{"expr"};
+		$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
+
+		my @paramlist=@{$handle3->{parameter}};
+		foreach my $param(@paramlist){
+			$localxmlout .= "$threes<parameter>$param</parameter>\n";
 		}
-		$localxmlout .="$threes<nonbond_param";
-		my %tmphash=%{$param};
-		foreach my $key("type1","type2"){
-			my $fmt="%s";
-			my $val=sprintf("$fmt",$tmphash{$key});
-			$localxmlout .=" $key=\"$val\"";
-		}
-		foreach my $key(@paramlist){
-			my $fmt;
-			# write integers as integers.  Everything else as scientific notation
-			if($tmphash{$key} =~ m/^[0-9]*$/){
-				$fmt="%i";
-			}else{
-				$fmt="%7.5e";
+		foreach my $param(@{$handle3->{nonbond_param}}){
+			if(!defined $param){
+				#must have been deleted
+				next;
 			}
-			my $val=sprintf("$fmt",$tmphash{$key});
-			$localxmlout .=" $key=\"$val\"";
+			$localxmlout .="$threes<nonbond_param";
+			my %tmphash=%{$param};
+			foreach my $key("type1","type2"){
+				my $fmt="%s";
+				my $val=sprintf("$fmt",$tmphash{$key});
+				$localxmlout .=" $key=\"$val\"";
+			}
+			foreach my $key(@paramlist){
+				my $fmt;
+				# write integers as integers.  Everything else as scientific notation
+				if($tmphash{$key} =~ m/^[0-9]*$/){
+					$fmt="%i";
+				}else{
+					$fmt="%7.5e";
+				}
+				my $val=sprintf("$fmt",$tmphash{$key});
+				$localxmlout .=" $key=\"$val\"";
+			}
+			$localxmlout .="/>\n";
 		}
-		$localxmlout .="/>\n";
+		$localxmlout .= "$twos</$subtype>\n";
 	}
-	$localxmlout .= "$twos</nonbond_bytype>\n";
 	$localxmlout .= "$ones</$type>\n";
 	my @num=split(/\s+/,$localxmlout);
 	my $num = @num; 
@@ -382,10 +392,16 @@ sub OpenSMOGextractXML{
 		my $handle0=$OSref;
 
 		foreach my $type(sort keys %{$handle0}){
+			unless ($type eq "contacts"){
+				next;
+			}
 			my $handle1=$handle0->{$type};
+			print "type $type\n";
 			foreach my $subtype(sort keys %{$handle1}){
 			   	my $handle2=$handle1->{$subtype};
+				print "subtype $subtype    \n";
 			   	foreach my $name(sort keys %{$handle2}){
+					print "name $name\n";
 			   		my $handle3=$handle2->{"$name"}->{interaction};
 			   	     	#foreach my $param(@{$handle3->{interaction}}){
 			   	     	for (my $I=0;$I<=$#{$handle3};$I++){
@@ -399,7 +415,7 @@ sub OpenSMOGextractXML{
 			}
 		}	
 	}
-	OpenSMOGwriteXML($OSref,$OpenSMOGxml);
+	OpenSMOGwriteXML($OSref,$OpenSMOGxml,"This file was generated using smog_extract");
 	return \%OpenSMOGatoms2restrain;
 }
 
