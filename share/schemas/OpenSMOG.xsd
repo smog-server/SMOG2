@@ -71,6 +71,7 @@
     <xs:all>
       <xs:element name="contacts" type="contactsType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="constants" type="constantsType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="OpenSMOGminVersion" type="xs:string" minOccurs="0" maxOccurs="1"/>
       <xs:element name="nonbond" type="nonbondType" minOccurs="0" maxOccurs="1"/>
     </xs:all>
   </xs:complexType>
