@@ -396,12 +396,9 @@ sub OpenSMOGextractXML{
 				next;
 			}
 			my $handle1=$handle0->{$type};
-			print "type $type\n";
 			foreach my $subtype(sort keys %{$handle1}){
 			   	my $handle2=$handle1->{$subtype};
-				print "subtype $subtype    \n";
 			   	foreach my $name(sort keys %{$handle2}){
-					print "name $name\n";
 			   		my $handle3=$handle2->{"$name"}->{interaction};
 			   	     	#foreach my $param(@{$handle3->{interaction}}){
 			   	     	for (my $I=0;$I<=$#{$handle3};$I++){
