@@ -414,11 +414,7 @@ sub parse_args {
 	}
 	
 	if(defined $gen_map) {
-		# read the bif, generate a map file and exit
-		if (-e $gen_map) {
-			smog_quit("$gen_map exists, will not overwrite");
-		}
-		parseTemplatesAndPDB($inputFolder,$inputPDB,0);
+		smog_quit("Option -gen_map moved to smog_adjustPDB");
 	}
 	
 	# if a contact file is provided, then don't calculate contacts
@@ -2369,7 +2365,6 @@ usage: smog2 .. options ..
      Misc. Options
        -OpenSMOG                   : make files compatible with openMM  
        -ignH                       : ignore any atoms with name starting with 'H' in the internal contact algorithm
-       -gen_map <out map file>     : read the .bif file, generate a mapping file for smog_adjustPDB and exit 
        -warn [0]                   : convert the first N fatal errors to warnings  
                                        Convert all if N=-1 (Caution: Consult manual before using this option)
        -help                       : show options 
@@ -2501,14 +2496,8 @@ sub parseTemplatesAndPDB
 		}
 	}
 
-	# simply generate a map for adjustPDB and exit
-	if(defined $gen_map){
-		parseBif($inputFolder,$gen_map);
-		exit(0);
-	}else{
-		# no need to initialize these things if we are only making a map file
-		&initializeDirectives;
-	}
+	# no need to initialize these things if we are only making a map file
+	&initializeDirectives;
 
 	print "\nPre-processing templates\n";
 	## Find Bonds ##

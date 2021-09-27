@@ -35,7 +35,7 @@ use smog_common;
 use XML::LibXML;
 
 our @ISA = 'Exporter';
-our @EXPORT = qw(OShashAddFunction OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddBondedOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction %fTypes %fTypesArgNum);
+our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddBondedOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction %fTypes %fTypesArgNum);
 our %fTypes;
 our %fTypesArgNum;
 our $OpenSMOG;
@@ -113,22 +113,17 @@ sub AddNonbondOShash{
 
 }
 
-sub AddSettingsOShash{
-	my ($OSref,$addstuff)=@_;
-	if(defined $addstuff->[0]->{"constants"}){
-		AddConstantsOShash($OSref,$addstuff->[0]->{"constants"})
-	}
-# @stuff is the array that contains the constants
+sub OShashAddConstants{
+	my ($data,$OSref)=@_;
 
-}
+        if(defined $data->{"OpenSMOGsettings"}->[0]->{"constants"}){
 
-sub AddConstantsOShash{
-	my ($OSref,$addstuff)=@_;
-	my $ref=\%{$OSref->{"constants"}};
-	my $get=$addstuff->[0]->{"constant"};
-	for my $i (keys %{$get}){
-		$ref->{$i}=$get->{$i}->{"value"};
-		$OSrestrict{$i}=0;
+		my $ref=\%{$OSref->{"constants"}};
+		my $get=$data->{"OpenSMOGsettings"}->[0]->{"constants"}->[0]->{"constant"};
+		for my $i (keys %{$get}){
+			$ref->{$i}=$get->{$i}->{"value"};
+			$OSrestrict{$i}=0;
+		}
 	}
 }
 
