@@ -493,6 +493,7 @@ sub checkContactFunctionDef
 				smog_quit("$funcname contact type (defined in .sif) can not have normalization turned on without the \"weight\" parameter being given as \"energynorm\". Problematic declaration in contact group $cG (in .nb file): $funcString")
 			}
 			my $pot=$functions->{$funcname}->{"OpenSMOGpotential"};
+		        checkbalancedparentheses($pot);
 			$pot =~ s/^(-?)weight[\*\/]//g;
  			if($pot !~ m/^(\((?:[^()]++|(?1))*\))$/ || $pot =~ m/weight/ ) {
 				smog_quit("If normalization is turned on for an OpenSMOG potential, then the functional form must be \"+/-weight[*/](<function of coordinates and other parameters>)\". The definition for function $funcname in the .sif file appears to not comply with this standard, which could lead to issues. While the current format check is extremely rigid, if the potential is of the form weight*<any function>, then you can safely ignore this message. However, in that case, simply enclosing the function in parentheses would get rid of this error.\nFound: $functions->{$funcname}->{\"OpenSMOGpotential\"}");	
@@ -1419,6 +1420,8 @@ sub CustomNonBondedCheckAdjust{
 				}
 				$pind++;
 				if(exists $interHandle[0]->{"OpenSMOGpotential"}){
+				        checkbalancedparentheses($interHandle[0]->{"OpenSMOGpotential"});
+
 					if($interHandle[0]->{"OpenSMOGpotential"} =~ m/([^0-9a-zA-Z]|^)$param([^0-9a-zA-Z]|$)/){
 						if($interactions->{"CustomNonBonded"}->{"OpenSMOGcombrule"} eq "none"){
 							# since we are not using a combination rule, we must be using arrays to 

@@ -42,7 +42,7 @@ our @convarray;
 our %reverthash;
 our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub validateXML $VERSION);
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub validateXML checkbalancedparentheses $VERSION);
 our %supported_directives;
 
 #####################
@@ -477,5 +477,37 @@ whereas the following would be appropriate:
   </child>") if $@;
 
 }
+
+sub checkbalancedparentheses{
+	my ($func)=@_;
+	$func =~ s/\s+//g;
+	my @array = split(//, $func);
+
+	my $count=0;
+	my $charn=0;
+	foreach my $char(@array){
+		if($char =~ m/\(/){
+			$count++;
+		}
+		if($char =~ m/\)/){
+			$count--;
+		}
+		if($count < 0){
+			my $badstring="";
+			for (my $I=$charn-3;$I<$charn+3;$I++){
+				if($I>=0){
+					$badstring .= $array[$I];
+				}
+			}
+			smog_quit("Function used in templates has unbalanced parentheses. Closed parentheses found before opening. Problem found around \"$badstring\" in the following definition:\n$func\n");
+		}
+		$charn++;
+	}
+	if($count > 0){
+		smog_quit("Function used in templates has unbalanced parentheses (more open than closed). Problematic definition:\n$func\n");
+	}
+
+}
+
 
 1;
