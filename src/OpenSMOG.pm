@@ -35,7 +35,7 @@ use smog_common;
 use XML::LibXML;
 
 our @ISA = 'Exporter';
-our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddBondedOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction %fTypes %fTypesArgNum);
+our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddBondedOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction OpenSMOGAddNBsettoXML %fTypes %fTypesArgNum);
 our %fTypes;
 our %fTypesArgNum;
 our $OpenSMOG;
@@ -526,6 +526,20 @@ sub checkOpenSMOGparam{
 	if($term ne "function" && exists $OSrestrict{$param}){
 		smog_quit("Parameters \"$param\" used with $term custom potential is a reserved name (i.e. may denote a function, charge, index, distance, etc).");
 	}
+}
 
+sub OpenSMOGAddNBsettoXML{
+	my ($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer)=@_;
+	# read the input XML
+	my $data=readOpenSMOGxml($OpenSMOG);
+	# add content
+	my @lines=split(/\n/,$NBbuffer);
+	foreach my $line(@lines){
+        	my @tarray=split(/\s+/,$line);
+		splice(@tarray,2,1);
+		AddNonbondOShash($data,\@tarray);
+	}
+	# write new XML
+	OpenSMOGwriteXML($data,$OpenSMOGout,"Ion parameters were added with smog_ions");
 }
 1;

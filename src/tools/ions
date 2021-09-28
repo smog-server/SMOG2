@@ -28,11 +28,13 @@ use strict;
 use warnings FATAL => 'all';
 use Getopt::Long;
 use smog_common;
+use OpenSMOG;
+use XML::Simple qw(:strict);
 use Scalar::Util qw(looks_like_number);
 our @ISA = 'Exporter';
 our @EXPORT = qw(%supported_directives);
 my $inputArguments=join(' ',@ARGV);
-
+my $xml = new XML::Simple;
 my $tmpstring = <<EOT;
 
                                       smog_ions
@@ -70,9 +72,6 @@ our %supported_directives = ( 'defaults' => '1',
         'position_restraints' => '0'
         );
 
-
-
-
 my $inputTOP="smog.top";
 my $inputGRO="smog.gro";
 my $outputtop="smog.ions.top";
@@ -87,12 +86,15 @@ my $addmass;
 my $template;
 my $help;
 my @grobox;
+my $OpenSMOG;
+my $AddCustomParmsToXML;
+my $OpenSMOGout;
 quit_init();
 note_init();
 checkForModules();
 
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO,  
-        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionC12=f' => \$addC12, 't=s' => \$template,'ionC6=f' => \$addC6, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'warn=i' => \$maxwarn, 
+        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'ionn=i' => \$addnum, 'ionm=f' => \$addmass, 'ionC12=f' => \$addC12, 't=s' => \$template,'ionC6=f' => \$addC6, 'ionnm=s' => \$addname, 'ionq=f' => \$addcharge,  'mindist=f' => \$mindist,  'OpenSMOG=s' => \$OpenSMOG, 'OpenSMOGout=s' => \$OpenSMOGout,  'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -108,6 +110,19 @@ foreach my $filen($outputtop, $outputgro){
 	checkalreadyexists($filen);
 }
 
+if(defined $OpenSMOG && !defined $OpenSMOGout){
+	smog_quit("when using -OpenSMOG, you must specify an output file name with -OpenSMOGout"); 
+}
+
+if(defined $OpenSMOG && !defined $template){
+	smog_quit("when using -OpenSMOG, you must specify a template directory with -t."); 
+}
+
+if(!defined $OpenSMOG && defined $OpenSMOGout){
+	smog_quit("Can not use -OpenSMOGout setting if -OpenSMOG is not also used."); 
+}
+
+
 
 if(!defined $addname){
 	smog_quit("Please indicate which ion species to add with the -ionnm option"); 
@@ -120,6 +135,21 @@ if(defined $template){
 	if(defined $addmass || defined $addcharge || defined $addC12 || defined $addC6){
 		smog_quit("When using the -t option, you may not provide the following additional flags: -ionC12, -ionC6, -ionq, -ionm.");
 	}
+
+	# going to look for the sif and determine if nonbond information should
+	# be added to the top (i.e. standard gromacs-formatted interactions) or
+	# if they should be added to the OpenSMOG XML file.
+	if(defined $OpenSMOG){
+		my $siffile=findsif($template);
+	        my $data = $xml->XMLin($siffile,KeyAttr => ['name'],ForceArray=>1);
+		my ($found,$parmarr)=GetCustomParms($data);
+		if($found!=0){
+			$AddCustomParmsToXML=$parmarr;
+			print "Custom nonbond function found in templates.\n";
+			print "Will add ion nonbond terms to XML file, if needed.\n";
+		}
+	}
+
 	# read the definitions for ions from ions.def
 	my $ionfile=finddefs($template);
 	print "\nWill read definitions of ion parameters in $ionfile\n";
@@ -549,13 +579,23 @@ while (<FILE>){
 			if(checkforinclude($LINE,$data,*TOPOUT)){next;};
 			if($data eq ""){next;}
 		}
-		print TOPOUT "$NBbuffer";
+		if(defined $AddCustomParmsToXML){
+			# add it to XML
+			OpenSMOGAddNBsettoXML($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer);
+		}else{
+			print TOPOUT "$NBbuffer";
+		}
 	}
 
 	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
 		# if we did not find a nonbond_params, add it.
 		if($NBPpresent==0 && $NBbuffer ne ""){
-			print TOPOUT "[ nonbond_params ]\n$NBbuffer\n\n";
+			if(defined $AddCustomParmsToXML){
+				# add it to XML
+				OpenSMOGAddNBsettoXML($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer);
+			}else{
+				print TOPOUT "[ nonbond_params ]\n$NBbuffer\n\n";
+			}
 		}
 
 
@@ -694,6 +734,31 @@ sub finddefs
 
 }
 
+sub findsif
+{
+	my ($folderName)=@_;
+	my $sifexists=0;
+	my $siffile;
+        opendir(my $folder,$folderName);
+	while(my $file = readdir($folder)){
+		if($file =~ m/\.sif$/) {
+			$sifexists++;
+			$siffile = "$folderName/$file";
+			next;
+		}
+	}
+	if($sifexists ==0){
+		smog_quit ("No sif file found in directory $folderName");
+	}
+	if($sifexists >1){
+		smog_quit ("Found multiple sif files in directory $folderName");
+	}
+	return $siffile;
+
+}
+
+
+
 sub usage
 {
   print <<EOT;
@@ -701,21 +766,26 @@ sub usage
 usage: smog_ions ... options
 
    Required flags
-	-ionnm  <string>   : name of ion to be added to the system
-	-ionn   <integer>  : number of ions to add
-	-ionq   <float>    : charge of ions
-	-ionm   <float>    : mass of ions
-	-ionC12 <float>    : C12 excluded-volume parameter for added ions
+	-ionnm  <string>        : name of ion to be added to the system
+	-ionn   <integer>       : number of ions to add
+	-ionq   <float>         : charge of ions
+	-ionm   <float>         : mass of ions
+	-ionC12 <float>         : C12 excluded-volume parameter for added ions
    Optional settings 
-	-t <string>	   : optional template directory to read ion definitions
-	-f [smog.top]      : input SMOG forcefield file
-	-g [smog.gro]      : input SMOG configuration file
-	-of [smog.ions.top]: output SMOG forcefield file for smog.ions system
-	-og [smog.ions.gro]: output SMOG configuration file for smog.ions system
-	-mindist [0.5]     : the minimium distance (nm) between an added ion and any other atom in the system
-	-ionC6 [0.0]	   : C6 parameter for added ions
-	-warn [0]	   : convert first N errors into warnings
-	-help 		   : show options 
+	-t <string>	        : optional template directory to read ion definitions
+                                    This is required if using OpenSMOG files
+	-f [smog.top]           : input SMOG forcefield file
+	-g [smog.gro]           : input SMOG configuration file
+	-of [smog.ions.top]     : output SMOG forcefield file for smog-ions system
+	-og [smog.ions.gro]     : output SMOG configuration file for smog-ions system
+	-mindist [0.5]          : the minimium distance (nm) between an added ion and 
+                                    any other atom in the system
+	-ionC6 [0.0]	        : C6 parameter for added ions
+	-OpenSMOG <xml file>    : also process an OpenSMOG xml file. This file is generated 
+                                    by smog2 if the -OpenSMOG option was used.
+	-OpenSMOGout <xml file> : output file name for processed OpenSMOG xml file
+	-warn [0]	        : convert first N errors into warnings
+	-help 		        : show options 
 EOT
   if ( @_ ){
    smog_quit("Command-line argument \"@_\" not recognized.");

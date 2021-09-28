@@ -42,7 +42,7 @@ our @convarray;
 our %reverthash;
 our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub validateXML checkbalancedparentheses $VERSION);
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub validateXML checkbalancedparentheses GetCustomParms $VERSION);
 our %supported_directives;
 
 #####################
@@ -510,6 +510,35 @@ sub checkbalancedparentheses{
 		smog_quit("Function used in templates has unbalanced parentheses (more open than closed). Problematic definition:\n$func\n");
 	}
 
+}
+
+sub GetCustomParms{
+	# $data is a hashref that contains sif information imported with XMLin 
+	my ($data)=@_;
+	if(exists $data->{"CustomNonBonded"}){
+		my @interHandle = @{$data->{"CustomNonBonded"}};
+		if(defined $interHandle[0]->{"OpenSMOGparameters"} && $interHandle[0]->{"parameters"}){
+			if($interHandle[0]->{"OpenSMOGparameters"} ne $interHandle[0]->{"parameters"}){
+				smog_quit("When using CustomNonbonded, give either the parameters or OpenSMOGparameters child element in the .sif file.  If both are listed, they must be identical.");
+			}
+		}elsif(defined $interHandle[0]->{"OpenSMOGparameters"}){
+			$interHandle[0]->{"parameters"}=$interHandle[0]->{"OpenSMOGparameters"};
+		}elsif(!defined $interHandle[0]->{"parameters"}){
+			smog_quit("In sif file, when using CustomNonBonded, you must give either the parameters of OpenSMOGparameters child element.");
+		}
+		# parameters required for any custom potential definition
+		# set the number of required parameters
+		my $parmstring=$interHandle[0]->{"parameters"};
+		my $parmstringorig=$parmstring;
+		$parmstring =~ s/\s+//g;
+		if($parmstring =~ m/^\,|\,\,|\,$/){
+			smog_quit("Incorrectly formatted parameter list given for nonbonded CustomNonBonded. Found \"$parmstringorig\"\nCheck .nb file.");
+		}
+		my @parmarr=split(/\,/,$parmstring);
+		return (1,\@parmarr);
+	}else{
+		return (0,"");
+	}
 }
 
 

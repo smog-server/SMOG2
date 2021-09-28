@@ -652,6 +652,9 @@ sub addExtras {
 						# the OpenSMOG hash, so that it will be written to the output XML
 						$writetoXML="yes"; #ensures that we don't write to top
 						
+						if(!defined $presentatomtypes{$tarray[0]} || !defined $presentatomtypes{$tarray[1]}){
+							next;
+						}	
 						# now, populate hash. remove type, since that is not used by OpenSMOG 
 						splice(@tarray,2,1);
 						AddNonbondOShash($OSref,\@tarray);
