@@ -546,6 +546,7 @@ while (<FILE>){
 					if($directive eq "nonbond_params"){
 						my @tarray=split(/\s+/,$stuff);
 						if((exists $typesinsystem{$tarray[0]} && $tarray[1] eq "$addname") || (exists $typesinsystem{$tarray[1]} && $tarray[0] eq "$addname") || ($tarray[0] eq "$addname" && $tarray[1] eq "$addname") ){
+							$stuff =~ s/\s+/\t/g;
 							$NBbuffer .= "$stuff\n";
 						}	
 					}
@@ -560,6 +561,7 @@ while (<FILE>){
 
 	if($TMP[0] eq "[" and $TMP[1] eq "nonbond_params"){
 		$NBPpresent=1;
+		$data =~ s/\s+/\t/g;
 		print TOPOUT "$data\n"; 
 	
 		$LINE = <FILE>;
@@ -569,7 +571,7 @@ while (<FILE>){
 		if(checkforinclude($LINE,$data,*TOPOUT)){next;};
 		# read the current list of nonbond_params
 		until(($data eq "" and $comment eq "") or substr($data,0,1) eq "[" ){
-			$data =~ s/ /\t/g;
+			$data =~ s/\s+/\t/g;
 			print TOPOUT "$data$comment\n"; 
 			$LINE = <FILE>;
 			$LINEORIG=$LINE;

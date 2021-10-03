@@ -2610,7 +2610,7 @@ sub appendContacts {
 	$numContacts = parseCONTACT($shadowFile,$ContactFile,$userProvidedMap,$CGenabled,$saveSCMorig);
 	if($numContacts == 0){smog_quit ("There are 0 contacts.  See earlier messages for possible errors");}
 	my $absAtomCount = keys(%allAtoms);
-	print "If normalization is used, the total number of atoms included in normalization will be $totalAtoms, while $absAtomCount atoms are in the system.\n";
+	print "If normalization is used, the total number of atoms included in normalization\nwill be $totalAtoms, while $absAtomCount atoms are in the system.\n";
 	print "Completing final details...\n";
 	## CALCULATE PAIRS and EXCLUSIONS ##
  	calculateContacts($contactPDL,\%resPDL,\%allAtoms,$numContacts,$totalAtoms);
