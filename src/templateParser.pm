@@ -1331,6 +1331,9 @@ sub getNBdefaults{
 			my $tmp=$interactions->{"fudgeQQ"};
 			smog_quit("fudgeQQ must be greater than, or equal to, 0.  Found $tmp.");
 		}
+		if(defined $OpenSMOG){
+			smog_note("fudgeQQ is defined in the templates, but this setting has no effect if -OpenSMOG is\nissued. When using OpenSMOG, the precise functional form of the contact interactions\n(i.e. 1-4 interaction in a Gromacs top file) is written in the output XML file.");
+		}
 		if($interactions->{"fudgeLJ"}==-1){
 			# since we gave a value for fudgeQQ and not fudgeLJ, we need to set the latter to 1, 
 			# in order to write it properly, later
