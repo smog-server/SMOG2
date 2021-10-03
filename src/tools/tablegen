@@ -177,7 +177,7 @@ my $VE;my $VpE;
 print OUTFILE<<EOF;
 # Force table for use with structure-based SMOG models
 # Generated with smog_tablegen (version $VERSION)
-# Potential of the form U=K*q_i*q_j*exp(-kappa*r)/r+A/r^N-B/r^M
+# Potential of the form U=K*q_i*q_j*exp(-kappa*r)/r-A/r^N+B/r^M
 # kappa=$kappa nm^-1
 # N=$exponent2
 # M=$exponent1
