@@ -456,7 +456,7 @@ sub newOpenSMOGfunction{
 	}
 
 	my $pot=$fh->{$fN}->{"OpenSMOGpotential"};
-	checkbalancedparentheses($pot);
+	checkPotentialFunction($pot);
 	my $pind=0;
 	my %seenparm;
 	foreach my $param(@parmarr){
