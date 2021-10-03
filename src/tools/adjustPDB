@@ -109,6 +109,9 @@ if(defined $makemap){
 	exit 0;
 }
 
+if(defined $template_dir && !defined $makemap){
+	smog_quit("-t is only to be used with -gen_map");
+}
 if(!defined $inputPDB){
 	smog_quit("No input PDB file name given.");
 }
