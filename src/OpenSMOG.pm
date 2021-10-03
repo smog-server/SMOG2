@@ -464,8 +464,8 @@ sub newOpenSMOGfunction{
 	# $fh is the functions handle
 	# is the new function name to add
 
-	if($fN =~ m/[\+\-\*\/]/){
-		smog_quit("OpenSMOG function names can not have +, -, * or /.  Problematic definition: $fN");
+	if($fN =~ m/[\+\-\*\/\^]/){
+		smog_quit("OpenSMOG function names can not have +, -, *, ^, or /.  Problematic definition: $fN");
 	}
         checkOpenSMOGparam("function",$fN);
 

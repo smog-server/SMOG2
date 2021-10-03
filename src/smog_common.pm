@@ -42,7 +42,7 @@ our @convarray;
 our %reverthash;
 our $BaseN;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub validateXML checkbalancedparentheses GetCustomParms $VERSION);
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub validateXML checkPotentialFunction GetCustomParms $VERSION);
 our %supported_directives;
 
 #####################
@@ -481,9 +481,17 @@ whereas the following would be appropriate:
 
 }
 
-sub checkbalancedparentheses{
+sub checkPotentialFunction{
 	my ($func)=@_;
 	$func =~ s/\s+//g;
+	if($func =~ m/^(.*?)?([^\s+a-zA-Z0-9_\;\,\/\-\+\*\^\(\)])(.*)?$/ ){
+		# regex explained: ^ start, (.*?)? non-greedy and optional any character, (not any letter, number, or allowed operator), (.*)? optional any character, $ end.
+		my $pos=length($1)+1;
+		smog_quit("Unsupported characters found in OpenSMOG energy function:\n$func\nEnergy functions may only have the following characters: a-z A-Z 0-9 _ ; , / - + * ^ ( )\nCharacter $pos is a \"$2\".");
+	}
+	if($func =~ m/\(\)/){
+		smog_quit("Empty closed parentheses found in OpenSMOG energy function:\n$func");
+	}
 	my @array = split(//, $func);
 
 	my $count=0;
