@@ -338,14 +338,23 @@ sub OpenSMOGwriteXMLnonbond{
 			}
 			$localxmlout .="$threes<nonbond_param";
 			my %tmphash=%{$param};
+			my $tmptype="";
 			foreach my $key("type1","type2"){
 				my $fmt="%s";
 				my $val=sprintf("$fmt",$tmphash{$key});
 				$localxmlout .=" $key=\"$val\"";
+				if($tmptype eq ""){
+					$tmptype ="$val-";
+				}else{
+					$tmptype .="$val";
+				}
 			}
 			foreach my $key(@paramlist){
 				my $fmt;
 				# write integers as integers.  Everything else as scientific notation
+				if(!defined $tmphash{$key}){
+					smog_quit("When writing the OpenSMOG XML file, there appears to be an incorrectly assigned\nnonbond_param. Specifically, value for $key was not found trying to write parameters for\n$tmptype interactions. This generally occurs if your extras file is not properly formatted.\nFormatting is checked when running smog2, but the file you are using may differ from\nthat used to generate the original model.");
+				}
 				if($tmphash{$key} =~ m/^[0-9]*$/){
 					$fmt="%i";
 				}else{
