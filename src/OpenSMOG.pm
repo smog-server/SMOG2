@@ -132,41 +132,6 @@ sub readOpenSMOGxml {
 	if(-f $XMLin){
 		my $xml = new XML::Simple;
 		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name",constant=>"name"},ForceArray=>["contacts_type","constant","parameter","interaction"]);
-		# this will return a hashtable with the following format (this only defined contacts.  need to add constants and nonbond terms:
-#<perldata>
-# <hashref memory_address="0x7fc4f2a25300">
-#  <item key="contacts">
-#   <hashref memory_address="0x7fc4f2a25a38">
-#    <item key="contacts_type">
-#     <hashref memory_address="0x7fc4f2a42e30">
-#      <item key="bond_type6">
-#       <hashref memory_address="0x7fc4f2a42e78">
-#        <item key="expression">
-#         <hashref memory_address="0x7fc4f2a8ef70">
-#          <item key="expr">eps*(r-r0)^2</item>
-#         </hashref>
-#        </item>
-#        <item key="interaction">
-#         <arrayref memory_address="0x7fc4f2a7ebd8">
-#          <item key="0">
-#           <hashref memory_address="0x7fc4f2a908e8">
-#            <item key="eps">200</item>
-#            <item key="i">1</item>
-#            <item key="j">2</item>
-#            <item key="r0">1.32823e-01</item>
-#           </hashref>
-#          </item>
-#         </arrayref>
-#        </item>
-#        <item key="parameter">
-#         <arrayref memory_address="0x7fc4f2a7eb60">
-#          <item key="0">eps</item>
-#          <item key="1">r0</item>
-#         </arrayref>
-#        </item>
-#       </hashref>
-#      </item>
-#      <item key="c8-c12">
 		return $data;
 	}else{
 		return 1;
@@ -353,7 +318,7 @@ sub OpenSMOGwriteXMLnonbond{
 				my $fmt;
 				# write integers as integers.  Everything else as scientific notation
 				if(!defined $tmphash{$key}){
-					smog_quit("When writing the OpenSMOG XML file, there appears to be an incorrectly assigned\nnonbond_param. Specifically, value for $key was not found trying to write parameters for\n$tmptype interactions. This generally occurs if your extras file is not properly formatted.\nFormatting is checked when running smog2, but the file you are using may differ from\nthat used to generate the original model.");
+					smog_quit("When writing the OpenSMOG XML file, there appears to be an incorrectly assigned\nnonbond_param. Specifically, value for $key was not found when trying to write parameters for\n$tmptype interactions. This generally occurs if your extras file is not properly formatted.\nFormatting is checked when running smog2, but the file you are using may differ from\nthat used to generate the original model.");
 				}
 				if($tmphash{$key} =~ m/^[0-9]*$/){
 					$fmt="%i";
