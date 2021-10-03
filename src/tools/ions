@@ -121,8 +121,9 @@ if(defined $OpenSMOG && !defined $template){
 if(!defined $OpenSMOG && defined $OpenSMOGout){
 	smog_quit("Can not use -OpenSMOGout setting if -OpenSMOG is not also used."); 
 }
-
-
+if(defined $OpenSMOGout){
+	checkalreadyexists($OpenSMOGout);
+}
 
 if(!defined $addname){
 	smog_quit("Please indicate which ion species to add with the -ionnm option"); 
