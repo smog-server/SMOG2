@@ -131,8 +131,6 @@
   <xs:complexType name="functionsType">
     <xs:element name="function" type="functionType" maxOccurs="unbounded"/>
   </xs:complexType>
-
-
   <!--CustomPotential TYPE -->
   <xs:complexType name="customPotType">
     <xs:attribute name="OpenSMOGpotential" type="xs:string" use="optional"/>
@@ -140,7 +138,6 @@
     <xs:attribute name="parameters" type="xs:string" use="optional"/>
     <xs:attribute name="OpenSMOGparameters" type="xs:string" use="optional"/>
   </xs:complexType>
-
   <!-- SIF TYPE -->
   <xs:complexType name="sifType">
     <xs:all>
