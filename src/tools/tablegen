@@ -87,7 +87,7 @@ my $help;
 quit_init();
 checkForModules();
 
-usage() if (@ARGV < 0 || !GetOptions('help|?' => \$help, 'N=i' => \$exponent2, 'M=i' => \$exponent1, 'ic=f' => \$conc, 
+usage() if (!GetOptions('help|?' => \$help, 'N=i' => \$exponent2, 'M=i' => \$exponent1, 'ic=f' => \$conc, 
         'sd=f' => \$r1, 'sc=f' => \$rc, 'tl=f' => \$Rtable, 'table=s' => \$outfilename, 'unit=s' => \$unit, 'temp=f' => \$temperature, '<>' => \&usage)
         or defined $help); 
 
