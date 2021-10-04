@@ -688,10 +688,10 @@ sub usage
 usage: smog_extract  .. options ..
 
    Options 
-	-f [smog.top]		: input SMOG forcefield file
+	-f [smog.top]		: input SMOG force field file
 	-g [smog.gro]		: input SMOG configuration file
 	-n [smog.ndx]		: index file to define extracted group
-	-of [extracted.top]	: output SMOG forcefield file for extracted system
+	-of [extracted.top]	: output SMOG force field file for extracted system
 	-og [extracted.gro]	: output SMOG configuration file for extracted system
 	-om [atomindex.map]	: output file with old-to-new atom index mapping
 	-orm [restrained.map]	: output file with old-to-new atom index mapping for restrained atoms

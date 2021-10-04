@@ -236,7 +236,7 @@ print "\nWill add ions to $inputTOP and $inputGRO\n";
 print "Will try to add $addnum $addname ions with charge $addcharge and mass $addmass\n";
 print "Will use C12=$addC12 E*nm^12 and C6=$addC6 E*nm^6\n";
 print "Will place ions at least $mindist nm from the existing system\n";
-print "Will write the new forcefield and configuration to $outputtop and $outputgro\n\n"; 
+print "Will write the new force field and configuration to $outputtop and $outputgro\n\n"; 
 
 $mindist*=2;
 
@@ -777,9 +777,9 @@ usage: smog_ions ... options
    Optional settings 
 	-t <string>	        : optional template directory to read ion definitions
                                     This is required if using OpenSMOG files
-	-f [smog.top]           : input SMOG forcefield file
+	-f [smog.top]           : input SMOG force field file
 	-g [smog.gro]           : input SMOG configuration file
-	-of [smog.ions.top]     : output SMOG forcefield file for smog-ions system
+	-of [smog.ions.top]     : output SMOG force field file for smog-ions system
 	-og [smog.ions.gro]     : output SMOG configuration file for smog-ions system
 	-mindist [0.5]          : the minimium distance (nm) between an added ion and 
                                     any other atom in the system
