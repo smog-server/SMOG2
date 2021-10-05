@@ -121,6 +121,9 @@ if(defined $OpenSMOG && !defined $template){
 if(!defined $OpenSMOG && defined $OpenSMOGout){
 	smog_quit("Can not use -OpenSMOGout setting if -OpenSMOG is not also used."); 
 }
+if(defined $OpenSMOG && ! -e $OpenSMOG){
+	smog_quit("Can not open file $OpenSMOG for reading.");
+}
 if(defined $OpenSMOGout){
 	checkalreadyexists($OpenSMOGout);
 }
