@@ -1,6 +1,5 @@
 configure.smog2
 README
-TODO
 COPYING
 examples/gromacs2020/all-atom/2ci2.edr
 examples/gromacs2020/all-atom/2ci2.top
@@ -107,7 +106,6 @@ examples/gromacs4/calpha/state.cpt
 examples/README
 THANKS
 test-config
-changetypes.example.bash
 share/test/benchmark.pl
 share/test/benchmarks/2GIS_noSAM_v2.AAgauss.top
 share/test/benchmarks/1AKEapo_v2.CA.top
