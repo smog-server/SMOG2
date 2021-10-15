@@ -1420,7 +1420,8 @@ sub CustomNonBondedCheckAdjust{
 						$interactions->{"CustomNonBonded"}->{"OpenSMOGpotential"}=~ s/([^0-9a-zA-Z]|^)$param([^0-9a-zA-Z]|$)/$1$param\(type1,type2\)$2/g;
 					}
 				}else{
-					smog_quit("CustomNonBonded defines $param as a parameter, but it does not appear in the definition of the OpenSMOGpotential expression. $interHandle[0]->{\"OpenSMOGpotential\"}");
+					$interHandle[0]->{"OpenSMOGpotential"} =~ s/\s+//g;
+					smog_note("CustomNonBonded defines $param as a parameter, but it does not appear in the definition of the OpenSMOGpotential expression. Make sure you do not want this parameter in the expression.  Expression of interest: $interHandle[0]->{\"OpenSMOGpotential\"}");
 				}
 			}
 		}
