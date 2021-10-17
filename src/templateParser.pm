@@ -493,7 +493,6 @@ sub checkContactFunctionDef
 				smog_quit("$funcname contact type (defined in .sif) can not have normalization turned on without the \"weight\" parameter being given as \"energynorm\". Problematic declaration in contact group $cG (in .nb file): $funcString")
 			}
 			my $pot=$functions->{$funcname}->{"OpenSMOGpotential"};
-		        checkPotentialFunction($pot);
 			$pot =~ s/^(-?)weight[\*\/]//g;
  			if($pot !~ m/^(\((?:[^()]++|(?1))*\))$/ || $pot =~ m/weight/ ) {
 				smog_quit("If normalization is turned on for an OpenSMOG potential, then the functional form must be \"+/-weight[*/](<function of coordinates and other parameters>)\". The definition for function $funcname in the .sif file appears to not comply with this standard, which could lead to issues. While the current format check is extremely rigid, if the potential is of the form weight*<any function>, then you can safely ignore this message. However, in that case, simply enclosing the function in parentheses would get rid of this error.\nFound: $functions->{$funcname}->{\"OpenSMOGpotential\"}");	
@@ -1392,14 +1391,15 @@ sub CustomNonBondedCheckAdjust{
 		if($interactions->{"CustomNonBonded"}->{"OpenSMOGcombrule"} ne "none"){
 			smog_quit("CustomNonBonded defined in .nb file. Only OpenSMOGcombrule==none is currently supported. Found \"$interactions->{\"CustomNonBonded\"}->{\"OpenSMOGcombrule\"}\"");
 		}
-
 		my $pind=0;
 		my %seenparm;
+
+		checkPotentialFunction($interHandle[0],$parmarr,$OSref);
 		foreach my $param(@parmarr){
-			if($param =~ m/^q[12]$/ && exists $interHandle[0]->{"OpenSMOGpotential"} ){
+			if($param =~ m/^q[12]$/ ){
 				smog_quit(".sif file defines CustomNonBonded with the parameter $param, while an OpenSMOGpotential function is defined. q1 and q2 are reserved to refer to charges, if OpenSMOGpotential is defined.");
 			}
-			if($param =~ m/^type[12]$/ && exists $interHandle[0]->{"OpenSMOGpotential"}){
+			if($param =~ m/^type[12]$/ ){
 				smog_quit(".sif file defines CustomNonBonded with the parameter $param, while an OpenSMOGpotential function is defined. type1 and type2 are reserved to refer to atom types, if OpenSMOGpotential is defined.");
 			}
 			checkOpenSMOGparam("nonbond",$param);
@@ -1409,20 +1409,17 @@ sub CustomNonBondedCheckAdjust{
 				$seenparm{$param}=1;
 			}
 			$pind++;
-			if(exists $interHandle[0]->{"OpenSMOGpotential"}){
-			        checkPotentialFunction($interHandle[0]->{"OpenSMOGpotential"});
 
-				if($interHandle[0]->{"OpenSMOGpotential"} =~ m/([^0-9a-zA-Z]|^)$param([^0-9a-zA-Z]|$)/){
-					if($interactions->{"CustomNonBonded"}->{"OpenSMOGcombrule"} eq "none"){
-						# since we are not using a combination rule, we must be using arrays to 
-						# reference the parameters.  OpenSMOG expects the arrays to indexed 
-						#by type1 and type2.
-						$interactions->{"CustomNonBonded"}->{"OpenSMOGpotential"}=~ s/([^0-9a-zA-Z]|^)$param([^0-9a-zA-Z]|$)/$1$param\(type1,type2\)$2/g;
-					}
-				}else{
-					$interHandle[0]->{"OpenSMOGpotential"} =~ s/\s+//g;
-					smog_note("CustomNonBonded defines $param as a parameter, but it does not appear in the definition of the OpenSMOGpotential expression. Make sure you do not want this parameter in the expression.  Expression of interest: $interHandle[0]->{\"OpenSMOGpotential\"}");
+			if($interHandle[0]->{"OpenSMOGpotential"} =~ m/([^0-9a-zA-Z]|^)$param([^0-9a-zA-Z]|$)/){
+				if($interactions->{"CustomNonBonded"}->{"OpenSMOGcombrule"} eq "none"){
+					# since we are not using a combination rule, we must be using arrays to 
+					# reference the parameters.  OpenSMOG expects the arrays to indexed 
+					#by type1 and type2.
+					$interactions->{"CustomNonBonded"}->{"OpenSMOGpotential"}=~ s/([^0-9a-zA-Z]|^)$param([^0-9a-zA-Z]|$)/$1$param\(type1,type2\)$2/g;
 				}
+			}else{
+				$interHandle[0]->{"OpenSMOGpotential"} =~ s/\s+//g;
+				smog_note("CustomNonBonded defines $param as a parameter, but it does not appear in the definition of the OpenSMOGpotential expression. Make sure you do not want this parameter in the expression.  Expression of interest: $interHandle[0]->{\"OpenSMOGpotential\"}");
 			}
 		}
 		# save the array of parsed parameters

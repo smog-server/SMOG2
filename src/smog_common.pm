@@ -29,7 +29,7 @@ use strict;
 use warnings FATAL => 'all';
 use Exporter;
 use XML::Simple qw(:strict);
-
+use OpenSMOG;
 #####################
 # Init error vars   #
 #####################
@@ -44,7 +44,6 @@ our $BaseN;
 our @ISA = 'Exporter';
 our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub validateXML checkPotentialFunction GetCustomParms $VERSION);
 our %supported_directives;
-
 #####################
 # Error routiness   #
 # ###################
@@ -482,7 +481,8 @@ whereas the following would be appropriate:
 }
 
 sub checkPotentialFunction{
-	my ($func)=@_;
+	my ($hd,$parms,$OSref)=@_;
+	my $func=$hd->{"OpenSMOGpotential"};
 	$func =~ s/\s+//g;
 	if($func =~ m/^(.*?)?([^\s+a-zA-Z0-9_\;\,\/\-\+\*\^\(\)])(.*)?$/ ){
 		# regex explained: ^ start, (.*?)? non-greedy and optional any character, (not any letter, number, or allowed operator), (.*)? optional any character, $ end.
@@ -518,6 +518,26 @@ sub checkPotentialFunction{
 		smog_quit("Function used in templates has unbalanced parentheses (more open than closed). Problematic definition:\n$func\n");
 	}
 
+        # since it at least has ok parentheses, let's make sure it only uses allowed parameters and functions
+
+	if($func =~ /\*\*/){
+		smog_quit("Unsupported use of \"**\" in OpenSMOG energy function:\n$func\nA ^ character must be used.");
+	}
+	my %ref;
+	if(defined $OSref->{"constants"}->{"constant"}){
+        	%ref=%{$OSref->{"constants"}->{"constant"}};
+	}
+	$func =~ s/\s+//g;
+	my @par=split(/[\(\)\*\/\-\+\,\^]+/,$func);
+	my %phash;
+	for my $I(@{$parms}){
+		$phash{$I}=0;
+	}
+	foreach my $M(@par){
+		unless(whatAmI($M) < 3 || exists $OSrestrict{$M} || exists $phash{$M} || defined $ref{$M}){
+			smog_quit("\"$M\" identified as a function, but it is not found in OpenSMOG energy function:\n$func");
+		}
+	}
 }
 
 sub GetCustomParms{
