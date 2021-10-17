@@ -2427,8 +2427,8 @@ sub printCitation
 		$osref="--OpenSMOG--
 Oliveira AB, Contessoto VG, Hassan A, Byju S, Wang A, Wang Y, Dodero-Rojas E,
 Mohanty U, Noel JK, Onuchic JN, Whitford PC.
-SMOG 2 and OpenSMOG: Extending the limits of structure-based models.
-bioRxiv, DOI: 10.1101/2021.08.15.456423
+SMOG 2 and OpenSMOG: Extending the limits of structure-based models. (2021)
+Protein Science, DOI: 10.1002/pro.4209.
 "
 	}
 
