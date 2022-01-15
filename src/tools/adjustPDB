@@ -94,8 +94,8 @@ note_init();
 checkForModules();
 my $makemap;
 my $template_dir;
-
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'PDBresnum' => \$PDBresnum,'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'large' => \$large, 'sort' => \$sort, 'gen_map=s' => \$makemap, 't=s' => \$template_dir,  '<>' => \&usage) or defined $help); 
+my $deletewater;
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'PDBresnum' => \$PDBresnum,'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'large' => \$large, 'sort' => \$sort,  'removewater' => \$deletewater, 'gen_map=s' => \$makemap, 't=s' => \$template_dir,  '<>' => \&usage) or defined $help); 
 
 warninfo();
 
@@ -234,6 +234,7 @@ usage: smog_adjustPDB .. options ..
                                      can be useful for analysis
                                      output PDB probably won't be useful for smog2
 	-removeH                : strip the file of any atoms that begin with "H"
+	-removewater            : strip the file of any residues named HOH or WAT
 	-gen_map <map name>     : read a template and write a mapping file
 	-t <template dir>       : template directory (only for use with -gen_map)
 	-large                  : use base-N (N>10) for indexing atom and residues
@@ -274,17 +275,50 @@ sub renamesummary {
 sub removesummary {
 	my ($string,$chain)=@_;
 	if($string ne ""){
-		print "\nNote: The following atoms were removed from chain $chain: $string\n";
+		smog_note("The following atoms/residues were removed from chain $chain: $string");
 	}
 }
 
 sub adjustInputFile{
 	my ($subALA)=@_;	
-	# Read the molecule PDB into an array (for convenience)
+	my %ignoretags;
 	
+	# make hashes that list stuff that can be in a PDB
+	foreach my $I ("OBSLTE","SPLIT","CAVEAT","COMPND","SOURCE","KEYWDS","EXPDTA","MDLTYP","AUTHOR","REVDAT","SPRSDE","JRNL","DBREF","DBREF1","DBREF2","SEQADV","SEQRES","MODRES","HET","HETNAM","HETSYN","FORMUL","HELIX","SHEET","SSBOND","LINK","CISPEP","SITE","CRYST1","ORIGX1","ORIGX2","ORIGX3","SCALE1","SCALE2","SCALE3","MTRIX1","MTRIX2","MTRIX3","ANISOU","CONECT","MASTER") {
+		my $J = $I;
+		$J =~ s/\s+//g;
+		$ignoretags{$J}=0;
+	}
+	my %notallowed;
+	foreach my $I ("NUMMDL","MODEL","ENDMDL") {
+		my $J = $I;
+		$J =~ s/\s+//g;
+		$notallowed{$J}=0;
+	}
+	my %allowed;
+	foreach my $I ("REMARK","ATOM","TER","HETATM","END","COMMEN","BOND","HEADER","TITLE") {
+		my $J = $I;
+		$J =~ s/\s+//g;
+		$allowed {$J}=0;
+	}
+	# Read the molecule PDB into an array (for convenience)
 	$rows=0;
 	while(<OLDPDB>){
 		my $line=$_;
+		my $tag=substr($line,0,6);
+		$tag =~ s/\s+//g;
+		if(exists $notallowed{$tag}){
+			smog_quit("Found PDB record \"$tag\", which it not supported.");
+		}elsif(exists $ignoretags{$tag}){
+			if($ignoretags{$tag}==0){
+				smog_note("PDB record \"$tag\" found. Since SMOG will not use these entries, they will be stripped from the file.");
+				$ignoretags{$tag}++;		
+			}
+			next;
+
+		}elsif(!exists $allowed{$tag}){
+			smog_quit("Unrecognized PDB record \"$tag\".");
+		}
 		chomp($line);
 		$pArr[$rows]=$line;	
 		$rows++;
@@ -374,10 +408,10 @@ sub adjustInputFile{
 			print NEWPDB "$pArr[$k]\n";
 			$k++;
 			next;
-			if (defined $sort || defined $renumber || defined $removeH ){
-				smog_quit("Issue at line $k: BOND lines can not be used in conjunction with -removeH, -sort, or -renumber, since the new atom numbers may differ from the input file.");
+			if (defined $sort || defined $renumber || defined $removeH || defined $deletewater  ){
+				smog_quit("Issue at line $k: BOND lines can not be used in conjunction with -removeH, -removewater, -sort, or -renumber, since the new atom numbers may differ from the input file.");
 			}
-		}elsif ($pArr[$k] =~ /^remark/i || $pArr[$k] =~ /^remark/i){
+		}elsif ($pArr[$k] =~ /^remark/i || $pArr[$k] =~ /^TITLE/ || $pArr[$k] =~ /^HEADER/){
 			print NEWPDB "$pArr[$k]\n";
 			$k++;
 			next;
@@ -445,7 +479,7 @@ sub adjustInputFile{
 				if($loopInd==0){
 					$lastresName=$resNametmp;
 				}elsif($lastresName ne $resNametmp){
-					smog_quit("Atoms within a residue have inconsistent residue names. See\n$pArr[$k]");
+					smog_quit("Atoms within a residue have different residue names. See\n$pArr[$k]");
 				}	
 				$residue[$loopInd]->{"atomName"} = $atomName;
 				$residue[$loopInd]->{"atomIndex"} = $atomCountBaseN;
@@ -500,6 +534,10 @@ sub adjustInputFile{
 			} else {
 				smog_quit("internal error 1");
 			}
+			if($printresidue eq ""){
+				# must have deleted residue, so skip it
+				next;
+			}
 			print NEWPDB $printresidue;
 
 			#LEAVE CURRENT RESIDUE AND UPDATE FLAGS#
@@ -510,9 +548,9 @@ sub adjustInputFile{
 			$prevResTypeRNA = isRNA($resName);
 			undef @residue; 
 
-		## If the line is niether ATOM, BOND, COMMENT/REMARK, TER or END - exit. ##
+		## If the line is neither ATOM, BOND, COMMENT/REMARK, TER or END - exit. ##
 		}else{
-			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: ATOM, HETATM, TER, BOND, COMMENT, REMARK, END");
+			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: HEADER, TITLE, ATOM, HETATM, TER, BOND, COMMENT, REMARK, END");
 		}
 	}
 	close NEWPDB;
@@ -806,6 +844,9 @@ sub legacymatching
 		my $x = $residue[$i]->{"coords"};
 		if(defined $removeH && $aName =~ m/^H/){
 			$removestring .= "$resName$resInd-$aName ";
+		}elsif(defined $deletewater && ($resName =~ m/^HOH$/ || $resName =~ m/^WAT$/)){
+			$removestring .= "$resName$resInd-$aName ";
+
 		}else{
 			$printthis.=sprintf("ATOM  %5d %4s %-4s%s%4d    %s\n",$ind,$aName,$resName,$chainName,$resInd,$x);
 		}
@@ -816,6 +857,11 @@ sub legacymatching
 sub exactmatching
 {
 	my ($k,$resName,$resInd,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring) = @_;
+
+	if(defined $deletewater && ($resName =~ m/^HOH$/ || $resName =~ m/^WAT$/)){
+			$removestring .= "$resName$resIDorig ";
+			return("",$removestring,$renamedstring);
+	}
 
 	# get and sort atom names. We can update this with regexes later for more complex matching
 
