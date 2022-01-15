@@ -670,7 +670,8 @@ sub GenerateBondedGeometry {
 	my @ConnectedAtoms2;
 
 	if($chainlength == 0){
-		smog_quit("Found 0 atoms in chain $chid.  Perhaps TER appears on consecutive lines, or TER is immediately followed by END.");
+		# no atoms in the chain can only happen if we have a TER TER, or TER END.  So, ignore
+		return(\@ConnectedAtoms2);
 	}elsif($chainlength != 1){
 		print "Attempting to connect all atoms in chain $chid to the first atom...\n";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);
