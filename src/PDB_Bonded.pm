@@ -487,9 +487,12 @@ sub parsePDBATOMS
 		if($record =~ m/^TER|^END/)
 		{
  			$lastresindex="null";
+			my $chainlength=$atomSerial-$lastchainstart;
+			if($chainlength==0){
+				next;
+			}
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
 			## CREATE INTERACTION ##
-			my $chainlength=$atomSerial-$lastchainstart;
 			print "Building covalent geometry for chain $chainNumber\n";
         		my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength,$lastrecord);
 			my @connset=@{$connset};
