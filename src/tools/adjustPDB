@@ -419,10 +419,10 @@ sub adjustInputFile{
 		## If atom line: ##
 			completeline($pArr[$k],$k);
 			$firstresidue++;
-			my $resNum = trim(substr($pArr[$k],22,5));
+			my $resNum = substr($pArr[$k],22,5);
 			my $newResNum = $resNum;
-			if($resNum =~ /^\d+$|^-\d+$/ && $lastresidue =~ /^\d+$|^-\d+$/){
-				if(($resNum-$lastresidue > 1 || $resNum-$lastresidue < 0) && $firstresidue !=1){
+			if(trim($resNum) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/ && trim($lastresidue) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/){
+				if(trim(substr($resNum,0,4))-trim(substr($lastresidue,0,4)) > 1  && $firstresidue !=1){
 					my $chain=substr($pArr[$k],21,1);
 					if(!$renumber && !$insertTER && !$PDBresnum){
 						smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (chain $chain, near line $k).");
@@ -501,7 +501,7 @@ sub adjustInputFile{
 					$firstresidue=0;
 				}	
 				else{
-					$newResNum = trim(substr($pArr[$k],22,5));	#get next residue index
+					$newResNum = substr($pArr[$k],22,5);	#get next residue index
 					if ($newResNum eq $resNum){
 						$loopInd++;
 					}
