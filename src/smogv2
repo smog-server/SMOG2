@@ -2496,6 +2496,7 @@ sub parseTemplatesAndPDB
 		$checkmessage.=checkBONDnames();
 		$checkmessage.=checkPAIRnames();
 		$checkmessage.=checkREScharges();
+		$checkmessage.=checkRESenergygroups();
 		$checkmessage.=checkRESimpropers();
 		$checkmessage.=checkFunctions();
 		if($checkmessage ne ""){

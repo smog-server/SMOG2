@@ -152,14 +152,13 @@ sub adjustFactorsHelper1
        			$normalize = $termRatios->{$resTypeb}->{"energyGroup"}->{$eG}->{"normalize"};
        			$resTypeUse = $resTypeb;
 		}else{
-       			## CASE WHERE THERE IS A DIHEDRAL BETWEEN TWO DIFFERENT RESTYPES ##
+       			## CASE WHERE THERE IS A DIHEDRAL BETWEEN TWO DIFFERENT (usually) RESTYPES ##
 			my $resTypec = $atomTypes->{$c}->[1];
        			if(! defined $termRatios->{$resTypec}->{"energyGroup"}->{$eG})
        			{
-    				$a = sclr(slice($inputPDL,"3:3,$a,:"));
-				$c = sclr(slice($inputPDL,"3:3,$c,:"));
-				$d = sclr(slice($inputPDL,"3:3,$d,:"));
-        	    		smog_quit("energyGroup $eG is not defined for $resTypeb-$resTypec ($a-$b-$c-$d)\n");
+				# this error can probably be safely removed.  But, it may get tripped
+ 				# by connections, so we'll leave it, for now.
+        	    		smog_quit("energyGroup $eG is not defined for $resTypeb-$resTypec \n");
        			}
        			$normalize = $termRatios->{$resTypec}->{"energyGroup"}->{$eG}->{"normalize"};
 
