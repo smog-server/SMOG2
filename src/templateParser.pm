@@ -43,7 +43,7 @@ use OpenSMOG;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESenergygroups checkRESimpropers round checkFunctions);
+qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESenergygroups checkCONNenergygroups checkRESimpropers round checkFunctions);
 
 our $OpenSMOG;
 our $OpenSMOGpothash;
@@ -696,7 +696,29 @@ sub checkRESenergygroups
 	return $string;
 }
 
-
+sub checkCONNenergygroups
+{
+        # check that the energy groups used for each connection match an energy group
+        # definition for one type of residue involves in the connection
+	my $string="";
+	foreach my $res1(keys %connections){
+		foreach my $res2(keys %{$connections{$res1}}){
+			my $eG=$connections{$res1}->{$res2}->{"bond"}->[0]->{"energyGroup"};
+			if ($res1 eq $res2) { 
+				if (!defined $termRatios->{$res1}->{"energyGroup"}->{$eG}) {
+ 					$string .= ".bif file gives energy group definition of $eG for connection between residue types $res1 and $res2. However, the .sif file does not declare this energy group for use with this residue type.\n";
+				}
+			} else {
+				if (!defined $termRatios->{$res1}->{"energyGroup"}->{$eG} && !defined $termRatios->{$res2}->{"energyGroup"}->{$eG}) {
+ 					$string .= ".bif file gives energy group definition of $eG for connection between residue types $res1 and $res2. However, the .sif file does not declare this energy group for use with either residue type.\n";
+				} elsif (defined $termRatios->{$res1}->{"energyGroup"}->{$eG} && defined $termRatios->{$res2}->{"energyGroup"}->{$eG}) {
+ 					$string .= ".bif file gives energy group definition of $eG for connection between residue types $res1 and $res2. However, the .sif file declares this energy group for both residue types, which makes the assignment ambiguous.\n";
+				}
+			}
+        	}
+        }
+	return $string;
+}
 
 sub checkBONDnames
 {
