@@ -1589,11 +1589,11 @@ sub bifResidues{
 			}
 			unless($atom->{"bType"} =~ /^[a-zA-Z0-9_]+$/){
 		 		my $T=$atom->{"bType"};
-		 		smog_quit("Only letters, numbers and _ can appear in bType definitions. nbType \"$T\" found in residue $res");
+		 		smog_quit("Only letters, numbers and _ can appear in bType definitions. bType \"$T\" found in residue $res");
 			}
 			unless($atom->{"pairType"} =~ /^[a-zA-Z0-9_]+$/){
 		 		my $T=$atom->{"pairType"};
-		 		smog_quit("Only letters, numbers and _ can appear in pairType definitions. nbType \"$T\" found in residue $res");
+		 		smog_quit("Only letters, numbers and _ can appear in pairType definitions. pairType \"$T\" found in residue $res");
 			}
 			$NBtypespresent{$atom->{"nbType"}}=1;
 			$Btypespresent{$atom->{"bType"}}=1;
