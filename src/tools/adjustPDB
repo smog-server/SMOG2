@@ -514,7 +514,7 @@ sub adjustInputFile{
 
 			if(defined $PDBresnum){
 				# write original PDB residue number
-				$writeResNum=$resNum;
+				$writeResNum=trim($resNum);
 			}elsif(defined $large){
 				# use large base numbering
 				$writeResNum=BaseTentoLarge($resInd,4);
