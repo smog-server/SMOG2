@@ -2348,7 +2348,7 @@ usage: smog2 .. options ..
        -s [smog.contacts]      : output .contacts file name
        -n [smog.ndx]           : output .ndx file name
        -c <file name>          : input contact map file
-       -SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  useful for debugging
+       -SCMorig                : directly save SCM contact map (i.e. not PDB numbering).  useful for debugging
        -dname [smog]           : default name to use for all output files
        -OpenSMOGxml [smog.xml] : file name for OpenSMOG xml file (requires use of -OpenSMOG)
        -backup [yes]           : back up any pre-existing output files
