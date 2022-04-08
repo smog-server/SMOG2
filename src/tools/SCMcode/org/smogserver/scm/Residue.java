@@ -49,8 +49,8 @@ class Residue {
 					String[][] tokens2 = new String[tokens.length][];
 					//read in all attributes
 					for(int i = 0; i< tokens.length; i++) {
+						tokens2[i] = null;
 						if(tokens[i].contains("=")) { //this is an attribute
-							tokens2[i] = new String[2];
 							tokens2[i] = FileIO.getTokens(tokens[i],"=");
 						}
 					}
@@ -58,7 +58,7 @@ class Residue {
 					boolean proteinResidue = false;
 					for(int i = 0; i< tokens.length; i++) {
 						if(tokens2[i] != null) {
-							if(tokens2[i][0].contains("type")) { //this is type attribute
+							if(tokens2[i][0].contains("residueType")) { //this is type attribute
 								if(tokens2[i][1].contains("amino")) { //this is a protein residue!
 									proteinResidue = true;
 								}
@@ -70,7 +70,7 @@ class Residue {
 						for(int i = 0; i< tokens.length; i++) {
 							if(tokens2[i] != null) {
 								if(tokens2[i][0].contains("name")) { //this is name attribute
-									name = FileIO.getTokens(tokens2[i][1],"\"")[1];
+									name = FileIO.getTokens(tokens2[i][1],"\"")[0];
 								}
 							}
 						}
@@ -81,7 +81,6 @@ class Residue {
 							System.exit(1);
 						} else {
 							residueTypeHash.put(name,Residue.PROTEIN);
-							System.out.println(name);
 						}
 					}
 				}
