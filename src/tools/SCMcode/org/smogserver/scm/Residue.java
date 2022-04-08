@@ -40,17 +40,49 @@ class Residue {
 		String line = bif.readLine();
 		try {
 			//probably should check that second line is <bif> or something, otherwise might read a totally bogus file
+			//format
+			//   <residue name="ALA" residueType="amino" atomCount="5">
 			while(line != null) {
-				if(line.contains("residue")) { //this is a residue
-					if(line.contains("amino")) { //this is a protein residue
-						//format
-						//   <residue name="ALA" type="amino" atomCount="5">
-						// take second token space delimited and grab what is between ""
-						String[] tokens = FileIO.getTokens(line," ");
-						String name = FileIO.getTokens(tokens[1],"\"")[1];
-						residueTypeHash.put(name,Residue.PROTEIN);
-						//System.out.println(name);
-						//System.out.println(Residue.getType(name));
+				if(line.contains("<residue ")) { //this is a residue
+					//space delimited
+					String[] tokens = FileIO.getTokens(line," ");
+					String[][] tokens2 = new String[tokens.length][];
+					//read in all attributes
+					for(int i = 0; i< tokens.length; i++) {
+						if(tokens[i].contains("=")) { //this is an attribute
+							tokens2[i] = new String[2];
+							tokens2[i] = FileIO.getTokens(tokens[i],"=");
+						}
+					}
+					//check for type="amino"
+					boolean proteinResidue = false;
+					for(int i = 0; i< tokens.length; i++) {
+						if(tokens2[i] != null) {
+							if(tokens2[i][0].contains("type")) { //this is type attribute
+								if(tokens2[i][1].contains("amino")) { //this is a protein residue!
+									proteinResidue = true;
+								}
+							}
+						}
+					}
+					String name = null;
+					if(proteinResidue) { //grab the name
+						for(int i = 0; i< tokens.length; i++) {
+							if(tokens2[i] != null) {
+								if(tokens2[i][0].contains("name")) { //this is name attribute
+									name = FileIO.getTokens(tokens2[i][1],"\"")[1];
+								}
+							}
+						}
+						if(name == null) {
+							System.out.println("In "+bif+" there is a residue of type amino with no name attribute");
+							System.out.println("while parsing line:");
+							System.out.println(line);						
+							System.exit(1);
+						} else {
+							residueTypeHash.put(name,Residue.PROTEIN);
+							System.out.println(name);
+						}
 					}
 				}
 				line = bif.readLine();
@@ -69,37 +101,5 @@ class Residue {
 			return Restype.restype(resname);  //use the native types hard coded in Restype.java
 		}
 	}
-	
-	// private int getType(String id) {
-// 		//read whatever data structure you use to store the .bif data
-// 	}
-	
-	/* Grabs the resType associated with residue names in the xml .bif 
-	* @return errorCode
-	*/
-/*
-	public static int parseBif(String filename) {
-		//parse the bif
-		//do it stupidly for now
-		FileIO bif = new FileIO(filename,FileIO.BUFFERED_READING);
-		System.out.println(bif.exists());
-		String line = bif.readLine();
-		while(line!=null) {
-			String[] tokens = FileIO.getTokens(line," <>=\"\t");
-			//find <residue ...> tags and grab name and type
-			if(tokens.length > 0) {
-				if(tokens[0].equals("residue") && tokens[1].equals("name") && tokens[3].equals("type")) { 
-					thing.add(tokens[2],translateBifType(tokens[4]));
-				}
-			}
-			line=bif.readLine();
-		}
-	}
-*/
-	//assumes amino==PROTEIN nucleic==NUCLEIC_ACID anything else == LIGAND
-	//this is because you can set special rules for PROTEIN and NUCLEIC_ACID only at the moment
-	//private static String translateBifType(String bifResidueType) {
-	//	if(bifResidueType.equals("amino")) return Residue.PROTEIN;
-	//	if(bifResidueType.equals("amino")) return Residue.PROT;	}
 	
 }
