@@ -479,7 +479,7 @@ sub adjustInputFile{
 				if($loopInd==0){
 					$lastresName=$resNametmp;
 				}elsif($lastresName ne $resNametmp){
-					smog_quit("Atoms within a residue have different residue names. See\n$pArr[$k]");
+					smog_quit("Consecutive atoms are listed with the same residue number and different residue names. Issue encountered when processing the following lines:\n$pArr[$k-1]\n$pArr[$k]");
 				}	
 				$residue[$loopInd]->{"atomName"} = $atomName;
 				$residue[$loopInd]->{"atomIndex"} = $atomCountBaseN;

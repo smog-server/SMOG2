@@ -2525,7 +2525,7 @@
       </impropers>
     </residue>
     <!--SERINE-->
-    <residue name="SER" residueType="amino">
+    <residue name="SER" residueType="amino"   >
       <atoms>
         <atom bType="B_1" nbType="NB_1" pairType="C_1">N</atom>
         <atom bType="B_1" nbType="NB_1" pairType="C_1">CA</atom>
