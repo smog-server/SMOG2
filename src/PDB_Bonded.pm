@@ -129,7 +129,7 @@ sub checkPDB
 			$endfound=1;
 			next;
 		}
-		if($lng eq "" || $record =~ m/^comment/i || $record =~ m/^remark/i){
+		if($lng eq "" || $record =~ m/^comment/i || $record =~ m/^remark/i || $record =~ m/^HEADER/ || $record =~ m/^TITLE/){
 			next;
 		}
 
@@ -165,7 +165,7 @@ sub checkPDB
 		chomp($lng);
 		$lng =~ s/\s+//g;	
 		$lng =~ s/\t+//g;	
-		if($record =~ m/^comment/i || $record =~ m/^remark/i || $record =~ m/^LARGE/ || $lng eq ""){
+		if($record =~ m/^comment/i || $record =~ m/^remark/i || $record =~ m/^LARGE/ || $lng eq ""|| $record =~ m/^HEADER/ || $record =~ m/^TITLE/){
 			next;
 		# make sure BOND appears after END
 		}elsif($record !~ m/^BOND/ && $endfound ==1){
@@ -331,8 +331,17 @@ sub checkPDB
 					$z=$coor[2];
 				}else{
 					$x = trim(substr($record, 30, 8));
+					if(substr($x,4,1) =~  m/\./ ) {
+						smog_quit("X coordinate in PDB file is not properly formatted.  The decimal should be column 35. Problematic line:\n$record");
+ 					}
 					$y = trim(substr($record, 38, 8));
+					if(substr($y,4,1) =~  m/\./ ) {
+						smog_quit("Y coordinate in PDB file is not properly formatted.  The decimal should be column 43. Problematic line:\n$record");
+ 					}
 					$z = trim(substr($record, 46, 8));
+					if(substr($z,4,1) =~  m/\./ ) {
+						smog_quit("Z coordinate in PDB file is not properly formatted.  The decimal should be column 51. Problematic line:\n$record");
+ 					}
 					if(whatAmI($x) > 2 || whatAmI($y) > 2 || whatAmI($z) > 2){
 						smog_quit("Coordinate read, but does not appear to be a number. Perhaps you are using free-formatted coordinates and should employ the -freecoor flag. Issue found at line:\n$record");
 					}
@@ -442,7 +451,7 @@ sub parsePDBATOMS
 		chomp($lng);
 		$lng =~ s/\s+//g;	
 		$lng =~ s/\t+//g;	
-		if($record =~ m/^comment/i || $record =~ m/^remark/i || $lng eq "" || $record =~ m/^LARGE/ ){
+		if($record =~ m/^comment/i || $record =~ m/^remark/i || $lng eq "" || $record =~ m/^LARGE/ || $record =~ m/^HEADER/ || $record =~ m/^TITLE/){
 			next;
 		# make sure BOND appears after END
 		}
@@ -487,9 +496,12 @@ sub parsePDBATOMS
 		if($record =~ m/^TER|^END/)
 		{
  			$lastresindex="null";
+			my $chainlength=$atomSerial-$lastchainstart;
+			if($chainlength==0){
+				next;
+			}
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
 			## CREATE INTERACTION ##
-			my $chainlength=$atomSerial-$lastchainstart;
 			print "Building covalent geometry for chain $chainNumber\n";
         		my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength,$lastrecord);
 			my @connset=@{$connset};
@@ -670,7 +682,8 @@ sub GenerateBondedGeometry {
 	my @ConnectedAtoms2;
 
 	if($chainlength == 0){
-		smog_quit("Found 0 atoms in chain $chid.  Perhaps TER appears on consecutive lines, or TER is immediately followed by END.");
+		# no atoms in the chain can only happen if we have a TER TER, or TER END.  So, ignore
+		return(\@ConnectedAtoms2);
 	}elsif($chainlength != 1){
 		print "Attempting to connect all atoms in chain $chid to the first atom...\n";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);

@@ -43,7 +43,7 @@ use OpenSMOG;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESimpropers round checkFunctions);
+qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESenergygroups checkCONNenergygroups checkRESimpropers round checkFunctions);
 
 our $OpenSMOG;
 our $OpenSMOGpothash;
@@ -264,7 +264,7 @@ sub checkBondFunctionDef
 	}
 }
 
-# checkAngleFunctionDef: verifies that the angle function declaration satisfies some standards (this is very similar to the bond func def routine.  But, we may want to later add some differences
+# checkAngleFunctionDef: verifies that the angle function declaration satisfies some standards (this is very similar to the bond func def routine.  But, we may want to later add some differences)
 sub checkAngleFunctionDef
 {
 	my($funcString) = @_;
@@ -666,6 +666,59 @@ sub checkRESimpropers
 	return $string;
 }
 
+sub checkRESenergygroups
+{
+        # check that the energy groups used for each bond match an energy group
+        # definition for that type of residue
+	my $string="";
+	foreach my $res(keys %residues){
+		# get the residue type
+		my $residueType =$residues{$res}->{"residueType"};
+		# handle for bonds in residue $res
+		my $bondshandle=$residues{$res}->{"bonds"};
+
+		foreach my $tb(keys %{$bondshandle}){
+			#go through the bonds
+			my ($atoma,$atomb)=split(/-/,$tb);
+                	if(! exists $residues{$res}->{"energyGroups"}->{"$atoma-$atomb"}) {
+ 				$string .= "Missing an energy group definition for bond $atoma-$atomb in residue $res. This should be given in the .bif file.\n";
+				next;
+                        }
+			# get the energy group of each bond
+			my $eG=$residues{$res}->{"energyGroups"}->{"$atoma-$atomb"};
+			# verify the energy group is defined for that type of residue
+			if (! exists $termRatios->{$residueType}->{"energyGroup"}->{$eG} ) {
+ 				$string .= ".bif file gives energy group definition of $eG for bond $atoma-$atomb in residue $res (residue type $residueType). However, the .sif file does not declare this energy group for use with this residue type.\n";
+                        }
+		}
+	}
+	return $string;
+}
+
+sub checkCONNenergygroups
+{
+        # check that the energy groups used for each connection match an energy group
+        # definition for one type of residue involves in the connection
+	my $string="";
+	foreach my $res1(keys %connections){
+		foreach my $res2(keys %{$connections{$res1}}){
+			my $eG=$connections{$res1}->{$res2}->{"bond"}->[0]->{"energyGroup"};
+			if ($res1 eq $res2) { 
+				if (!defined $termRatios->{$res1}->{"energyGroup"}->{$eG}) {
+ 					$string .= ".bif file gives energy group definition of $eG for connection between residue types $res1 and $res2. However, the .sif file does not declare this energy group for use with this residue type.\n";
+				}
+			} else {
+				if (!defined $termRatios->{$res1}->{"energyGroup"}->{$eG} && !defined $termRatios->{$res2}->{"energyGroup"}->{$eG}) {
+ 					$string .= ".bif file gives energy group definition of $eG for connection between residue types $res1 and $res2. However, the .sif file does not declare this energy group for use with either residue type.\n";
+				} elsif (defined $termRatios->{$res1}->{"energyGroup"}->{$eG} && defined $termRatios->{$res2}->{"energyGroup"}->{$eG}) {
+ 					$string .= ".bif file gives energy group definition of $eG for connection between residue types $res1 and $res2. However, the .sif file declares this energy group for both residue types, which makes the assignment ambiguous.\n";
+				}
+			}
+        	}
+        }
+	return $string;
+}
+
 sub checkBONDnames
 {
 	my $string="";
@@ -855,12 +908,9 @@ sub getEnergyGroup
  	if(($atoma =~/(.*)\?/ && $atomb =~/(.*)\?/)
  	|| ($atoma !~/(.*)\?/ && $atomb !~/(.*)\?/))
 	{
-	 
 		$residueIn = $residueb if($atoma =~ /\?/|| $atomb =~ /\?/);
 		$atoma =~ s/\?//;$atomb =~ s/\?//;
-		if(exists $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"})
-			{return $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"};}
-		else{smog_quit("A specified energy group for $residuea:$atoma, $residueb:$atomb doesn't exists");}
+		return $residues{$residueIn}->{"energyGroups"}->{"$atoma-$atomb"};
 	}
  	## If Bond is between two residues ##
 	elsif($atomb =~/(.*)\?/)
@@ -1536,11 +1586,11 @@ sub bifResidues{
 			}
 			unless($atom->{"bType"} =~ /^[a-zA-Z0-9_]+$/){
 		 		my $T=$atom->{"bType"};
-		 		smog_quit("Only letters, numbers and _ can appear in bType definitions. nbType \"$T\" found in residue $res");
+		 		smog_quit("Only letters, numbers and _ can appear in bType definitions. bType \"$T\" found in residue $res");
 			}
 			unless($atom->{"pairType"} =~ /^[a-zA-Z0-9_]+$/){
 		 		my $T=$atom->{"pairType"};
-		 		smog_quit("Only letters, numbers and _ can appear in pairType definitions. nbType \"$T\" found in residue $res");
+		 		smog_quit("Only letters, numbers and _ can appear in pairType definitions. pairType \"$T\" found in residue $res");
 			}
 			$NBtypespresent{$atom->{"nbType"}}=1;
 			$Btypespresent{$atom->{"bType"}}=1;

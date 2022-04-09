@@ -484,13 +484,16 @@ sub checkPotentialFunction{
 	my ($hd,$parms,$OSref)=@_;
 	my $func=$hd->{"OpenSMOGpotential"};
 	$func =~ s/\s+//g;
-	if($func =~ m/^(.*?)?([^\s+a-zA-Z0-9_\;\,\/\-\+\*\^\(\)])(.*)?$/ ){
+	if($func =~ m/^(.*?)?([^\s+a-zA-Z0-9_\;\,\=\/\-\+\*\^\(\)])(.*)?$/ ){
 		# regex explained: ^ start, (.*?)? non-greedy and optional any character, (not any letter, number, or allowed operator), (.*)? optional any character, $ end.
 		my $pos=length($1)+1;
-		smog_quit("Unsupported characters found in OpenSMOG energy function:\n$func\nEnergy functions may only have the following characters: a-z A-Z 0-9 _ ; , / - + * ^ ( )\nCharacter $pos is a \"$2\".");
+		smog_quit("Unsupported characters found in OpenSMOG energy function:\n$func\nEnergy functions may only have the following characters: a-z A-Z 0-9 _ ; = , / - + * ^ ( )\nCharacter $pos is a \"$2\".");
 	}
 	if($func =~ m/\(\)/){
 		smog_quit("Empty closed parentheses found in OpenSMOG energy function:\n$func");
+	}
+	if($func =~ /\*\*/){
+		smog_quit("Unsupported use of ** (only ^ allowed) in OpenSMOG energy function:\n$func");
 	}
 	my @array = split(//, $func);
 

@@ -132,7 +132,7 @@ print "Parsing templates files...\n";
 parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
 if($CGenabled == 0 || ($CGenabled == 1 && $userProvidedMap == 0)) {
 	# either no CG, or CG and need to generate a map
-	printBondedTopOutput($inputPDB,$groFile,$g96File,$ndxFile,$userProvidedMap);
+	printBondedTopOutput($inputPDB);
 } 
 
 appendDefaults();
@@ -156,7 +156,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	print "\nParsing templates for coarse graining... ";
 	$inputFolder = $coarseFolder;
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
-	printBondedTopOutput($inputPDB,$groFile,$g96File,$ndxFile,$userProvidedMap);
+	printBondedTopOutput($inputPDB);
 	appendDefaults();
 }
 
@@ -843,6 +843,7 @@ sub printOrderedBonds
 # call  calculateBondsHelper1() for each residue defined in templates
 sub calculateBonds1
 {
+print "Defining intra-residue bonds for all chains\n";
 	my($bondFunctHandle,$whichPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
 	foreach my $res(keys %{$bondFunctHandle}){
 	       if(!exists $whichPDL->{$res}){next;}
@@ -854,7 +855,7 @@ sub calculateBonds1
 sub calculateBonds2
 {
 	my($bondHandle,$whichPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
-	print "Working on chain:\n";
+	print "Defining inter-residue bonds for chain:\n";
 	foreach my $chain(sort { $a <=> $b } keys %{$bondHandle})
 	{
 		my $chainn=$chain+1;
@@ -1968,21 +1969,24 @@ sub readAtoms
 	my $linenumber=0;
 	my $atomindex=0;
 	my $lastTER=0;
+	my $lastTERfound=0;
 	while($line = <PDB>)
 	{
 		$linenumber++;
-		if($line =~ m/^TER|^END/) {
-
-			my $TCr=round($totalcharge);
-			if(abs($totalcharge-$TCr) > 0.001){
-				smog_quit("Non-integer charge ($totalcharge) for chain $chainindex. This typically means something is wrong with the .bif file.");
+		if($line =~ m/^TER|^END/ ) {
+			if($linenumber-$lastTERfound>1){
+				my $TCr=round($totalcharge);
+				if(abs($totalcharge-$TCr) > 0.001){
+					smog_quit("Non-integer charge ($totalcharge) for chain $chainindex. This typically means something is wrong with the .bif file.");
+				}
+				print "Charge of chain $chainindex: $TCr\n";
+				$systemcharge+=$totalcharge;
+				$totalcharge=0;
+				$chainindex++;
+				$resCounter++;
+				$lastTER=1;
 			}
-			print "Charge of chain $chainindex: $TCr\n";
-			$systemcharge+=$totalcharge;
-			$totalcharge=0;
-			$chainindex++;
-			$resCounter++;
-			$lastTER=1;
+			$lastTERfound=$linenumber;
 		}
 		if($line =~ m/^END/) {$endreached=1;last;}
 		if($line =~ m/^ATOM/ || $line =~ m/^HETATM/)
@@ -2071,89 +2075,92 @@ sub convertPDBToGroNdx
  	open(PDB,"$inputPDB") or smog_quit("can not open $inputPDB"); ## INPUT PDB
 	my $atominfo="";
 	my $atominfo4SCM="";
+        my $linenum=0;
+	my $lastTERline=0;
 	while($line=<PDB>)
 	{
 		
-	 if($line =~ m/^END/) {last;}
-  	 if($line =~ m/^TER/) {
-		$chainCounter++;
-		$resCounter++;
-		$lastTER=1;
-		next;
-	}
-         if($line =~ m/^ATOM|^HETATM/)
-         {
-		$atomName = trim(substr($line, 12, 4));
-		$resName = trim(substr($line,17,4));
-        if(!exists $residues{$resName}->{"atoms"}->{$atomName})
-		{next;}
+	 	if($line =~ m/^END/) {last;}
+  	 	if($line =~ m/^TER/) {
+	 	       if($lastTERline != $linenum){
+	 	       		# don't increment chain number if the chain is empty
+	 	       		$chainCounter++;
+	 	       		$resCounter++;
+	 	       		$lastTER=1;
+	 	       }
+	 	       $lastTERline=$linenum;
+	 	       next;
+	 	}
+	 	$linenum++;
+         	if($line =~ m/^ATOM|^HETATM/) {
+	 		$atomName = trim(substr($line, 12, 4));
+	 	       	$resName = trim(substr($line,17,4));
+         	       	if(!exists $residues{$resName}->{"atoms"}->{$atomName}){next;}
 	
-                if(defined $freecoor){
-                        # Read the PDB coordinates as free-format.
-                        my $string=trim(substr($line, 30));
-                        my @coor=split(/\s+/,$string);
-                        $x=$coor[0];
-                        $y=$coor[1];
-                        $z=$coor[2];
-			# only check sizes of coords if using a gro and freecoor
-			foreach my $n($x,$y,$z){
-				my @A=split(/\./,$n);
-				if(length($A[0])>$maxchar){
-					smog_quit("Coordinates are too large to write a $filetype file. Found coordinates:\n\t$line");
-				};
-			}
-                }else{
-                        $x = trim(substr($line, 30, 8));
-                        $y = trim(substr($line, 38, 8));
-                        $z = trim(substr($line, 46, 8));
-                }
-		if(! looks_like_number($x) or ! looks_like_number($y) or ! looks_like_number($z)){
-			smog_quit("Unable to interpret coordinate in PDB file.  Perhaps you need to use -freecoor option. Problematic line:$line");
-		}
+         	       	if(defined $freecoor){
+         	       		# Read the PDB coordinates as free-format.
+         	       		my $string=trim(substr($line, 30));
+         	       		my @coor=split(/\s+/,$string);
+         	       		$x=$coor[0];
+         	       		$y=$coor[1];
+         	       		$z=$coor[2];
+	 	       		# only check sizes of coords if using a gro and freecoor
+	 	       		foreach my $n($x,$y,$z){
+	 	       			my @A=split(/\./,$n);
+	 	       			if(length($A[0])>$maxchar){
+	 	       				smog_quit("Coordinates are too large to write a $filetype file. Found coordinates:\n\t$line");
+	 	       			};
+	 	       		}
+         	       	}else{
+         	               	$x = trim(substr($line, 30, 8));
+         	               	$y = trim(substr($line, 38, 8));
+         	               	$z = trim(substr($line, 46, 8));
+         	       	}
+	 	       	if(! looks_like_number($x) or ! looks_like_number($y) or ! looks_like_number($z)){
+	 	       		smog_quit("Unable to interpret coordinate in PDB file.  Perhaps you need to use -freecoor option. Problematic line:$line");
+	 	       	}
 	
-		$x*=0.10;
-		$y*=0.10;
-		$z*=0.10;
-		
-		if($boundflag == 0){
-			$xmin=$x;
-			$xmax=$x;
-			$ymin=$y;
-			$ymax=$y;
-			$zmin=$z;
-			$zmax=$z;
-			$boundflag=1;
-		}else{
-			if($x > $xmax){$xmax=$x;}
-			if($x < $xmin){$xmin=$x;}
-			if($y > $ymax){$ymax=$y;}
-			if($y < $ymin){$ymin=$y;}
-			if($z > $zmax){$zmax=$z;}
-			if($z < $zmin){$zmin=$z;}
-		}
+	 	       	$x*=0.10;
+	 	       	$y*=0.10;
+	 	       	$z*=0.10;
+	 	       
+	 	       	if($boundflag == 0){
+	 	       		$xmin=$x;
+	 	       		$xmax=$x;
+	 	       		$ymin=$y;
+	 	       		$ymax=$y;
+	 	       		$zmin=$z;
+	 	       		$zmax=$z;
+	 	       		$boundflag=1;
+	 	       	}else{
+	 	       		if($x > $xmax){$xmax=$x;}
+	 	       		if($x < $xmin){$xmin=$x;}
+	 	       		if($y > $ymax){$ymax=$y;}
+	 	       		if($y < $ymin){$ymin=$y;}
+	 	       		if($z > $zmax){$zmax=$z;}
+	 	       		if($z < $zmin){$zmin=$z;}
+	 	       	}
 	
-  		$chain = $chainCounter;
-		$counter++;$atomNum=$counter;
-		$resNum = trim(substr($line,22,4));
-		if($atomNum == 1){$resNumCurr=$resNum;}
-		if($resNum ne $resNumCurr)
-			{
-				$resNumCurr=$resNum;
-				if($lastTER==0){
-					$resCounter++;
-				}
-			}
+  	 	       	$chain = $chainCounter;
+	 	       	$counter++;$atomNum=$counter;
+	 	       	$resNum = trim(substr($line,22,4));
+	 	       	if($atomNum == 1){$resNumCurr=$resNum;}
+	 	       	if($resNum ne $resNumCurr){
+	 	       		$resNumCurr=$resNum;
+	 	       		if($lastTER==0){
+	 	       			$resCounter++;
+	 	       		}
+	 	       	}
 
-  		## Save atom index to chain ##
-  		push(@{$chainHash{$chain}},$atomNum);
-		if($atomNum >= $atommod){$atomNum = $atomNum%$atommod;}
-	        if($resCounter >= 100000){$resCounter = $resCounter%100000;}
-		
-		$atominfo     .= sprintf("$usefmt",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
-		$atominfo4SCM .= sprintf("$groSCMfmt",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
-		$lastTER=0;
-		
-	 }
+  	 	       	## Save atom index to chain ##
+  	 	       	push(@{$chainHash{$chain}},$atomNum);
+	 	       	if($atomNum >= $atommod){$atomNum = $atomNum%$atommod;}
+	 	       	if($resCounter >= 100000){$resCounter = $resCounter%100000;}
+	 	       
+	 	       	$atominfo     .= sprintf("$usefmt",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
+	 	       	$atominfo4SCM .= sprintf("$groSCMfmt",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
+	 	       	$lastTER=0;  
+	 	}
 	}
 
 ## default box size if 1nm larger than system size in each direction
@@ -2341,7 +2348,7 @@ usage: smog2 .. options ..
        -s [smog.contacts]      : output .contacts file name
        -n [smog.ndx]           : output .ndx file name
        -c <file name>          : input contact map file
-       -SCMorig                : directly save SCM contact map (i.e. not PBD numbering).  useful for debugging
+       -SCMorig                : directly save SCM contact map (i.e. not PDB numbering).  useful for debugging
        -dname [smog]           : default name to use for all output files
        -OpenSMOGxml [smog.xml] : file name for OpenSMOG xml file (requires use of -OpenSMOG)
        -backup [yes]           : back up any pre-existing output files
@@ -2427,8 +2434,8 @@ sub printCitation
 		$osref="--OpenSMOG--
 Oliveira AB, Contessoto VG, Hassan A, Byju S, Wang A, Wang Y, Dodero-Rojas E,
 Mohanty U, Noel JK, Onuchic JN, Whitford PC.
-SMOG 2 and OpenSMOG: Extending the limits of structure-based models.
-bioRxiv, DOI: 10.1101/2021.08.15.456423
+SMOG 2 and OpenSMOG: Extending the limits of structure-based models. (2021)
+Protein Science, DOI: 10.1002/pro.4209.
 "
 	}
 
@@ -2489,6 +2496,8 @@ sub parseTemplatesAndPDB
 		$checkmessage.=checkBONDnames();
 		$checkmessage.=checkPAIRnames();
 		$checkmessage.=checkREScharges();
+		$checkmessage.=checkRESenergygroups();
+		$checkmessage.=checkCONNenergygroups();
 		$checkmessage.=checkRESimpropers();
 		$checkmessage.=checkFunctions();
 		if($checkmessage ne ""){
@@ -2517,7 +2526,7 @@ sub parseTemplatesAndPDB
 
 sub printBondedTopOutput {
 
-	my ($inputPDB,$groFile,$g96File,$ndxFile,$userProvidedMap) = @_;
+	my ($inputPDB) = @_;
         if($countDihedrals){
 		print "Counting dihedrals\n";
 		getSetDiheCounts(\%DihedralData);
