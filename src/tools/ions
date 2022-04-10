@@ -564,6 +564,9 @@ while (<FILE>){
 	}
 
 	if($TMP[0] eq "[" and $TMP[1] eq "nonbond_params"){
+		if(defined $AddCustomParmsToXML){
+			smog_quit("Can not use nonbond_params in the top file and non-bonded parameters in the XML file (OpenSMOG) simultaneously.");
+		}
 		$NBPpresent=1;
 		$data =~ s/\s+/\t/g;
 		print TOPOUT "$data\n"; 
@@ -585,25 +588,19 @@ while (<FILE>){
 			if(checkforinclude($LINE,$data,*TOPOUT)){next;};
 			if($data eq ""){next;}
 		}
-		if(defined $AddCustomParmsToXML){
-			# add it to XML
-			OpenSMOGAddNBsettoXML($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer);
-		}else{
-			print TOPOUT "$NBbuffer";
-		}
+		print TOPOUT "$NBbuffer";
 	}
 
 	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
-		# if we did not find a nonbond_params, add it.
-		if($NBPpresent==0 && $NBbuffer ne ""){
+		if($NBbuffer ne ""){
+			# add it to XML
 			if(defined $AddCustomParmsToXML){
-				# add it to XML
 				OpenSMOGAddNBsettoXML($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer);
-			}else{
+			} elsif($NBPpresent==0){
+			# if we did not find a nonbond_params, and we are not adding to the XML, add it now.
 				print TOPOUT "[ nonbond_params ]\n$NBbuffer\n\n";
 			}
 		}
-
 
 		# add a new molecule type
 		if($alreadypresent == 0){
