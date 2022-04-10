@@ -455,8 +455,8 @@ sub newOpenSMOGfunction{
 		$fh->{$fN}->{"directive"}="pairs";
 	}
 
-	checkPotentialFunction($fh->{$fN},\@parmarr,$OpenSMOGhandle);
 	my $pot=$fh->{$fN}->{"OpenSMOGpotential"};
+	checkPotentialFunction($pot,$pot,\@parmarr,$OpenSMOGhandle,0);
 	my $pind=0;
 	my %seenparm;
 	foreach my $param(@parmarr){

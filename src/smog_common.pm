@@ -481,65 +481,121 @@ whereas the following would be appropriate:
 }
 
 sub checkPotentialFunction{
-	my ($hd,$parms,$OSref)=@_;
-	my $func=$hd->{"OpenSMOGpotential"};
-	$func =~ s/\s+//g;
-	if($func =~ m/^(.*?)?([^\s+a-zA-Z0-9_\;\,\=\/\-\+\*\^\(\)])(.*)?$/ ){
-		# regex explained: ^ start, (.*?)? non-greedy and optional any character, (not any letter, number, or allowed operator), (.*)? optional any character, $ end.
-		my $pos=length($1)+1;
-		smog_quit("Unsupported characters found in OpenSMOG energy function:\n$func\nEnergy functions may only have the following characters: a-z A-Z 0-9 _ ; = , / - + * ^ ( )\nCharacter $pos is a \"$2\".");
+	my ($fullfunc,$func,$parms,$OSref,$c)=@_;
+	chomp($func);
+	if($func =~ m/^\s+$/){
+		return;
 	}
-	if($func =~ m/\(\)/){
-		smog_quit("Empty closed parentheses found in OpenSMOG energy function:\n$func");
-	}
-	if($func =~ /\*\*/){
-		smog_quit("Unsupported use of ** (only ^ allowed) in OpenSMOG energy function:\n$func");
-	}
-	my @array = split(//, $func);
-
-	my $count=0;
-	my $charn=0;
-	foreach my $char(@array){
-		if($char =~ m/\(/){
-			$count++;
-		}
-		if($char =~ m/\)/){
-			$count--;
-		}
-		if($count < 0){
-			my $badstring="";
-			for (my $I=$charn-3;$I<$charn+3;$I++){
-				if($I>=0){
-					$badstring .= $array[$I];
-				}
-			}
-			smog_quit("Function used in templates has unbalanced parentheses. Closed parentheses found before opening. Problem found around \"$badstring\" in the following definition:\n$func\n");
-		}
-		$charn++;
-	}
-	if($count > 0){
-		smog_quit("Function used in templates has unbalanced parentheses (more open than closed). Problematic definition:\n$func\n");
-	}
-
-        # since it at least has ok parentheses, let's make sure it only uses allowed parameters and functions
-
-	if($func =~ /\*\*/){
-		smog_quit("Unsupported use of \"**\" in OpenSMOG energy function:\n$func\nA ^ character must be used.");
+	$func =~ s/\;(\s+)?$//g;
+	my %phash;
+ 	my %definedexpressions;
+	for my $I(@{$parms}){
+		$phash{$I}=0;
 	}
 	my %ref;
 	if(defined $OSref->{"constants"}->{"constant"}){
         	%ref=%{$OSref->{"constants"}->{"constant"}};
 	}
+
 	$func =~ s/\s+//g;
-	my @par=split(/[\(\)\*\/\-\+\,\^]+/,$func);
-	my %phash;
-	for my $I(@{$parms}){
-		$phash{$I}=0;
+
+	# get all elements of the function, including sub-definitions
+	my @funclist;
+	if($func =~ m/\;/){
+		@funclist=split(/\;/,$func);
+	} else {
+		$funclist[0]=$func;
 	}
-	foreach my $M(@par){
-		unless(whatAmI($M) < 3 || exists $OSrestrict{$M} || exists $phash{$M} || defined $ref{$M}){
-			smog_quit("\"$M\" identified as a function, but it is not found in OpenSMOG energy function:\n$func");
+
+	if ($c == 0){
+		#my $func=$hd->{"OpenSMOGpotential"};
+		if($func =~ m/^(.*?)?([^\s+a-zA-Z0-9_\;\,\=\/\-\+\*\^\(\)])(.*)?$/ ){
+			# regex explained: ^ start, (.*?)? non-greedy and optional any character, (not any letter, number, or allowed operator), (.*)? optional any character, $ end.
+			my $pos=length($1)+1;
+			smog_quit("Unsupported characters found in OpenSMOG energy function:\n$func\nEnergy functions may only have the following characters: a-z A-Z 0-9 _ ; = , / - + * ^ ( )\nCharacter $pos is a \"$2\".");
 		}
+		if($func =~ m/\(\)/){
+			smog_quit("Empty closed parentheses found in OpenSMOG energy function:\n$func");
+		}
+		if($func =~ /\*\*/){
+			smog_quit("Unsupported use of ** (only ^ allowed) in OpenSMOG energy function:\n$func");
+		}
+		if($func =~ /\+\+/){
+			smog_quit("Unsupported use of ++ in OpenSMOG energy function:\n$func");
+		}
+		if($func =~ /\-\-/){
+			smog_quit("Unsupported use of -- in OpenSMOG energy function:\n$func");
+		}
+		if($func =~ /\/\//){
+			smog_quit("Unsupported use of // in OpenSMOG energy function:\n$func");
+		}
+		my @array = split(//, $func);
+
+		my $count=0;
+		my $charn=0;
+		foreach my $char(@array){
+			if($char =~ m/\(/){
+				$count++;
+			}
+			if($char =~ m/\)/){
+				$count--;
+			}
+			if($count < 0){
+				my $badstring="";
+				for (my $I=$charn-3;$I<$charn+3;$I++){
+					if($I>=0){
+						$badstring .= $array[$I];
+					}
+				}
+				smog_quit("OpenSMOG function used in templates has unbalanced parentheses. Closed parentheses found before opening. Problem found around \"$badstring\" in the following definition:\n$func\n");
+			}
+			$charn++;
+		}
+		if($count > 0){
+			smog_quit("OpenSMOG function used in templates has unbalanced parentheses (more open than closed). Problematic definition:\n$func\n");
+		}
+		# get the names of subsequently-defined expressions
+		if ($funclist[0] =~ m/=/) {
+			smog_quit("OpenSMOG energy function can not have an equal sign in the first element. Functions:\n\t$func\n\tProblem detected with: $funclist[0]");
+		}
+		my %tmpfncs;
+		for (my $I=1;$I<=$#funclist;$I++){
+			if($funclist[$I] !~ m/^(\w+)=/) {
+				smog_quit("When defining subfunctions for an OpenSMOG energy function, each must begin with a string and then an equal sign. Issue detected in element $I ($funclist[$I]) of the following energy function:\n\t$func");
+			}
+			if (exists $OSrestrict{$1}) {
+				smog_quit("When defining subfunctions for an OpenSMOG energy function, it appears that you are trying to redefine a default OpenMM function. Function \"$1\" encountered in the following energy function:\n\t$func");
+			}
+			if (exists $phash{$1}) {
+				smog_quit("When defining subfunctions for an OpenSMOG energy function, it appears that you are trying to redefine a parameter. \"$1=\" encountered in the following energy function:\n\t$func");
+			}
+			if (exists $ref{$1}) {
+				smog_quit("When defining subfunctions for an OpenSMOG energy function, it appears that you are trying to redefine a constant. \"$1=\" encountered in the following energy function:\n\t$func");
+			}
+			if (exists $tmpfncs{$1}) {
+				smog_quit("When defining subfunctions for an OpenSMOG energy function, it appears that you are trying to define \"$1\" more than once. Issue with energy function:\n\t$func");
+			}
+			$tmpfncs{$1}=0;
+		}
+	}
+
+	for (my $I=1;$I<=$#funclist;$I++){
+		$funclist[$I] =~ m/^(\w+)=/;
+		$definedexpressions{$1}=0;
+	}
+        # since it at least has ok parentheses, let's make sure it only uses allowed parameters and functions
+	$funclist[0] =~ s/^(\w+)=//g;
+	my @par=split(/[\(\)\*\/\-\+\,\^]+/,$funclist[0]);
+	foreach my $M(@par){
+		unless(whatAmI($M) < 3 || exists $OSrestrict{$M} || exists $phash{$M} || defined $ref{$M} || exists $definedexpressions{$M}){
+			smog_quit("OpenSMOG energy function appears to be expressed using the quantity \"$M\". However, this does not appear to correspond to a default OpenMM function, parameter, constant, or subsequently-defined expression. Issue with energy function:\n$fullfunc",1);
+		}
+	}
+
+	if($func =~ m/\;/){
+		$func =~ s/(.*\;)?//;
+		$c++;
+		checkPotentialFunction($fullfunc,$func,$parms,$OSref,$c);
 	}
 }
 

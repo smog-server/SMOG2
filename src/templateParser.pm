@@ -483,6 +483,7 @@ sub checkContactFunctionDef
 	}elsif($funcname eq "contact_free"){
 
 	}else{
+
 		# if nothing matched, then we must be using an OpenSMOG potentials.  Let's check a few things.
 		# energynorm can't be used for the weight if normalization is turned off.
 		if($normalize){
@@ -1444,7 +1445,7 @@ sub CustomNonBondedCheckAdjust{
 		my $pind=0;
 		my %seenparm;
 
-		checkPotentialFunction($interHandle[0],$parmarr,$OSref);
+		checkPotentialFunction($interHandle[0]->{"OpenSMOGpotential"},$interHandle[0]->{"OpenSMOGpotential"},$parmarr,$OSref,0);
 		foreach my $param(@parmarr){
 			if($param =~ m/^q[12]$/ ){
 				smog_quit(".sif file defines CustomNonBonded with the parameter $param, while an OpenSMOGpotential function is defined. q1 and q2 are reserved to refer to charges, if OpenSMOGpotential is defined.");
