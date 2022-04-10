@@ -59,9 +59,9 @@ printdashed($wide);
 #   equal to 138.935485. We want to undo that, hence the division by 138
 # when using kCal/Mol units.
 
-# Note on units: that the table uses the numerical value of 33.2 as the 
+# Note on units: the table uses the numerical value of 33.2 as the 
 #	prefactor. If you are using kJ in your simulations, then you would 
-#	need to multiple by 4.184. Also, if you are running the simulations
+#	need to multiply by 4.184. Also, if you are running the simulations
 # 	in Gromacs at a temperature other than 300 (mdp settings), then
 # 	it is appropriate to rescale the electrostatic strength according to 
 #	thermal-energy matching arguments (described in Noel and Whitford,
@@ -69,7 +69,7 @@ printdashed($wide);
 #	with SMOG models are performed at T=60 (mdp setting), since the 
 #	energy scale is not calibrated to be either kCal, or kJ. Accordingly, 
 #	the prefactor should be divided by 5 (60/300), since 60*k_B is the 
-#	relevant energy scale.
+#	relevant thermal energy scale.
 
 
 my $exponent1=12;
@@ -266,6 +266,7 @@ usage: smog_tablegen  .. options ..
 	-ic [0]  		: effective monovalent ion concentration (Molar) for DH interaction
 	-temp [300]  		: simulation temperature corresponding to room temperature (Gromacs units)
 	-units [kCal]  		: units to be used in the simulations [kCal|kJ]
+                                   Note: the -units option only applies to electrostatics
 	-sd [1.0]		: distance (nm) to start switching function for electrostatics
 	-sc [1.5]		: distance (nm) at which switching function enforces elec. interactions go to zero
 	-tl [5]  		: length (nm) of table
