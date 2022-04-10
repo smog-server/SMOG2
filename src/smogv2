@@ -794,9 +794,12 @@ sub checkExtras {
 	{
 		my ($A,$B)=checkcomment($line);
 		if($A eq ""){next;}  # skip the line if it is only a comment
+		if($line !~ m/^(\s+)?\w+(\s+)?</){
+			smog_quit("extras file: $filename contains a line that does not begin with a directive name followed by '<'. Offending line:\n $line");
+		}
 	    	@tokens = split('<',$line);
 		if(scalar @tokens > 2) {
-			smog_quit("Line in extras file: $filename contains more than one instance of character '<'. Offending line:\n $line");
+			smog_quit("extras file: $filename contains more than one instance of character '<'. Offending line:\n $line");
 		}
 		$directive = trim($tokens[0]);
 		if(!exists $directives{$directive}) {
