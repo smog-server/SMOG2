@@ -34,7 +34,7 @@ use OpenSMOG;
 #####################
 # Init error vars   #
 #####################
-our $VERSION="2.5beta";
+our $VERSION="2.4.3";
 our $maxwarn;
 our $warncount;
 our $allwarncount;
