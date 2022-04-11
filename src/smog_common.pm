@@ -6,8 +6,9 @@
 #                          Ailun Wang, Heiko Lammert, Ryan Hayes,
 #                               Jose Onuchic & Paul Whitford
 #
-#            Copyright (c) 2015,2016,2018,2021, The SMOG development team at
-#                        Rice University and Northeastern University
+#          Copyright (c) 2015,2016,2018,2021,2022 The SMOG development team at
+#                      The Center for Theoretical Biological Physics
+#                       Rice University and Northeastern University
 #
 #          SMOG 2, Shadow and OpenSMOG are available at http://smog-server.org
 #
@@ -33,7 +34,7 @@ use OpenSMOG;
 #####################
 # Init error vars   #
 #####################
-our $VERSION="2.5beta";
+our $VERSION="2.4.3";
 our $maxwarn;
 our $warncount;
 our $allwarncount;
