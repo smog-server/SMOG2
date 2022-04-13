@@ -331,18 +331,18 @@ sub checkPDB
 					$y=$coor[1];
 					$z=$coor[2];
 				}else{
-					$x = trim(substr($record, 30, 8));
-					if(substr($x,4,1) =~  m/\./ ) {
+					if(substr($record,34,1) !~  m/\./ ) {
 						smog_quit("X coordinate in PDB file is not properly formatted.  The decimal should be column 35. Problematic line:\n$record");
  					}
-					$y = trim(substr($record, 38, 8));
-					if(substr($y,4,1) =~  m/\./ ) {
+					if(substr($record,42,1) !~  m/\./ ) {
 						smog_quit("Y coordinate in PDB file is not properly formatted.  The decimal should be column 43. Problematic line:\n$record");
  					}
-					$z = trim(substr($record, 46, 8));
-					if(substr($z,4,1) =~  m/\./ ) {
+					if(substr($record,50,1) !~  m/\./ ) {
 						smog_quit("Z coordinate in PDB file is not properly formatted.  The decimal should be column 51. Problematic line:\n$record");
  					}
+					$x = trim(substr($record, 30, 8));
+					$y = trim(substr($record, 38, 8));
+					$z = trim(substr($record, 46, 8));
 					if(whatAmI($x) > 2 || whatAmI($y) > 2 || whatAmI($z) > 2){
 						smog_quit("Coordinate read, but does not appear to be a number. Perhaps you are using free-formatted coordinates and should employ the -freecoor flag. Issue found at line:\n$record");
 					}
