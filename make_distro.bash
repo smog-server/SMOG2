@@ -21,6 +21,8 @@ else
 	echo done making distro
 
 	echo DONT FORGET TO UPDATE VERSION NUMBER IN smogv2
+	echo ALSO, MAKE SURE TO ADD THIS NEW VERSION NUMBER TO
+        echo THE LIST OF SUPPORTED VALUES IN templateparser
 fi
 
 else
