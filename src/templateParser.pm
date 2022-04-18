@@ -1720,7 +1720,7 @@ sub sifVersion{
 	}else{
 		my $minver=$data->{"version"}->[0]->{"min"};
 		if(!exists $SMOGversions{"$minver"}){
-			smog_quit("These templates require SMOG v$minver, or newer (defined in .sif file).");
+			smog_quit("These templates are formatted for use with SMOG v$minver, but that format does not appear to be supported by the version of SMOG that you are using.");
 		}
 	}
 
