@@ -6,7 +6,7 @@ SMOG 2 is a downloadable software package for
 generating structure-based models, as provided by the 
 smog-server.org webserver (i.e. SMOG v1). These models 
 may be used to perform simulations using Gromacs, NAMD,
-or openMM.
+or OpenMM.
 
 SMOG 2 is free software, distributed under the GNU 
 General Public License. See COPYING.
@@ -40,16 +40,53 @@ https://mailman.rice.edu/mailman/listinfo/smog-users
 ########################################################
 
 		  CONFIGURING SMOG 2
-If you are not using the Docker container of SMOG 2 that
-is available on at smog-server.org, then you will need to 
-configure your settings file and ensure all libraries are 
-available. This is a relatively simple process.
+There are several ways to install/configure SMOG 2 on
+your machine. Depending on your needs and accessible
+machine, you will need to choose from one of the options
+below.
 
-1) SMOG 2 is written in Perl, and requires the 
-following external modules to be installed. Some of 
-these are probably already available on your system. If not, 
-they are available through cpan:
 
+OPTION 1 - USE THE DOCKER CONTAINER
+The easiest method to use SMOG 2 is to access the Docker 
+container. Go to the SMOG 2 page for information on Docker.
+
+
+OPTION 2 - USING CONDA OR MINICONDA
+This is a bit more involved than using a container, but
+it should be rather straightforward.
+
+If you don't have Conda/Miniconda, you will need to first
+install one of them.
+
+Once conda is installed, create an environment for use 
+with SMOG 2. In this example, we  will call the environment 
+"smogenv"
+
+>conda create --name smogenv perl
+
+activate the environment
+
+>conda activate smogenv
+
+Next, it is necessary to install a few Perl modules.
+
+>conda install -c bioconda perl-xml-simple perl-xml-libxml java-jdk
+>conda install -c eumetsat perl-pdl
+>perl -MCPAN -e 'install XML::Validator::Schema'
+
+If these five commands are successful, then go to
+"FINAL STEPS WHEN NOT USING DOCKER".
+
+
+OPTION 3 - MANUAL INSTALLATION OF SUPPORTING LIBRARIES
+This is the most difficult configuration process.  In
+most cases, the above options are sufficient. But, in 
+case you need to perform a manual installation, here
+are the instructions.
+
+The following modules need to be installed. (CPAN
+can be used to make this installation process a bit
+simpler.)
 XML::Simple
 XML::SAX::ParserFactory
 XML::Validator::Schema
@@ -60,14 +97,17 @@ Getopt::Long
 Scalar::Util
 
 Note: If installing a module fails, it may be necessary 
-to use cpan to install additional modules, or perhaps use
+to use CPAN to install additional modules, or perhaps use
 yum to install missing tools. Just check the error messages 
 to identify which dependencies are missing.
 
-1a) If you do not have java installed (uncommon), then
-you will have to install it.
+If you do not have java installed (uncommon), then you will
+also have to install it.
 
-2) Once the modules and java are installed, you need to 
+
+FINAL STEPS WHEN NOT USING DOCKER
+
+Once the modules and java are installed, you need to 
 run the configure script. First, modify configure.smog2.  
 Specifically, give values to the following two 
 variables:
@@ -104,10 +144,13 @@ you will not need to re-run configure.smog2 every time
 you use SMOG. If you do add it to your bashrc, make 
 sure to include the full path for configure.smog2.
 
-3) (Optional) It is highly recommended that once SMOG
-is configured, you download and run the smog-check suite.
-This will verify your configurations are correct and that
-SMOG is producing accurate force field files.
+
+VERIFY YOUR CONFIGURATION
+
+It is highly recommended that once SMOG is configured,
+you download and run the smog-check suite. This will
+verify your configurations are correct and that SMOG
+is producing accurate force field files.
 
 ########################################################
 
