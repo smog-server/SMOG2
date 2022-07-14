@@ -1,29 +1,30 @@
 # Configuring script for SMOG V2.X
 #NOTE: MAKE SURE YOU HAVE INSTALLED, XML::Simple, Exporter and perl PDL
 
-## You need to set smog2dir and perl4smog.  smog2dir is the main directory of the smog2 package (not the src directory).  perl4smog is the version of perl that you prefer to use.  
-perl4smog=""
-smog2dir=""
+## You need to set smog2dir and perl4smog.  smog2dir is the main directory of the smog2 package (not the src directory).  perl4smog is the version of perl that you prefer to use. You can set them by passing them as environment variables, or you can comment out the next couples and add values.  If neither approach is used, then smog2dir will be set to the directory in which configure.smog2 is located and perl4smog  will be  set to "perl"  
+#perl4smog=""
+#smog2dir=""
 
 ## don't change anything below this line
+if [ ! -z ${smog2dir+x} ];
+then
+	# smog2dir was not set, so assume configure.smog2 is in the main smog2 directory
+	smog2dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+fi
+
 ERROR="There were issues configuring SMOG. Configuration incomplete."
 
 force=1
-if [ ! -z "$1" ]  
+if [  -z ${forcesb+x} ]  
 then
-	if [ "$1" != "force" ]
-	then
-		echo Argument "$1" not recognized
-	else
-		# force recreation of scripts
-		force=0
-		echo Will force regeneration of scripts
-	fi
+	# if forcesb set, then we will need to turn on the forced config
+	force=0
 fi
 
-if [ ! -z "$2" ]  
+if [ ! -z "$1" ]  
 then
-	echo Only one argument accepted by configure.smog2.  Remaining flags will be ignored
+	echo Args not allowed with configure script. Will not try to configure smog2
+	exit 1
 fi
 
 if [ "$smog2dir" == "" ]
@@ -55,15 +56,11 @@ then
 	then
 		echo "perl not found in your path, and perl4smog was not set in config script."
 		echo $ERROR
-		return
+		return 1
 	else
-		echo "perl4smog not set, but a version of perl was found in your path."
-		echo "NOTE: While this version of perl may be ok, it is always recommended" 
-		echo "that you explicitly define which version of perl you plan to use with smog2."
 		perl4smog=$perlf
 	fi
 fi
-echo "Perl version to be used: $perl4smog"
 
 
 for link in SBM_AA  SBM_AA+gaussian  SBM_calpha  SBM_calpha+gaussian
