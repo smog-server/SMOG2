@@ -108,21 +108,18 @@ also have to install it.
 FINAL STEPS WHEN NOT USING DOCKER
 
 Once the modules and java are installed, you need to 
-run the configure script. First, modify configure.smog2.  
-Specifically, give values to the following two 
-variables:
+run the configure script. 
 
-smog2dir=""
-perl4smog=""
+>source configure.smog2
 
-smog2dir is the main SMOG 2 directory (this will have 
-src and share as subdirectories), and perl4smog is the
-version of perl that you prefer to use.  On linux, the
-most common value for perl4smog is "/usr/bin/perl".  
+When this is run, it will try to determine which version of Perl to use.  Specifically, it will use "which perl" to find the version, and  smog2 will be configured with this version. However, it is not uncommon that the users have multiple  version of Perl available, and which will return a smog-incompatible version. If you know which version of perl you want to run, you can export an environment variable, or set a variable  when sourcing. For example, if the version of Perl you want to use is /opt/local/bin/perl, then you could do:
 
-To finish the configure process, issue the command:
- 
-source configure.smog2
+>export perl4smog="/opt/local/bin/perl"
+>source configure.smog2
+
+or 
+
+>perl4smog="/opt/local/bin/perl" source configure.smog2
 
 Note: This is written for use with BASH.
 
@@ -137,12 +134,6 @@ as well as for tools described in the manual. If you
 call the configure script multiple times, new files
 will not be created, but the environment will still
 be initialized.
-
-If you use SMOG frequently, it is recommended that 
-you add the configure line to your .bashrc file, so 
-you will not need to re-run configure.smog2 every time 
-you use SMOG. If you do add it to your bashrc, make 
-sure to include the full path for configure.smog2.
 
 
 VERIFY YOUR CONFIGURATION
