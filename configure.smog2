@@ -1,55 +1,58 @@
 # Configuring script for SMOG V2.X
 #NOTE: MAKE SURE YOU HAVE INSTALLED, XML::Simple, Exporter and perl PDL
 
-## You need to set smog2dir and perl4smog.  smog2dir is the main directory of the smog2 package (not the src directory).  perl4smog is the version of perl that you prefer to use. You can set them by passing them as environment variables, or you can comment out the next couples and add values.  If neither approach is used, then smog2dir will be set to the directory in which configure.smog2 is located and perl4smog  will be  set to "perl"  
+## We need values for smog2dir and perl4smog.  smog2dir is the main directory of the smog2 package (not the src directory).  perl4smog is the version of perl that you prefer to use. You can set them by passing them as environment variables, or you can uncomment out the next two lines and define values.  If neither approach is used, then smog2dir will be set to the directory in which configure.smog2 is located and perl4smog  will be  set to the version of perl obtained with "which"
 #perl4smog=""
 #smog2dir=""
 
 ## don't change anything below this line
-if [ ! -z ${smog2dir+x} ];
+if [ -z ${smog2dir+x} ]
 then
 	# smog2dir was not set, so assume configure.smog2 is in the main smog2 directory
 	smog2dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+
 fi
 
 ERROR="There were issues configuring SMOG. Configuration incomplete."
 
 force=1
-if [  -z ${forcesb+x} ]  
+if [ ! -z ${forcesb+x} ]  
 then
-	# if forcesb set, then we will need to turn on the forced config
+	# forcesb is set, then we will need to turn on the forced config
 	force=0
 fi
 
 if [ ! -z "$1" ]  
 then
 	echo Args not allowed with configure script. Will not try to configure smog2
-	exit 1
+	return 1
 fi
 
 if [ "$smog2dir" == "" ]
 then
-	echo "You must set smog2dir in the config script."
+	# I don't  think this is possible, since we are using the path of the script.
+	echo "You must set smog2dir in the config script, or through environment variables."
 	echo $ERROR
-	return
+	return 1
 fi
 
 if [ ! -d $smog2dir ]
 then
 	echo  "Can't find the directory "$smog2dir" (smog2dir)."
 	echo $ERROR
-	return
+	return 1
 fi
 
 if [ ! -e $smog2dir/src/smogv2 ]
 then
 	echo  "Can't find smog2 source code in "$smog2dir" (smog2dir)."
 	echo $ERROR
-	return
+	return 1
 fi
 
 if [ "$perl4smog" == "" ]  
 then
+	echo Since perl4smog was not given, the script is going to search for it.
 	perlf=`which perl`
 	N=`echo $perlf | wc -l`
 	if (( $N == 0 ))
@@ -58,6 +61,8 @@ then
 		echo $ERROR
 		return 1
 	else
+		echo Perl version found at:$perlf
+		echo Make sure this is the version you wish to use.
 		perl4smog=$perlf
 	fi
 fi
@@ -88,6 +93,9 @@ EOS
 
 smog_exec="$perl4smog $smog2dir/src/smogv2"
 export PATH=$smog2dir/bin:$PATH
+
+echo Pre-pending $smog2dir/bin to your PATH.  This is not persistent. If is recommended you add the following line to the .bashrc file:
+echo PATH=$smog2dir/bin:\$PATH
 
 if [ ! -d $smog2dir/bin ]
 then
