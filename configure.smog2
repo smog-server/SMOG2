@@ -94,9 +94,10 @@ EOS
 smog_exec="$perl4smog $smog2dir/src/smogv2"
 export PATH=$smog2dir/bin:$PATH
 
-echo Pre-pending $smog2dir/bin to your PATH.  This is not persistent. If is recommended you add the following line to the .bashrc file:
+echo Pre-pending $smog2dir/bin to your PATH.  This is not persistent. If you plan to use SMOG 2 regularly, it is recommended you add the following line to the .bashrc file:
+echo
 echo PATH=$smog2dir/bin:\$PATH
-
+echo
 if [ ! -d $smog2dir/bin ]
 then
 	#if the executables don't exist.
