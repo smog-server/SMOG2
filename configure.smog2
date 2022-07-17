@@ -5,6 +5,8 @@
 #perl4smog=""
 #smog2dir=""
 
+echo "\nStarting to configure SMOG 2\n"
+
 ## don't change anything below this line
 if [ -z ${smog2dir+x} ]
 then
@@ -13,6 +15,7 @@ then
 
 fi
 
+
 ERROR="There were issues configuring SMOG. Configuration incomplete."
 
 force=1
@@ -20,19 +23,12 @@ if [ ! -z ${forcesb+x} ]
 then
 	# forcesb is set, then we will need to turn on the forced config
 	force=0
+	echo Will force reconfiguration of SMOG 2
 fi
 
 if [ ! -z "$1" ]  
 then
 	echo Args not allowed with configure script. Will not try to configure smog2
-	return 1
-fi
-
-if [[ "$smog2dir" == "" ]]
-then
-	# I don't  think this is possible, since we are using the path of the script.
-	echo "You must set smog2dir in the config script, or through environment variables."
-	echo $ERROR
 	return 1
 fi
 
@@ -50,6 +46,8 @@ then
 	return 1
 fi
 
+echo Will configure the version of SMOG 2 found in $smog2dir
+
 if [[ "$perl4smog" == "" ]]  
 then
 	echo Since perl4smog was not given, the script is going to search for it.
@@ -61,11 +59,10 @@ then
 		echo $ERROR
 		return 1
 	else
-		echo Perl version found at:$perlf
-		echo Make sure this is the version you wish to use.
 		perl4smog=$perlf
 	fi
 fi
+echo "Perl version to be used is $perl4smog\nMake sure this is the version you wish to use.\n"
 
 
 for link in SBM_AA  SBM_AA+gaussian  SBM_calpha  SBM_calpha+gaussian
@@ -92,12 +89,7 @@ export perl4smog=$perl4smog
 EOS
 
 smog_exec="$perl4smog $smog2dir/src/smogv2"
-export PATH=$smog2dir/bin:$PATH
 
-echo Pre-pending $smog2dir/bin to your PATH.  This is not persistent. If you plan to use SMOG 2 regularly, it is recommended you add the following line to the .bashrc file:
-echo
-echo PATH=$smog2dir/bin:\$PATH
-echo
 if [ ! -d $smog2dir/bin ]
 then
 	#if the executables don't exist.
@@ -143,3 +135,22 @@ if [ -e $smog2dir/header ]
 then
 	rm -f $smog2dir/header
 fi
+echo "\nDone configuring. Will check for basic functionality.\n"
+cd $smog2dir
+./test-config
+
+if (( $? == 0 ))
+then
+
+	export PATH=$smog2dir/bin:$PATH
+	echo "\nConfiguration successful!!\n"
+	echo For the current session, will pre-pend $smog2dir/bin to your PATH.  If you plan to use SMOG 2 regularly, it is recommended you add the following line to the .bashrc or .zshrc file:
+	echo
+	echo PATH=$smog2dir/bin:\$PATH
+	echo
+	echo It is also highly recommended that you download and run smog-check, to confirm everything is working well
+
+else
+	echo SMOG 2 configuration did not complete successfully. See messages above. 
+fi
+
