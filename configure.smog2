@@ -28,7 +28,7 @@ then
 	return 1
 fi
 
-if [ "$smog2dir" == "" ]
+if [[ "$smog2dir" == "" ]]
 then
 	# I don't  think this is possible, since we are using the path of the script.
 	echo "You must set smog2dir in the config script, or through environment variables."
@@ -50,7 +50,7 @@ then
 	return 1
 fi
 
-if [ "$perl4smog" == "" ]  
+if [[ "$perl4smog" == "" ]]  
 then
 	echo Since perl4smog was not given, the script is going to search for it.
 	perlf=`which perl`
