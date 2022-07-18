@@ -137,12 +137,12 @@ then
 fi
 echo "\nDone configuring. Will check for basic functionality.\n"
 cd $smog2dir
+export PATH=$smog2dir/bin:$PATH
 ./test-config
 
 if (( $? == 0 ))
 then
 
-	export PATH=$smog2dir/bin:$PATH
 	echo "\nConfiguration successful!!\n"
 	echo For the current session, will pre-pend $smog2dir/bin to your PATH.  If you plan to use SMOG 2 regularly, it is recommended you add the following line to the .bashrc or .zshrc file:
 	echo
