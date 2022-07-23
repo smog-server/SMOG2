@@ -521,7 +521,7 @@ sub adjustInputFile{
 				$writeResNum=BaseTentoLarge($resInd,4);
 			}else{
 				# standard sequential numbering
-				if($atomCount == 10000){
+				if($resInd == 10000){
 					smog_quit("Too many residues in a single chain (max of 9999).  Try -large option.");
 				}	
 				$writeResNum=$resInd;
