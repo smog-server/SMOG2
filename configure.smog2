@@ -109,8 +109,12 @@ then
 	done
 else
 	# if the directories exist, see if we need to update anything.
-
-	LN=`grep "$smog_exec" $smog2dir/bin/smog2 | wc -l`
+	if [ -e $smog2dir/bin/smog2 ]
+	then
+		LN=`grep "$smog_exec" $smog2dir/bin/smog2 | wc -l`
+	else
+		LN=0
+	fi
 	LN=$[$LN*$force]
 	if (( $LN == 0)); then
 		echo Updating $smog2dir/bin/smog2
