@@ -112,11 +112,11 @@ foreach my $filen($outputtop, $outputgro){
 }
 
 if(defined $OpenSMOG && !defined $OpenSMOGout){
-	smog_quit("when using -OpenSMOG, you must specify an output file name with -OpenSMOGout"); 
+	smog_quit("When using -OpenSMOG, you must specify an output file name with -OpenSMOGout"); 
 }
 
 if(defined $OpenSMOG && !defined $template){
-	smog_quit("when using -OpenSMOG, you must specify a template directory with -t."); 
+	smog_quit("When using -OpenSMOG, ion parameters must be provided through an ion.def file in the template directory.  The template directory must be specified with -t."); 
 }
 
 if(!defined $OpenSMOG && defined $OpenSMOGout){
@@ -465,6 +465,9 @@ while (<FILE>){
 	my $LINEORIG=$LINE;
 	chomp($LINE);
 	my ($data,$comment)=checkcomment($LINE);
+	if($comment =~ m/-OpenSMOG/ && ! defined $OpenSMOG){
+		smog_note("Found \"-OpenSMOG\" in the top file. This typically means that an OpenSMOG xml file should accompany the provided top file.  But, \"-OpenSMOG\" was not used to specify an input xml file for smog_ions.  Double check and make sure this was intentional.");
+	}
 	if(checkforinclude($LINE,$data,*TOPOUT)){next;};
 
 	# check if we hit the atomtypes.  if we do, then add the atomtype.
@@ -787,6 +790,7 @@ usage: smog_ions ... options
 	-ionC6 [0.0]	        : C6 parameter for added ions
 	-OpenSMOG <xml file>    : also process an OpenSMOG xml file. This file is generated 
                                     by smog2 if the -OpenSMOG option was used.
+                                    note: For OpenSMOG, parameters must be given with -t flag
 	-OpenSMOGout <xml file> : output file name for processed OpenSMOG xml file
 	-warn [0]	        : convert first N errors into warnings
 	-help 		        : show options 
