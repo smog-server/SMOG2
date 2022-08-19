@@ -114,7 +114,7 @@ unless ($gen_restraints =~ m/^\d+\.\d+$/ ||  $gen_restraints =~ m/^\d+$/ || $gen
 }
 
 if(defined $OpenSMOG && !defined $OpenSMOGout){
-	smog_quit("when using -OpenSMOG, you must specify an output file name with -OpenSMOGout"); 
+	smog_quit("When using -OpenSMOG, you must specify an output file name with -OpenSMOGout"); 
 }
 
 if(!defined $OpenSMOG && defined $OpenSMOGout){
@@ -270,6 +270,11 @@ print TOPOUT "; Selected group: $extgrp\n ";
 my $date=printhostdate();
 print TOPOUT "$date";
 print TOPOUT "$DATA[0]\n";
+
+	if($DATA[0] =~ m/-OpenSMOG/ && ! defined $OpenSMOG){
+		smog_note("Found \"-OpenSMOG\" in the top file. This typically means that an OpenSMOG xml file should accompany the provided top file.  But, \"-OpenSMOG\" was not used to specify an input xml file for smog_extract.  Double check and make sure this was intentional.");
+	}
+
 
 print TOPOUT "[ defaults ]\n";
 
