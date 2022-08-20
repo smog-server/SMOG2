@@ -240,6 +240,10 @@ if($rescaleD == 1.0){
 		print TOPOUT "\n";	
         }
 }else{
+	if(! defined $DIRLIST{"dihedrals"}){
+		smog_quit("\"dihedrals\" directive not found when trying to rescale contacts.");
+	}
+
 	my @C = split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
 	if($#C<1){
 		smog_quit("No dihedrals found listed under dihedrals directive\n");
@@ -290,6 +294,9 @@ if($rescaleC == 1.0){
         }
 }else{
 	print TOPOUT "[ pairs ]\n";
+	if(! defined $DIRLIST{"pairs"}){
+		smog_quit("\"pairs\" directive not found when trying to rescale contacts.  This may occur because you are using a force field for OpenSMOG, in which case the contact information is in the XML file. smog_scale-energies is not written to modify OpenSMOG XML files.");
+	}
 	my @C=split(/\n/,$DATA[$DIRLIST{"pairs"}]);
 
 	for(my $JJ=1;$JJ<=$#C;$JJ++){
