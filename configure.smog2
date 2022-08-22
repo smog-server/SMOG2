@@ -62,6 +62,18 @@ then
 		perl4smog=$perlf
 	fi
 fi
+
+$perl4smog -v &> /dev/null
+if [ $? != 0 ]
+then
+	echo "
+ERROR: The defined version of Perl (perl4smog=$perl4smog) does not appear to be functional.
+There may be a typo, or Perl may be broken. 
+"
+	return 1
+
+fi
+
 echo "Perl version to be used is $perl4smog\nMake sure this is the version you wish to use.\n"
 
 
