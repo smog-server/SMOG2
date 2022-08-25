@@ -2241,35 +2241,26 @@ sub parseInputFolder
 			$bifexists++;
 			$bif = $file;$bif = "$folderName/$bif";
 			print "Found .bif file $bif\n";
-			print "Validating XML format of $bif\n";
-			validateXML($bif,"bif");
 			next;
 		}elsif($file =~ m/\.sif$/){
 			$sifexists++;
 			$sif = $file;$sif = "$folderName/$sif";
 			print "Found .sif file $sif\n";
-			print "Validating XML format of $sif\n";
-			validateXML($sif,"sif");
 			next;
 		}elsif($file =~ m/\.b$/){
 			$bexists++;
 			$b = $file;$b = "$folderName/$b";
 			print "Found .b file $b\n";
-			print "Validating XML format of $b\n";
-			validateXML($b,"b");
 			next;
 		}elsif($file =~ m/\.nb$/){
 			$nbexists++;
 			$nb = $file;$nb = "$folderName/$nb";
 			print "Found .nb file $nb\n";
-			print "Validating XML format of $nb\n";
-			validateXML($nb,"nb");
 			next;
 		}elsif($file =~ m/\.extras$/ || $file =~ m/^extras$/) {
 			$extrasexists++;
 			$extrasfile = "$folderName/$file";
 			print "Found extras file $extrasfile\n";
-			checkExtras($extrasfile);
 			next;
 		}elsif($file !~ m/^[Rr][Ee][Aa][Dd][Mm][Ee]$/ && $file !~ m/^\./) {
 			# note that READMEs are ignored
@@ -2301,7 +2292,19 @@ sub parseInputFolder
 	if($extrasexists >1){
 		smog_quit ("Found multiple extras (or .extras) files in directory $folderName");
 	}
-	
+
+	print "Validating XML format of $bif\n";
+	validateXML($bif,"bif");
+	print "Validating XML format of $sif\n";
+	validateXML($sif,"sif");
+	print "Validating XML format of $b\n";
+	validateXML($b,"b");
+	print "Validating XML format of $nb\n";
+	validateXML($nb,"nb");
+	if($extrasexists ==1){
+		print "Checking format of $extrasfile\n";
+		checkExtras($extrasfile);
+	}
 	setInputFileName($bif,$sif,$b,$nb);
 	
 }
