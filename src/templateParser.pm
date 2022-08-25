@@ -607,7 +607,7 @@ sub checkREScharges
 			# check that charge is integer
 			if(abs($charge - round($charge)) >0.001){
 				my $t=round($charge);
-				$string .="Residue defined in .bif, $res, has non-integer total charge of $charge. Often, this is due to a mistake in the charge assignment of a residue/atom. However, there are cases, such as terminal residues, where you may have intentionally defined a residue to have non-integer charge. If that is the case, then specify the correct non-integer value by adding a value for the \"totalcharge\" attribute of this residue.\n";
+				$string .="Residue defined in .bif, $res, has non-integer total charge of $charge. Often, this is due to a mistake in the charge assignment of a residue/atom. However, there are cases, such as terminal residues, where you may intentionally define a residue to have non-integer charge. If that is the case, then specify the correct non-integer value by adding a value for the \"totalcharge\" attribute of this residue (in the .bif file).\n";
 			}
 		}
 	}

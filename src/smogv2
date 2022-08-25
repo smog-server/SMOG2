@@ -2232,6 +2232,11 @@ sub parseInputFolder
 	my $bexists=0;
 	my $extrasexists=0;
 	while(my $file = readdir($folder)){
+                if($file =~ /^\./){
+                        # skipping hidden files. They can sometimes creep in due to OSX/LINUX incompatibilities
+                        next;
+                }
+
 		if($file =~ m/\.bif$/){
 			$bifexists++;
 			$bif = $file;$bif = "$folderName/$bif";
