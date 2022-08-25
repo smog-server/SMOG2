@@ -1608,8 +1608,10 @@ sub bifResidues{
 		## CREATE IMPROPER ARRAY ##
 		my @impropers;my @improperHandle;
 		# Obtain handle to loop through impropers
-		if(exists $residueHandle->{$res}->{"impropers"})
-			{@improperHandle = @{$residueHandle->{$res}->{"impropers"}->[0]->{"improper"}};}
+		if(exists $residueHandle->{$res}->{"impropers"}->[0]->{"improper"})
+		{
+			@improperHandle = @{$residueHandle->{$res}->{"impropers"}->[0]->{"improper"}};
+		}
 		my %seenIMP;
 		foreach my $improper(@improperHandle)
 		{
