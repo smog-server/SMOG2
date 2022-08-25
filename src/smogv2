@@ -2506,7 +2506,7 @@ sub parseTemplatesAndPDB
 		$checkmessage.=checkRESimpropers();
 		$checkmessage.=checkFunctions();
 		if($checkmessage ne ""){
-			smog_quit("Cross-comparison of templates failed. See messages below:\n\n$checkmessage");
+			smog_quit("Validation of templates failed. See messages below:\n\n$checkmessage");
 		}
 	}
 
