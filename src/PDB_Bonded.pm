@@ -196,11 +196,11 @@ sub checkPDB
 			$chainb--;
 			if(!exists $indexMap{"$chaina-$atoma"}){
 				$chaina++;
-				smog_quit("Can not find atom $atoma in chain $chaina");
+				smog_quit("When trying to add a user-defined BOND, could not find atom $atoma in chain $chaina");
 			}
 			if(!exists $indexMap{"$chainb-$atomb"}){
 				$chainb++;
-				smog_quit("Can not find atom $atomb in chain $chainb");
+				smog_quit("When trying to add a user-defined BOND, could not find atom $atomb in chain $chainb");
 			}
 			$counter++;
 			next;
