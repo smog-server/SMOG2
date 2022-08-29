@@ -40,6 +40,10 @@ our @EXPORT =
 qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %bondFunctionals %AngleData %DihedralData %BondData %resPDL %bondPDL %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS checkPDB);
 
 our %tempPDL = ();
+our %tempPDLB = ();
+# we call this "PDL" so that it is clear this lists follows tempPDL, but it isn't actually PDL
+# it hold the bTypes of atoms in tempPDLB, which is saved in case we have a BOND
+our %tempPDLbType = ();
 our %resPDL;
 our %bondPDL;
 our %indexMap;
@@ -64,7 +68,7 @@ our %extContacts;
 ## CLEAR VARIABLE MEMORY ##
 ###########################
 sub clearPDBMemory {
-undef %tempPDL;undef %resPDL;undef %bondPDL;
+undef %tempPDL;undef %tempPDLB; undef %tempPDLbType;undef %resPDL;undef %bondPDL; 
 undef %AngleData;undef %DihedralData;
 undef %BondData;undef $totalAtoms;
 #undef $contactPDL; 
@@ -91,14 +95,12 @@ sub checkPDB
 	my $residue; my $atom;my $atomSerial;
 	my $atomsInRes; 
 	my $i; 
-	my $headFlag=1;my $outLength;
 	$totalAtoms = 0;my $nbType;my $residueType; my $pairType;
 	my $atomCounter=0;
 	my $chainNumber = 0;
 	my $residueIndex=1;
 	my $interiorPdbResidueIndex=0;
 	my $lineNumber = 0;
-	my %connectedatom;
 	my $lastchainstart=0;
 	my $endfound=0;
 	my $residueSerial=0;
@@ -160,7 +162,6 @@ sub checkPDB
 		# if neither, then read each residue and make sure they are only ATOM/HETATM
 		$lineNumber++;
 	
-		my @impAtoms = ();
 		## PARSE BOND LINES ##
 		my $lng = $record;
 		chomp($lng);
@@ -383,7 +384,6 @@ sub checkPDB
 				$totalAtoms+=$residues{$residue}->{"atomCount"};
 			}
 			## CONCAT RESIDUE ##
-			$headFlag = 0;		
 			$residueIndex++;
 				
 		}else{
@@ -410,25 +410,29 @@ sub parsePDBATOMS
 	my @PDBDATA=@{$PDBDATA};
 	## INTERNAL VARIABLES ##
 	my $counter = 0;
-	my @temp; my @union;
+	my @temp; my @tempB;my @union;
 	my @consecResidues;
 	my $x;my $y;my $z;
 	my $residue; my $atom;my $atomSerial;
 	my $atomsInRes; 
 	my $i; my $putIndex=0; 
-	my $headFlag=1;my $outLength;
-	$totalAtoms = 0;my $nbType;my $residueType; my $pairType;
+	$totalAtoms = 0;
+	my $nbType;
+	my $bType;
+	my $residueType; 
+	my $pairType;
 	my $atomCounter=0;
 	my $chainNumber = 0;
 	my $residueIndex=1;
 	my $interiorPdbResidueIndex=0;
 	my $lineNumber = 0;
-	my %connectedatom;
 	my $lastchainstart=0;
 	my $residueSerial=0;
 	## OPEN .PDB FILE ##
 	my $atominhash;
 	my $PDBresstart;
+	my %bondlists;
+	my %bondlistsEG;
 	print "Organizing PDB data\n";
 	if($CGenabled == 1){
 		$atominhash=\%residueBackup;
@@ -446,7 +450,6 @@ sub parsePDBATOMS
                 my $record=$PDBDATA[$K];
 		$lineNumber++;
 	
-		my @impAtoms = ();
 		## PARSE BOND LINES ##
 		my $lng = $record;
 		chomp($lng);
@@ -462,10 +465,13 @@ sub parsePDBATOMS
    
 			my @TMP = split(/\s+/,$record);
 			my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
-			
-			#internally, chains are indexed 0,1...
+			smog_note("Generating user-specified bonded interaction between chain-atom pair $chaina-$atoma,$chainb-$atomb.\nWill assign to energy group $eG.");
+
+		
+			#internally, chain numbers begin at 0, not 1.
 			$chaina--;
 			$chainb--;
+			# get information about the two BONDed atoms
 			my $idxA = $indexMap{"$chaina-$atoma"};
 			my $idxB = $indexMap{"$chainb-$atomb"};
 			my $resA = $allAtoms{$idxA}->[5];
@@ -474,21 +480,72 @@ sub parsePDBATOMS
 			my $atomB = $allAtoms{$idxB}->[3];
 			my $resAIdx = $allAtoms{$idxA}->[2];
 			my $resBIdx = $allAtoms{$idxB}->[2];
-			
-			my $sizeA = scalar(keys %{$residues{$resA}->{"atoms"}});
-			my $union;
-			$union=($tempPDL{$resA}->{$resAIdx})->glue(1,$tempPDL{$resB}->{$resBIdx});
-			my $chaina1=$chaina+1;
-			my $chainb1=$chainb+1;
-			smog_note("Generating user-specified bonded interaction between chain-atom pair $chaina1-$atoma,$chainb1-$atomb.\nWill assign to energy group $eG.");
-			if(exists $connectedatom{$idxA}){ 
-				smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomA, in $resA$resAIdx) and line:$record");
+			my $fragment;
+
+
+			# make a hash of res indexes that we want to include in the fragment
+			# include the two nearest residues, in sequence, for each of the two sides
+			# this will ensure that enough information is available to reconstruct
+			# any possible dihedral that would be associated with the BOND
+			my %residFragHash;
+			foreach my $RI($resAIdx,$resBIdx){
+				for (my $II=$RI-2;$II<=$RI+2;$II++){
+					$residFragHash{$II}=1;
+				}
 			}
-			if(exists $connectedatom{$idxB}){ 
-				smog_quit("Currently, including a BOND with an atom that is also declared in \"connections\" is not supported.\nOffending atom ($atomB, in $resB$resBIdx) and line:$record");
+			delete($residFragHash{$resAIdx});
+			$fragment=$tempPDLB{$resAIdx};
+			# create the fragment and all bond lists 
+			# format [x y z globalnumber]
+			my @bTypesFragment=@{$tempPDLbType{$resAIdx}};
+			foreach my $kk(keys %residFragHash){
+				if(exists $tempPDLB{$kk}){
+					$fragment=($fragment)->glue(1,$tempPDLB{$kk});
+					push(@bTypesFragment,@{$tempPDLbType{$kk}});
+				}
 			}
-			$bondPDL{$counter}=$union;
-			connCreateInteractionsSingleBOND([$resA,$resB],$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$eG,\@impAtoms); 
+
+			my $newindex=0;
+			# %keep is a hash that maps global indexes to the fragment
+			my %keep;
+			my $indexA;
+			my $indexB;
+			foreach my $kk(list(slice($fragment,3))){
+				$keep{$kk}=$newindex;
+				if($idxA==$kk){
+					$indexA=$newindex;
+				}
+				if($idxB==$kk){
+					$indexB=$newindex;
+				}
+				$newindex++;
+			}
+
+			# go through fragment, find keys that are in keep (i.e. the atoms in the fragment). Then iterate through each array and convert
+			# bondlistFragment and energygroupsFragment are for storing the bonds and energy groups of bonds associated with the fragment that is being used for the BOND.  
+			my %bondlistFragment;
+			my %energygroupsFragment;
+			for my $JK(keys %bondlists){
+				if(exists $keep{$JK}){
+					my $newkey=$keep{$JK};
+					my @eGa=@{$bondlistsEG{$JK}};
+					foreach my $KL(@{$bondlists{$JK}}){
+						my $eGval=shift @eGa;
+						if(exists $keep{$KL}){
+							my $newval=$keep{$KL};
+							push(@{$bondlistFragment{$newkey}},$newval);	
+							push(@{$energygroupsFragment{$newkey}},$eGval);	
+						}
+					}
+				}
+			}
+
+
+			# save the coordinates of this piddle, for later use. 
+			$bondPDL{$counter}=$fragment;
+	
+			connCreateInteractionsSingleBOND(\%bondlistFragment,\%energygroupsFragment,\@bTypesFragment,$counter,$chaina,$chainb,$indexA,$indexB,$atomA,$atomB,$resA,$resB,$eG); 
+
 			$counter++;
 			next;
 		}
@@ -504,12 +561,24 @@ sub parsePDBATOMS
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
 			## CREATE INTERACTION ##
 			print "Building covalent geometry for chain $chainNumber\n";
-        		my $connset=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength,$lastrecord);
-			my @connset=@{$connset};
-			foreach my $I(@connset){
-				my $T=$I+$lastchainstart+1;
-				$connectedatom{$T}=1;
+        		my ($bl,$blEG)=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength,$lastrecord);
+			# keeping track of the bondlists, so that we can use them with the user-defined BOND routines
+			foreach my $I(keys %{$bl}){
+				my @tmparr=();
+				my $In=$I+$lastchainstart+1;
+				$bondlists{$In}=\@tmparr;
+				foreach my $JJJ(@{${$bl}{$I}}){
+                			# convert to global numbering
+					push(@{$bondlists{$In}},$JJJ+$lastchainstart+1);
+				}
+				my @tmparr2=();
+				$bondlistsEG{$In}=\@tmparr2;
+				foreach my $JJJ(@{${$blEG}{$I}}){
+					push(@{$bondlistsEG{$In}},$JJJ);
+				}
+
 			}
+
 		   	$bondPDL{$counter}=pdl(@union);
 			@union = ();$counter++;
         		@consecResidues = ();
@@ -521,7 +590,6 @@ sub parsePDBATOMS
 		if($record =~ m/^ATOM/ || $record =~ m/^HETATM/)
 		{
 	        	$lineNumber--;
-			$outLength = length($record);
 		 	## OBTAIN RESIDUE NAME ##
 			$residue = trim(substr($record,17,4));
 			$atomsInRes = scalar(keys(%{${$atominhash}{$residue}->{"atoms"}}));
@@ -567,9 +635,11 @@ sub parsePDBATOMS
 				
 				$putIndex = $ahandle->{"index"};
 				$nbType = $ahandle->{"nbType"};
+				$bType = $ahandle->{"bType"};
 				$pairType = $ahandle->{"pairType"};
 				$residueType = $residues{$residue}->{"residueType"};
 				$temp[$putIndex]=[$x,$y,$z,$atomSerial];
+				$tempB[$putIndex]=$bType;
 			}
 			$K--;
 			if($residues{$residue}->{"atomCount"} == -1){
@@ -580,10 +650,12 @@ sub parsePDBATOMS
 			## CONCAT RESIDUE ##
 			push(@union,@temp);
 	        	$tempPDL{$residue}->{$residueIndex}=pdl(@temp);
+	        	$tempPDLB{$residueIndex}=pdl(@temp);
+	        	push(@{$tempPDLbType{$residueIndex}},@tempB);
 
 			@temp=();
+			@tempB=();
 			push(@consecResidues,$residue);
-			$headFlag = 0;		
 			$residueIndex++;
 				
 		}
@@ -651,6 +723,7 @@ sub connectivityCheck
 		return(-1,0);
 	}
 
+
 	$nextround[0]=0;
 	while( $#nextround >= 0){
 		my @newlist;
@@ -678,20 +751,18 @@ sub GenerateBondedGeometry {
 
 	my ($connect,$counter,$chid,$chainlength,$lastread) = @_;
 	## $connect is a list of connected residues ##
-   	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union,$ConnectedAtoms) = GenAnglesDihedrals($connect,$chainlength,$chid);
+   	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union,$union2,$unionEG) = GenAnglesDihedrals($connect,$chainlength,$chid);
 	my %union=%{$union};
-	my @ConnectedAtoms2;
-
 	if($chainlength == 0){
 		# no atoms in the chain can only happen if we have a TER TER, or TER END.  So, ignore
-		return(\@ConnectedAtoms2);
+		return($union2,$unionEG);
 	}elsif($chainlength != 1){
 		print "Attempting to connect all atoms in chain $chid to the first atom...\n";
 		my ($connected,$missed)=connectivityCheck(\%union,$chid);
 		if($connected == -1){
 			print "\tChain $chid has no bonds. No connections possible. May be a listing of ions.\n\n";
 			# this chain has no bonds, so no need to try and connect things
-		        return(\@ConnectedAtoms2);
+			return($union2,$unionEG);
 		}
 		if($missed==0 && $connected == $chainlength){
 			print "\tAll $connected atoms connected via covalent bonds \n"; 
@@ -700,16 +771,6 @@ sub GenerateBondedGeometry {
 		}
 	}elsif($chainlength == 1){
 		print "Only 1 atom in chain $chid.  Will not perform connectivity checks.\n";
-	}
-
-	# convert and save the connected atoms' numbering, so that we can avoid trouble if we include BONDs later
-	my @ConnectedAtoms=@{$ConnectedAtoms};
-	foreach my $I(@ConnectedAtoms){
-		my $bondStrA = $map->{$I}->[0];
-		my $sizeA=$map->{$I}->[2];
-		my $ra=$connect->[$map->{$I}->[1]];
-		my $ia=$sizeA+getAtomIndexInResidue($ra,$bondStrA);
-		push(@ConnectedAtoms2,$ia);
 	}
 
 	print "Generating bonds for chain $chid.\n";
@@ -806,12 +867,10 @@ sub GenerateBondedGeometry {
 
 	appendImpropers($map,$connect,$bondMapHashRev,\@tempArr,\%union);
 
-	print "Storing dihedral info for chain $chid.\n";
 	$DihedralData{$counter} = pdl(@tempArr);
 	@tempArr = ();
 	print "Done generating bonded geometry of chain $chid.\n\n";
-	
-	return(\@ConnectedAtoms2);
+	return($union2,$unionEG);
 }
 
 
@@ -862,84 +921,36 @@ sub checkconnection
 	}
 }
 
-sub appendImpropersBOND
-{
-
- 	my($resA,$resB,$resIDA,$resIDB,$sizeA,$ips,$tempArr) = @_;
- 	my ($a,$b,$c,$d) = @{$ips};
- 	my $ta=returnBondTypeFromIndex($a);
- 	my $tb=returnBondTypeFromIndex($b);
- 	my $tc=returnBondTypeFromIndex($c);
- 	my $td=returnBondTypeFromIndex($d);
- 	my $iia = returnAtomFromIndex($a);
- 	my $iib = returnAtomFromIndex($b);
- 	my $iic = returnAtomFromIndex($c);
- 	my $iid = returnAtomFromIndex($d);
- 	if(returnResidueIndexFromIndex($a)!=$resIDA && returnResidueIndexFromIndex($a)!=$resIDB)
- 	{smog_quit("Ad-hoc Improper Create Error: Atom $a is part of neither residue $resIDA or $resIDB");}
- 	if(returnResidueIndexFromIndex($b)!=$resIDA && returnResidueIndexFromIndex($b)!=$resIDB)
- 	{smog_quit("Ad-hoc Improper Create Error: Atom $b is part of neither residue $resIDA or $resIDB");}
- 	if(returnResidueIndexFromIndex($c)!=$resIDA && returnResidueIndexFromIndex($c)!=$resIDB)
- 	{smog_quit("Ad-hoc Improper Create Error: Atom $c is part of neither residue $resIDA or $resIDB");}
- 	if(returnResidueIndexFromIndex($d)!=$resIDA && returnResidueIndexFromIndex($d)!=$resIDB)
- 	{smog_quit("Ad-hoc Improper Create Error: Atom $d is part of neither residue $resIDA or $resIDB");}
- 	
-	my($ia)= (returnResidueIndexFromIndex($a)==$resIDA ? (getAtomIndexInResidue($resA,$iia)) 
-	: ($sizeA+getAtomIndexInResidue($resB,$iia)));
- 	my($ib)= (returnResidueIndexFromIndex($b)==$resIDA ? (getAtomIndexInResidue($resA,$iib)) 
-	: ($sizeA+getAtomIndexInResidue($resB,$iib)));
-	my($ic)= (returnResidueIndexFromIndex($c)==$resIDA ? (getAtomIndexInResidue($resA,$iic)) 
-	: ($sizeA+getAtomIndexInResidue($resB,$iic)));
-	my($id)= (returnResidueIndexFromIndex($d)==$resIDA ? (getAtomIndexInResidue($resA,$iid)) 
-	: ($sizeA+getAtomIndexInResidue($resB,$iid)));
- 	my $if = funcToInt("impropers",connWildcardMatchImpropers($ta,$tb,$tc,$td),"");
- 	## [x,y,z,func,countDihedrals,energyGroup] energyGroup is negative signifies improper
- 	push(@{$tempArr},[$ia,$ib,$ic,$id,$if,1,-1]);
-  	
-}
-
 sub connCreateInteractionsSingleBOND
 {
-    	my($consecResiduesH,$sizeA,$counter,$atomA,$atomB,$resAIdx,$resBIdx,$bEG,$imp) = @_;
-	my @consecResidues = @{$consecResiduesH};
-    	## AD-HOC BONDS ##
-	my($angH,$diheH,$adjList,$bondStrA,$bondStrB)=createConnection($consecResiduesH,0,$atomA,$atomB);
-	## BOND ##
-	my ($ia,$ta) = (getAtomIndexInResidue($consecResidues[0],$bondStrA)
-							,getAtomBType($consecResidues[0],$bondStrA));
-	my ($ib,$tb) = ($sizeA+getAtomIndexInResidue($consecResidues[1],$bondStrB)
-							,getAtomBType($consecResidues[1],$bondStrB));
+    	my($union,$unioneG,$bTypesFragment,$counter,$chain1,$chain2,$index1,$index2,$atomA,$atomB,$resA,$resB,$bEG) = @_;
+	my $a; my $b; my $c; my $d; my $ta; my $tb; my $tc; my $td;   
+	my $if;
+	my $eG;
+ 	## AD-HOC BONDS ##
+	my @localbTypes=@{$bTypesFragment};
 	
-	
-	my $if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");
-	
-    	$BondData{$counter}=pdl($ia,$ib,$if);
-        my ($ja,$jb)=($ia,$ib);
-	## ANGLES ##
+	# add the bond to the fragment and then generate all possible angles and dihedrals within the fragment.
+	my($angH,$diheH)=createConnection($index1,$index2,$union,$unioneG,$bEG);
+
+	## Add the BOND to the model##
+	$ta = $localbTypes[$index1];
+	$tb = $localbTypes[$index2];
+	$if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");
+    	$BondData{$counter}=pdl($index1,$index2,$if);
+
+#	## Add all ANGLES that contain both of the BONDed atoms##
 	my @tempArr;
 	foreach my $angs(@{$angH})
 	{
 		my($a,$b,$c) = split("-",$angs);
-		my $ia;my $ib;my $ic;
-		my $ta;my $tb;my $tc;
-		($ia,$ta) = ($a =~ /(.*)\?/ )
-			? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-			: (getAtomIndexInResidue($consecResidues[0],$a),getAtomBType($consecResidues[0],$a));
-				
-		($ib,$tb) = ($b =~ /(.*)\?/)
-			? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-			: (getAtomIndexInResidue($consecResidues[0],$b),getAtomBType($consecResidues[0],$b));
-				
-		($ic,$tc) = ($c =~ /(.*)\?/) 
-			? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-			: (getAtomIndexInResidue($consecResidues[0],$c),getAtomBType($consecResidues[0],$c));
-				
-		# only add angles that include the bond
-		if(($ja==$ia || $ja==$ib || $ja==$ic) && ($jb==$ia || $jb==$ib || $jb==$ic) ){
-        	 my $if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
-        	 push(@tempArr,pdl($ia,$ib,$ic,$if));
-                }	
-
+		if( ($a == $index1 || $b == $index1  || $c == $index1) && ($a == $index2 || $b == $index2  || $c == $index2) ) {
+			$ta = $localbTypes[$a];
+			$tb = $localbTypes[$b];
+			$tc = $localbTypes[$c];
+			$if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
+			push(@tempArr,pdl($a,$b,$c,$if));
+		}
 	}
         if(@tempArr)
         {
@@ -947,54 +958,100 @@ sub connCreateInteractionsSingleBOND
 	}else{
 		smog_quit("There are no angles between ",$consecResidues[0]," and ",$consecResidues[1]);
         }
+	# array to hold dihedrals that have the BOND as the central bond.  i.e. i-j-k-l and j-k is the bond
 	@tempArr = ();
-			
-			
+	# arrays for dihedrals to be added to chain 1 and chain 2. i.e. BOND is i-j or l-k
+	my  @tempArr1=();		
+	my  @tempArr2=();		
+
+	my %eGhash;
+	#unroll the energy groups for quick access.
+	foreach my $atom(keys %{$unioneG}){
+		my @tarra=@{${$union}{$atom}};
+		my @tarreG=@{${$unioneG}{$atom}};
+		foreach my $atom2(@tarra){
+			my $egt = shift @tarreG;
+			$eGhash{"$atom-$atom2"}=$egt;
+			$eGhash{"$atom2-$atom"}=$egt;
+		}
+	}
+
 	## DIHEDRALS ##
 	foreach my $dihes(@{$diheH})
 	{
 		my($a,$b,$c,$d) = split("-",$dihes);
-		my $ia;my $ib;my $ic;my $id;
-		my $ta;my $tb;my $tc;my $td;
-		my $eG;
-	
-			($ia,$ta) = ($a =~ /(.*)\?/)
-				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-				: (getAtomIndexInResidue($consecResidues[0],$a),getAtomBType($consecResidues[0],$a));
-					
-			($ib,$tb) = ($b =~ /(.*)\?/ )
-				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-				: (getAtomIndexInResidue($consecResidues[0],$b),getAtomBType($consecResidues[0],$b));
-					
-			($ic,$tc) = ($c =~ /(.*)\?/ )
-				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-				: (getAtomIndexInResidue($consecResidues[0],$c),getAtomBType($consecResidues[0],$c));
-				
-			($id,$td) = ($d =~ /(.*)\?/) 
-				? ($sizeA+getAtomIndexInResidue($consecResidues[1],$1),getAtomBType($consecResidues[1],$1))
-				: (getAtomIndexInResidue($consecResidues[0],$d),getAtomBType($consecResidues[0],$d));
-		
-		if(($ja==$ib || $ja==$ic) && ( $jb==$ib || $jb==$ic) ){
-			$eG=$bEG;
-			my $if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
-			$eG = $eGRevTable{$eG};
-			push(@tempArr,[$ia,$ib,$ic,$id,$if,1,$eG]);	
+
+		$ta = $localbTypes[$a];
+		$tb = $localbTypes[$b];
+		$tc = $localbTypes[$c];
+		$td = $localbTypes[$d];
+		$eG=$eGhash{"$b-$c"};
+		$if = funcToInt("dihedrals",connWildcardMatchDihes($ta,$tb,$tc,$td,$eG),$eG);
+		$eG = $eGRevTable{$eG};
+
+
+		if( ($b == $index1  && $c == $index2) || ( $b == $index2  &&  $c == $index1 ) ) {
+			# dihedrals formed about the new bond
+			push(@tempArr,[$a,$b,$c,$d,$if,1,$eG]);	
 		}
+		if( ($a == $index2  && $b == $index1) || ($d == $index2  && $c == $index1)  ) {
+			# dihedrals formed about existing bond in chain 1
+			push(@tempArr1,[$a,$b,$c,$d,$if,1,$eG]);	
+		}
+
+		if( ($a == $index1  && $b == $index2) || ($d == $index1  && $c == $index2) ) {
+			# dihedrals formed about existing bond in chain 2
+			push(@tempArr2,[$a,$b,$c,$d,$if,1,$eG]);	
+		}
+
+
 	}
-	     
-	   
-	## Manually add Improper dihedrals ##
-	if(scalar(@{$imp})!=0){
-		appendImpropersBOND($consecResidues[0],$consecResidues[1],$resAIdx,$resBIdx,$sizeA,$imp,\@tempArr);
-	}
-		
         if(@tempArr)
         {$DihedralData{$counter} = pdl(@tempArr);
-        }else{
-		smog_quit("There are no dihedrals between ",$consecResidues[0]," and ",$consecResidues[1]);
+        }
+	if(@tempArr1){
+		addBONDdihToChain($counter,\@tempArr1,$chain1,$index2);
 	}
-	@tempArr = ();
+	if(@tempArr2){
+		addBONDdihToChain($counter,\@tempArr2,$chain2,$index1);
+	}
 }
+
+sub addBONDdihToChain
+{
+	my ($counter,$tempArr1,$chain1,$index2)=@_;
+	my @tempArr1=@{$tempArr1};
+	# find $index2 from piddle for counter and add it to the piddle for chain1 
+	# globals: bondPDL, 
+	#find PDL entry $bondPDL{$chain1} for chain1
+	my $index2t = slice($bondPDL{$counter},":,$index2");
+	#glue information about atom $a (i.e. chain2 atom) in $bondPDL{$counter}
+	$bondPDL{$chain1}=$bondPDL{$chain1}->glue(1,$index2t);
+	#find mapping between current BOND piddle for counter and PDL entry for chain1(column 3)
+
+	my @listcounter=slice($bondPDL{$counter},3);
+	my @listchain1=slice($bondPDL{$chain1},3);
+	my $nc=0;
+	my %mapto1;
+	for my $h(list(@listcounter)){
+		my $nc1=0;
+		for my $hh(list(@listchain1)){
+			if($h==$hh){
+				$mapto1{$nc}=$nc1;
+			}
+			$nc1++;
+		}
+		$nc++;
+	}
+	#re-assign all indexes used in tempArr1 according to mapping to chain 1
+	my @newArr1;
+	foreach my $Y(@tempArr1){
+		push(@newArr1,[$mapto1{$Y->[0]},$mapto1{$Y->[1]},$mapto1{$Y->[2]},$mapto1{$Y->[3]},$Y->[4],$Y->[5],$Y->[6]]);
+	}
+	#glue converted tempArr1 to $DihedralData{$chain1}
+	$DihedralData{$chain1}=($DihedralData{$chain1})->glue(1,pdl(@newArr1));
+}
+
 
 sub appendImpropers
 {
@@ -1335,12 +1392,15 @@ sub GenAnglesDihedrals
 	## $connect is a list of connected residues ##
 	my $dihes; my $angles; 
 	my $oneFour;
-	my %union; my $connHandle;
+	my %union; 
+        my %union2; # this one is specifically numbered to make BOND additions. In earlier implementations, we were limited to bonds between atoms not involved in connections.  Now, we are keeping the full connectivity in a form that is easier to work with, so that arbitrary blocks of atoms may be considered during BOND dihedral identification steps
+	my %unionEG; # this carries the energy groups of each bond in the union2 lists
+        my $connHandle;
 	my $i=0;my $mapCounter=0;
 	my %bondMapHash; ##[AtomName,ResidueIndex,prevSize]##
 	my %bondMapHashRev;
 	my @connectList;
-	my @AtomsInConnections;
+	my @connectListRes;
 	my $leftAtom;my $rightAtom;
 	my $prevSize = 0;
 	
@@ -1348,9 +1408,10 @@ sub GenAnglesDihedrals
 	for($i = 0;$i<=$#$connect;$i++)
 	{
   		my $resABonds = $dihedralAdjList{$connect->[$i]};
+  		my $resABondseG = $dihedralAdjListeG{$connect->[$i]};
 		my $resAAtoms = $residues{$connect->[$i]}->{"atoms"};
 		## Atoms to mapCounter renaming ##
- 		foreach my $atom(keys %{$resAAtoms})
+ 		foreach my $atom( keys %{$resAAtoms})
 		{
 			$bondMapHashRev{"$atom-$i"}=$mapCounter;
 			$bondMapHash{$mapCounter}=[$atom,$i,$prevSize];
@@ -1359,8 +1420,25 @@ sub GenAnglesDihedrals
 		foreach my $atom(keys %{$resABonds})
     		{
      			my @tempArr = map {$bondMapHashRev{"$_-$i"}} @{$resABonds->{$atom}};
-			my $atomKey = $bondMapHashRev{"$atom-$i"}; 
+     			my @tempArreG = @{$resABondseG->{$atom}};
+			my $atomKey = $bondMapHashRev{"$atom-$i"};
+
+
      			$union{$atomKey} = \@tempArr;
+
+			my $atomname=$bondMapHash{$atomKey}->[0];
+			my $residue=$connect->[$i];
+
+			my $ia = $prevSize+getAtomIndexInResidue($residue,$atomname);
+			my @ntempArr=();
+			foreach my $JJ(@tempArr){
+				$atomname=$bondMapHash{$JJ}->[0];
+				my $ja = $prevSize+getAtomIndexInResidue($residue,$atomname);
+				push(@ntempArr,$ja);
+			}
+     			$union2{$ia} = \@ntempArr;
+     			$unionEG{$ia} = \@tempArreG;
+
 		}
 
 		# if this is a single residue chain, then don't try to connect it to the next residue
@@ -1392,10 +1470,10 @@ sub GenAnglesDihedrals
 				smog_quit("Unable to connect residues $j and $i.  It appears that the connecting atom in residue $i is missing. Connection expects there to be a $rightAtom atom.");
 			}
 	    		$rightAtom = $bondMapHashRev{"$rightAtom-$i"};
-			push(@AtomsInConnections,$leftAtom);
-			push(@AtomsInConnections,$rightAtom);
 			push(@connectList,$leftAtom);
 			push(@connectList,$rightAtom);
+			push(@connectListRes,$connect->[$i-1]);
+			push(@connectListRes,$connect->[$i]);
 		}
     
     		## $i <--> $i+1
@@ -1412,6 +1490,24 @@ sub GenAnglesDihedrals
   	for($i=0;$i<scalar(@connectList)-1;$i+=2) {
    		push(@{$union{$connectList[$i]}},$connectList[$i+1]);
    		push(@{$union{$connectList[$i+1]}},$connectList[$i]);
+
+		my @ntempArr=();
+		my $JJ=$connectList[$i];
+		my $residue=$connectListRes[$i];
+		my $atomname=$bondMapHash{$JJ}->[0];
+		my $prevSize=$bondMapHash{$JJ}->[2];
+		$JJ = $prevSize+getAtomIndexInResidue($residue,$atomname);
+		my $KK=$connectList[$i+1];
+		my $prevSize1=$bondMapHash{$KK}->[2];
+		my $atomname1=$bondMapHash{$KK}->[0];
+		my $residue1=$connectListRes[$i+1];
+		$KK = $prevSize1+getAtomIndexInResidue($residue1,$atomname1);
+		my $eG = getEnergyGroup($residue,$residue1,$atomname,"$atomname1?");
+   		push(@{$unionEG{$JJ}},$eG);
+   		push(@{$unionEG{$KK}},$eG);
+   		push(@{$union2{$JJ}},$KK);
+   		push(@{$union2{$KK}},$JJ);
+
   	}
   	my @includedatoms;
   	for(my $I=0;$I<$chainlength;$I++){
@@ -1420,6 +1516,7 @@ sub GenAnglesDihedrals
   	foreach my $atom(keys %union){
    		$includedatoms[$atom]=1;
 	}
+
 	for(my $I=0;$I<$chainlength;$I++){
 		if($includedatoms[$I]==0 && $chainlength !=1){
 			my $atomname=$bondMapHash{$I}->[0];
@@ -1432,65 +1529,29 @@ sub GenAnglesDihedrals
 	}
 
   	($dihes,$angles,$oneFour)=adjListTraversal(\%union);
-  	return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev,\%union,\@AtomsInConnections);
+  	return (\@connectList,$angles,$dihes,\%bondMapHash,\%bondMapHashRev,\%union,\%union2,\%unionEG);
 }
-
-
 
 sub createConnection
 {
-	my($connect,$firstFlag,$atomA,$atomB) = @_;
+	my($atom1,$atom2,$union,$unioneG,$eG) = @_;
 	my @tempA; my @tempD;
 	my $dihes; my $angles; my $oneFour;
-	my %union; my $connHandle;
+	my %union=%{$union}; 
+	my %unioneG=%{$unioneG}; 
 	my $resABonds;my $resBBonds;
 	my %tempAdjList; 
 
-
-  	## USES GLOBAL FLAG MISSING TO CREATE NEW MAP ##
-   	## Connection via connections attribute ##
-   	if(!$atomA || !$atomB){
-    		$connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
-    		$atomA = $connHandle->{"bond"}->[0]->{"atom"}->[0];
-    		$atomB = $connHandle->{"bond"}->[0]->{"atom"}->[1];
-    	}
-	$resABonds = $dihedralAdjList{$connect->[0]};
-	$resBBonds = $dihedralAdjList{$connect->[1]};
-	
-
-	## Rename atoms in $resBBonds to avoid clashing ##
- 	foreach my $atom(keys %{$resBBonds})
-	{
-		my @tempArr = map {"$_?"} @{$resBBonds->{$atom}};
-		$tempAdjList{"$atom?"} = \@tempArr;
-	}
-	%union = ();
-	while(my($k,$v) = each %{$resABonds}){@{$union{$k}}=@{$v};}
-	while(my($k,$v) = each %tempAdjList){$union{$k}=$v;}
-	
-	push(@{$union{"$atomA"}},"$atomB?");
-	push(@{$union{"$atomB?"}},"$atomA");
-		
+  # simple addition of the desired bond
+	push(@{$union{"$atom1"}},"$atom2");
+	push(@{$union{"$atom2"}},"$atom1");
+	push(@{$unioneG{"$atom1"}},"$eG");
+	push(@{$unioneG{"$atom2"}},"$eG");
 	 
 	($dihes,$angles,$oneFour)=adjListTraversal(\%union); 
   	 
-
-	if($firstFlag==0){
-		@tempA = map {$_ =~/\?/ ? ($_) : ()} @{$angles};
-		@tempD = map {$_ =~ /\?/ ? ($_) : () } @{$dihes};
-		@{$angles} = @tempA; @{$dihes} = @tempD;
-	}
-	elsif($firstFlag==-1)
-	{
-		@tempA = map {countQM($_) > 0 && countQM($_) < 3? ($_) : ()} @{$angles};
-		@tempD = map {countQM($_) > 0 && countQM($_) < 4? ($_) : ()} @{$dihes};
-		@{$angles} = @tempA; @{$dihes} = @tempD;
-	}
-	return ($angles,$dihes,\%union,"$atomA","$atomB");
+	return ($angles,$dihes);
 }
-
-sub countQM{my $in=shift;my $c = () = $in =~ /\?/g;return $c;}
-
 
 sub catPDL
 {

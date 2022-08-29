@@ -44,7 +44,7 @@ use OpenSMOG;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESenergygroups checkCONNenergygroups checkRESimpropers round checkFunctions);
+qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList %dihedralAdjListeG adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESenergygroups checkCONNenergygroups checkRESimpropers round checkFunctions);
 
 our $OpenSMOG;
 our $OpenSMOGpothash;
@@ -89,6 +89,7 @@ our %dihedralFunctionals;
 our %angleFunctionals;
 our %connections;
 our %dihedralAdjList;
+our %dihedralAdjListeG;
 
 ## Create new XML::Simple object ##
 my $xml = new XML::Simple;
@@ -947,6 +948,7 @@ foreach my $res (keys %residues)
 	%bondHandle = %{$residueHandle->{"bonds"}};
 	my @inputString; my @functionString;
 	my %adjList; 
+	my %adjListeG; 
 
 # check that every atom in an improper is actually present in the residue
 	@improperHandle = @{$residueHandle->{"impropers"}};
@@ -1002,12 +1004,15 @@ foreach my $res (keys %residues)
 		my $indexB = $residueHandle->{"atoms"}->{"$atomB"}->{"index"};
 		push(@inputString,"$indexA-$indexB"); ## MIGHT CHANGE
 		push(@functionString,"$funct");
-		
+		my $eG = getEnergyGroup($res,$res,$atomA,$atomB);
+		push(@{$adjListeG{$atomA}},$eG);
+		push(@{$adjListeG{$atomB}},$eG);
 		push(@{$adjList{$atomA}},$atomB);
 		push(@{$adjList{$atomB}},$atomA);
 	   }
 	$bondFunctionals{$res} = {"bonds"=>\@inputString, "functions"=>\@functionString}; 
 	$dihedralAdjList{$res} = \%adjList;
+	$dihedralAdjListeG{$res} = \%adjListeG;
 	}
 }
 
