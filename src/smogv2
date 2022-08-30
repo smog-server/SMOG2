@@ -847,7 +847,7 @@ sub printOrderedBonds
 # call  calculateBondsHelper1() for each residue defined in templates
 sub calculateBonds1
 {
-print "Defining intra-residue bonds for all chains\n";
+print "Setting intra-residue bonds distances\n";
 	my($bondFunctHandle,$whichPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
 	foreach my $res(keys %{$bondFunctHandle}){
 	       if(!exists $whichPDL->{$res}){next;}
@@ -859,7 +859,7 @@ print "Defining intra-residue bonds for all chains\n";
 sub calculateBonds2
 {
 	my($bondHandle,$whichPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
-	print "Defining inter-residue bonds for chain:\n";
+	print "Setting inter-residue bonds for chain:\n";
 	foreach my $chain(sort { $a <=> $b } keys %{$bondHandle})
 	{
 		my $chainn=$chain+1;
