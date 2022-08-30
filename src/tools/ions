@@ -140,6 +140,13 @@ if(defined $template){
 	if(defined $addmass || defined $addcharge || defined $addC12 || defined $addC6){
 		smog_quit("When using the -t option, you may not provide the following additional flags: -ionC12, -ionC6, -ionq, -ionm.");
 	}
+	if (! -d $template ){
+		if (-f $template ){
+			smog_quit("Must give a template directory with option -t.  \"$template\" appears to be a file, not a directory.")
+		}else{
+			smog_quit("Must give a template directory with option -t.  \"$template\" is not a readable directory.")
+		}
+	}
 
 	# going to look for the sif and determine if nonbond information should
 	# be added to the top (i.e. standard gromacs-formatted interactions) or
@@ -775,12 +782,13 @@ usage: smog_ions ... options
    Required flags
 	-ionnm  <string>        : name of ion to be added to the system
 	-ionn   <integer>       : number of ions to add
+   Optional settings 
 	-ionq   <float>         : charge of ions
 	-ionm   <float>         : mass of ions
 	-ionC12 <float>         : C12 excluded-volume parameter for added ions
-   Optional settings 
 	-t <string>	        : optional template directory to read ion definitions
                                     This is required if using OpenSMOG files
+                                    -ionq, -ionm and -ionC12 can not be used with -t
 	-f [smog.top]           : input SMOG force field file
 	-g [smog.gro]           : input SMOG configuration file
 	-of [smog.ions.top]     : output SMOG force field file for smog-ions system
