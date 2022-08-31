@@ -782,24 +782,32 @@ usage: smog_ions ... options
    Required flags
 	-ionnm  <string>        : name of ion to be added to the system
 	-ionn   <integer>       : number of ions to add
-   Optional settings 
-	-ionq   <float>         : charge of ions
-	-ionm   <float>         : mass of ions
-	-ionC12 <float>         : C12 excluded-volume parameter for added ions
-	-t <string>	        : optional template directory to read ion definitions
-                                    This is required if using OpenSMOG files
-                                    -ionq, -ionm and -ionC12 can not be used with -t
+
+   Recommended flag
+	-t <string>	        : template directory to read ion definitions
+                                    smog_ions will search the directory for a file 
+                                    that ends with "ions.def"
+                                    This option is required if using OpenSMOG files
+                                    When using -t, you do not provide values for 
+                                    -ionq, -ionm, -ionC6 and -ionC12. Instead, these 
+                                    values are read from the ions.def file
+
+   I/O options
 	-f [smog.top]           : input SMOG force field file
 	-g [smog.gro]           : input SMOG configuration file
 	-of [smog.ions.top]     : output SMOG force field file for smog-ions system
 	-og [smog.ions.gro]     : output SMOG configuration file for smog-ions system
-	-mindist [0.5]          : the minimium distance (nm) between an added ion and 
-                                    any other atom in the system
-	-ionC6 [0.0]	        : C6 parameter for added ions
 	-OpenSMOG <xml file>    : also process an OpenSMOG xml file. This file is generated 
                                     by smog2 if the -OpenSMOG option was used.
-                                    note: For OpenSMOG, parameters must be given with -t flag
 	-OpenSMOGout <xml file> : output file name for processed OpenSMOG xml file
+
+   Optional settings 
+	-ionq   <float>         : charge of ions
+	-ionm   <float>         : mass of ions
+	-ionC12 <float>         : C12 excluded-volume parameter for added ions
+	-ionC6 [0.0]	        : C6 parameter for added ions
+	-mindist [0.5]          : the minimium distance (nm) between an added ion and 
+                                    any other atom in the system
 	-warn [0]	        : convert first N errors into warnings
 	-help 		        : show options 
 EOT

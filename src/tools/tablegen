@@ -239,6 +239,10 @@ sub usage
 	print <<EOT;
 
 DESCRIPTION:
+
+ THIS TOOL IS ONLY USED WHEN PERFORMING SIMULATIONS IN GROMACS. IF YOU ARE USING 
+ OPENSMOG, THEN DO NOT USE THIS TOOL.
+
  Native contact potentials: Gromacs supports a 6-12 potential for native contacts. If you
  are using a 6-12 potential, then there is no need to use a table.  However, if would 
  like to use alternate contact potentials of the form (function contact_1 in SMOG 2):
@@ -266,6 +270,7 @@ usage: smog_tablegen  .. options ..
 	-M [12]  		: exponent of repulsive non-bonded interaction
 	-ic [0]  		: effective monovalent ion concentration (Molar) for DH interaction
 	-temp [300]  		: simulation temperature corresponding to room temperature (Gromacs units)
+                                   Note: typically, in SMOG models, room temperature is roughly 60 Gromacs units
 	-units [kCal]  		: units to be used in the simulations [kCal|kJ]
                                    Note: the -units option only applies to electrostatics
 	-sd [1.0]		: distance (nm) to start switching function for electrostatics
