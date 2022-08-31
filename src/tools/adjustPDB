@@ -419,8 +419,16 @@ sub adjustInputFile{
 		}elsif ($pArr[$k] =~ /^ATOM/ || $pArr[$k] =~ /^HETATM/){
 		## If atom line: ##
 			completeline($pArr[$k],$k);
-			$firstresidue++;
 			my $resNum = substr($pArr[$k],22,5);
+			$resName = trim(substr($pArr[$k],17,4));
+			if(defined $deletewater && ($resName =~ m/^HOH$/ || $resName =~ m/^WAT$/)){
+				$removestring .= "$resName$resNum ";
+				$k++;
+				next;
+			}
+
+
+			$firstresidue++;
 			my $newResNum = $resNum;
 			if(trim($resNum) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/ && trim($lastresidue) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/){
 				if(trim(substr($resNum,0,4))-trim(substr($lastresidue,0,4)) > 1  && $firstresidue !=1){
@@ -455,7 +463,6 @@ sub adjustInputFile{
 				smog_quit("Residue IDs must be positive integers. Found: $resNum.");
 			}
 	
-			$resName = trim(substr($pArr[$k],17,4));
 			
 			
 			## Loop through the residue ##
@@ -845,9 +852,6 @@ sub legacymatching
 		my $x = $residue[$i]->{"coords"};
 		if(defined $removeH && $aName =~ m/^H/){
 			$removestring .= "$resName$resInd-$aName ";
-		}elsif(defined $deletewater && ($resName =~ m/^HOH$/ || $resName =~ m/^WAT$/)){
-			$removestring .= "$resName$resInd-$aName ";
-
 		}else{
 			$printthis.=sprintf("ATOM  %5d %4s %-4s%s%4d    %s\n",$ind,$aName,$resName,$chainName,$resInd,$x);
 		}
@@ -858,11 +862,6 @@ sub legacymatching
 sub exactmatching
 {
 	my ($k,$resName,$resInd,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring) = @_;
-
-	if(defined $deletewater && ($resName =~ m/^HOH$/ || $resName =~ m/^WAT$/)){
-			$removestring .= "$resName$resIDorig ";
-			return("",$removestring,$renamedstring);
-	}
 
 	# get and sort atom names. We can update this with regexes later for more complex matching
 
