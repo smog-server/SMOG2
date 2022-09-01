@@ -142,9 +142,15 @@ appendDefaults();
 if($userProvidedMap == 0) { #use SCM.jar if user doesn't provide a map
 	my $comments=printTop($topFile4SCM);
 	generateContactMap($groFile4SCM,$ndxFile,$shadowFile,$topFile4SCM);
-	if(! defined $keep4SCM){
-		# this is only used for smog-check
-		`rm $groFile4SCM $topFile4SCM`;
+}
+
+if(! defined $keep4SCM){
+	# this is only used for smog-check
+	if(-e $groFile4SCM){ 
+		`rm $groFile4SCM`;
+	}
+	if(-e $topFile4SCM){ 
+		`rm $topFile4SCM`;
 	}
 }
 
@@ -159,6 +165,16 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
 	printBondedTopOutput($inputPDB);
 	appendDefaults();
+
+	if(! defined $keep4SCM){
+		# this is only used for smog-check
+		if(-e $groFile4SCM){ 
+			`rm $groFile4SCM`;
+		}
+		if(-e $topFile4SCM){ 
+			`rm $topFile4SCM`;
+		}
+	}
 }
 
 appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
