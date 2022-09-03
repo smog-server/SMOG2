@@ -74,7 +74,7 @@ my $ignoreHydrogen=0; #variable that is set when you don't want contact map gene
 my $DNAME="smog";
 my $backup="yes";
 my $freecoor;
-my $allowCG = 0;
+my $CGstage = 0;
 my $nocheck = "no";
 my $keep4SCM;
 my $extrasfile="";
@@ -130,7 +130,11 @@ header();
 parse_args();
 
 print "Parsing templates files...\n";
-parseTemplatesAndPDB($inputFolder,$inputPDB,$allowCG);
+# CGstage =0 means that we will not CG at this step
+# CGenabled indicates whether CGing will be done, later
+# If CGenabled=1 and CGstage=0, then we save any BOND lines for later.
+# if both are = 1, then we use the saved BOND lines
+parseTemplatesAndPDB($inputFolder,$inputPDB,$CGenabled,$CGstage);
 if($CGenabled == 0 || ($CGenabled == 1 && $userProvidedMap == 0)) {
 	# either no CG, or CG and need to generate a map
 	printBondedTopOutput($inputPDB);
@@ -159,10 +163,10 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
     	clearBifMemory();
 	clearPDBMemory();
 	undef %presentatomtypes;
-	$allowCG = 1;
+	$CGstage = 1;
 	print "\nParsing templates for coarse graining... ";
 	$inputFolder = $coarseFolder;
-	parseTemplatesAndPDB($coarseFolder,$inputPDB,$allowCG);
+	parseTemplatesAndPDB($coarseFolder,$inputPDB,$CGenabled,$CGstage);
 	printBondedTopOutput($inputPDB);
 	appendDefaults();
 
@@ -2497,7 +2501,7 @@ sub freeMemoryForShadow
 
 sub parseTemplatesAndPDB
 {
-	my ($inputFolder,$inputPDB,$allowCG) = @_;
+	my ($inputFolder,$inputPDB,$CGenabled,$CGstage) = @_;
     
     	## TEST IF SMOG PATH EXISTS ##
     	if(!$ENV{"SMOG_PATH"}){smog_quit("SMOG_PATH environment variable not set");}
@@ -2548,8 +2552,8 @@ sub parseTemplatesAndPDB
 	print "\nReading $inputPDB\n\n";
 	## CREATE GRO FILE ##
 	convertPDBToGroNdx($inputPDB,$groFile,$g96File,$groFile4SCM,$ndxFile,$userProvidedMap,$freecoor);
-	my $PDBhandle=checkPDB($inputPDB,$allowCG,$freecoor);
-	parsePDBATOMS($PDBhandle,$allowCG,$freecoor);
+	my $PDBhandle=checkPDB($inputPDB,$CGenabled,$CGstage,$freecoor);
+	parsePDBATOMS($PDBhandle,$CGenabled,$CGstage,$freecoor);
 	catPDL();
 }
 

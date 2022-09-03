@@ -87,7 +87,7 @@ sub checkPDB
 {
 	# load the PDB into memory and return a handle to the array.
 	print "Checking PDB formatting\n";	
-	my ($fileName,$CGenabled,$freecoor) = @_;
+	my ($fileName,$CGenabled,$CGstage,$freecoor) = @_;
 	
 	## INTERNAL VARIABLES ##
 	my $counter = 0;
@@ -177,31 +177,36 @@ sub checkPDB
 		# CHECK IF IT IS A BOND
  		if($record =~ m/^BOND/){
 
-			if($CGenabled==1){
-				smog_quit("User-defined bonds, via BOND declaration, are not supported with Coarse-Grained models. Remove BOND lines and try again.");
-				next;
-  			}elsif($endfound ==0){
+			if($endfound ==0){
    				smog_quit("PDB format issue: User-defined bonds given by BOND should be listed immediately after END.");
   			}
 
     			chomp($record);
-   
-			my @TMP = split(/\s+/,$record);
-			if(@TMP <= 5){
-				smog_quit("Directive BOND must have 5 arguments (chain A, atom number A, chain B, atom number B, energy group). Offending line:\n$record");
-			}
-			my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
-			
-			#internally, chains are indexed 0,1...
-			$chaina--;
-			$chainb--;
-			if(!exists $indexMap{"$chaina-$atoma"}){
-				$chaina++;
-				smog_quit("When trying to add a user-defined BOND, could not find atom $atoma in chain $chaina");
-			}
-			if(!exists $indexMap{"$chainb-$atomb"}){
-				$chainb++;
-				smog_quit("When trying to add a user-defined BOND, could not find atom $atomb in chain $chainb");
+			unless($CGenabled == 1 && $CGstage==0){
+				#only skip if this is the first round of CG
+				my $resat;
+				if($CGenabled==1){
+					$resat="residue";
+				}else{
+					$resat="atom";
+				} 
+				my @TMP = split(/\s+/,$record);
+				if(@TMP <= 5){
+					smog_quit("Directive BOND must have 5 arguments (chain A, $resat number A, chain B, $resat number B, energy group). Offending line:\n$record");
+				}
+				my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
+				
+				#internally, chains are indexed 0,1...
+				$chaina--;
+				$chainb--;
+				if(!exists $indexMap{"$chaina-$atoma"}){
+					$chaina++;
+					smog_quit("When trying to add a user-defined BOND, could not find $resat $atoma in chain $chaina");
+				}
+				if(!exists $indexMap{"$chainb-$atomb"}){
+					$chainb++;
+					smog_quit("When trying to add a user-defined BOND, could not find $resat $atomb in chain $chainb");
+				}
 			}
 			$counter++;
 			next;
@@ -230,14 +235,13 @@ sub checkPDB
 			$residue = trim(substr($record,17,4));
 			if(!exists $residues{$residue}){smog_quit (" \"$residue\" doesn't exist in .bif. See line $lineNumber of PDB file.");}
 			## if first iteration, save residueBackup, and use residues
-			#if(exists $residueBackup{$residue}){
-			if($CGenabled == 1){
+			if($CGstage == 1){
 				$atomsInRes = scalar(keys(%{$residueBackup{$residue}->{"atoms"}}));
 			}else{
 				$atomsInRes = scalar(keys(%{$residues{$residue}->{"atoms"}}));
 			}
 			my $atomsInBif=scalar(keys(%{$residues{$residue}->{"atoms"}}));
-			if($atomsInBif != 1 && $CGenabled ==1){
+			if($atomsInBif != 1 && $CGstage ==1){
 				smog_quit ("When using CG, each residue can only have one atom in the CG template. Check .bif definition for $residue");
 			}
 			my $atomsmatch=0;
@@ -278,7 +282,7 @@ sub checkPDB
 				if($resname ne $residue or $resindex ne $interiorPdbResidueIndex or  $record !~ m/^ATOM|^HETATM/){
 					my $linetemp=$lineNumber-1;
 					my $missingatoms="";
-				        if($CGenabled == 1){
+				        if($CGstage == 1){
 						foreach my $atomcheck(keys (%{$residueBackup{$resname}->{"atoms"}})){
 	                        			if(!exists $uniqueAtom{$atomcheck}){
 								$missingatoms=$missingatoms . "$atomcheck ";
@@ -315,7 +319,7 @@ sub checkPDB
 					
 				if(!exists $residues{$residue}->{"atoms"}->{$atom})
 				{
-					if($CGenabled == 0){
+					if($CGstage == 0){
 						smog_quit ("\"$atom\" doesn't exist in .bif declaration of \"$residue\"");
 					}else{
 						# if CG is turned on, skip atom
@@ -361,7 +365,7 @@ sub checkPDB
 				$pairType = $th->{"pairType"};
 				$residueType = $residues{$residue}->{"residueType"};
 				my $pdbIndex;
-				if($CGenabled==1){
+				if($CGstage==1){
 					$pdbIndex = $interiorPdbResidueIndex;
 				}else{
 					$pdbIndex = trim(substr($record,6,5));
@@ -406,7 +410,7 @@ sub checkPDB
 sub parsePDBATOMS
 {
 	
-	my ($PDBDATA,$CGenabled,$freecoor) = @_;
+	my ($PDBDATA,$CGenabled,$CGstage,$freecoor) = @_;
 	my @PDBDATA=@{$PDBDATA};
 	## INTERNAL VARIABLES ##
 	my $counter = 0;
@@ -434,7 +438,7 @@ sub parsePDBATOMS
 	my %bondlists;
 	my %bondlistsEG;
 	print "Organizing PDB data\n";
-	if($CGenabled == 1){
+	if($CGstage == 1){
 		$atominhash=\%residueBackup;
 		$PDBresstart=22;
 	}else{
@@ -461,6 +465,10 @@ sub parsePDBATOMS
 		}
  		if($record =~ m/^BOND/){
 
+			if($CGenabled==1 && $CGstage==0){
+				#we are doing the all-atom processing before CGing, so ignore the BONDs. Otherwise, use them.
+				next;
+			}
     			chomp($record);
    
 			my @TMP = split(/\s+/,$record);
