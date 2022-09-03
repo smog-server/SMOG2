@@ -69,12 +69,15 @@ my $inputArguments=join(' ',@ARGV);
 my %supported_residue_tags = ( 'last' => '1','first' => '1');
 
 ## MODULE HEADERS ##
-
+my $gitver=getgitver;
+if($gitver ne ""){
+        $gitver="\nTHIS VERSION IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
+}
 # this is called after all subroutines are read in
 my $tmpstring = <<"EOT";
 
                                     smog_adjustPDB                                   
-
+$gitver
     smog_adjustPDB is part of the SMOG 2 distribution, available at smog-server.org     
 
     This tool will renumber the atoms in each chain, and modify the names of terminal
@@ -359,6 +362,12 @@ sub adjustInputFile{
 	chomp($date);
 	print NEWPDB "REMARK File generated with: smog_adjustPDB $inputArguments\n";
 	print NEWPDB "REMARK Generated on $date. Hostname: $hostname\n";
+        $gitver=getgitver;
+        if($gitver ne ""){
+                print NEWPDB "REMARK THIS VERSION OF SMOG_ADJUSTPDB IS FROM A GIT REPO. COMMIT NUMBER\n";
+                print NEWPDB "REMARK $gitver\n";
+        }
+
 	if(defined $large){
 		print NEWPDB "LARGE - Use large base for res/atom numbering (don\'t delete, or smog2 will crash)\n";
 	}

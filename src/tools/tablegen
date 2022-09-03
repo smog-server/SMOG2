@@ -29,11 +29,14 @@ use strict;
 use warnings FATAL => 'all';
 use Getopt::Long;
 use smog_common;
-
+my $gitver=getgitver;
+if($gitver ne ""){
+        $gitver="\nTHIS VERSION IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
+}
 my $tmpstring =<<EOT;
 
                                      smog_tablegen                                   
-
+$gitver
      smog_tablegen is part of the SMOG 2 distribution, available at smog-server.org     
 
   This tool will generate a table for native contacts and Debye-Huckel electrostatic 

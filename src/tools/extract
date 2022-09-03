@@ -35,12 +35,15 @@ use OpenSMOG;
 our @ISA = 'Exporter';
 our @EXPORT = qw(%supported_directives);
 my $inputArguments=join(' ',@ARGV);
-
+my $gitver=getgitver;
+if($gitver ne ""){
+        $gitver="\nTHIS VERSION IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
+}
 print <<EOT;
 ********************************************************************************************
 
                                       smog_extract
-
+$gitver
       	smog_extract is part of the SMOG 2 distribution, available at smog-server.org
 
         This tool uses a SMOG .top and .gro file, along with an atomlist file to 
@@ -267,6 +270,11 @@ open(TOPOUT,">$outputtop") or smog_quit("Can\'t open $outputtop for writing.");
 print TOPOUT "; This is a top file generated with smog_extract (version $VERSION), using the command:\n";
 print TOPOUT ";   smog_extract $inputArguments\n";
 print TOPOUT "; Selected group: $extgrp\n ";
+$gitver=getgitver;
+if($gitver ne ""){
+        print TOPOUT "; THIS VERSION OF SMOG_EXTRACT IS FROM A GIT REPO. COMMIT NUMBER\n";
+        print TOPOUT "; $gitver";
+}
 my $date=printhostdate();
 print TOPOUT "$date";
 print TOPOUT "$DATA[0]\n";

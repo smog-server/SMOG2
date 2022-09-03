@@ -31,11 +31,14 @@ use List::Util qw(max);
 use Getopt::Long;
 use smog_common;
 my $inputArguments=join(' ',@ARGV);
-
+my $gitver=getgitver;
+if($gitver ne ""){
+        $gitver="\nTHIS VERSION IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
+}
 my $tmpstring = <<EOT;
 
                                       smog_scale-energies
-
+$gitver
       	smog_scale-energies is part of the SMOG 2 distribution, available at smog-server.org
 
         This tool uses a SMOG .top file, along with an index file to 
@@ -219,6 +222,11 @@ open(TOPOUT,">$outputTOP") or smog_quit("Can\'t open $outputTOP for writing.");
 
 print TOPOUT "; This is a top file generated with smog_scale-energies (version $VERSION) using the command:\n;";
 print TOPOUT "   smog_scale-energies $inputArguments\n";
+$gitver=getgitver; 
+if($gitver ne ""){
+        print TOPOUT "; THIS VERSION OF SMOG_SCALE-ENERGIES IS FROM A GIT REPO. COMMIT NUMBER\n";
+        print TOPOUT "; $gitver";
+}
 my $date=printhostdate();
 print TOPOUT "$date";
 print TOPOUT "$topbuff";

@@ -36,10 +36,14 @@ our @ISA = 'Exporter';
 our @EXPORT = qw(%supported_directives);
 my $inputArguments=join(' ',@ARGV);
 my $xml = new XML::Simple;
+my $gitver=getgitver;
+if($gitver ne ""){
+        $gitver="\nTHIS VERSION IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
+}
 my $tmpstring = <<EOT;
 
                                       smog_ions
-
+$gitver
       	smog_ions is part of the SMOG 2 distribution, available at smog-server.org
 
         This tool uses a SMOG .top and .gro file, along command line arguments to 
@@ -464,6 +468,11 @@ my $alreadypresent=0;
 
 print TOPOUT "; This is a top file generated with smog_ions (version $VERSION), using the command:\n;";
 print TOPOUT "   smog_ions $inputArguments\n";
+$gitver=getgitver; 
+if($gitver ne ""){
+        print TOPOUT "; THIS VERSION OF SMOG_IONS IS FROM A GIT REPO. COMMIT NUMBER\n";
+        print TOPOUT "; $gitver";
+}
 my $date=printhostdate();
 print TOPOUT "$date";
 print TOPOUT "; any comments below were from the input top file\n\n";
