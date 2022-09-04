@@ -134,9 +134,10 @@ be initialized.
 VERIFY YOUR CONFIGURATION
 
 It is highly recommended that once SMOG is configured,
-you download and run the smog-check suite. This will
+you run the full set of SMOG-CHECK routines. This will
 verify your configurations are correct and that SMOG
-is producing accurate force field files.
+is producing accurate force field files. For information,
+see README file in the SMOG-CHECK directory.
 
 ########################################################
 

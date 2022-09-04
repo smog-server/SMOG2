@@ -1,0 +1,412 @@
+<?xml version='1.0'?>
+<bif>
+	<residues>
+<!-- AMINO CALPHA RESIDUES -->
+<!--ALANINE-->
+		<residue name="ALA" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X1" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+		</residue>
+		<residue name="ALAT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+<!--THREONINE-->
+		<residue name="THR" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y1" pairType="Z">CA</atom>
+				<atom bType="X1" nbType="Y1" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+<!--THREONINE-JIANPENG-->
+		<residue name="THRJ" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+		<residue name="THRT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+<!--PHENYLALANINE-->
+		<residue name="PHE" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X1" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="PHET" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>		
+<!--VALINE-->
+		<residue name="VAL" residueType="amino">
+			<atoms>
+				<atom bType="X1" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="VALT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+<!--METHIONINE-->
+		<residue name="MET" residueType="amino">
+			<atoms>
+				<atom bType="X1" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y1" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="METT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+<!--HISTIDINE-->
+		<residue name="HIS" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X1" nbType="Y1" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+        	</residue>
+ <!-- METHISTIDINE-->
+		<residue name="HMS" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+	       
+		<residue name="HIST" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>	
+<!--GLUTAMIC ACID-->
+		<residue name="GLU" residueType="amino">
+			<atoms>
+				<atom bType="X1" nbType="Y1" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y1" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="GLUT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+<!--CYSTEINE-->
+		<residue name="CYS" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y1" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="CYST" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+		
+<!--GLYCINE-->
+		<residue name="GLY" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+		<residue name="GLYT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+<!--ASPARTIC ACID-->
+		<residue name="ASP" residueType="amino">
+			<atoms>
+				<atom bType="X1" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X1" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="ASPT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+	
+<!--TYROSINE-->
+		<residue name="TYR" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="TYRT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+<!--LEUCINE-->
+		<residue name="LEU" residueType="amino">
+			<atoms>
+				<atom bType="X1" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="LEUT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+
+<!--ISOLEUCINE-->
+		<residue name="ILE" residueType="amino">
+			<atoms>
+				<atom bType="X1" nbType="Y1" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="ILET" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+<!--ASPARGINE-->
+		<residue name="ASN" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="ASNT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+<!--SERINE-->
+		<residue name="SER" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y1" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+			
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="SERT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			
+			</atoms>
+		</residue>	
+
+<!--ARGININE-->		
+		<residue name="ARG" residueType="amino">
+			<atoms>
+				<atom bType="X1" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="ARGT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+<!--GLUTAMINE-->
+		<residue name="GLN" residueType="amino">
+			<atoms>
+				<atom bType="X1" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X1" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="GLNT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				
+			</atoms>
+		</residue>
+
+<!--PROLINE-->
+		<residue name="PRO" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="PROT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				
+			</atoms>
+		</residue>
+<!--LYSINE-->
+		<residue name="LYS" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y" pairType="Z">CB</atom>
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="LYST" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+			</atoms>
+		</residue>
+
+<!--TRYPTOPHAN-->
+		<residue name="TRP" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y1" pairType="Z">CA</atom>
+				<atom bType="X" nbType="Y1" pairType="Z">CB</atom>
+				
+			</atoms>
+			<bonds>
+				<bond energyGroup="sc">
+					<atom>CA</atom>
+					<atom>CB</atom>
+				</bond>
+			</bonds>
+
+		</residue>
+		<residue name="TRPT" residueType="amino">
+			<atoms>
+				<atom bType="X" nbType="Y" pairType="Z">CA</atom>
+				
+			</atoms>
+		</residue>
+</residues>
+<!-- CONNECTIONS -->
+	<connections>
+		<!-- AMINO/AMINO -->
+			<connection name="amino-amino" residueType1="amino" residueType2="amino">
+			<bond energyGroup="bb" >
+				<atom>CA</atom>
+				<atom>CA</atom>
+			</bond>
+		</connection>
+	</connections>
+</bif>

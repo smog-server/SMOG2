@@ -1,0 +1,23 @@
+<?xml version='1.0'?>
+<nb>
+<!-- DEFAULTS -->
+<defaults gen-pairs="0" nbfunc="1" gmx-combination-rule="2"/>
+
+<!-- GENERAL NONBONDS -->
+<nonbond mass="1.00"  charge="0.000" ptype="A"  sigma="-0.25"  epsilon="0.1">
+        <nbType>*</nbType>
+</nonbond>
+
+
+<!-- CONTACTS -->
+<contact func="contact_1(6,12,?,?)" contactGroup="c">
+	<pairType>*</pairType>
+	<pairType>*</pairType>
+</contact>
+<contact func="bond_type6(?,200)" contactGroup="c">
+	<pairType>BMG</pairType>
+	<pairType>*</pairType>
+</contact>
+
+</nb>
+

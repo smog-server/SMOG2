@@ -1,0 +1,3 @@
+bondtypes < NB_1 NB_1 1 1.1  100
+bondtypes < X NB_1 1 1.4  120
+bondtypes < J NB_1 1 1.4  120

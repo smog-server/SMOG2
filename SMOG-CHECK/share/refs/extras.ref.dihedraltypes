@@ -1,0 +1,5 @@
+dihedraltypes < NB_1 NB_1 NB_1 NB_1 2 1.4  100
+dihedraltypes < X NB_1 NB_1 NB_1 1 1.5  105 1
+dihedraltypes < NB_1 X NB_1 NB_1 1 1.6  106 2
+dihedraltypes < NB_1 NB_1	X  X 1 1.7  109 3
+dihedraltypes < NB_1 NB_1	Y  X 1 1.7  109   4

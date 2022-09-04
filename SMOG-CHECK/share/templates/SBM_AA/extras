@@ -1,0 +1,22 @@
+; this is a sample extras file to make sure that nothing gets mangled by the use of extras
+; test adding another atom type (these values will be checked by smog-check) 
+nonbond_params < NB_1 NB_1 1  2.0   7.0
+nonbond_params < CL NB_1 1  2.0   7.0
+;nonbond_params < BMG NB_1 3 0.00000e+00 1.0e-07 1.0e-07 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00
+nonbond_params < BMG NB_1 1 1.0e-07 1.0e-07  
+bondtypes < NB_1 NB_1 1 1.1  100
+bondtypes < X NB_1 1 1.4  120
+bondtypes < J NB_1 1 1.4  120
+angletypes < NB_1 NB_1 NB_1 1 1.4  100
+angletypes < X NB_1 NB_1 1 1.4  100
+angletypes < X X NB_1 1 1.5  110
+angletypes < NB_1 X NB_1 1 1.6  120
+angletypes <  X NB_1 	X 1 1.6  120
+angletypes <  P NB_1 	X 1 1.6  120
+dihedraltypes < NB_1 NB_1 NB_1 NB_1 2 1.4  100
+dihedraltypes < X NB_1 NB_1 NB_1 1 1.5  105 1
+dihedraltypes < NB_1 X NB_1 NB_1 1 1.6  106 2
+dihedraltypes < NB_1 NB_1	X  X 1 1.7  109 3
+dihedraltypes < NB_1 NB_1	Y  X 1 1.7  109   4
+atomtypes < extratype   2.1   -3  A     2.0   7.0
+pairs< ;this is a test comment that will be added under the pairs section.  This should have no effect on any tests

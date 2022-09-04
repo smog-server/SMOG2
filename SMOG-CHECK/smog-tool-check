@@ -1,0 +1,50 @@
+#!/bin/bash
+
+echo Detecting configured version of SMOG2
+# grab all of the environment settings used when running smog2
+export smog_exec=`which smog2`
+if [ -z "$smog_exec" ]
+then
+	echo "
+
+COULD NOT FIND USABLE VERSION OF SMOG 2!  QUITTING
+
+"
+	exit 1
+fi
+
+export SMOG_PATH=`tail -n 1 $smog_exec| awk '{print $2}' | sed "s/src\/smogv2$//g"`
+if [ -d $SMOG_PATH/.git ]
+then
+        export SMOG_COMMIT=`cd $SMOG_PATH; git show --format="%H" --no-patch`
+        echo $SMOG_COMMIT
+fi
+export exec_adjust=`which smog_adjustPDB`
+export exec_extract=`which smog_extract`
+export exec_ions=`which smog_ions`
+export exec_scale=`which smog_scale-energies`
+export exec_table=`which smog_tablegen`
+`grep PERL $smog_exec`
+
+CURDIR=`pwd`
+CURDIR=$CURDIR/src
+
+export PERLLIB=$PERLLIB:$CURDIR/modules
+export PERL5LIB=$PERL5LIB:$CURDIR/modules
+
+echo Will test the following executables
+echo $exec_adjust
+echo $exec_extract
+echo $exec_ions
+echo $exec_scale
+echo $exec_table
+
+export perl4smog=`tail -n 1 $smog_exec| awk '{print $1}'`
+
+export TOLERANCE=0.001
+export PRECISION=10000
+
+src/cleanup.bash
+mkdir FAILED.tools
+$perl4smog src/check-tools.v2.pl "$@"
+

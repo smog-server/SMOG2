@@ -1,0 +1,23 @@
+<?xml version='1.0'?>
+<nb>
+<!-- DEFAULTS -->
+<defaults gen-pairs="0"/>
+
+<!-- GENERAL NONBONDS -->
+<nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.0"  c12="PARM_C12">
+	<nbType>NB_1</nbType>
+</nonbond>	
+
+
+<!-- CONTACTS -->
+<contact func="contact_gaussian(?,PARM_C12,sqrt(((?)**2)/(34.66)),?)" contactGroup="c">
+	<pairType>*</pairType>
+	<pairType>*</pairType>
+</contact>
+<contact func="bond_type6(?,200)" contactGroup="c">
+	<pairType>BMG_P</pairType>
+	<pairType>*</pairType>
+</contact>
+
+</nb>
+

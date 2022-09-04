@@ -1,0 +1,34 @@
+#!/bin/bash
+echo Will check SMOG tools
+./smog-tool-check
+EST=$?
+
+echo  Will check SCM
+./scm-check
+ESCM=$?
+
+echo Will run long check on all of SMOG 2 capabilities
+./smog-check 
+EC=$?
+
+
+if (( $EC != 0 ))
+then
+	echo "\nSome SMOG 2 checks failed.  See messages above.\n"
+fi
+if (( $ESCM != 0 ))
+then
+	echo "\nSome SCM checks failed.  See messages above.\n"
+fi
+if (( $EST != 0 ))
+then
+	echo "\nSome SMOG tool checks failed.  See messages above.\n"
+fi
+
+if (( $EC+$EST+$ESCM == 0 ))
+then
+	echo "All SMOG2, SMOG-tool and SCM checks passed!!"
+else
+	exit 1
+fi
+

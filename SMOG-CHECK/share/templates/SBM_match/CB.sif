@@ -1,0 +1,34 @@
+<?xml version='1.0'?>
+<sif>
+<!-- FUNCTION DEFINITIONS -->
+<!-- NOTE: Function definitions should only be changed if you modify the source code.-->
+<functions>
+	<function name="bond_harmonic" directive="bonds"/>
+	<function name="angle_harmonic" directive="angles"/>
+	<function name="dihedral_cosine" directive="dihedrals"/>
+    	<function name="contact_2" directive="pairs" exclusions="1"/>
+</functions>
+
+<!-- HAMILTONIAN SETTINGS -->
+<settings>
+	<!-- ENERGY/CONTACT GROUPS -->
+<Groups>
+	<!-- AMINO ENERGY GROUPS --> 
+	<energyGroup residueType="amino" name="bb" normalize="0" />
+	<energyGroup residueType="amino" name="sc" normalize="0" />
+
+ <!-- Global Contacts Settings -->
+	<contactGroup name="c" normalize="0" />
+
+ <!-- Contact/Dihedral Group ratio: This is only used if normalization is turned on-->
+       <groupRatios contacts="1" dihedrals="1"/>
+
+</Groups>
+<!-- CONTACT MAP SETTINGS -->
+<Contacts method="shadow" contactDistance="10" shadowRadius="2" shadowRadiusBonded="0.5"/>
+<bondsThreshold shortBond="0.08" longBond="0.5"/>
+<anglesThreshold smallAngles="30" largeAngles="150"/>
+<contactsThreshold shortContacts="0.2"/> 
+<dihedralNormalization dihedralCounting="0"/> 
+</settings>
+</sif>

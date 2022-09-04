@@ -1,0 +1,30 @@
+atom Y 1.0 -1 1.2; mass charge and c12
+atom Y1 1.1 1.0 0.167772160e-04
+bond X1 X 0.12 20000; distance strength
+bond X1 X1 0.15 50000
+bond X X 0.12  20000
+bond X X1 0.12 20000
+angle X X X 0.6 10 ; angle strength
+angle X X X1 0.6 10
+angle X X1 X 0.5 40
+angle X X1 X1 0.5 40 
+angle X1 X X 0.6 10 
+angle X1 X X1 0.7 4
+angle X1 X1 X 0.5 40
+angle X1 X1 X1 0.7 4
+dihedral X1 X1 X1 X 1 100
+dihedral X1 X1 X1 X1 1 100 
+dihedral X1 X1 X X 1 1 
+dihedral X1 X1 X X1 1 1 
+dihedral X1 X X1 X 1 1
+dihedral X1 X X1 X1 1 1
+dihedral X1 X X X 1 0.1
+dihedral X1 X X X1 1 0.1
+dihedral X X1 X1 X 1 100
+dihedral X X1 X1 X1 1 100
+dihedral X X1 X X 1 1
+dihedral X X1 X X1 1 1
+dihedral X X X1 X 1 1
+dihedral X X X1 X1 1 1
+dihedral X X X X 10 7 
+dihedral X X X X1 1 0.1

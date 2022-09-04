@@ -1,0 +1,30 @@
+<?xml version='1.0'?>
+<nb>
+<!-- DEFAULTS -->
+<defaults gen-pairs="0"/>
+
+<!-- GENERAL NONBONDS -->
+<nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.0"  c12="5.96046e-9">
+	<nbType>*</nbType>
+</nonbond>	
+
+<!-- CONTACTS -->
+<contact func="contact_1(6,12,?,?)" contactGroup="c1">
+	<pairType>*</pairType>
+	<pairType>*</pairType>
+</contact>
+
+<contact func="contact_1(6,12,?,?)" contactGroup="c2">
+	<pairType>P_1</pairType>
+	<pairType>P_2</pairType>
+</contact>
+
+
+
+<contact func="bond_type6(?,200)" contactGroup="c">
+	<pairType>BMG</pairType>
+	<pairType>*</pairType>
+</contact>
+
+</nb>
+

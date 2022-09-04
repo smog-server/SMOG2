@@ -1,0 +1,19 @@
+<?xml version='1.0'?>
+<nb>
+
+	 <!-- DEFAULTS -->
+ 	<defaults gen-pairs="0"/>
+
+	<!-- GENERAL NONBONDS -->
+	<nonbond mass="1.00"  charge="0.000" ptype="A"  c6="0.0"  c12="PARM_C12">
+	<nbType>Y</nbType>
+	</nonbond>
+	
+    <!-- CONTACTSGAUSSIAN -->
+    <contact func="contact_2(6*?**10,5*?**12,?,EPS_CONT)" contactGroup="c">
+    <pairType>*</pairType>
+    <pairType>*</pairType>
+    </contact>
+
+</nb>
+

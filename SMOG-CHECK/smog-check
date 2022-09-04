@@ -1,0 +1,44 @@
+#!/bin/bash
+
+echo Collecting information and cleaning up directory before launching smog-check
+echo Detecting configured version of SMOG2
+# grab all of the environment settings used when running smog2
+export smog_exec=`which smog2`
+if [ -z "$smog_exec" ]
+then
+	echo "
+
+COULD NOT FIND USABLE VERSION OF SMOG 2!  QUITTING
+
+"
+	exit 1
+fi
+export perl4smog=`tail -n 1 $smog_exec| awk '{print $1}'`
+export SMOG_PATH=`tail -n 1 $smog_exec| awk '{print $2}' | sed "s/src\/smogv2$//g"`
+`grep PERL $smog_exec`
+CURDIR=`pwd`
+CURDIR=$CURDIR/src
+
+export PERLLIB=$PERLLIB:$CURDIR/modules
+export PERL5LIB=$PERL5LIB:$CURDIR/modules
+
+echo "Will use the scripts found in $SMOG_PATH"
+echo "This is set when running configure.smog2"
+export BIFSIF_AA_DEFAULT=$SMOG_PATH/SBM_AA
+export BIFSIF_CA_DEFAULT=$SMOG_PATH/SBM_calpha
+export BIFSIF_AA_TESTING=`pwd`/share/templates/SBM_AA
+export BIFSIF_CA_TESTING=`pwd`/share/templates/SBM_calpha
+export BIFSIF_STATIC_TESTING=`pwd`/share/templates/SBM_AA_STATIC
+export BIFSIF_AA_MATCH=`pwd`/share/templates/SBM_match
+export BIFSIF_AA_2CG=`pwd`/share/templates/SBM_2cg
+export BIFSIF_AA_CR2=`pwd`/share/templates/SBM_cr2
+export TOLERANCE=0.001
+export PRECISION=10000
+
+src/cleanup.bash
+
+echo "preparation steps completed.  Will now launch smog-check"
+echo
+
+mkdir FAILED
+echo share/PDB.files/all.pdbs | $perl4smog src/check.v2.pl "$@"
