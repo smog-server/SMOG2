@@ -1,5 +1,5 @@
 #!/bin/bash
-# this script will build a new docker container from the smog2 repo.
+# this script will build a new docker container from the current smog2 repo
 if command -v gcp &> /dev/null;
 then
         CP=gcp
@@ -13,5 +13,5 @@ for i in `cat MANIFEST`
 do
 	$CP --parent $i docker.tmp
 done
-docker build --no-cache -t smog2:latest .
+docker build --no-cache -t smog2:gitversion .
 rm -r docker.tmp
