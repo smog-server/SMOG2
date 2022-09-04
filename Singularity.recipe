@@ -1,0 +1,32 @@
+Bootstrap: docker
+From: ubuntu:latest
+
+%labels
+    git version of SMOG 2
+
+%environment
+    PATH=/opt/smog2/bin:$PATH
+    TZ=Europe/Kiev
+
+%post
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    apt-get update
+    apt-get upgrade -y 
+    apt-get install -y --no-install-recommends cpanminus vim     patch make cmake pdl default-jre libxml-simple-perl nano emacs
+    cpanm String::Util Exporter XML::Validator::Schema
+    rm -rf /root/.cpanm
+    rm -rf /var/lib/apt/lists/*
+    mkdir /opt/smog2
+        
+%files
+    copy smog2 data
+
+%post
+    chown -R smoguser /opt/*
+    bash /opt/smog2/configure.smog2
+
+%runscript
+    bash   
+    
+%help
+    this is a test singularity file for smog2
