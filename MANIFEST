@@ -278,8 +278,6 @@ examples/whamExamples/1/free/1540
 examples/whamExamples/1/free/1490
 examples/whamExamples/1/free/1440
 examples/whamExamples/1/free/1390
-SMOG-CHECK/smog-benchmark
-SMOG-CHECK/share/make.interaction.bash
 SMOG-CHECK/share/refs/extras.ref.atomtypes
 SMOG-CHECK/share/refs/extras.ref.angletypes
 SMOG-CHECK/share/refs/table.kJ300.xvg
@@ -477,18 +475,6 @@ SMOG-CHECK/share/PDB.files/mangled.resnames.pdb
 SMOG-CHECK/share/PDB.files/3PTA.pdb
 SMOG-CHECK/share/PDB.files/in.groups
 SMOG-CHECK/share/PDB.files/3IZH_v2.CB.pdb
-SMOG-CHECK/share/benchmarking/benchmark.pl
-SMOG-CHECK/share/benchmarking/benchmarks/1AKEapo_v2.AA.top
-SMOG-CHECK/share/benchmarking/benchmarks/1AKEapo_v2.AA.pdb
-SMOG-CHECK/share/benchmarking/benchmarks/1AKEapo_v2.CA.pdb
-SMOG-CHECK/share/benchmarking/benchmarks/2GIS_noSAM_v2.AA.pdb
-SMOG-CHECK/share/benchmarking/benchmarks/2GIS_noSAM_v2.AAgauss.top
-SMOG-CHECK/share/benchmarking/benchmarks/1AKEapo_v2.CA.top
-SMOG-CHECK/share/benchmarking/benchmarks/1AKEapo_v2.AAgauss.top
-SMOG-CHECK/share/benchmarking/benchmarks/1AKEapo_v2.AAgauss.pdb
-SMOG-CHECK/share/benchmarking/benchmarks/makeBenchmarks.bash
-SMOG-CHECK/share/benchmarking/benchmarks/2GIS_noSAM_v2.AA.top
-SMOG-CHECK/share/benchmarking/benchmarks/2GIS_noSAM_v2.AAgauss.pdb
 SMOG-CHECK/share/backboneatoms/nucleicacids
 SMOG-CHECK/share/backboneatoms/aminoacids
 SMOG-CHECK/share/backboneatoms/ligands
