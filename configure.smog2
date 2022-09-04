@@ -97,7 +97,11 @@ cat > $smog2dir/header <<EOS
 export PERLLIB=$smog2dir/src:$PERLLIB 
 export PERL5LIB=$smog2dir/src:$PERL5LIB
 export SMOG_PATH=$smog2dir
-if [ -d \$SMOG_PATH/.git ]
+if [ -f \$SMOG_PATH/.gitcommit ]
+then
+        export SMOG_COMMIT=\`cat \$SMOG_PATH/.gitcommit\`
+
+elif [ -d \$SMOG_PATH/.git ]
 then
         export SMOG_COMMIT=\`cd \$SMOG_PATH; git show --format="%H" --no-patch\`
 fi

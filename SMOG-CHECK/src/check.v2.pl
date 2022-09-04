@@ -128,7 +128,7 @@ my $SETTINGS_FILE=<STDIN>;
 chomp($SETTINGS_FILE);
 open(PARMS,"$SETTINGS_FILE") or internal_error("The settings file is missing...");
 
-print "Will use SMOG 2 executable $EXEC_NAME\n";
+print "\nWill use SMOG 2 executable $EXEC_NAME\n\n";
 
 &checktemplatedirs($BIFSIF_AA,$BIFSIF_CA,$TEMPLATE_DIR_AA,$TEMPLATE_DIR_AA_STATIC,$TEMPLATE_DIR_CA);
 &checkForModules;
@@ -393,7 +393,7 @@ sub checkforretest
    if($ARGV[1] =~ /^\d+$/){
     # is an integer
     $RETESTEND=$ARGV[1];
-    print "\nWill run tests $ARGV[0] to $ARGV[1].\n\n";
+    print "Will run tests $ARGV[0] to $ARGV[1].\n\n";
    }else{
     # is not an integer.  flag error
     smogcheck_error("argument to smog-check can only be one, or two, integers. Found \"$ARGV[0]\"");
@@ -402,12 +402,12 @@ sub checkforretest
     smogcheck_error("Arguments must be first test, then last test. Last test number must be larger.");
    }
   }else{
-   print "\nWill only run test $ARGV[0].\n\n";
+   print "Will only run test $ARGV[0].\n\n";
   }
   $RETEST=$RETESTT;
  
  }elsif($RETEST== -1){
- 	print "\nWill run all tests (default).\n\n";
+ 	print "Will run all tests (default).\n\n";
  }else{
  	smogcheck_error("Too many arguments passed to smog-check");
  }
@@ -4277,7 +4277,7 @@ sub validatebifmaps
  my ($SMOGPATH)=@_;
  my $tempdir="$SMOGPATH/share/templates"; 
  my $mapdir="$SMOGPATH/share/mapfiles";
- print "Will check consistency of the default all-atom templates and the corresponding\nmapping files.\n";
+ print "Will check consistency of the default all-atom templates and the corresponding\nmapping files.\n\n";
 
  my $xml = new XML::Simple;
  
