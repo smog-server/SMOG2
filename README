@@ -46,9 +46,11 @@ machine, you will need to choose from one of the options
 below.
 
 
-OPTION 1 - USE THE DOCKER CONTAINER
+OPTION 1 - USE A CONTAINER
 The easiest method to use SMOG 2 is to access the Docker 
-container. Go to the SMOG 2 page for information on Docker.
+or Singularity container. Go to the SMOG 2 page for 
+information on how to use use the SMOG 2 images for 
+Docker and Singularity.
 
 
 OPTION 2 - USING CONDA OR MINICONDA (Linux, only)
