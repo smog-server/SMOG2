@@ -9,7 +9,7 @@ From: smog-server/library/osperl:latest
     export LC_ALL=C
 
 %post
-    git clone -b smogcheck https://github.com/smog-server/SMOG2.git /opt/smog2 --depth 1
+    git clone https://github.com/smog-server/SMOG2.git /opt/smog2 --depth 1
     cd /opt/smog2
     git show --format="%H" --no-patch > .gitcommit
     rm -rf .git
