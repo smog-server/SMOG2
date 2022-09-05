@@ -1,8 +1,8 @@
 Bootstrap: docker
-From: ubuntu:latest
+From: ubuntu:22.04
 
 %labels
-    Container for an OS and all Perl stuff needed for SMOG 2
+    Container for Ubuntu 22.04 and all Perl stuff needed for SMOG 2
 
 %post
     export LC_ALL=C
@@ -17,6 +17,6 @@ From: ubuntu:latest
 
 
 %help
-    this is a test singularity file for smog2
+    Ubuntu 22.04 and perl stuff for SMOG 2
 
 

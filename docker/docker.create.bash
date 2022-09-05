@@ -1,7 +1,8 @@
 #!/bin/bash
 # this script will build a new docker container from the current smog2 repo
-containername=smogserver/smog2:gitversion
-docker build --no-cache -t $containername -f Dockerfile.gitversion .
+tag=$1
+containername=smogserver/smog2:$tag
+docker build --no-cache -t $containername -f Dockerfile.$tag .
 
 echo "
 Done building container $containername

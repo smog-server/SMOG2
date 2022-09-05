@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:22.04
 CMD ["bash"]
 ENV PATH=/opt/smog2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ENV TZ=Europe/Kiev
@@ -16,10 +16,10 @@ RUN rm -rf /opt/smog2/.git
 RUN mkdir /opt/smog2/SMOG-CHECK
 RUN git clone -n https://github.com/smog-server/SMOG-CHECK.git /opt/smog2/SMOG-CHECK
 RUN cd /opt/smog2/SMOG-CHECK && git checkout tags/v2.4.4
-RUN rm -rf /opt/smog2/SMOG-CHECK.git
+RUN rm -rf /opt/smog2/SMOG-CHECK/.git
 RUN mkdir /workdir # buildkit
 RUN useradd -rm -d /home/smoguser -s /bin/bash -g root -G sudo -u 1001 smoguser -p "$(openssl passwd -1 smoguser)" # buildkit
 RUN chown -R smoguser /opt/* # buildkit
 USER smoguser
 WORKDIR /home/smoguser
-RUN cd /opt/smog2 && sed -i '5,6d' configure.smog2 && export perl4smog=/usr/bin/perl && export smog2dir=/opt/smog2 && bash /opt/smog2/configure.smog2
+RUN cd /opt/smog2 && sed -i '5,6d' configure.smog2 && perl4smog=/usr/bin/perl smog2dir=/opt/smog2 bash /opt/smog2/configure.smog2

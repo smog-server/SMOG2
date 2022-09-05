@@ -2,7 +2,7 @@ Bootstrap: library
 From: smog-server/library/osperl:latest
 
 %labels
-    git version of SMOG 2
+    Container with the current git version of SMOG 2
 
 %environment
     PATH=/opt/smog2/bin:$PATH
@@ -13,13 +13,11 @@ From: smog-server/library/osperl:latest
     cd /opt/smog2
     git show --format="%H" --no-patch > .gitcommit
     rm -rf .git
-
-%post
     bash /opt/smog2/configure.smog2
 
 %runscript
     bash
 
 %help
-    this is a test singularity file for smog2
+    This container has the current git version of SMOG 2.  Since this is not an official release, use it with caution.  To use this container, simply launch it and then SMOG 2 and SMOG tools will be in your path.
 

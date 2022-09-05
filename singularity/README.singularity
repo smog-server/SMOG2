@@ -1,5 +1,5 @@
 osperl.def : Singularity definition file that will build an image with ubuntu and all necessary perl tools for SMOG 2 to run. 
-smog2.def : Imports the osperl image and then adds SMOG2 (current git version from branch smog-check). In this def file, it is assumed that that osperl.def was used to generate an image on sylabs called:
+smog2.<version>.def : Imports the osperl image and then adds SMOG2 (given version). In this def file, it is assumed that that osperl.def was used to generate an image on sylabs called:
 	smog-server/library/osperl:latest
 
 

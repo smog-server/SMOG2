@@ -1,0 +1,32 @@
+Bootstrap: library
+From: smog-server/library/osperl:latest
+
+%labels
+    SMOG v2.4.4
+
+%environment
+    PATH=/opt/smog2/bin:$PATH
+    export LC_ALL=C
+    export perl4smog=/usr/bin/perl
+    export smog2dir=/opt/smog2
+
+%post
+    git clone -n https://github.com/smog-server/SMOG2.git /opt/smog2
+    cd /opt/smog2
+    git checkout tags/v2.4.4
+    rm -rf .git
+    mkdir SMOG-CHECK
+    git clone -n https://github.com/smog-server/SMOG-CHECK.git /opt/smog2/SMOG-CHECK
+    cd /opt/smog2/SMOG-CHECK
+    git checkout tags/v2.4.4
+    rm -rf .git
+    cd /opt/smog2
+    sed -i '5,6d' configure.smog2
+    perl4smog=/usr/bin/perl smog2dir=/opt/smog2 bash /opt/smog2/configure.smog2
+
+%runscript
+    bash
+
+%help
+    This is a singularity container for SMOG 2. Once you launch the container, SMOG 2 and SMOG tools should be in your path. Pretty simple, huh?
+
