@@ -1,0 +1,22 @@
+Bootstrap: docker
+From: ubuntu:latest
+
+%labels
+    Container for an OS and all Perl stuff needed for SMOG 2
+
+%post
+    export LC_ALL=C
+    export TZ=Europe/Kiev
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y --no-install-recommends cpanminus vim  git-all   patch make cmake pdl default-jre libxml-simple-perl nano emacs
+    cpanm String::Util Exporter XML::Validator::Schema
+    rm -rf /root/.cpanm
+    rm -rf /var/lib/apt/lists/*
+
+
+%help
+    this is a test singularity file for smog2
+
+

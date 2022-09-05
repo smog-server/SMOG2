@@ -1,0 +1,25 @@
+Bootstrap: library
+From: smog-server/library/osperl:latest
+
+%labels
+    git version of SMOG 2
+
+%environment
+    PATH=/opt/smog2/bin:$PATH
+    export LC_ALL=C
+
+%post
+    git clone -b smogcheck https://github.com/smog-server/SMOG2.git /opt/smog2 --depth 1
+    cd /opt/smog2
+    git show --format="%H" --no-patch > .gitcommit
+    rm -rf .git
+
+%post
+    bash /opt/smog2/configure.smog2
+
+%runscript
+    bash
+
+%help
+    this is a test singularity file for smog2
+
