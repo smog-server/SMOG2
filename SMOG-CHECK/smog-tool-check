@@ -14,11 +14,16 @@ COULD NOT FIND USABLE VERSION OF SMOG 2!  QUITTING
 fi
 
 export SMOG_PATH=`tail -n 1 $smog_exec| awk '{print $2}' | sed "s/src\/smogv2$//g"`
-if [ -d $SMOG_PATH/.git ]
+if [ -f $SMOG_PATH/.gitcommit ]
+then
+        export SMOG_COMMIT=`cat $SMOG_PATH/.gitcommit`
+
+elif [ -d $SMOG_PATH/.git ]
 then
         export SMOG_COMMIT=`cd $SMOG_PATH; git show --format="%H" --no-patch`
-        echo $SMOG_COMMIT
 fi
+
+
 export exec_adjust=`which smog_adjustPDB`
 export exec_extract=`which smog_extract`
 export exec_ions=`which smog_ions`
