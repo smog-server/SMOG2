@@ -77,7 +77,7 @@ Next, it is necessary to install a few Perl modules.
 >perl -MCPAN -e 'install XML::Validator::Schema'
 
 If these five commands are successful, then go to
-"FINAL STEPS WHEN NOT USING DOCKER".
+"FINAL STEPS WHEN NOT USING A CONTAINER".
 
 
 OPTION 3 - MANUAL INSTALLATION OF SUPPORTING LIBRARIES
@@ -107,7 +107,7 @@ If you do not have java installed (uncommon), then you will
 also have to install it.
 
 
-FINAL STEPS WHEN NOT USING DOCKER
+FINAL STEPS WHEN NOT USING A CONTAINER
 
 Note: This description assumes you are using bash or zsh
 
