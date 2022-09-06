@@ -1,5 +1,5 @@
 Bootstrap: library
-From: smog-server/library/osperl:latest
+From: smog-server/library/osperl
 
 %labels
     SMOG v2.4.4

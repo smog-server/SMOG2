@@ -1,5 +1,5 @@
 Bootstrap: library
-From: smog-server/library/osperl:latest
+From: smog-server/library/osperl
 
 %labels
     Container with the current git version of SMOG 2
