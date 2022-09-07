@@ -198,6 +198,7 @@ if($groFile ne ""){
 print "\nYour Structure-based Model is ready!\n\nFiles generated: \n\t$topFile\n$OpenSMOGwritten\t$cfile\n\t$ndxFile\n";
 	if(!$userProvidedMap) { print "\t$shadowFile\n"; }
 	if($CGenabled && !$userProvidedMap) { print "\t$shadowFile.CG\n"; }
+	printNotes();
 	printCitation();
 
 warnsummary();
@@ -2448,6 +2449,40 @@ sub setContactParams
 	else {smog_quit ("Contact map method $method is not supported.");}
 	if($ignoreHydrogen == 1) { $params = $params." --ignoreH "; }
 	return $params;
+}
+
+sub printNotes
+{
+	my $notes = "";
+	## CHECK FOR .notes meta file ##
+	if($coarseFolder && -e "$coarseFolder/.notes")
+	{
+		open(NOTES,"$coarseFolder/.notes");
+		$notes = join("",<NOTES>);
+		close(NOTES);
+	}
+	elsif(-e "$inputFolder/.notes")
+	{
+		open(NOTES,"$inputFolder/.notes");
+		$notes = join("",<NOTES>);
+		close(NOTES);
+	}
+	else
+	{
+		$notes = "";
+	}
+
+	if ($notes ne ""){
+print <<EOT2;
+
+#################################### TEMPLATE NOTES ####################################
+
+$notes
+
+########################################################################################
+
+EOT2
+	}
 }
 
 
