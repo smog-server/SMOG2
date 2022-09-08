@@ -553,26 +553,27 @@ while (<FILE>){
 			if(defined $template){
 		        	#my $extrafile="$template/extras";
 				if($extrasexists !=1){
-					smog_quit("No extras file found.  This is required when adding a new type of ion");
+					smog_note("No extras file found. Please make sure this is intentional. It is not common that ions will be used without defining some nonbond_params via the extras file.");
+				}else{
 					
-				}
-				print "Will check if we should add any nonbond_params from extras file $extrafile";
-				open(EXTRA,"$extrafile") or smog_quit("Unable to open $extrafile");
-				while(my $line = <EXTRA>)
-				{
-					chomp($line);
-					my ($A,$B)=checkcomment($line);
-					if($A eq ""){next;}  # skip the line if it is only a comment
-				    	my @tokens = split('<',$line);
-					my $directive = trim($tokens[0]);
-					my $stuff = trim($tokens[1]);
-					# check that nonbonded params are only added if the atom types are present
-					if($directive eq "nonbond_params"){
-						my @tarray=split(/\s+/,$stuff);
-						if((exists $typesinsystem{$tarray[0]} && $tarray[1] eq "$addname") || (exists $typesinsystem{$tarray[1]} && $tarray[0] eq "$addname") || ($tarray[0] eq "$addname" && $tarray[1] eq "$addname") ){
-							$stuff =~ s/\s+/\t/g;
-							$NBbuffer .= "$stuff\n";
-						}	
+					print "Will check if we should add any nonbond_params from extras file $extrafile";
+					open(EXTRA,"$extrafile") or smog_quit("Unable to open $extrafile");
+					while(my $line = <EXTRA>)
+					{
+						chomp($line);
+						my ($A,$B)=checkcomment($line);
+						if($A eq ""){next;}  # skip the line if it is only a comment
+					    	my @tokens = split('<',$line);
+						my $directive = trim($tokens[0]);
+						my $stuff = trim($tokens[1]);
+						# check that nonbonded params are only added if the atom types are present
+						if($directive eq "nonbond_params"){
+							my @tarray=split(/\s+/,$stuff);
+							if((exists $typesinsystem{$tarray[0]} && $tarray[1] eq "$addname") || (exists $typesinsystem{$tarray[1]} && $tarray[0] eq "$addname") || ($tarray[0] eq "$addname" && $tarray[1] eq "$addname") ){
+								$stuff =~ s/\s+/\t/g;
+								$NBbuffer .= "$stuff\n";
+							}	
+						}
 					}
 				}
 			}
