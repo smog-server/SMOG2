@@ -30,6 +30,7 @@ use strict;
 use warnings FATAL => 'all';
 use Exporter;
 use XML::Simple qw(:strict);
+use SMOGglobals;
 #####################
 # Init error vars   #
 #####################

@@ -27,6 +27,7 @@
 package OpenSMOG;
 use strict;
 use warnings FATAL => 'all';
+use SMOGglobals;
 use smog_common;
 use Exporter;
 use XML::Simple qw(:strict);
@@ -39,7 +40,7 @@ our $OpenSMOG;
 our %OpenSMOGatoms2restrain;
 # make a list of names that can't be used as parameters in OpenSMOG.
 our %OSrestrict;
-foreach my $i ("q1", "q2", "r", "r_c", "i", "j", "k", "l", "m", "n", "type1", "type2", "sqrt", "exp", "log", "sin", "cos", "sec", "csc", "tan", "cot", "asin", "acos", "atan", "sinh", "cosh", "tanh", "erf", "erfc", "min", "max", "abs", "floor", "ceil", "step", "delta", "select"){ $OSrestrict{$i}=0;}
+our %NBtypespresent;
 ########## OpenSMOG routines
 sub OShashAddFunction{
 	my ($OSref,$type,$name,$expr,$params)=@_;
@@ -286,43 +287,66 @@ sub OpenSMOGwriteXMLnonbond{
 
 		my $expr=$handle3->{expression}->{"expr"};
 		$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
-		my @paramlist=@{$handle3->{parameter}};
+		my @paramlist=();
+		if(defined $handle3->{parameter}){
+			@paramlist=@{$handle3->{parameter}};
+		}else{
+			# this force was not defined to have any parameters. So, defining it as null will tell SMOG2 to write all possible nb pairs with no parameters, so the same potential will be used for all interactions in the model.
+			$paramlist[0]="null";
+		}
 		foreach my $param(@paramlist){
 			$localxmlout .= "$threes<parameter>$param</parameter>\n";
 		}
-		foreach my $param(@{$handle3->{nonbond_param}}){
-			if(!defined $param){
-				#must have been deleted
-				next;
-			}
-			$localxmlout .="$threes<nonbond_param";
-			my %tmphash=%{$param};
-			my $tmptype="";
-			foreach my $key("type1","type2"){
-				my $fmt="%s";
-				my $val=sprintf("$fmt",$tmphash{$key});
-				$localxmlout .=" $key=\"$val\"";
-				if($tmptype eq ""){
-					$tmptype ="$val-";
-				}else{
-					$tmptype .="$val";
+		if($paramlist[0] eq "null"){
+			# fill with null parameter values for all combinations of atom types
+			my %used;
+			foreach my $I(keys %NBtypespresent){
+				foreach my $J(keys %NBtypespresent){
+					if(defined $used{"$J,$I"}){
+						next;
+					}else{
+						$localxmlout .= "   <nonbond_param type1=\"$I\" type2=\"$J\" null=\"0\"/>\n";
+					}
+
+					$used{"$I,$J"}=1;
 				}
 			}
-			foreach my $key(@paramlist){
-				my $fmt;
-				# write integers as integers.  Everything else as scientific notation
-				if(!defined $tmphash{$key}){
-					smog_quit("When writing the OpenSMOG XML file, there appears to be an incorrectly assigned\nnonbond_param. Specifically, value for $key was not found when trying to write parameters for\n$tmptype interactions. This generally occurs if your extras file is not properly formatted.\nFormatting is checked when running smog2, but the file you are using may differ from\nthat used to generate the original model.");
+		}else{
+			# try to populate with parameters from extras file
+			foreach my $param(@{$handle3->{nonbond_param}}){
+				if(!defined $param){
+					#must have been deleted
+					next;
 				}
-				if($tmphash{$key} =~ m/^[0-9]*$/){
-					$fmt="%i";
-				}else{
-					$fmt="%7.5e";
+				$localxmlout .="$threes<nonbond_param";
+				my %tmphash=%{$param};
+				my $tmptype="";
+				foreach my $key("type1","type2"){
+					my $fmt="%s";
+					my $val=sprintf("$fmt",$tmphash{$key});
+					$localxmlout .=" $key=\"$val\"";
+					if($tmptype eq ""){
+						$tmptype ="$val-";
+					}else{
+						$tmptype .="$val";
+					}
 				}
-				my $val=sprintf("$fmt",$tmphash{$key});
-				$localxmlout .=" $key=\"$val\"";
+				foreach my $key(@paramlist){
+					my $fmt;
+					# write integers as integers.  Everything else as scientific notation
+					if(!defined $tmphash{$key}){
+						smog_quit("When writing the OpenSMOG XML file, there appears to be an incorrectly assigned\nnonbond_param. Specifically, value for $key was not found when trying to write parameters for\n$tmptype interactions. This generally occurs if your extras file is not properly formatted.\nFormatting is checked when running smog2, but the file you are using may differ from\nthat used to generate the original model.");
+					}
+					if($tmphash{$key} =~ m/^[0-9]*$/){
+						$fmt="%i";
+					}else{
+						$fmt="%7.5e";
+					}
+					my $val=sprintf("$fmt",$tmphash{$key});
+					$localxmlout .=" $key=\"$val\"";
+				}
+				$localxmlout .="/>\n";
 			}
-			$localxmlout .="/>\n";
 		}
 		$localxmlout .= "$twos</$subtype>\n";
 	}

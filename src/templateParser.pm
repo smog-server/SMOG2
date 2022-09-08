@@ -40,11 +40,11 @@ use Storable qw(dclone);
 use Scalar::Util qw(looks_like_number);
 use smog_common;
 use OpenSMOG;
-
+use SMOGglobals;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList %dihedralAdjListeG adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent NBtypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESenergygroups checkCONNenergygroups checkRESimpropers round checkFunctions);
+qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList %dihedralAdjListeG adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESenergygroups checkCONNenergygroups checkRESimpropers round checkFunctions);
 
 our $OpenSMOG;
 our $OpenSMOGpothash;

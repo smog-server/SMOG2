@@ -39,6 +39,7 @@ use XML::Validator::Schema;
 use Scalar::Util qw(looks_like_number);
 use smog_common;
 use OpenSMOG;
+use SMOGglobals;
 ######################
 ## GLOBAL VARIABLES ##
 ######################
@@ -247,7 +248,7 @@ sub setglobals {
 		'contact_gaussian'=>'4'
 		);
 
-
+        initOSrestrict();
 	$OpenSMOGpothash=\%OpenSMOGpot;
 	# predefine the mapping of openMM functions for common potentials
 	$OpenSMOGpothash->{contact_1}->{expression}="A/r^N-B/r^M";
