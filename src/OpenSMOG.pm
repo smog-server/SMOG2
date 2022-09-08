@@ -135,7 +135,7 @@ sub readOpenSMOGxml {
 }
 
 sub OpenSMOGwriteXML{
-	my ($OSref,$OpenSMOGxml,$comments)=@_;
+	my ($OSref,$OpenSMOGxml,$comments,$ionnm)=@_;
         # OSref is a handle to the hash holding all information to be written.
         # $OpenSMOGxml is the output file name
 	my $space=" ";
@@ -157,7 +157,7 @@ sub OpenSMOGwriteXML{
 			}elsif($type eq "constants"){
 				$xmlout .= OpenSMOGwriteXMLconstants($handle0,$type,$space);
 			}elsif($type eq "nonbond"){
-                                $xmlout .= OpenSMOGwriteXMLnonbond($handle0,$type,$space);
+                                $xmlout .= OpenSMOGwriteXMLnonbond($handle0,$type,$space,$ionnm);
 			}elsif($type eq "OpenSMOGminVersion"){
 				next;
 			}else{
@@ -270,7 +270,7 @@ sub OpenSMOGwriteXMLcontacts{
 }
 
 sub OpenSMOGwriteXMLnonbond{
-	my ($handle0,$type,$space)=@_;
+	my ($handle0,$type,$space,$ionnm)=@_;
 	my $ones="$space";
 	my $twos="$space$space";
 	my $threes="$space$space$space";
@@ -291,8 +291,9 @@ sub OpenSMOGwriteXMLnonbond{
 		if(defined $handle3->{parameter}){
 			@paramlist=@{$handle3->{parameter}};
 		}else{
-			# this force was not defined to have any parameters. So, defining it as null will tell SMOG2 to write all possible nb pairs with no parameters, so the same potential will be used for all interactions in the model.
+			# this force was not defined to have any parameters. So, defining it as null will tell SMOG2 to write all possible nb pairs with no parameters, so the same potential will be used for all interactions in the model. This can only return true when generating a SMOG model with smog2.  At that time, the parameter list is taken from the templates. smog_ion, or other programs will read a generated XML file, which will have a parameter defined, even if it is just "null". If there is anything, then we will not set everything to null=0.
 			$paramlistnull=1;
+			push(@paramlist,"null");
 		}
 		foreach my $param(@paramlist){
 			$localxmlout .= "$threes<parameter>$param</parameter>\n";
@@ -312,6 +313,8 @@ sub OpenSMOGwriteXMLnonbond{
 				}
 			}
 		}else{
+			my %typesinsystem;
+			my %nbpairsinsystem;
 			# try to populate with parameters from extras file
 			foreach my $param(@{$handle3->{nonbond_param}}){
 				if(!defined $param){
@@ -325,12 +328,15 @@ sub OpenSMOGwriteXMLnonbond{
 					my $fmt="%s";
 					my $val=sprintf("$fmt",$tmphash{$key});
 					$localxmlout .=" $key=\"$val\"";
+					$typesinsystem{$val}=1;
 					if($tmptype eq ""){
 						$tmptype ="$val-";
 					}else{
 						$tmptype .="$val";
 					}
 				}
+				# keep track of the pairs that already have nb params
+				$nbpairsinsystem{$tmptype}=1;
 				foreach my $key(@paramlist){
 					my $fmt;
 					# write integers as integers.  Everything else as scientific notation
@@ -346,6 +352,15 @@ sub OpenSMOGwriteXMLnonbond{
 					$localxmlout .=" $key=\"$val\"";
 				}
 				$localxmlout .="/>\n";
+			}
+			# now check if paramlist[0]=="null" and $ionnm is defined. If both conditions are satisfied see if we need "null" parameters between the ion and existing types in the system.
+			if(defined $ionnm and $paramlist[0] eq "null"){
+				$typesinsystem{"$ionnm"}=1;
+				foreach my $an(keys %typesinsystem){
+					unless(exists $nbpairsinsystem{"$ionnm-$an"} || exists $nbpairsinsystem{"$an-$ionnm"} ){
+						$localxmlout .="$threes<nonbond_param type1=\"$an\" type2=\"$ionnm\" null=\"0\"/>\n";
+					}
+				}				
 			}
 		}
 		$localxmlout .= "$twos</$subtype>\n";
@@ -519,7 +534,7 @@ sub checkOpenSMOGparam{
 }
 
 sub OpenSMOGAddNBsettoXML{
-	my ($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer)=@_;
+	my ($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer,$ionnm)=@_;
 	# read the input XML
 	my $data=readOpenSMOGxml($OpenSMOG);
 	# add content
@@ -530,7 +545,7 @@ sub OpenSMOGAddNBsettoXML{
 		AddNonbondOShash($data,\@tarray);
 	}
 	# write new XML
-	OpenSMOGwriteXML($data,$OpenSMOGout,"Ion parameters were added with smog_ions");
+	OpenSMOGwriteXML($data,$OpenSMOGout,"Ion parameters were added with smog_ions",$ionnm);
 }
 
 1;

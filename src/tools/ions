@@ -251,7 +251,11 @@ print "\nWill add ions to $inputTOP and $inputGRO\n";
 print "Will try to add $addnum $addname ions with charge $addcharge and mass $addmass\n";
 print "Will use C12=$addC12 E*nm^12 and C6=$addC6 E*nm^6\n";
 print "Will place ions at least $mindist nm from the existing system\n";
-print "Will write the new force field and configuration to $outputtop and $outputgro\n\n"; 
+my $OSstring="";
+if(defined $OpenSMOG){
+	$OSstring=", $OpenSMOGout";  
+}
+print "Will write the new force field and configuration to $outputtop$OSstring and $outputgro\n\n"; 
 
 $mindist*=2;
 
@@ -613,14 +617,12 @@ while (<FILE>){
 	}
 
 	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
-		if($NBbuffer ne ""){
-			# add it to XML
-			if(defined $AddCustomParmsToXML){
-				OpenSMOGAddNBsettoXML($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer);
-			} elsif($NBPpresent==0){
-			# if we did not find a nonbond_params, and we are not adding to the XML, add it now.
-				print TOPOUT "[ nonbond_params ]\n$NBbuffer\n\n";
-			}
+		# add it to XML
+		if(defined $OpenSMOG){
+			OpenSMOGAddNBsettoXML($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer,$addname);
+		} elsif($NBPpresent==0 && $NBbuffer ne ""){
+		# if we did not find a nonbond_params, and we are not adding to the XML, add it now.
+			print TOPOUT "[ nonbond_params ]\n$NBbuffer\n\n";
 		}
 
 		# add a new molecule type
