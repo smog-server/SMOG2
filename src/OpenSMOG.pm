@@ -25,27 +25,21 @@
 ########################
 
 package OpenSMOG;
-
-
-
 use strict;
 use warnings FATAL => 'all';
+use smog_common;
 use Exporter;
 use XML::Simple qw(:strict);
-use smog_common;
 use XML::LibXML;
-
 our @ISA = 'Exporter';
 our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddBondedOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction OpenSMOGAddNBsettoXML %fTypes %fTypesArgNum %OSrestrict);
 our %fTypes;
 our %fTypesArgNum;
 our $OpenSMOG;
 our %OpenSMOGatoms2restrain;
-
 # make a list of names that can't be used as parameters in OpenSMOG.
 our %OSrestrict;
 foreach my $i ("q1", "q2", "r", "r_c", "i", "j", "k", "l", "m", "n", "type1", "type2", "sqrt", "exp", "log", "sin", "cos", "sec", "csc", "tan", "cot", "asin", "acos", "atan", "sinh", "cosh", "tanh", "erf", "erfc", "min", "max", "abs", "floor", "ceil", "step", "delta", "select"){ $OSrestrict{$i}=0;}
-
 ########## OpenSMOG routines
 sub OShashAddFunction{
 	my ($OSref,$type,$name,$expr,$params)=@_;
@@ -292,7 +286,6 @@ sub OpenSMOGwriteXMLnonbond{
 
 		my $expr=$handle3->{expression}->{"expr"};
 		$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
-
 		my @paramlist=@{$handle3->{parameter}};
 		foreach my $param(@paramlist){
 			$localxmlout .= "$threes<parameter>$param</parameter>\n";
@@ -515,4 +508,5 @@ sub OpenSMOGAddNBsettoXML{
 	# write new XML
 	OpenSMOGwriteXML($data,$OpenSMOGout,"Ion parameters were added with smog_ions");
 }
+
 1;
