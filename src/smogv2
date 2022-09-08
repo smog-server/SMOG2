@@ -2404,8 +2404,8 @@ usage: smog2 .. options ..
        -CA                     : use default Calpha protein model
        -CAgaussian             : use default Calpha protein model with gaussian contacts
        -t [templateFolder]     : folder containing templates of molecular and interaction definitions. required when defaults are not used
-       -tCG [templateFolder]   : folder containing templates Coarse Graining. indicates that the program should coarse grain
-       -nocheck                : turn off template cross-validation checks.  This can be useful
+       -tCG [templateFolder]   : folder containing templates used for coarse graining. indicates that the program should coarse grain
+       -nocheck                : turn off template cross-validation checks. may sometimes be useful
                                    when using old templates with new versions of SMOG
 
      Force Field Modifications/exceptions
