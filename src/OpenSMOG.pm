@@ -127,7 +127,7 @@ sub readOpenSMOGxml {
 	my ($XMLin)=@_;
 	if(-f $XMLin){
 		my $xml = new XML::Simple;
-		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name",constant=>"name"},ForceArray=>["contacts_type","constant","parameter","interaction"]);
+		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name",constant=>"name"},ForceArray=>["contacts_type","constant","parameter","interaction","nonbond_param"]);
 		return $data;
 	}else{
 		return 1;
@@ -284,20 +284,20 @@ sub OpenSMOGwriteXMLnonbond{
 		}
                 my $handle3=$handle1->{$subtype};
 		$localxmlout .= "$twos<$subtype>\n";
-
 		my $expr=$handle3->{expression}->{"expr"};
 		$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
 		my @paramlist=();
+		my $paramlistnull=0;
 		if(defined $handle3->{parameter}){
 			@paramlist=@{$handle3->{parameter}};
 		}else{
 			# this force was not defined to have any parameters. So, defining it as null will tell SMOG2 to write all possible nb pairs with no parameters, so the same potential will be used for all interactions in the model.
-			$paramlist[0]="null";
+			$paramlistnull=1;
 		}
 		foreach my $param(@paramlist){
 			$localxmlout .= "$threes<parameter>$param</parameter>\n";
 		}
-		if($paramlist[0] eq "null"){
+		if($paramlistnull == 1){
 			# fill with null parameter values for all combinations of atom types
 			my %used;
 			foreach my $I(keys %NBtypespresent){
