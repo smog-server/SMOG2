@@ -65,6 +65,8 @@ my $coarseFolder = ""; ## Coarse Grain Folder ##
 my $AAdefault = 0; 
 my $CAdefault = 0;
 my $AAGdefault = 0; 
+my $centersystem; 
+my $boxbuffer=1; 
 our $OpenSMOG; 
 my $OpenSMOGxml="";
 my $OSref;
@@ -300,6 +302,8 @@ sub parse_args {
 		'warn=i' => \$maxwarn, 
 		'backup=s' => \$backup, 
 		'freecoor' => \$freecoor, 
+		'center' => \$centersystem, 
+		'boxbuffer=f' => \$boxbuffer, 
 		'limitbondlength' => \$setBondtoLimit, 
 		'limitcontactlength' => \$setContacttoLimit, 
 		'deleteshortcontacts' => \$DeleteShortContact, 
@@ -2104,7 +2108,7 @@ sub convertPDBToGroNdx
 		$filetype="Gro";
 	}
  	open(PDB,"$inputPDB") or smog_quit("can not open $inputPDB"); ## INPUT PDB
-	my $atominfo="";
+	my @atominfo;
 	my $atominfo4SCM="";
         my $linenum=0;
 	my $lastTERline=0;
@@ -2188,16 +2192,25 @@ sub convertPDBToGroNdx
 	 	       	if($atomNum >= $atommod){$atomNum = $atomNum%$atommod;}
 	 	       	if($resCounter >= 100000){$resCounter = $resCounter%100000;}
 	 	       
-	 	       	$atominfo     .= sprintf("$usefmt",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
+	 	       	push(@atominfo,["$usefmt",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z]);
 	 	       	$atominfo4SCM .= sprintf("$groSCMfmt",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
 	 	       	$lastTER=0;  
 	 	}
 	}
-
 ## default box size if 1nm larger than system size in each direction
-	my $xrange=($xmax-$xmin)+2.0;
-	my $yrange=($ymax-$ymin)+2.0;
-	my $zrange=($zmax-$zmin)+2.0;
+	my $xrange=($xmax-$xmin)+$boxbuffer*2;
+	my $yrange=($ymax-$ymin)+$boxbuffer*2;
+	my $zrange=($zmax-$zmin)+$boxbuffer*2;
+
+	if(defined $centersystem){
+		print("Will shift coordinates so that the molecule is centered in the box\n\n");
+		for (my $I=0;$I<scalar(@atominfo);$I++){
+			${$atominfo[$I]}[5]-=$xmin-$boxbuffer;
+			${$atominfo[$I]}[6]-=$ymin-$boxbuffer;
+			${$atominfo[$I]}[7]-=$zmin-$boxbuffer;
+		}
+	}
+
 
  ## ADJUST GRO FILE ##
 	close(PDB);
@@ -2205,7 +2218,10 @@ sub convertPDBToGroNdx
 		open(GRO,">$outputGRO") or smog_quit("can not open $outputGRO for writing");
 		print GRO "Gro file for a structure based model, generated with SMOG Version $VERSION\n";
 		print GRO $counter,"\n";
-		print GRO "$atominfo";
+		foreach my $atoms(@atominfo){
+			my @atom=@{$atoms};
+	 	       	printf GRO ($atom[0],$atom[1],$atom[2],$atom[3],$atom[4],$atom[5],$atom[6],$atom[7]);
+		}
 		print GRO "$xrange $yrange $zrange\n";
 		close(GRO);
 		print "$outputGRO written\n"; 
@@ -2216,7 +2232,10 @@ sub convertPDBToGroNdx
 		print G96 "TITLE\n";
 		print G96 "g96 file for a structure based model, generated with SMOG Version $VERSION\n";
 		print G96 "END\nPOSITION\n";
-		print G96 "$atominfo";
+		foreach my $atoms(@atominfo){
+			my @atom=@{$atoms};
+	 	       	printf GRO ($atom[0],$atom[1],$atom[2],$atom[3],$atom[4],$atom[5],$atom[6],$atom[7]);
+		}
 		print G96 "END\nBOX\n";
 		printf G96 ("%15.9f%15.9f%15.9f\n",$xrange, $yrange, $zrange);
 		print G96 "END\n";
@@ -2407,6 +2426,10 @@ usage: smog2 .. options ..
        -tCG [templateFolder]   : folder containing templates used for coarse graining. indicates that the program should coarse grain
        -nocheck                : turn off template cross-validation checks. may sometimes be useful
                                    when using old templates with new versions of SMOG
+
+     Coordinate Processing Options
+       -center                 : center the system in a box
+       -boxbuffer  [1]         : set box size such that there is space between the molecule and the boundary (default: 1nm)
 
      Force Field Modifications/exceptions
        -limitbondlength            : if a bond length is outside of the allowable range, set it to limiting value

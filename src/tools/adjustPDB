@@ -99,7 +99,8 @@ checkForModules();
 my $makemap;
 my $template_dir;
 my $deletewater;
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'PDBresnum' => \$PDBresnum,'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'large' => \$large, 'sort' => \$sort,  'removewater' => \$deletewater, 'gen_map=s' => \$makemap, 't=s' => \$template_dir,  '<>' => \&usage) or defined $help); 
+my $noautorename;
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'PDBresnum' => \$PDBresnum,'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'noautorename' => \$noautorename, 'large' => \$large, 'sort' => \$sort,  'removewater' => \$deletewater, 'gen_map=s' => \$makemap, 't=s' => \$template_dir,  '<>' => \&usage) or defined $help); 
 
 warninfo();
 
@@ -234,6 +235,7 @@ usage: smog_adjustPDB .. options ..
                                      can be dangerous. -insertTER is recommended, unless
                                      you are certain that all numbering inconsistencies 
                                      should be ignored 
+        -noautorename           : do not automatically replace * and ' characters atom names
 	-PDBresnum              : don't renumber residues. Keep original PDB numbering.
                                      can be useful for analysis
                                      output PDB probably won't be useful for smog2
@@ -674,7 +676,8 @@ sub readexactmap
 				$rename{"$entries[1]"}=$entries[2];
 		}
 	}
-
+	my @entryarray;
+	my @linearray;
 	# read residue lines
 	for(my $linen=0;$linen<$cindex;$linen++){
 		my $line=$content[$linen];
@@ -699,7 +702,54 @@ sub readexactmap
 			smog_quit("Atoms in residue \"$rn\" listed in map file, but the same residue is also listed under ignoreRes.");
 		}
 		# add residue definition to map hash.  Also, add all permutations of alternate atom names
-		checkDupGetAlt(\@entries,$line);
+		push(@entryarray,\@entries);
+		push(@linearray,$line);
+	}
+
+	unless(defined $noautorename){
+		# check if * or ' is used
+		my $foundastrisk=0;
+		my $foundtic=0;
+		my @foundta;
+		for (my $I=0;$I<$#entryarray;$I++){
+			my @tmarr=@{$entryarray[$I]};
+			for (my $J=2;$J<$#tmarr;$J++){
+				if($tmarr[$J] =~ /\'/){
+					$foundtic=1;
+					push(@foundta,$tmarr[$J]);
+				}
+				if($tmarr[$J] =~ /\*/){
+					$foundastrisk=1;
+					push(@foundta,$tmarr[$J]);
+				}
+			}
+		}
+		# if only * is used, make ' renames, and vice versa
+		if($foundastrisk+$foundtic==1){
+			my $rep0;
+			my $rep1;
+			if($foundtic==1){
+				$rep0="\Q\*\E";
+				$rep1="'";
+				print("\nOnly tics found in atom names.  Will interpret every * as a '.  Use \"-noautorename\" to disable this behavior.\n");
+			}else{
+				$rep1="\Q\*\E";
+				$rep0="'";
+				print("\nOnly * found in atom names.  Will interpret every ' as a *.  Use \"-noautorename\" to disable this behavior.\n");
+			}
+			foreach my $I(@foundta){
+				my $J=$I;
+				$J =~ s/$rep1/$rep0/g;
+				if(! exists $rename{$J}){
+					$rename{$J}=$I;
+				}
+			}
+
+		}
+	}
+
+	for(my $I=0;$I<$#entryarray;$I++){
+		checkDupGetAlt($entryarray[$I],$linearray[$I]);
 	}
 	for my $I (values %rename){
 		if(!exists $atomsseen{$I}){
