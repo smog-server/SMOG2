@@ -1122,11 +1122,6 @@ sub smogchecker
   $FAIL{'OPENSMOG CONTACTS: INTERACTIONS'}=-1;
   $FAIL{'OPENSMOG: XML EXISTS'}=-1;
  }
-# this was due to our inability to properly add BONDs. Issue resolved in smog2.
-# if($PDB =~ m/BOND$/){
-#  # BOND in name means disable check
-#  $FAIL{'GENERATED DIHEDRAL IN TOP'}=-1; 
-# }
 
  if($PDB =~ m/^FES$/){
   # Can't perform these tests for the FES system (limit of the test logic)
