@@ -302,7 +302,7 @@ sub adjustInputFile{
 		$notallowed{$J}=0;
 	}
 	my %allowed;
-	foreach my $I ("REMARK","ATOM","TER","HETATM","END","COMMEN","BOND","HEADER","TITLE") {
+	foreach my $I ("REMARK","ATOM","TER","HETATM","END","COMMEN","HEADER","TITLE") {
 		my $J = $I;
 		$J =~ s/\s+//g;
 		$allowed {$J}=0;
@@ -325,6 +325,8 @@ sub adjustInputFile{
 			}
 			next;
 
+		}elsif( $tag eq "BOND"){
+			smog_quit("Issue at line $ln: BOND lines can not be used with adjust_PDB. This is not allowed since adjustPDB usually changes chain and atom indexes, which will make the current BOND values inappropriate. You should first run smog_adjustPDB without BOND lines and then add them back to the adjusted PDB, in order to ensure the correct bond is added.");
 		}elsif(!exists $allowed{$tag}){
 			smog_quit("Unrecognized PDB record on line $ln: \"$tag\".");
 		}
@@ -410,10 +412,6 @@ sub adjustInputFile{
 
 			$chainindex++;
 
-		}elsif($pArr[$k] =~ /^BOND/){
-			print NEWPDB "$pArr[$k]\n";
-			$k++;
-			smog_quit("Issue at line $k: BOND lines can not be used with adjust_PDB, since the new atom numbers may differ from the input file. You should first run smog_adjustPDB without BOND lines and then add them back to the adjusted PDB, in order to ensure the correct numbers are present.");
 		}elsif ($pArr[$k] =~ /^remark/i || $pArr[$k] =~ /^TITLE/ || $pArr[$k] =~ /^HEADER/){
 			print NEWPDB "$pArr[$k]\n";
 			$k++;

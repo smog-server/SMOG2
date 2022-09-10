@@ -191,7 +191,7 @@ sub checkPDB
 				} 
 				my @TMP = split(/\s+/,$record);
 				if(@TMP <= 5){
-					smog_quit("Directive BOND must have 5 arguments (chain A, $resat number A, chain B, $resat number B, energy group). Offending line:\n$record");
+					smog_quit("Tag BOND must have 5 arguments (chain A, $resat number A, chain B, $resat number B, energy group). Offending line:\n$record");
 				}
 				my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
 				
@@ -472,9 +472,9 @@ sub parsePDBATOMS
    
 			my @TMP = split(/\s+/,$record);
 			my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
-			smog_note("Generating user-specified bonded interaction between chain-atom pair $chaina-$atoma,$chainb-$atomb.\nWill assign to energy group $eG.");
 
-		
+			my $userchaina=$chaina;	
+			my $userchainb=$chainb;	
 			#internally, chain numbers begin at 0, not 1.
 			$chaina--;
 			$chainb--;
@@ -488,6 +488,8 @@ sub parsePDBATOMS
 			my $resAIdx = $allAtoms{$idxA}->[2];
 			my $resBIdx = $allAtoms{$idxB}->[2];
 			my $fragment;
+
+			smog_note("Generating user-specified bonded interaction between atoms $atomA in $resA$resAIdx (chain $userchaina) and $atomB in $resB$resBIdx (chain $userchainb).\nWill assign to energy group $eG.");
 
 
 			# make a hash of res indexes that we want to include in the fragment
