@@ -374,7 +374,7 @@ sub adjustInputFile{
 	if(defined $large){
 		print NEWPDB "LARGE - Use large base for res/atom numbering (don\'t delete, or smog2 will crash)\n";
 	}
-	## Loops through all PDB rows ##
+	## Loops through all PDB lines ##
 	$k = 0;
 	while($k<$rows){
 		my $line=$pArr[$k];
@@ -383,22 +383,6 @@ sub adjustInputFile{
 		## If end of file: ##
 		if ($pArr[$k] =~ m/^END/){
 			print NEWPDB "END\n";
-			renamesummary($renamedstring,$chainindex);
-			removesummary($removestring,$chainindex);
-			$renamedstring="";
-			$removestring="";
-			if($k<$rows-1){
-				my $nz=0;
-				for(my $I=$k+1;$I<$rows;$I++){
-					$pArr[$I] =~ s/\s+//g;
-					if(length($pArr[$I]) != 0){
-						$nz++;
-					}
-				}
-				if($nz >0 ){
-					print "\nNOTE: Non-blank lines appear after \"END\" line in input PDB.  Anything after END was removed in the output.  This may not be desirable.\n";
-				}
-			}
 			last;
 		}elsif($pArr[$k] =~ m/^TER/){
 			# if the next line has a TER, or END, then don't write the current TER.
@@ -573,6 +557,25 @@ sub adjustInputFile{
 			smog_quit("Issue at line $k:\n$pArr[$k]\n\t is not supported by SMOG.\n\t Lines supported: HEADER, TITLE, ATOM, HETATM, TER, BOND, COMMENT, REMARK, END");
 		}
 	}
+
+	# FINALIZE AND WRITE OUT INFO
+	renamesummary($renamedstring,$chainindex);
+	removesummary($removestring,$chainindex);
+	$renamedstring="";
+	$removestring="";
+	if($k<$rows-1){
+		my $nz=0;
+		for(my $I=$k+1;$I<$rows;$I++){
+			$pArr[$I] =~ s/\s+//g;
+			if(length($pArr[$I]) != 0){
+				$nz++;
+			}
+		}
+		if($nz >0 ){
+			smog_note("!!!!!! Non-blank lines appear after \"END\" line in input PDB.  Anything after END was removed in the output.  This may not be desirable.!!!!!\n");
+		}
+	}
+
 	close NEWPDB;
 }
 
