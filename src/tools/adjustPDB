@@ -731,11 +731,11 @@ sub readexactmap
 			if($foundtic==1){
 				$rep0="\Q\*\E";
 				$rep1="'";
-				print("\nOnly tics found in atom names.  Will interpret every * as a '.  Use \"-noautorename\" to disable this behavior.\n");
+				print("\nIn mapping file, only tics found in atom names.  Since it is possible to use the ' or * convention, smog_adjustPDB will also interpret every * in the PDB as a '.  Use \"-noautorename\" to disable this behavior.\n");
 			}else{
 				$rep1="\Q\*\E";
 				$rep0="'";
-				print("\nOnly * found in atom names.  Will interpret every ' as a *.  Use \"-noautorename\" to disable this behavior.\n");
+				print("\nIn mapping file, only astrisks found in atom names.  Since it is possible to use the ' or * convention, smog_adjustPDB will also interpret every ' in the PDB as a *.  Use \"-noautorename\" to disable this behavior.\n");
 			}
 			foreach my $I(@foundta){
 				my $J=$I;
