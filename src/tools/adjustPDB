@@ -309,8 +309,10 @@ sub adjustInputFile{
 	}
 	# Read the molecule PDB into an array (for convenience)
 	$rows=0;
+	my $ln=0;
 	while(<OLDPDB>){
 		my $line=$_;
+		$ln++;
 		my $tag=substr($line,0,6);
 		my @tags=split(/\s+/,$tag);
 		$tag = trim($tags[0]);
@@ -324,7 +326,7 @@ sub adjustInputFile{
 			next;
 
 		}elsif(!exists $allowed{$tag}){
-			smog_quit("Unrecognized PDB record \"$tag\".");
+			smog_quit("Unrecognized PDB record on line $ln: \"$tag\".");
 		}
 		chomp($line);
 		$pArr[$rows]=$line;	
@@ -376,14 +378,20 @@ sub adjustInputFile{
 	}
 	## Loops through all PDB lines ##
 	$k = 0;
+	# endfound keeps track of whether we found and END line.  Only "BONDS" are allowed afterwards, and we use this variable to do so.
+        my $endfound=1;
 	while($k<$rows){
 		my $line=$pArr[$k];
+		if($endfound==0 && $line !~ m/^BOND/ && $line !~ m/^REMARK/ ){
+			smog_note("Only REMARK and BOND lines may appear after END.  Found:\n$line\n^^This line will be removed.\n");
+		}
 		trim(chomp($pArr[$k]));
 		
 		## If end of file: ##
 		if ($pArr[$k] =~ m/^END/){
 			print NEWPDB "END\n";
-			last;
+			$endfound=0;
+			$k++;
 		}elsif($pArr[$k] =~ m/^TER/){
 			# if the next line has a TER, or END, then don't write the current TER.
 			$k++;
@@ -404,10 +412,10 @@ sub adjustInputFile{
 		}elsif($pArr[$k] =~ /^BOND/){
 			print NEWPDB "$pArr[$k]\n";
 			$k++;
-			next;
 			if (defined $sort || defined $renumber || defined $removeH || defined $deletewater  ){
-				smog_quit("Issue at line $k: BOND lines can not be used in conjunction with -removeH, -removewater, -sort, or -renumber, since the new atom numbers may differ from the input file.");
+				smog_quit("Issue at line $k: BOND lines can not be used in conjunction with -removeH, -removewater, -sort, or -renumber, since the new atom numbers may differ from the input file. You should first run smog_adjustPDB without BOND lines and then add them back to the adjusted PDB, in order to ensure the correct numbers are present.");
 			}
+			next;
 		}elsif ($pArr[$k] =~ /^remark/i || $pArr[$k] =~ /^TITLE/ || $pArr[$k] =~ /^HEADER/){
 			print NEWPDB "$pArr[$k]\n";
 			$k++;
