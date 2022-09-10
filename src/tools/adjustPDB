@@ -312,7 +312,8 @@ sub adjustInputFile{
 	while(<OLDPDB>){
 		my $line=$_;
 		my $tag=substr($line,0,6);
-		$tag =~ s/\s+//g;
+		my @tags=split(/\s+/,$tag);
+		$tag = trim($tags[0]);
 		if(exists $notallowed{$tag}){
 			smog_quit("Found PDB record \"$tag\", which it not supported.");
 		}elsif(exists $ignoretags{$tag}){
