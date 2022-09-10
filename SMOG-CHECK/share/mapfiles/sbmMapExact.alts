@@ -1,12 +1,6 @@
 rename OP1 O1P 
 rename OP2 O2P 
 rename OP3 O3P 
-rename C1' C1* 
-rename C2' C2* 
-rename C3' C3* 
-rename C4' C4* 
-rename C5' C5* 
-rename O2' O2* 
 rename O3' O3* 
 rename O4' O4* 
 rename O5' O5* 
