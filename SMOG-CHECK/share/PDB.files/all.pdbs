@@ -1,3 +1,4 @@
+; only add new checks to the end.  Otherwise, all static map comparisons will break
 ; check distributed AA model with various types of molecules and residues
 1A01-AMP AA default ; 1
 1A01-ADP AA default ; 2
@@ -134,3 +135,5 @@ DNA.terminal.BMG openSMOG AA default ; 95
 2ci2_v2.freecoor openSMOG freecoor AA default ; 101
 2ci2_v2.freecoor  freecoor CA default ;102
 
+; check BOND with CA model
+1AKEapo_v3.BOND CA default ;103

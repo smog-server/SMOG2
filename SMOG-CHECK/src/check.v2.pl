@@ -13,6 +13,22 @@ use OpenSMOG;
 
 my $VERSION="2.5beta";
 
+#*************
+# ENV variable options (only developers will use these)
+# if smog_keepfiles is defined, then output files will be saved, even if the system passes
+# if smog_regenmaps is defined, then reference contact maps will be generated and saved, if they do not already exist/
+
+our $keepfiles=1;
+if (exists $ENV{'smog_keepfiles'}){
+	$keepfiles=0;
+}
+
+our $CHECKMAP=1;
+if (exists $ENV{'smog_regenmaps'}){
+	$CHECKMAP=0;
+}
+
+
 #****************INITIALIZE A BUNCH OF VARIABLES*******************
 
 # a number of global variables. This is a bit sloppy, since most of them do not need to be global.  Maybe later we'll convert some back to my declarations.
@@ -35,10 +51,6 @@ our $TEMPLATE_DIR_CA=$ENV{'BIFSIF_CA_TESTING'};
 our $TEMPLATE_DIR_AA_MATCH=$ENV{'BIFSIF_AA_MATCH'};
 our $TEMPLATE_DIR_AA_2CG=$ENV{'BIFSIF_AA_2CG'};
 our $TEMPLATE_DIR_AA_CR2=$ENV{'BIFSIF_AA_CR2'};
-our $keepfiles=1;
-if (exists $ENV{'smog_keepfiles'}){
-	$keepfiles=0;
-}
 quit_init();
 
 # FAILLIST is a list of all the tests.
@@ -101,10 +113,6 @@ my %numfield = ( 'default' => '2', 'default-2cg' => '2',  'default-userC' => '2'
 our $name2="NB_2";
 
 my $TESTNUM=0;
-# CHECKMAP is used to signal for smog-check to save all generated contact maps.  
-# CHECKMAP=1 indicates that static comparisons should be performed.
-# CHECKMAP != 1 means regenerate the references
-my $CHECKMAP=1;
 my $FAIL_SYSTEM=0;
 my $NUMTESTED=0;
 my $contactmodel;
@@ -1056,7 +1064,11 @@ sub checkSCM
 
  }elsif($model eq "CA"){
   # run AA model to get top
-  `$EXEC_NAME $freecoor -keep4SCM -i $PDB_DIR/$PDB.pdb -g $PDB.meta1.gro -o $PDB.meta1.top -n $PDB.meta1.ndx -s $PDB.meta1.contacts -t $BIFSIF_AA  &> $PDB.meta1.output`;
+  my $usePDB=$PDB;
+  if ($PDB =~ m/\.BOND/){
+   $usePDB =~ s/\.BOND/\.NOBOND/g;
+  }
+  `$EXEC_NAME $freecoor -keep4SCM -i $PDB_DIR/$usePDB.pdb -g $PDB.meta1.gro -o $PDB.meta1.top -n $PDB.meta1.ndx -s $PDB.meta1.contacts -t $BIFSIF_AA  &> $PDB.meta1.output`;
 
   my $SHADOWARGS="-g $PDB.meta1.gro4SCM.gro -t $PDB.meta1.top -ch $PDB.meta1.ndx -o $PDB.contacts.SCM -m shadow -c $CONTD -s $CONTR -br $BBRAD";
 
@@ -1076,6 +1088,8 @@ sub checkSCM
    my $diff=filediff("$PDB.contacts.ShadowOutput","share/maprefs/$TESTNUM.mapref");
    if($diff==0){
     $FAIL{'STATIC CONTACT COMPARISON'}=0;
+   }else{
+    $fail_log .= failed_message("STATIC CONTACT COMPARISON: See $PDB.contacts.ShadowOutput, share/maprefs/$TESTNUM.mapref\n");
    }
   }else{
    if(-e "share/maprefs/$TESTNUM.mapref"){
