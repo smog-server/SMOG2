@@ -62,7 +62,8 @@ our %allAtoms;
 our %allAtomsBackup;
 
 our %extContacts;
-
+# keep track of BONDs, so that contacts can be removed
+our %ignoreBONDed;
 ###########################
 ## CLEAR VARIABLE MEMORY ##
 ###########################
@@ -453,14 +454,12 @@ sub parsePDBATOMS
                 my $record=$PDBDATA[$K];
 		$lineNumber++;
 	
-		## PARSE BOND LINES ##
 		my $lng = $record;
 		chomp($lng);
 		$lng =~ s/\s+//g;	
 		$lng =~ s/\t+//g;	
 		if($record =~ m/^comment/i || $record =~ m/^remark/i || $lng eq "" || $record =~ m/^LARGE/ || $record =~ m/^HEADER/ || $record =~ m/^TITLE/){
 			next;
-		# make sure BOND appears after END
 		}
  		if($record =~ m/^BOND/){
 
@@ -488,7 +487,7 @@ sub parsePDBATOMS
 			my $resAIdx = $allAtoms{$idxA}->[2];
 			my $resBIdx = $allAtoms{$idxB}->[2];
 			my $fragment;
-
+			# keep a record of each added bond, so that any contacts associated with this pair can be pruned, later.
 			smog_note("Generating user-specified bonded interaction between atoms $atomA in $resA$resAIdx (chain $userchaina) and $atomB in $resB$resBIdx (chain $userchainb).\nWill assign to energy group $eG.");
 
 
@@ -519,8 +518,10 @@ sub parsePDBATOMS
 			my %keep;
 			my $indexA;
 			my $indexB;
+			my @local2global;
 			foreach my $kk(list(slice($fragment,3))){
 				$keep{$kk}=$newindex;
+				push(@local2global,$kk);
 				if($idxA==$kk){
 					$indexA=$newindex;
 				}
@@ -553,7 +554,7 @@ sub parsePDBATOMS
 			# save the coordinates of this piddle, for later use. 
 			$bondPDL{$counter}=$fragment;
 	
-			connCreateInteractionsSingleBOND(\%bondlistFragment,\%energygroupsFragment,\@bTypesFragment,$counter,$chaina,$chainb,$indexA,$indexB,$atomA,$atomB,$resA,$resB,$eG); 
+			connCreateInteractionsSingleBOND(\%bondlistFragment,\%energygroupsFragment,\@bTypesFragment,$counter,$chaina,$chainb,$indexA,$indexB,$atomA,$atomB,$resA,$resB,$eG,\@local2global); 
 
 			$counter++;
 			next;
@@ -932,7 +933,8 @@ sub checkconnection
 
 sub connCreateInteractionsSingleBOND
 {
-    	my($union,$unioneG,$bTypesFragment,$counter,$chain1,$chain2,$index1,$index2,$atomA,$atomB,$resA,$resB,$bEG) = @_;
+    	my($union,$unioneG,$bTypesFragment,$counter,$chain1,$chain2,$index1,$index2,$atomA,$atomB,$resA,$resB,$bEG,$local2global) = @_;
+	my @local2global=@{$local2global};
 	my $a; my $b; my $c; my $d; my $ta; my $tb; my $tc; my $td;   
 	my $if;
 	my $eG;
@@ -941,12 +943,12 @@ sub connCreateInteractionsSingleBOND
 	
 	# add the bond to the fragment and then generate all possible angles and dihedrals within the fragment.
 	my($angH,$diheH)=createConnection($index1,$index2,$union,$unioneG,$bEG);
-
 	## Add the BOND to the model##
 	$ta = $localbTypes[$index1];
 	$tb = $localbTypes[$index2];
 	$if = funcToInt("bonds",connWildcardMatchBond($ta,$tb),"");
     	$BondData{$counter}=pdl($index1,$index2,$if);
+	excludecontacts($local2global,$index1,$index2);	
 
 #	## Add all ANGLES that contain both of the BONDed atoms##
 	my @tempArr;
@@ -959,6 +961,8 @@ sub connCreateInteractionsSingleBOND
 			$tc = $localbTypes[$c];
 			$if = funcToInt("angles",connWildcardMatchAngles($ta,$tb,$tc),"");
 			push(@tempArr,pdl($a,$b,$c,$if));
+
+			excludecontacts($local2global,$a,$b,$c);	
 		}
 	}
         if(@tempArr)
@@ -1001,16 +1005,19 @@ sub connCreateInteractionsSingleBOND
 
 		if( ($b == $index1  && $c == $index2) || ( $b == $index2  &&  $c == $index1 ) ) {
 			# dihedrals formed about the new bond
-			push(@tempArr,[$a,$b,$c,$d,$if,1,$eG]);	
+			push(@tempArr,[$a,$b,$c,$d,$if,1,$eG]);
+			excludecontacts($local2global,$a,$b,$c,$d);	
 		}
 		if( ($a == $index2  && $b == $index1) || ($d == $index2  && $c == $index1)  ) {
 			# dihedrals formed about existing bond in chain 1
 			push(@tempArr1,[$a,$b,$c,$d,$if,1,$eG]);	
+			excludecontacts($local2global,$a,$b,$c,$d);	
 		}
 
 		if( ($a == $index1  && $b == $index2) || ($d == $index1  && $c == $index2) ) {
 			# dihedrals formed about existing bond in chain 2
 			push(@tempArr2,[$a,$b,$c,$d,$if,1,$eG]);	
+			excludecontacts($local2global,$a,$b,$c,$d);	
 		}
 
 
@@ -1023,6 +1030,21 @@ sub connCreateInteractionsSingleBOND
 	}
 	if(@tempArr2){
 		addBONDdihToChain($counter,\@tempArr2,$chain2,$index1);
+	}
+}
+
+sub excludecontacts 
+{
+	my @vals=@_;
+	my $local2global=shift @vals;
+	my @local2global=@{$local2global};
+	for(my $I=0;$I<scalar(@vals)-1;$I++){
+		for(my $J=$I+1;$J<scalar(@vals);$J++){
+			my $a=$vals[$I];
+			my $b=$vals[$J];
+			$ignoreBONDed{"$local2global[$a] $local2global[$b]"}=1;
+			$ignoreBONDed{"$local2global[$b] $local2global[$a]"}=1;
+		}
 	}
 }
 
@@ -1575,20 +1597,19 @@ sub catPDL
 
 sub parseCONTACT
 {
-	#lets leave this as two filename inputs in case we want to allow two sources of contacts in the future (i.e. user and shadow)
 	my($fileName,$fileName2,$userProvidedMap,$CGenabled,$saveSCMorig) = @_;
 	my $numContacts = 0; 
 	my $line = "";
 	my $chain1;my $chain2; my $contact1; my $contact2; my $res1; my $res2;
 	my $dist;
 	my $x1;my $x2;my $y1;my $y2;my $z1;my $z2;
-	my %resContactHash; my $skip = 0; my $COARSECONT; 
+	my %resContactHash; my $skip = 1; my $COARSECONT; 
 	my @interiorTempPDL; #usage: push(@interiorTempPDL,[1,$contact1,$contact2,$dist]);
 	#Format for this PDL has a boolean as the first argument
 	#it is unused for now, but could be useful in future to use
 	#as a flag to differentiate between user generated and smog generated contacts
 
-	if(!$userProvidedMap){ #use shadow generated contact map
+	if(!$userProvidedMap){ #use shadow-generated contact map
 		## OPEN .contact FILE ##
 		unless (open(CONTFILE, $fileName)) {
 			smog_quit ("Unable to read shadow-generated contact map. This typically means there was an issue running shadow.");
@@ -1609,15 +1630,15 @@ sub parseCONTACT
 				#if we are coarse graining then we need to map AA to residue contacts
 				#first see which residues they belong
 				$res1 = $allAtomsBackup{$contact1}[9]; $res2 = $allAtomsBackup{$contact2}[9];
-				$skip = 1; 	#skip if this res1-res2 has already been added
+				$skip = 0; 	#skip if this res1-res2 has already been added
 				if(!exists $resContactHash{"$res1,$res2"}) {
 					$resContactHash{"$res1,$res2"} = 1;
-					$skip = 0;
+					$skip = 1;
 					$contact1 = $res1; $contact2 = $res2;
 					print $COARSECONT "$chain1 $res1 $chain2 $res2\n";
 				}
 			}
-			if($skip == 0) { #maybe we skip sometimes if coarse graining				
+			if($skip == 1) { #maybe we skip sometimes if coarse graining				
 				($x1,$y1,$z1) = @{$allAtoms{$contact1}}[6..8];
 				($x2,$y2,$z2) = @{$allAtoms{$contact2}}[6..8];
 
@@ -1635,7 +1656,13 @@ sub parseCONTACT
 	                            		smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value ". sprintf("%.3f",$dist));
 	 			  	}
 				}
+
+				if(exists $ignoreBONDed{"$contact1 $contact2"}){
+					smog_note("Calculated contact will be excluded because that atoms are associated with a bond, angle or dihedral defined by a \"BOND\". Contact is between atoms $contact1 and $contact2");
+					next;
+				}
 				push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
+
 				$numContacts++;
 			}
 		}
@@ -1654,7 +1681,7 @@ sub parseCONTACT
 			`rm $fileName`;
 		}
 		
-		unless (open(CONTFILE,">$fileName")) { smog_quit ("PDB consistent contact file $fileName cannot be written."); }
+		unless (open(CONTFILE,">$fileName")) { smog_quit ("PDB-consistent contact file $fileName cannot be written."); }
 		for(my $i=0;$i<$numContacts;$i++)
 		{
 			my $atoma = sclr(slice($contactPDL,"1:1,$i:$i"));
@@ -1740,8 +1767,6 @@ sub parseCONTACT
 		}
 		$contactPDL = pdl(@interiorTempPDL);
 	} 
-
-
 		
 	#exit(0);
 	return $numContacts;
