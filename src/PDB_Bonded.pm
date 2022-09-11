@@ -1658,7 +1658,7 @@ sub parseCONTACT
 				}
 
 				if(exists $ignoreBONDed{"$contact1 $contact2"}){
-					smog_note("Calculated contact will be excluded because that atoms are associated with a bond, angle or dihedral defined by a \"BOND\". Contact is between atoms $contact1 and $contact2");
+					smog_note("Calculated contact will be excluded because the atoms are associated with a bond, angle or dihedral defined by a \"BOND\". Contact is between atoms $contact1 and $contact2");
 					next;
 				}
 				push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
@@ -1760,6 +1760,10 @@ sub parseCONTACT
 				}else{
                             		smog_quit("Contact between atoms $contact1 $contact2 below threshold distance with value $dist");
  			  	}
+			}
+			if(exists $ignoreBONDed{"$contact1 $contact2"}){
+				smog_note("Listed contact will be excluded because the atoms are associated with a bond, angle or dihedral defined by a \"BOND\". Contact is between atoms $contact1 and $contact2");
+				next;
 			}
 
 			push(@interiorTempPDL,[$userProvidedMap,$contact1,$contact2,$dist]);
