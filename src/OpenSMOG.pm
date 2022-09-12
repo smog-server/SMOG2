@@ -551,6 +551,8 @@ sub OpenSMOGAddNBsettoXML{
 		splice(@tarray,2,1);
 		AddNonbondOShash($data,\@tarray);
 	}
+        $data->{nonbond}->{nonbond_bytype}->{cutoff}=$data->{nonbond}->{nonbond_bytype}->{cutoff}->{'distance'};
+
 	# write new XML
 	OpenSMOGwriteXML($data,$OpenSMOGout,"Ion parameters were added with smog_ions",$ionnm);
 }
