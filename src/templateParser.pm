@@ -1437,7 +1437,7 @@ sub CustomNonBondedCheckAdjust{
 		return;
 	}	
 	if(! defined $OpenSMOG){
-		smog_quit("CustomNonBonded is defined in the .sif file, but the -OpenSMOG flag was not issued.  This is typically a mistake. There are some cases where CustomNonBonded terms have been introduced in software other than OpenMM. For example, the SMOG-ion model of Wang et al (2022) can be used with an unofficial/modified version of Gromacs. If you are sure that you do not want to use OpenSMOG, and that this CustomNonBonded potential is implemented elsewhere, then you may supress this warning with the -warn option.")
+		smog_quit("CustomNonBonded is defined in the .sif file, but the -OpenSMOG flag was not issued.  This is typically a mistake. There are some cases where CustomNonBonded terms have been introduced in software other than OpenMM. For example, the SMOG-ion model of Wang et al (2022) can be used with an unofficial/modified version of Gromacs. If you are sure that you do not want to use OpenSMOG, and that this CustomNonBonded potential is implemented elsewhere, then you may suppress this warning with the -warn option.")
 	}
 	my @parmarr=@{$parmarr};
 	my @interHandle = @{$data->{"CustomNonBonded"}};
