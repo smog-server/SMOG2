@@ -519,7 +519,7 @@ sub checkPotentialFunction{
 
 	if ($c == 0){
 		#my $func=$hd->{"OpenSMOGpotential"};
-		if($func =~ m/^(.*?)?([^\s+a-zA-Z0-9_\;\,\=\/\-\+\*\^\(\)])(.*)?$/ ){
+		if($func =~ m/^(.*?)?([^\s+a-zA-Z0-9_\;\.\,\=\/\-\+\*\^\(\)])(.*)?$/ ){
 			# regex explained: ^ start, (.*?)? non-greedy and optional any character, (not any letter, number, or allowed operator), (.*)? optional any character, $ end.
 			my $pos=length($1)+1;
 			smog_quit("Unsupported characters found in OpenSMOG energy function:\n$func\nEnergy functions may only have the following characters: a-z A-Z 0-9 _ ; = , / - + * ^ ( )\nCharacter $pos is a \"$2\".");
