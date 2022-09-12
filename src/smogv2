@@ -105,6 +105,7 @@ our %fTypesArgNum;
 our %OpenSMOGpot;
 our $OpenSMOGpothash;
 our %directives;
+our %directivesatomnumber;
 our @directivesList;
 our %extraatomtypes;
 our %bondParseSeen;
@@ -272,6 +273,8 @@ sub setglobals {
 
 	## this is the topfile buffer stuff
 	%directives = ("comments",1,"defaults",2,"atomtypes",3,"bondtypes",4,"angletypes",5,"dihedraltypes",6,"nonbond_params",7,"moleculetype",8,"atoms",9,"bonds",10,"angles",11,"dihedrals",12,"pairs",13,"exclusions",14,"position_restraints",15,"system",16,"molecules",17);
+	# %directivesatomnumber indicates the number of atoms associated with each directive. This is used to make sure that there are no duplicate declarations in the types sections
+	%directivesatomnumber = ("atomtypes",1,"bondtypes",2,"angletypes",3,"dihedraltypes",4,"nonbond_params",2);
 	@directivesList=("comments","defaults","atomtypes","bondtypes","angletypes","dihedraltypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
 }
 
@@ -821,7 +824,10 @@ sub checkExtras {
 	my ($filename) = @_;
 	open(EXTRA,"$filename");
 	my $line = "";
-	my $directive;my $stuff;my @tokens;
+	my $directive;
+	my $stuff;
+	my @tokens;
+	my %foundtypes;
 	while($line = <EXTRA>)
 	{
 		my ($A,$B)=checkcomment($line);
@@ -836,6 +842,25 @@ sub checkExtras {
 		$directive = trim($tokens[0]);
 		if(!exists $directives{$directive}) {
 			smog_quit("extras file: $filename has a non-valid directive \"$directive\". Check for typos or add directive to directivesList in src/smogv2.");			
+		}
+		if (exists $directivesatomnumber{$directive}){
+			my $natoms=$directivesatomnumber{$directive};
+			# get atom names
+			my $entry = trim($tokens[1]);
+			my @list=split(/\s+/,$entry);
+			my $forward="";
+			my $backward="";
+			for(my $I=0;$I<$natoms;$I++){
+				$forward = "$forward " .  $list[$I];
+				$backward = $list[$I] . " $backward";
+			}
+			if(exists ${$foundtypes{$directive}}->{$forward}){
+				smog_quit("Found duplicate $directive definition in the extras file.\n\tDuplicate set of atom types:$forward");
+			}
+			${$foundtypes{$directive}}->{$forward}=1;
+			${$foundtypes{$directive}}->{$backward}=1;
+			# check if hash element assigned
+			# add to hash
 		}
 	}
 }
