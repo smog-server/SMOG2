@@ -1448,6 +1448,7 @@ sub CustomNonBondedCheckAdjust{
 		$interactions->{"CustomNonBonded"}->{"OpenSMOGpotential"} =~ s/\s+//g;
 		$interactions->{"CustomNonBonded"}->{"OpenSMOGcombrule"}=$interHandle[0]->{"OpenSMOGcombrule"};
 		$interactions->{"CustomNonBonded"}->{"OpenSMOGcombrule"} =~ s/^\s+|\s+$//g;
+		$interactions->{"CustomNonBonded"}->{"cutoff"} = $interHandle[0]->{"nbcutoff"};
 		if($interactions->{"CustomNonBonded"}->{"OpenSMOGcombrule"} ne "none"){
 			smog_quit("CustomNonBonded defined in .nb file. Only OpenSMOGcombrule==none is currently supported. Found \"$interactions->{\"CustomNonBonded\"}->{\"OpenSMOGcombrule\"}\"");
 		}
@@ -1485,7 +1486,7 @@ sub CustomNonBondedCheckAdjust{
 		# save the array of parsed parameters
 		$interactions->{"CustomNonBonded"}->{"parameters"}=\@parmarr;
 
-		OShashAddNBFunction($OSref,$interactions->{"CustomNonBonded"}->{"OpenSMOGpotential"},\@parmarr);
+		OShashAddNBFunction($OSref,$interactions);
 	}elsif(exists $interHandle[0]->{"OpenSMOGpotential"} || exists $interHandle[0]->{"OpenSMOGcombrule"}){
 		smog_quit("CustomNonBonded defined in .nb file. OpenSMOGpotential and OpenSMOGcombrule must be given together, or not at all.");
 	}

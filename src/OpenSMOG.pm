@@ -57,9 +57,13 @@ sub OShashAddFunction{
 }
 
 sub OShashAddNBFunction{
-	my ($OSref,$expr,$params)=@_;
+	my ($OSref,$interactions)=@_;
+	my $expr = $interactions->{"CustomNonBonded"}->{"OpenSMOGpotential"};
+	my $params=$interactions->{"CustomNonBonded"}->{"parameters"};
+	my $cutoff=$interactions->{"CustomNonBonded"}->{"cutoff"};
 	my $ref=\%{$OSref->{nonbond}->{nonbond_bytype}};
 	$ref->{expression}->{"expr"}=$expr;
+	$ref->{cutoff}=$cutoff;
 	my @params=@{$params};
 	foreach my $en(@params){
 		push(@{$ref->{parameter}},"$en");
@@ -284,6 +288,9 @@ sub OpenSMOGwriteXMLnonbond{
 		}
                 my $handle3=$handle1->{$subtype};
 		$localxmlout .= "$twos<$subtype>\n";
+		if (defined $handle3->{"cutoff"}){
+	   		$localxmlout .= "$threes<cutoff distance=\"$handle3->{cutoff}\"/>\n";
+		}
 		my $expr=$handle3->{expression}->{"expr"};
 		$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
 		my @paramlist=();
@@ -510,7 +517,7 @@ sub newOpenSMOGfunction{
 	}
 
 	$OpenSMOGhandle->{$fN}->{expression}=$fh->{$fN}->{"OpenSMOGpotential"}  ;
-
+	$OpenSMOGhandle->{$fN}->{cutoff}=$fh->{$fN}->{"cutoff"};
 	foreach my $par(@parmarr){
 		push(@{$OpenSMOGhandle->{$fN}->{parameters}},"$par");
 	}
