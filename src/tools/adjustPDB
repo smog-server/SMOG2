@@ -385,6 +385,7 @@ sub adjustInputFile{
 	$k = 0;
 	# endfound keeps track of whether we found and END line.  
         my $endfound=1;
+	my $removedaltloc="";
 	while($k<$rows){
 		my $line=$pArr[$k];
 		
@@ -482,6 +483,7 @@ sub adjustInputFile{
 						if (exists $foundaltloc{$atomNamet}){
 							# this atom has already been saved, so skip any alternate locations
 							$save=1;
+							$removedaltloc .= "$pArr[$k]\n";
 						}else{
 							$foundaltloc{$atomNamet}=0;
 							# strip altLoc
@@ -590,6 +592,9 @@ sub adjustInputFile{
 	# FINALIZE AND WRITE OUT INFO
 	renamesummary($renamedstring,$chainindex);
 	removesummary($removestring,$chainindex);
+	if($removedaltloc ne ""){
+		smog_note("The following lines containing alternate locators were removed:\n$removedaltloc");
+	}
 	$renamedstring="";
 	$removestring="";
 	if($k<$rows-1){
