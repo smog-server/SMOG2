@@ -433,7 +433,7 @@ sub adjustInputFile{
 			$firstresidue++;
 			my $newResNum = $resNum;
 			if(trim($resNum) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/ && trim($lastresidue) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/){
-				if(trim(substr($resNum,0,4))-trim(substr($lastresidue,0,4)) > 1  && $firstresidue !=1){
+				if(trim(substr($resNum,0,4))-trim(substr($lastresidue,0,4)) != 1  && $firstresidue !=1){
 					my $chain=substr($pArr[$k],21,1);
 					if(!$renumber && !$insertTER && !$PDBresnum){
 						smog_quit("Non-consecutive residue numbering detected at:\n$pArr[$k-1]\n$pArr[$k]\n");
@@ -561,7 +561,11 @@ sub adjustInputFile{
 				# conventional head/tail adjustments
 				($printresidue,$removestring)=legacymatching($resName,$writeResNum,$chainName,$isFirst,$isLast,$removestring);
 			} elsif (!defined $legacymatch) {
-				($printresidue,$removestring,$renamedstring)=exactmatching($k,$resName,$writeResNum,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring);
+				my $error;
+				($printresidue,$removestring,$renamedstring,$error)=exactmatching($k,$resName,$writeResNum,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring);
+				if(defined $error){
+					smog_quit("When processing residue $resName$resIDorig (chain $chainName), $error.  Check residue that ends with the following line:\n$pArr[$k-1]")
+				}
 			} else {
 				smog_quit("internal error 1");
 			}
@@ -961,6 +965,9 @@ sub exactmatching
 			$aName=$rename{"$aName"};
 			$renamedstring .="$resName$resIDorig-$tn->$aName ";
 		} 
+		if(defined $namemap{$aName}){
+			return (0,0,0,"$aName appears more than once");
+		}
 		$namemap{$aName}=$i;
 		$tmparr[$i]=$aName;
 	}
