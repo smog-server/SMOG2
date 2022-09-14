@@ -137,6 +137,39 @@ sub check_adjust
  }
 
  # TEST 4
+ print "\tChecking smog_adjustPDB with default exact matching and altlocs.\n";
+ $TESTNUM++;
+ my $origpdb="$pdbdir/mangled.resnames.altlocs.pdb";
+ %FAIL=resettests(\%FAIL,\@FAILLIST);
+ $FAIL{'LARGE'}=-1;
+ removeifexists("$newpdb");
+ `$exec -i $origpdb -o $newpdb -altloc &> output.$tool`;
+ $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
+
+ $FAIL{"NON-ZERO EXIT"}=$?;
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  my $LINESnew=0;
+  open(NEW,"$newpdb") or internal_error("Unable to open $newpdb");
+  while(<NEW>){
+   $LINESnew++;
+  }
+  if($LINESnew==$LINESorig+$gitshift){
+   $FAIL{"FILE LENGTH"}=0;
+  }
+  my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
+  $FAIL{'SMOG RUNS'}=$?;
+ }
+ my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+ $FAILSUM += $FAILED;
+ if($FAILED !=0){
+  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  print "$printbuffer\n";
+ }else{
+  print "\n";
+  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+ }
+
+ # TEST 5
  print "\tChecking smog_adjustPDB with exact matching and alternate names.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/mangled.atomnames.pdb";
@@ -170,7 +203,7 @@ sub check_adjust
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
- # TEST 5
+ # TEST 6
  print "\tChecking smog_adjustPDB with exact matching, alternate names and last tags.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/mangled.atomnames.lf.pdb";
@@ -209,7 +242,7 @@ sub check_adjust
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
- # TEST 6
+ # TEST 7
  print "\tChecking smog_adjustPDB with exact matching, alternate names and -large format.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/mangled.atomnames.pdb";
@@ -246,7 +279,7 @@ sub check_adjust
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
- # TEST 7
+ # TEST 8
  print "\tChecking smog_adjustPDB with default exact matching, removewater and official/dirty PDB.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/2ci2.official.pdb";
@@ -277,7 +310,7 @@ sub check_adjust
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
- # TEST 8
+ # TEST 9 
  print "\tChecking smog_adjustPDB with default exact matching, removewater, official/dirty PDB and PDBresnum.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/2ci2.official.pdb";
@@ -308,7 +341,7 @@ sub check_adjust
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
- # TEST 9
+ # TEST 10
  print "\tChecking smog_adjustPDB with default exact matching, removeH, PDBresnum, near-official/dirty PDB.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/1cis.nearofficial.pdb";
@@ -339,7 +372,7 @@ sub check_adjust
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
- # TEST 9
+ # TEST 11
  print "\tChecking smog_adjustPDB with default exact matching, near-official/dirty PDB with insertions.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/6qnr-partIns.pdb";
@@ -370,7 +403,7 @@ sub check_adjust
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
- # TEST 10
+ # TEST 12
  print "\tChecking smog_adjustPDB with default exact matching, near-official/dirty PDB, insertions and sorting.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/6qnr-partIns.pdb";
