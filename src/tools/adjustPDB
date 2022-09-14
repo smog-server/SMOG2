@@ -790,8 +790,13 @@ sub readexactmap
 		}
 	}
 
-
+	my %resseen;
 	for(my $I=0;$I<=$#entryarray;$I++){
+		my $resn=${$entryarray[$I]}[1];
+		if(exists $resseen{$resn}){
+			smog_quit("Duplicate residue definition for $resn");
+		}
+		$resseen{$resn}=0;
 		checkDupGetAlt($entryarray[$I],$linearray[$I]);
 	}
 	for my $I (values %rename){
@@ -841,7 +846,7 @@ sub checkDupGetAlt
 		$altnames[$I] =~ s/^\s+//g;
 		$altnames[$I] =~ s/\s+$//g;
 	}
-
+	
 	makesubs($entries[1],\@strippedlist,\@altnames,0,"");
 
 }
@@ -849,7 +854,6 @@ sub checkDupGetAlt
 sub makesubs
 {
 	my ($resname,$list,$alts,$altindex,$string)=@_;
-
 	my @alts=@{$alts};
 
 	if($altindex <= $#alts){
