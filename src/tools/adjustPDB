@@ -100,7 +100,8 @@ my $makemap;
 my $template_dir;
 my $deletewater;
 my $noautorename;
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'PDBresnum' => \$PDBresnum,'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'noautorename' => \$noautorename, 'large' => \$large, 'sort' => \$sort,  'removewater' => \$deletewater, 'gen_map=s' => \$makemap, 't=s' => \$template_dir,  '<>' => \&usage) or defined $help); 
+my $treatAltLocs;
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'PDBresnum' => \$PDBresnum,'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'noautorename' => \$noautorename, 'large' => \$large, 'sort' => \$sort,  'altLocs' => \$treatAltLocs, 'removewater' => \$deletewater, 'gen_map=s' => \$makemap, 't=s' => \$template_dir,  '<>' => \&usage) or defined $help); 
 
 warninfo();
 
@@ -241,6 +242,8 @@ usage: smog_adjustPDB .. options ..
                                      output PDB probably won't be useful for smog2
 	-removeH                : strip the file of any atoms that begin with "H"
 	-removewater            : strip the file of any residues named HOH or WAT
+	-altLocs                : If alternate locators are found, only keep the first
+                                     entry for each atom
 	-gen_map <map name>     : read a template and write a mapping file
 	-t <template dir>       : template directory (only for use with -gen_map)
 	-large                  : use base-N (N>10) for indexing atom and residues
@@ -433,7 +436,7 @@ sub adjustInputFile{
 				if(trim(substr($resNum,0,4))-trim(substr($lastresidue,0,4)) > 1  && $firstresidue !=1){
 					my $chain=substr($pArr[$k],21,1);
 					if(!$renumber && !$insertTER && !$PDBresnum){
-						smog_quit("Non-consecutive residue numbering detected in original PDB file at residues $lastresidue and  $resNum (chain $chain, near line $k).");
+						smog_quit("Non-consecutive residue numbering detected at:\n$pArr[$k-1]\n$pArr[$k]\n");
 					}elsif($insertTER){
 						if(defined $insertTERall){
 
@@ -462,38 +465,60 @@ sub adjustInputFile{
 				smog_quit("Residue IDs must be positive integers. Found: $resNum.");
 			}
 	
-			
-			
 			## Loop through the residue ##
 			$loopInd = 0;
+			my %foundaltloc;
 			while ($newResNum eq $resNum){
 				completeline($pArr[$k],$k);
-				checkaltloc($pArr[$k],$k);
-				$chainName = substr($pArr[$k],21,1);
-				$atomCount++;
-				my $atomCountBaseN;
-				if(defined $large){
-					$atomCountBaseN=BaseTentoLarge($atomCount,5);
-				}else{
-					if($atomCount == 100000){
-						smog_quit("Too many atoms in a single chain (max of 99999).  Try -large option.");
-					}	
-					$atomCountBaseN=$atomCount;
+				my $save=0;
+				my $al=checkaltloc($pArr[$k],$k);
+				if ($al == 0){
+					# altLoc found
+					if(defined $treatAltLocs){
+						# since atom names are unique within a residue, we just need to see if the atom has already appeared.
+						my $atomNamet = trim(substr($pArr[$k],12,4));
+						# keep, or skip the entry, based on order
+						if (exists $foundaltloc{$atomNamet}){
+							# this atom has already been saved, so skip any alternate locations
+							$save=1;
+						}else{
+							$foundaltloc{$atomNamet}=0;
+							# strip altLoc
+							substr($pArr[$k],16,1," ");
+						}
+					}else{
+						# exit
+						smog_quit("Alternate locator found. If you would like to keep the first coordinates given within a set of atoms with alternate locators (typically, location A), then you need to use the -treatAltLoc option. Offending line:\n$pArr[$k]");
+					}
 				}
-				## Obtain atom information ##
-				my $atomName = trim(substr($pArr[$k],12,4));
-				my $resNametmp = trim(substr($pArr[$k],17,4));
-				if($loopInd==0){
-					$lastresName=$resNametmp;
-				}elsif($lastresName ne $resNametmp){
-					smog_quit("Consecutive atoms are listed with the same residue number and different residue names. Issue encountered when processing the following lines:\n$pArr[$k-1]\n$pArr[$k]");
-				}	
-				$residue[$loopInd]->{"atomName"} = $atomName;
-				$residue[$loopInd]->{"atomIndex"} = $atomCountBaseN;
-				$residue[$loopInd]->{"coords"} = substr($pArr[$k],30);   
-				$resIDorig = substr($pArr[$k],22,5);
-				$resIDorig =~ s/\s+//g;  
-				
+					$chainName = substr($pArr[$k],21,1);
+					$atomCount++;
+					my $atomCountBaseN;
+					if(defined $large){
+						$atomCountBaseN=BaseTentoLarge($atomCount,5);
+					}else{
+						if($atomCount == 100000){
+							smog_quit("Too many atoms in a single chain (max of 99999).  Try -large option.");
+						}	
+						$atomCountBaseN=$atomCount;
+					}
+					## Obtain atom information ##
+					my $atomName = trim(substr($pArr[$k],12,4));
+					my $resNametmp = trim(substr($pArr[$k],17,4));
+					if($loopInd==0){
+						$lastresName=$resNametmp;
+					}elsif($lastresName ne $resNametmp){
+						smog_quit("Consecutive atoms are listed with the same residue number and different residue names. Issue encountered when processing the following lines:\n$pArr[$k-1]\n$pArr[$k]");
+					}	
+					$residue[$loopInd]->{"atomName"} = $atomName;
+					$residue[$loopInd]->{"atomIndex"} = $atomCountBaseN;
+					$residue[$loopInd]->{"coords"} = substr($pArr[$k],30);   
+					$resIDorig = substr($pArr[$k],22,5);
+					$resIDorig =~ s/\s+//g;  
+				if($save==1){
+					# this ensures that we just overwrite the alt atom position with the next atom.
+					$loopInd--;
+				}
 				$k++;
 				
 				## Check if next line is END or TER ##
@@ -506,10 +531,9 @@ sub adjustInputFile{
 						$isLast = 1;
 					}
 					$firstresidue=0;
-				}	
-				else{
+				}else{
 					$newResNum = substr($pArr[$k],22,5);	#get next residue index
-					if ($newResNum eq $resNum){
+					if ($newResNum eq $resNum ){
 						$loopInd++;
 					}
 				}  	
@@ -582,8 +606,9 @@ sub checkaltloc {
 	my ($line,$k)=@_;
 	my $altLoc = substr($line,16,1);
 	if ($altLoc ne " "){
-		smog_quit("Issue at line $k: Alternate location indicators are not supported by SMOG. Offending line:\n$line");
+		return 0;
 	}
+	return 1;
 }
 sub readmap {
 	## CACHE MAP ##
@@ -734,11 +759,11 @@ sub readexactmap
 			if($foundtic==1){
 				$rep0="\Q\*\E";
 				$rep1="'";
-				print("\nIn mapping file, only tics found in atom names.  Since it is possible to use the ' or * convention, smog_adjustPDB will also interpret every * in the PDB as a '.  Use \"-noautorename\" to disable this behavior.\n");
+				smog_note("In mapping file, only tics found in atom names.  Since it is possible to use the ' or * convention, smog_adjustPDB will also interpret every * in the PDB as a '.  Use \"-noautorename\" to disable this behavior.");
 			}else{
 				$rep1="\Q\*\E";
 				$rep0="'";
-				print("\nIn mapping file, only astrisks found in atom names.  Since it is possible to use the ' or * convention, smog_adjustPDB will also interpret every ' in the PDB as a *.  Use \"-noautorename\" to disable this behavior.\n");
+				smog_note("In mapping file, only astrisks found in atom names.  Since it is possible to use the ' or * convention, smog_adjustPDB will also interpret every ' in the PDB as a *.  Use \"-noautorename\" to disable this behavior.");
 			}
 			foreach my $I(@foundta){
 				my $J=$I;
@@ -924,7 +949,6 @@ sub legacymatching
 sub exactmatching
 {
 	my ($k,$resName,$resInd,$resIDorig,$chainName,$isFirst,$isLast,$removestring,$renamedstring) = @_;
-
 	# get and sort atom names. We can update this with regexes later for more complex matching
 
 	# first, replace atom names globally
