@@ -540,7 +540,6 @@ sub checkPotentialFunction{
 			smog_quit("Unsupported use of // in OpenSMOG energy function:\n$func");
 		}
 		my @array = split(//, $func);
-
 		my $count=0;
 		my $charn=0;
 		foreach my $char(@array){
@@ -551,13 +550,9 @@ sub checkPotentialFunction{
 				$count--;
 			}
 			if($count < 0){
-				my $badstring="";
-				for (my $I=$charn-3;$I<$charn+3;$I++){
-					if($I>=0){
-						$badstring .= $array[$I];
-					}
-				}
-				smog_quit("OpenSMOG function used in templates has unbalanced parentheses. Closed parentheses found before opening. Problem found around \"$badstring\" in the following definition:\n$func\n");
+				my $pos = (" " x $charn);
+				$pos .= "^";
+				smog_quit("OpenSMOG function used in templates has unbalanced parentheses. Closed parentheses found before opening. Problem found at:\n$func\n$pos");
 			}
 			$charn++;
 		}
