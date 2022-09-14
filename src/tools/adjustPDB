@@ -422,6 +422,7 @@ sub adjustInputFile{
 		## If atom line: ##
 			completeline($pArr[$k],$k);
 			my $resNum = substr($pArr[$k],22,5);
+			my $chainID = substr($pArr[$k],21,5);
 			$resName = trim(substr($pArr[$k],17,4));
 			if(defined $deletewater && ($resName =~ m/^HOH$/ || $resName =~ m/^WAT$/)){
 				$removestring .= "$resName$resNum ";
@@ -432,22 +433,22 @@ sub adjustInputFile{
 
 			$firstresidue++;
 			my $newResNum = $resNum;
+			my $newchainID = $chainID;
 			if(trim($resNum) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/ && trim($lastresidue) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/){
 				if(trim(substr($resNum,0,4))-trim(substr($lastresidue,0,4)) != 1  && $firstresidue !=1){
-					my $chain=substr($pArr[$k],21,1);
 					if(!$renumber && !$insertTER && !$PDBresnum){
-						smog_quit("Non-consecutive residue numbering detected at:\n$pArr[$k-1]\n$pArr[$k]\n");
+						smog_quit("Non-sequential residue numbering detected at:\n$pArr[$k-1]\n$pArr[$k]\n");
 					}elsif($insertTER){
 						if(defined $insertTERall){
 
-							print "Non-consecutive residue numbering detected.  -insertTER used with \"All\".  TER will be inserted before:$line\n";
+							print "Non-sequential residue numbering detected.  -insertTER used with \"All\".  TER will be inserted before:$line\n";
 							print NEWPDB "TER\n";
 						}else{
-							print "Non-consecutive residue numbering detected at\n$pArr[$k-1]\n$pArr[$k]\n";
+							print "Non-sequential residue numbering detected at\n$pArr[$k-1]\n$pArr[$k]\n";
 							print "Would you like to insert a TER line? [yes/no/all]\n";
 							my $response=<STDIN>;
 							chomp($response);
-							until($response =~ m/^y$/i || $response =~ m/^n$/i || $response =~ m/^yes$/i || $response =~ m/^no$/i || $response =~ m/^all$/i){
+							until($response =~ m/^y(e(s)?)?$|^n(o)$|^a(l(l)?)?$/i){
 								print "Invalid response.  Yes, No and All are supported\n";
 								$response=<STDIN>;
                                                         	chomp($response);
@@ -468,7 +469,7 @@ sub adjustInputFile{
 			## Loop through the residue ##
 			$loopInd = 0;
 			my %foundaltloc;
-			while ($newResNum eq $resNum){
+			while ($newResNum eq $resNum && $newchainID eq $chainID){
 				completeline($pArr[$k],$k);
 				my $save=0;
 				my $al=checkaltloc($pArr[$k],$k);
@@ -532,8 +533,9 @@ sub adjustInputFile{
 					}
 					$firstresidue=0;
 				}else{
-					$newResNum = substr($pArr[$k],22,5);	#get next residue index
-					if ($newResNum eq $resNum ){
+					$newResNum  = substr($pArr[$k],22,5);	# get next residue index
+					$newchainID = substr($pArr[$k],21,5);   # get chain ID
+					if ($newResNum eq $resNum && $chainID eq $newchainID){
 						$loopInd++;
 					}
 				}  	
