@@ -317,6 +317,9 @@ sub adjustInputFile{
 		my $line=$_;
 		$ln++;
 		my $tag=substr($line,0,6);
+		if ($line =~ m/^\s+$/){
+			smog_quit("Blank line found in PDB file at line number $ln");
+		}
 		my @tags=split(/\s+/,$tag);
 		$tag = trim($tags[0]);
 		if(exists $notallowed{$tag}){
