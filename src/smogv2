@@ -2462,7 +2462,7 @@ usage: smog2 .. options ..
        -deleteshortcontact         : if a contact length is too short, don't include it in the model
 
      Misc. Options
-       -OpenSMOG                   : make files compatible with OpenMM  
+       -OpenSMOG                   : make files compatible with the OpenSMOG library for OpenMM  
        -ignH                       : ignore any atoms with name starting with 'H' in the internal contact algorithm
        -warn [0]                   : convert the first N fatal errors to warnings  
                                        Convert all if N=-1 (Caution: Consult manual before using this option)
