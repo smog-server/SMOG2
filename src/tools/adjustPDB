@@ -670,7 +670,7 @@ sub readexactmap
 		my ($A,$B)=checkcomment($content[$cindex]);
 		if($A eq ""){next;}  # skip the line if it is only a comment
 		my @entries = split(/\s+/,$A);
-		if($entries[0] =~ m/^ignoreres$/i || $entries[0] =~ m/^rename$/i || $entries[0] =~ /^residue$/i ) {
+		if($entries[0] =~ m/^ignoreres$|^rename$|^residue$/i ) {
 			$cindex++;
 		}else{
 			smog_quit("Exact map file only supports IgnoreRes, Residue and Rename line. Offending line:\n$content[$cindex]");
@@ -753,9 +753,9 @@ sub readexactmap
 		my $foundastrisk=0;
 		my $foundtic=0;
 		my @foundta;
-		for (my $I=0;$I<$#entryarray;$I++){
+		for (my $I=0;$I<=$#entryarray;$I++){
 			my @tmarr=@{$entryarray[$I]};
-			for (my $J=2;$J<$#tmarr;$J++){
+			for (my $J=2;$J<=$#tmarr;$J++){
 				if($tmarr[$J] =~ /\'/){
 					$foundtic=1;
 					push(@foundta,$tmarr[$J]);
@@ -790,7 +790,8 @@ sub readexactmap
 		}
 	}
 
-	for(my $I=0;$I<$#entryarray;$I++){
+
+	for(my $I=0;$I<=$#entryarray;$I++){
 		checkDupGetAlt($entryarray[$I],$linearray[$I]);
 	}
 	for my $I (values %rename){
