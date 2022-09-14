@@ -370,12 +370,13 @@ sub checkPDB
 				}else{
 					$pdbIndex = trim(substr($record,6,5));
 				}
+	            		my $resIDorig = trim(substr($record,22,5)); 
 				if(exists $indexMap{"$chainNumber-$pdbIndex"}){
 					smog_quit("Atom/Residue numbers must be unique within each chain. Offending line:\n$record");
 				}
 				$indexMap{"$chainNumber-$pdbIndex"}=$atomSerial;
 				# the atoms are now being stored in checkPDB, not parsePDB	
-				$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType,$pdbIndex];
+				$allAtoms{$atomSerial}=[$nbType,$residueType,$residueIndex,$atom,$chainNumber,$residue,$x,$y,$z,$residueSerial,$pairType,$pdbIndex,$resIDorig];
 			}
 			$K--;
 			if(!defined $residues{$residue}->{"atomCount"}){
@@ -486,9 +487,11 @@ sub parsePDBATOMS
 			my $atomB = $allAtoms{$idxB}->[3];
 			my $resAIdx = $allAtoms{$idxA}->[2];
 			my $resBIdx = $allAtoms{$idxB}->[2];
+			my $resAIdxOrig = $allAtoms{$idxA}->[12];
+			my $resBIdxOrig = $allAtoms{$idxB}->[12];
 			my $fragment;
 			# keep a record of each added bond, so that any contacts associated with this pair can be pruned, later.
-			smog_note("Generating user-specified bonded interaction between atoms $atomA in $resA$resAIdx (chain $userchaina) and $atomB in $resB$resBIdx (chain $userchainb).\nWill assign to energy group $eG.");
+			smog_note("Generating user-specified bonded interaction between atoms $atomA in $resA$resAIdxOrig of chain $userchaina (residue $resAIdx in gro file) and $atomB in $resB$resBIdxOrig of chain $userchainb (residue $resBIdx in gro file).\nWill assign to energy group $eG.");
 
 
 			# make a hash of res indexes that we want to include in the fragment
