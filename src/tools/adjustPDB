@@ -449,14 +449,14 @@ sub adjustInputFile{
 							print "Would you like to insert a TER line? [yes/no/all]\n";
 							my $response=<STDIN>;
 							chomp($response);
-							until($response =~ m/^y(e(s)?)?$|^n(o)$|^a(l(l)?)?$/i){
+							until($response =~ m/^y(e(s)?)?$|^n(o)?$|^a(l(l)?)?$/i){
 								print "Invalid response.  Yes, No and All are supported\n";
 								$response=<STDIN>;
                                                         	chomp($response);
 							}
-							if($response =~ m/^yes$/i || $response =~ m/^y$/i ||  $response =~ m/^all$/i){
+							if( $response =~ m/^y(e(s)?)?$|^a(l(l)?)?$/i){
                                                         	print NEWPDB "TER\n";
-								if($response =~ m/^all$/i){
+								if($response =~ m/^a(l(l)?)?$/i){
 									$insertTERall=0;
 								}
 							}
