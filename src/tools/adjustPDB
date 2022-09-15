@@ -439,7 +439,8 @@ sub adjustInputFile{
 			my $newResNum = $resNum;
 			my $newchainID = $chainID;
 			if(trim($resNum) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/ && trim($lastresidue) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/){
-				if(trim(substr($resNum,0,4))-trim(substr($lastresidue,0,4)) != 1  && $firstresidue !=1){
+				my $d=trim(substr($resNum,0,4))-trim(substr($lastresidue,0,4));
+				unless($d == 1  || $firstresidue ==1 || ($d==0 && trim(substr($resNum,4,1)) ne trim(substr($lastresidue,4,1))) ){
 					if(!$renumber && !$insertTER && !$PDBresnum){
 						smog_quit("Non-sequential residue numbering detected at:\n$pArr[$k-1]\n$pArr[$k]\n");
 					}elsif($insertTER){
