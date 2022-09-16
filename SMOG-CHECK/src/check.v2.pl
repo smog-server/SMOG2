@@ -11,7 +11,7 @@ use OpenSMOG;
 # This is intended to be a brute-force evaluation of everything that should appear. Since this is
 # a testing script, it is not designed to be efficient, but to be thorough, and foolproof...  perhaps over time we will clean this up.  But, it gets the job done.
 
-my $VERSION="2.5beta";
+our $VERSION;
 
 #*************
 # ENV variable options (only developers will use these)
