@@ -1,5 +1,6 @@
 #!/bin/bash
 # this script will build a new docker container from the current smog2 repo
+# multiple tags can be added by adding more -t flags at build time
 tag=$1
 containername=smogserver/smog2:$tag
 docker build --no-cache -t $containername -f Dockerfile.$tag .
