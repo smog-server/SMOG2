@@ -52,8 +52,16 @@ or Singularity container. Go to the SMOG 2 page for
 information on how to use use the SMOG 2 images for 
 Docker and Singularity.
 
+OPTION 2 - Using apt-get (Ubuntu)
+Getting Perl configured for SMOG 2 on Ubuntu can be quite simple. 
 
-OPTION 2 - USING CONDA OR MINICONDA (Linux, only)
+You can generally run these two commands with sudo, or as root, and you will be ready to run SMOG 2 (See "FINAL STEPS...." below)
+ 
+>apt-get install -y --no-install-recommends cpanminus pdl default-jre libxml-simple-perl 
+
+>cpanm String::Util Exporter XML::Validator::Schema
+
+OPTION 3 - USING CONDA OR MINICONDA (Linux, only)
 This is a bit more involved than using a container, but
 it should be rather straightforward.
 
@@ -80,7 +88,7 @@ If these five commands are successful, then go to
 "FINAL STEPS WHEN NOT USING A CONTAINER".
 
 
-OPTION 3 - MANUAL INSTALLATION OF SUPPORTING LIBRARIES
+OPTION 4 - MANUAL INSTALLATION OF SUPPORTING LIBRARIES
 This is the most difficult configuration process.  In
 most cases, the above options are sufficient. But, in 
 case you need to perform a manual installation, here
