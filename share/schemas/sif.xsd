@@ -137,7 +137,7 @@
     <xs:attribute name="OpenSMOGcombrule" type="xs:string" use="optional"/>
     <xs:attribute name="parameters" type="xs:string" use="optional"/>
     <xs:attribute name="OpenSMOGparameters" type="xs:string" use="optional"/>
-    <xs:attribute name="nbcutoff" type="xs:decimal" use="optional"/>
+    <xs:attribute name="r_c" type="xs:decimal" use="optional"/>
   </xs:complexType>
   <!-- SIF TYPE -->
   <xs:complexType name="sifType">

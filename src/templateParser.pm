@@ -1448,7 +1448,7 @@ sub CustomNonBondedCheckAdjust{
 		$interactions->{"CustomNonBonded"}->{"OpenSMOGpotential"} =~ s/\s+//g;
 		$interactions->{"CustomNonBonded"}->{"OpenSMOGcombrule"}=$interHandle[0]->{"OpenSMOGcombrule"};
 		$interactions->{"CustomNonBonded"}->{"OpenSMOGcombrule"} =~ s/^\s+|\s+$//g;
-		$interactions->{"CustomNonBonded"}->{"cutoff"} = $interHandle[0]->{"nbcutoff"};
+		$interactions->{"CustomNonBonded"}->{"cutoff"} = $interHandle[0]->{"r_c"};
 		if($interactions->{"CustomNonBonded"}->{"OpenSMOGcombrule"} ne "none"){
 			smog_quit("CustomNonBonded defined in .nb file. Only OpenSMOGcombrule==none is currently supported. Found \"$interactions->{\"CustomNonBonded\"}->{\"OpenSMOGcombrule\"}\"");
 		}
