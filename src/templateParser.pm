@@ -1759,9 +1759,9 @@ sub sifFunctions{
 			}
 			my $t=$functions->{$funcName}->{"exclusions"};
 			if($t ==1){
-				print("Contact pairs that use function funcName will also be added to the exclusions list.");
+				smog_note("Contact pairs that use function $funcName will also be added to the exclusions list.");
 			}elsif($t==0){
-				print("Contact pairs that use function funcName will NOT be added to the exclusions list.");
+				smog_note("Contact pairs that use function $funcName will NOT be added to the exclusions list.");
 			}else{
 				smog_quit( "Since $funcName is of directive \"pairs\", boolean (0, 1) element \"exclusions\" must be included in the function declaration in the .sif file. Found \"$t\"\n");
 
