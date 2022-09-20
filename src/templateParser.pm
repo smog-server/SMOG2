@@ -1753,9 +1753,19 @@ sub sifFunctions{
 
 	        if(!exists $fTypes{"$funcName"}){smog_quit ("\"$funcName\" is not a supported function type in SMOG");}
 	
-		if($functions->{$funcName}->{"directive"} eq "pairs" 
-			&& !exists $functions->{$funcName}->{"exclusions"}){
-			smog_quit( "Since $funcName is of directive \"pairs\", boolean (0, 1) element \"exclusions\" must be included in the function declaration in the .sif file.\n");
+		if($functions->{$funcName}->{"directive"} eq "pairs"){
+			if(!exists $functions->{$funcName}->{"exclusions"}){
+				smog_quit( "Since $funcName is of directive \"pairs\", boolean (0, 1) element \"exclusions\" must be included in the function declaration in the .sif file.\n");
+			}
+			my $t=$functions->{$funcName}->{"exclusions"};
+			if($t ==1){
+				print("Contact pairs that use function funcName will also be added to the exclusions list.");
+			}elsif($t==0){
+				print("Contact pairs that use function funcName will NOT be added to the exclusions list.");
+			}else{
+				smog_quit( "Since $funcName is of directive \"pairs\", boolean (0, 1) element \"exclusions\" must be included in the function declaration in the .sif file. Found \"$t\"\n");
+
+			}
 		}elsif($functions->{$funcName}->{"directive"} ne "pairs"
 	                && exists $functions->{$funcName}->{"exclusions"}){
 			smog_note("Element \"exclusions\" is defined for function $funcName. This is likely unnecessary, since the \"exclusions\" element is only relevant for contacts.");
