@@ -18,4 +18,4 @@ RUN useradd -rm -d /home/smoguser -s /bin/bash -g root -G sudo -u 1001 smoguser 
 RUN chown -R smoguser /opt/* # buildkit
 USER smoguser
 WORKDIR /home/smoguser
-RUN cd /opt/smog2 && sed -i '5,6d' configure.smog2 && perl4smog=/usr/bin/perl smog2dir=/opt/smog2 bash /opt/smog2/configure.smog2
+RUN cd /opt/smog2 && perl4smog=/usr/bin/perl smog2dir=/opt/smog2 bash /opt/smog2/configure.smog2
