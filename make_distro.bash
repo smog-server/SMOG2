@@ -2,7 +2,7 @@
 
 if [ $# -lt 1 ]
 then
-
+chmod u+w share/templates/*
 if [ -d distro ]
 then
 	echo directory distro exists. quitting
@@ -18,6 +18,7 @@ else
 		fi
 	done
 	sed "s/optim//g" configure.smog2 > distro/configure.smog2
+	chmod u-w share/templates/*
 	echo done making distro
 
 	echo DONT FORGET TO UPDATE VERSION NUMBER IN smogv2

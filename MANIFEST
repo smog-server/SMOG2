@@ -497,7 +497,7 @@ SMOG-CHECK/share/residues/list.AA
 SMOG-CHECK/share/residues/list.CAgauss
 SMOG-CHECK/smog-tool-check
 SMOG-CHECK/smog-check
-SMOG-CHECK/README
+SMOG-CHECK/README.smogcheck
 SMOG-CHECK/scm-check
 SMOG-CHECK/src/check.v2.pl
 SMOG-CHECK/src/check-tools.v2.pl
