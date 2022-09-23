@@ -236,7 +236,7 @@ usage: smog_adjustPDB .. options ..
                                      can be dangerous. -insertTER is recommended, unless
                                      you are certain that all numbering inconsistencies 
                                      should be ignored 
-        -noautorename           : do not automatically replace * and ' characters atom names
+        -noautorename           : do not automatically replace * and ' characters in atom names
 	-PDBresnum              : don't renumber residues. Keep original PDB numbering.
                                      can be useful for analysis
                                      output PDB probably won't be useful for smog2

@@ -5,8 +5,8 @@ smog2.<version>.def : Imports the osperl image and then adds SMOG2 (given versio
 
 Currently, these have both been run successfully to generate an image for the git version of smog2.
 It can be pulled with :
->singularity pull --arch amd64 library://smog-server/library/smog2:gitversion 
+>singularity pull --arch amd64 library://smog-server/library/smog2:stable 
 
 Once you have it local, you can run it with:
->singularity shell smog2_gitversion.sif
+>singularity shell smog2_stable.sif
 When in the container, smog2 and smog_* tools will be in your path.  So, you should be good to go.
