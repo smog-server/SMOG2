@@ -323,7 +323,22 @@ sub adjustInputFile{
 		my @tags=split(/\s+/,$tag);
 		$tag = trim($tags[0]);
 		if(exists $notallowed{$tag}){
-			smog_quit("Found PDB record \"$tag\", which it not supported.");
+			print ("Found PDB record \"$tag\". Should these lines be ignored? [yes/no]\n");
+			my $response=<STDIN>;
+			chomp($response);
+			until($response =~ m/^y(e(s)?)?$|^n(o)?$/i){
+				print "Invalid response. Only Yes and No are supported\n";
+				$response=<STDIN>;
+                        	chomp($response);
+			}
+			if($response =~ m/^y(e(s)?)?$/i){
+				$ignoretags{$tag}=0;
+				delete $notallowed{$tag};
+				next;
+			}else{
+				print ("Will not skip $tag lines. Exiting without completing.\n");
+				exit(0);
+			}
 		}elsif(exists $ignoretags{$tag}){
 			if($ignoretags{$tag}==0){
 				smog_note("PDB record \"$tag\" found. Since SMOG will not use these entries, they will be stripped from the file.");

@@ -1,34 +1,40 @@
-SMOG 2 Docker Instructions
+SMOG 2 README
 
-USING A PRE-COMPILED CONTAINER
+Below is some information about how to rebuild and troubleshoot the SMOG 2 Docker Container.
 
-If you have docker installed, you can pull the image from Docker with the command
 
->docker pull smog-server/SMOG2:latest
+LAUNCHING A PRE-COMPILED CONTAINER
 
-You can then launch the container with:
+If you have Docker installed, you can pull the image from Docker with the command
 
-add some instructions
+>docker pull smog-server/SMOG2:stable
 
+You can then use the instructions on the smog-server page for some ways you may use a Docker container.
+
+
+WHAT TO DO, ONCE IN THE CONTAINER
+
+The SMOG2 container has smog2 and all smog tools already in the path.  You should be able to simply type "smog2", or give any other smog-tool name, and the command will work.
 
 GENERATE A NEW CONTAINER
 
-There are cases when you may want the ease of using docker container, but the smog-server team has not provided one for the version you want to use.  For example, perhaps you have modified the code.  We also provide a simple script that will generate a new docker container for you (takes 1-2 minutes, usually).
+There are cases when you may want the ease of using Docker containers, but the smog-server team has not provided one for the version you want to use.  For example, perhaps you have modified the code.  We also provide a simple script that will generate a new docker container for you (takes 1-2 minutes, usually).
 
->./docker.create.bash
+>./docker.create.bash gitversion
 
-This will create a new container called smog2:gitversion, which will contain the version of SMOG 2 for the currently checked out version of the code.  You can then run the new container with the command:
-
-<add examples>
+This will create a new container called smog2:gitversion, which will contain the version of SMOG 2 for the currently checked out version of the code. 
 
 
 TROUBLESHOOTING
 
-When building your own container, you may find that your docker cache is full.  This can result in some cryptic messages during the build stage. To make some more space, you may want to explore the following commands:
+-- When building your own container, you may find that your docker cache is full.  This can result in some cryptic messages during the build stage. To make some more space, you may want to explore the following commands:
 
 >docker system df 
 >docker image prune
 >docker container prune
 >docker builder prune
 >docker system prune (Docker API v1.25+)
+
+
+-- On Linux, there are sometimes group ID issues that do not allow the container to mount and write to a user's directories. In that case, you may need to rebuild the container, but change the --user value in the Dockerfile, such that it matches the ID of the user on the host machine. 
 

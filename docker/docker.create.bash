@@ -3,7 +3,7 @@
 # multiple tags can be added by adding more -t flags at build time
 tag=$1
 containername=smogserver/smog2:$tag
-docker build --no-cache -t $containername -f Dockerfile.$tag .
+docker build --no-cache -t 2$containername -f Dockerfile.$tag .
 
 echo "
 Done building container $containername
