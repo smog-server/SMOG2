@@ -1,31 +1,49 @@
 SMOG 2 README
 
-Below is some information about how to rebuild and troubleshoot the SMOG 2 Docker Container.
+For questions, contact info@smog-server.org
+
+Below is some information about how to the SMOG2 Docker container provided by the SMOG-SERVER resource.  
+This includes information on how to build and troubleshoot the SMOG 2 Docker Container.
+
+CONTENT
+	1. LAUNCHING A PRE-COMPILED CONTAINER
+	2. WHAT TO DO, ONCE IN THE CONTAINER
+	3. HOW TO GENERATE A NEW CONTAINER
+	4. TROUBLESHOOTING
 
 
-LAUNCHING A PRE-COMPILED CONTAINER
+1. LAUNCHING A PRE-COMPILED CONTAINER
 
 If you have Docker installed, you can pull the image from Docker with the command
 
 >docker pull smog-server/SMOG2:stable
 
-You can then use the instructions on the smog-server page for some ways you may use a Docker container.
+Below is one way to use the container, once you have pulled it
+
+>$ docker run -it --rm -v $(pwd):/workdir smogserver/smog2:stable 
+
+In this case, the directory that the docker is called from ($pwd) i.e. present working directory, is mounted as /workdir in the container. As long as all the files you need are available in $pwd and its subdirectories, then they will be available to the container in /workdir and its subdirectories. The container will be unable to interact with any directories above $pwd. To belabor the point: any files edited or created in /workdir will appear or be edited on your actual disk in $pwd. 
+
+For more options for how to use the Docker container, consult the smog-server or Docker pages.
 
 
-WHAT TO DO, ONCE IN THE CONTAINER
+2. WHAT TO DO, ONCE IN THE CONTAINER
 
-The SMOG2 container has smog2 and all smog tools already in the path.  You should be able to simply type "smog2", or give any other smog-tool name, and the command will work.
-
-GENERATE A NEW CONTAINER
-
-There are cases when you may want the ease of using Docker containers, but the smog-server team has not provided one for the version you want to use.  For example, perhaps you have modified the code.  We also provide a simple script that will generate a new docker container for you (takes 1-2 minutes, usually).
-
->./docker.create.bash gitversion
-
-This will create a new container called smog2:gitversion, which will contain the version of SMOG 2 for the currently checked out version of the code. 
+The SMOG2 container has smog2 and all smog tools already in the path. You should be able to simply type "smog2", or give any other smog-tool name, and the command will work!  If it is not that simple, see "Troubleshooting" or email us.
 
 
-TROUBLESHOOTING
+3. HOW TO GENERATE A NEW CONTAINER
+
+There are cases when you may want the ease of using Docker containers, but the smog-server team has not provided one for the version you want to use.  For example, if you edit the code, you may want a personal container for using it. To help, we also provide a simple script that will generate a new docker container for you (usually takes a few minutes to complete). 
+
+>./docker.create.bash myversion
+
+This will create a new container called smogserver/smog2:myversion, which will contain the version of SMOG 2 for the currently checked out version of the code. Of course, you may change the script to rename the container something more convenient. 
+
+The script is part of the SMOG 2 distribution. If you are currently in the container, the you should be able to find it in /opt/smog2/docker.  
+
+
+4. TROUBLESHOOTING
 
 -- When building your own container, you may find that your docker cache is full.  This can result in some cryptic messages during the build stage. To make some more space, you may want to explore the following commands:
 
