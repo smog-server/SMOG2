@@ -1,46 +1,53 @@
-SMOG 2 README
 
-For questions, contact info@smog-server.org
+**** **** **** **** SMOG 2 README **** **** **** **** 
 
-Below is some information about how to the SMOG2 Docker container provided by the SMOG-SERVER resource.  
-This includes information on how to build and troubleshoot the SMOG 2 Docker Container.
 
-CONTENT
+Below is some information about how to use and generate SMOG 2 Docker containers.  
+
+CONTENTS
 	1. LAUNCHING A PRE-COMPILED CONTAINER
 	2. WHAT TO DO, ONCE IN THE CONTAINER
 	3. HOW TO GENERATE A NEW CONTAINER
 	4. TROUBLESHOOTING
+	5. MORE INFORMATION
 
 
 1. LAUNCHING A PRE-COMPILED CONTAINER
 
 If you have Docker installed, you can pull the image from Docker with the command
 
->docker pull smog-server/SMOG2:stable
+>docker pull smog-server/smog2:stable
 
-Below is one way to use the container, once you have pulled it
+In this example, the most recent stable release will be pulled.  Consult the SMOG-SERVER docker page for additional versions that may be available.
+
+Below is one example for how to use the container, once you have pulled it
 
 >$ docker run -it --rm -v $(pwd):/workdir smogserver/smog2:stable 
 
-In this case, the directory that the docker is called from ($pwd) i.e. present working directory, is mounted as /workdir in the container. As long as all the files you need are available in $pwd and its subdirectories, then they will be available to the container in /workdir and its subdirectories. The container will be unable to interact with any directories above $pwd. To belabor the point: any files edited or created in /workdir will appear or be edited on your actual disk in $pwd. 
+In this case, the directory that the docker is called from ($pwd) i.e. present working directory, is mounted as /workdir in the container. As long as all the files you need are available in $pwd and its subdirectories, then they will be available to the container in /workdir and its subdirectories. The container will be unable to interact with any directories above $pwd. To belabor the point: any files edited or created in /workdir will appear or be edited on your actual disk in $pwd. LINUX NOTE: There can occasionally be issues with user IDs when using Docker on Linux.  If you are obtaining Permission Denied errors, see TROUBLESHOOTING. 
 
-For more options for how to use the Docker container, consult the smog-server or Docker pages.
+For more options on how to use the Docker container, consult the smog-server or Docker pages.
 
 
 2. WHAT TO DO, ONCE IN THE CONTAINER
 
-The SMOG2 container has smog2 and all smog tools already in the path. You should be able to simply type "smog2", or give any other smog-tool name, and the command will work!  If it is not that simple, see "Troubleshooting" or email us.
+The SMOG 2 container has smog2 and all smog tools already in the path. You should be able to simply type "smog2", or give any other smog-tool name, and the command will work!  If it is not that simple, see "Troubleshooting" or email us.
 
 
 3. HOW TO GENERATE A NEW CONTAINER
 
 There are cases when you may want the ease of using Docker containers, but the smog-server team has not provided one for the version you want to use.  For example, if you edit the code, you may want a personal container for using it. To help, we also provide a simple script that will generate a new docker container for you (usually takes a few minutes to complete). 
 
->./docker.create.bash myversion
+>./docker.create.bash gitversion
 
-This will create a new container called smogserver/smog2:myversion, which will contain the version of SMOG 2 for the currently checked out version of the code. Of course, you may change the script to rename the container something more convenient. 
+This will create a new container called smogserver/smog2:gitversion, which will contain the most recent committed version of the code that is available in the official smog-server Github repo. If you want to make containers for versions that you have modified, then follow these steps:
+	- fork the SMOG 2 Github repo
+	- commit your changes to your forked version
+	- edit the "clone" line in the file Dockerfile.gitverion, such that it will clone the forked repo
+	- (optionally) In order for you to avoid confusion, edit docker.create.bash. Change the name of the image to something that differs from the official smogserver images. 
+	- run docker.create.bash
 
-The script is part of the SMOG 2 distribution. If you are currently in the container, the you should be able to find it in /opt/smog2/docker.  
+The script is part of the SMOG 2 distribution. If you are viewing this message from within the container, then you should be able to find the script in the directory /opt/smog2/docker.  
 
 
 4. TROUBLESHOOTING
@@ -53,6 +60,15 @@ The script is part of the SMOG 2 distribution. If you are currently in the conta
 >docker builder prune
 >docker system prune (Docker API v1.25+)
 
+Information about each of these commands can be found online. We have found them to be helpful at various times.
+
 
 -- On Linux, there are sometimes group ID issues that do not allow the container to mount and write to a user's directories. In that case, you may need to rebuild the container, but change the --user value in the Dockerfile, such that it matches the ID of the user on the host machine. 
 
+
+4. MORE INFORMATION
+
+For detailed information and SMOG models, see smog-server.org
+
+If you have any questions, feel free to contact us at info@smog-server.org
+or sign up for the smog-user listserv https://mailman.rice.edu/mailman/listinfo/smog-users
