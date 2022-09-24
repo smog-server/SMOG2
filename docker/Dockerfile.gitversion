@@ -22,6 +22,6 @@ WORKDIR /home/smoguser
 RUN bash /opt/smog2/configure.smog2
 RUN echo "alias moresmog=\"more /opt/smog2/docker/README.docker\"" >> ~/.bashrc
 RUN echo "echo Welcome to the SMOG2 Docker Container." >> ~/.bashrc
-RUN echo "You may find more information about the container with the command \"moresmog\"" >> ~/.bashrc
-RUN echo "Please send any questions to the smog-server team at info@smog-server.org" >> ~/.bashrc
+RUN echo "echo You may find more information about the container with the command \"moresmog\"" >> ~/.bashrc
+RUN echo "echo Please send any questions to the smog-server team at info@smog-server.org" >> ~/.bashrc
 
