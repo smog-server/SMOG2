@@ -14,13 +14,10 @@ From: smog-server/library/osperl
     git show --format="%H" --no-patch > .gitcommit
     rm -rf .git
     bash /opt/smog2/configure.smog2
-    echo "alias moresmog=\"more /opt/smog2/singularity/README.singularity\"" >> ~/.bashrc
-    echo "echo \"\n                Welcome to the SMOG2 Singularity Container\"" >> ~/.bashrc
-    echo "echo \"You may find more information about the container with the command moresmog\"" >> ~/.bashrc
-    echo "echo \" Please send any questions to the smog-server team at info@smog-server.org\n\"" >> ~/.bashrc
 
 %runscript
     bash
+    source /opt/smog2/singularity/sing.launch
 
 %help
     This container has the current git version of SMOG 2.  Since this is not an official release, use it with caution.  To use this container, simply launch it and then SMOG 2 and SMOG tools will be in your path.
