@@ -1,5 +1,5 @@
 
-**** **** **** **** SMOG 2 README **** **** **** **** 
+**** **** **** **** SMOG 2 DOCKER README **** **** **** **** 
 
 
 Below is some information about how to use and generate SMOG 2 Docker containers.  
@@ -22,7 +22,7 @@ In this example, the most recent stable release will be pulled.  Consult the SMO
 
 Below is one example for how to use the container, once you have pulled it
 
->$ docker run -it --rm -v $(pwd):/workdir smogserver/smog2:stable 
+> docker run -it --rm -v $(pwd):/workdir smogserver/smog2:stable 
 
 In this case, the directory that the docker is called from ($pwd) i.e. present working directory, is mounted as /workdir in the container. As long as all the files you need are available in $pwd and its subdirectories, then they will be available to the container in /workdir and its subdirectories. The container will be unable to interact with any directories above $pwd. To belabor the point: any files edited or created in /workdir will appear or be edited on your actual disk in $pwd. LINUX NOTE: There can occasionally be issues with user IDs when using Docker on Linux.  If you are obtaining Permission Denied errors, see TROUBLESHOOTING. 
 
@@ -66,7 +66,7 @@ Information about each of these commands can be found online. We have found them
 -- On Linux, there are sometimes group ID issues that do not allow the container to mount and write to a user's directories. In that case, you may need to rebuild the container, but change the --user value in the Dockerfile, such that it matches the ID of the user on the host machine. 
 
 
-4. MORE INFORMATION
+5. MORE INFORMATION
 
 For detailed information and SMOG models, see smog-server.org
 

@@ -14,6 +14,10 @@ From: smog-server/library/osperl
     git show --format="%H" --no-patch > .gitcommit
     rm -rf .git
     bash /opt/smog2/configure.smog2
+    echo "alias moresmog=\"more /opt/smog2/singularity/README.singularity\"" >> ~/.bashrc
+    echo "echo \"\n                Welcome to the SMOG2 Singularity Container\"" >> ~/.bashrc
+    echo "echo \"You may find more information about the container with the command moresmog\"" >> ~/.bashrc
+    echo "echo \" Please send any questions to the smog-server team at info@smog-server.org\n\"" >> ~/.bashrc
 
 %runscript
     bash

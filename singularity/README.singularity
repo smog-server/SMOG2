@@ -1,12 +1,67 @@
-osperl.def : Singularity definition file that will build an image with ubuntu and all necessary perl tools for SMOG 2 to run. 
-smog2.<version>.def : Imports the osperl image and then adds SMOG2 (given version). In this def file, it is assumed that that osperl.def was used to generate an image on sylabs called:
-	smog-server/library/osperl:latest
+
+**** **** **** **** SMOG 2 SINGULARITY README **** **** **** **** 
+
+Below is some information about how to use and generate SMOG 2 Singularity containers.  
+
+CONTENTS
+	1. LAUNCHING A PRE-COMPILED CONTAINER
+	2. WHAT TO DO, ONCE IN THE CONTAINER
+	3. HOW TO GENERATE A NEW CONTAINER
+	4. TROUBLESHOOTING
+	5. MORE INFORMATION
 
 
-Currently, these have both been run successfully to generate an image for the git version of smog2.
-It can be pulled with :
->singularity pull --arch amd64 library://smog-server/library/smog2:stable 
+1. LAUNCHING A PRE-COMPILED CONTAINER
 
-Once you have it local, you can run it with:
+If you have Singularity installed, you can pull the image from Sylabs with the command
+
+>singularity pull --arch amd64 library://smog-server/library/smog2:stable
+
+In this example, an image of the most recent stable release of SMOG 2 will be pulled. The name of the container image will be smog2_stable.sif. If the container is not properly signed (i.e. you receive a message indicating otherwise), then don't use the container, since it may not be an official SMOG-SERVER version. 
+
+If you are interested in a specific version of SMOG 2, consult the SMOG-SERVER Sylabs page for additional versions that may be available.
+
+Below is one example for how to use the container, once you have pulled it
+
 >singularity shell smog2_stable.sif
-When in the container, smog2 and smog_* tools will be in your path.  So, you should be good to go.
+
+This will launch the container as an interactive shell. If the container launches properly, you should be greeted with a message indicating so. 
+
+While the container may be used in non-interactive modes, SMOG2 is typically used interactively. After launching, you should still be able to see all of your files. When you edit files, you are editing your data. The actual container is write-protected. 
+
+
+2. WHAT TO DO, ONCE IN THE CONTAINER
+
+The SMOG 2 container has smog2 and all smog tools already in the path. You should be able to simply type "smog2", or give any other smog-tool name, and the command will work!  If it is not that simple, see "Troubleshooting" or email us.
+
+
+3. HOW TO GENERATE A NEW CONTAINER
+
+There are cases when you may want the ease of using Singularity containers, but the smog-server team has not provided one for the version you want to use.  For example, if you edit the code, you may want a personal container for using it. To help, we also provide some instructions to help you generate a new Singularity container for personal use (usually takes a few minutes to complete). 
+
+To request a build, use a command of this form:
+
+>scs-build build smog2.gitverion.def library:<YOUR SYLABS ACCOUNT NAME>/library/smog2:myversion
+
+In order to properly use this command, there are some points to keep in mind:
+	- scs-build must be installed locally
+	- you must have a Sylabs account, and you must insert the account name at <YOUR SYLABS ACCOUNT NAME>
+	- you should fork the SMOG 2 github repo
+	- edit your forked version
+	- Change smog2.gitversion.def, such that the "clone" line lists your forked version
+	- your Sylabs AUTH KEY must be exported, in order for scs-build to request the image be created under your account 
+
+For more options on how to use the Singularity container, consult the smog-server or Sylabs pages.
+
+
+4. TROUBLESHOOTING
+
+-- If you try to run SMOG-CHECK in the container, you may receive a Permission Denied error. Specifically, if you go to /opt/smog2/SMOG-CHECK and run ./smog-check, then it should fail. This is because the /opt directory is actually part of the container image, and the image is not writable. If you want to run SMOG-CHECK, you can copy the entire SMOG-CHECK directory to a directory for which you have write privileges, and then run smog-check. 
+
+
+5. MORE INFORMATION
+
+For detailed information and SMOG models, see smog-server.org
+
+If you have any questions, feel free to contact us at info@smog-server.org
+or sign up for the smog-user listserv https://mailman.rice.edu/mailman/listinfo/smog-users
