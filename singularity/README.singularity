@@ -23,7 +23,7 @@ If you are interested in a specific version of SMOG 2, consult the SMOG-SERVER S
 
 Below is one example for how to use the container, once you have pulled it
 
->singularity shell smog2_stable.sif
+>singularity run smog2_stable.sif
 
 This will launch the container as an interactive shell. If the container launches properly, you should be greeted with a message indicating so. 
 
