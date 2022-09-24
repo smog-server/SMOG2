@@ -5,6 +5,9 @@ tag=$1
 containername=smogserver/smog2:$tag
 docker build --no-cache -t $containername -f Dockerfile.$tag .
 
+if [ $? == 0 ]
+then
+
 echo "
 Done building container $containername
 
@@ -20,3 +23,15 @@ Since containers are static, you will only need to run
 smog-check the first time.
 
 "
+
+else
+
+echo "
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+BUILD OF DOCKER CONTAINER DID NOT COMPLETE PROPERLY
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+"
+
+fi
