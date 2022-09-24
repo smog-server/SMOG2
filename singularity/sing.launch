@@ -1,0 +1,5 @@
+
+alias moresmog="more /opt/smog2/singularity/README.singularity" 
+echo "\n                Welcome to the SMOG2 Singularity Container" 
+echo "You may find more information about the container with the command moresmog"
+echo " Please send any questions to the smog-server team at info@smog-server.org\n"
