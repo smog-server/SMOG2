@@ -6,8 +6,8 @@ Below is some information about how to use and generate SMOG 2 Singularity conta
 CONTENTS
 	1. DOWNLOAD THE CONTAINER
 	2. SINGLE-USE CALLS TO SMOG2
-	3. LAUNCHING A PRE-COMPILED CONTAINER
-	4. WHAT TO DO, ONCE IN THE CONTAINER
+	3. EXECUTING A SINGLE SCRIPT IN THE CONTAINER
+	4. WORKING INTERACTIVELY INSIDE THE CONTAINER
 	5. HOW TO GENERATE A NEW CONTAINER
 	6. TROUBLESHOOTING
 	7. MORE INFORMATION
@@ -24,29 +24,43 @@ In this example, an image of the most recent stable release of SMOG 2 will be pu
 If you are interested in a specific version of SMOG 2, consult the SMOG-SERVER Sylabs page for additional versions that may be available.
 
 
-2. SINGLE-USE CALLS TO SMOG2
+2. WORKING INTERACTIVELY INSIDE THE CONTAINER
 
-It is possible to think of the container as a wrapper for SMOG2.  That is, you can "call" the container and launch a single SMOG2 command.  For example:
+If you would prefer to launch the container and interactively give SMOG commands, then use the following approach.
+
+>singularity shell smog2_stable.sif
+
+This will launch the container as an interactive shell. If the container launches properly, you should be greeted with a message indicating so. 
+
+After launching, you should still be able to see all of your files. When you edit files, you are editing your data. The actual container is write-protected. 
+
+The SMOG 2 container has smog2 and all smog tools already in the path. You should be able to simply type "smog2", or give any other smog-tool name, and the command will work!  If it is not that simple, see "Troubleshooting" or email us.
+
+
+3. SINGLE-USE CALLS TO SMOG2
+
+It is possible to think of the container as a wrapper for SMOG2. That is, you can "call" the container and launch a single SMOG2 command within it.  For example:
 
 >singularity run smog2_stable.sif smog2 -AA -i 2ci2.pdb
+
+or an alternate format would be 
+
+>./smog2_stable.sif smog2 -AA -i 2ci2.pdb
 
 In this example, the container would be launched, and "smog2 -AA -i 2ci2.pdb" would be used to call smog2 with the all-atom model for a file 2ci2.pdb. Basically, everything after the name of the sif file would be given as a command-line instruction. So, you could replace this argument with any smog command that you like.
 
 
-3. LAUNCHING A PRE-COMPILED CONTAINER
+4. EXECUTING A SINGLE SCRIPT IN THE CONTAINER
 
-Below is one example for how to use the container, once you have pulled it
+Similar to how you run a single command, it is possible to run a script inside  the container.  For example, if you have the script myscript.sh in your current directory, then make sure you have execute privileges and use the followin command:
 
->singularity run smog2_stable.sif
+>singularity run smog2_stable.sif ./myscript.sh
 
-This will launch the container as an interactive shell. If the container launches properly, you should be greeted with a message indicating so. 
+or an alternate format would be 
 
-While the container may be used in non-interactive modes, SMOG2 is typically used interactively. After launching, you should still be able to see all of your files. When you edit files, you are editing your data. The actual container is write-protected. 
+>./smog2_stable.sif ./myscript.sh
 
-
-4. WHAT TO DO, ONCE IN THE CONTAINER
-
-The SMOG 2 container has smog2 and all smog tools already in the path. You should be able to simply type "smog2", or give any other smog-tool name, and the command will work!  If it is not that simple, see "Troubleshooting" or email us.
+This will launch the container and then run the script inside.  The script could be a combination of SMOG and shell commands.
 
 
 5. HOW TO GENERATE A NEW CONTAINER
