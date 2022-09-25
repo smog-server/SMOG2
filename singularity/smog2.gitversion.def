@@ -16,12 +16,8 @@ From: smog-server/library/osperl
     bash /opt/smog2/configure.smog2
 
 %runscript
-    echo "\n                Welcome to the SMOG2 Singularity Container" 
-    echo "You may find more information about the container with the command moresmog"
-    echo " Please send any questions to the smog-server team at info@smog-server.org\n"
-    exec alias moresmog="more /opt/smog2/singularity/README.singularity" 
-    bash
-    
+    exec $@
+   
 %help
     This container has the current git version of SMOG 2.  Since this is not an official release, use it with caution.  To use this container, simply launch it and then SMOG 2 and SMOG tools will be in your path.
 
