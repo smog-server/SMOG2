@@ -1,12 +1,6 @@
 Bootstrap: library
 From: smog-server/library/osperl
 
-%startscript
-    echo "\n                Welcome to the SMOG2 Singularity Container"
-    echo "You may find more information about the container with the command moresmog"
-    echo " Please send any questions to the smog-server team at info@smog-server.org\n"
-
-
 %labels
     Container with the current git version of SMOG 2
 
@@ -20,7 +14,9 @@ From: smog-server/library/osperl
     git show --format="%H" --no-patch > .gitcommit
     rm -rf .git
     bash /opt/smog2/configure.smog2
-
+    echo "more /opt/smog2/singularity/README.singularity" >> /opt/smog2/bin/smoginfo
+    chmod a+x /opt/smog2/bin/smoginfo
+ 
 %runscript
     exec $@
    
