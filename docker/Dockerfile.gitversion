@@ -20,8 +20,8 @@ RUN chown -R smoguser /opt/* # buildkit
 USER smoguser
 WORKDIR /home/smoguser
 RUN bash /opt/smog2/configure.smog2
-RUN echo "alias moresmog=\"more /opt/smog2/docker/README.docker\"" >> ~/.bashrc
+RUN echo "alias smoginfo=\"more /opt/smog2/docker/README.docker\"" >> ~/.bashrc
 RUN echo "echo \"\n                   Welcome to the SMOG2 Docker Container\"" >> ~/.bashrc
-RUN echo "echo \"You may find more information about the container with the command moresmog\"" >> ~/.bashrc
+RUN echo "echo \"You may find more information about the container with the command: smoginfo\"" >> ~/.bashrc
 RUN echo "echo \" Please send any questions to the smog-server team at info@smog-server.org\n\"" >> ~/.bashrc
 
