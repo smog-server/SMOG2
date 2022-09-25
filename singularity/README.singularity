@@ -77,7 +77,7 @@ In order to properly use this command, there are some points to keep in mind:
 	- you should fork the SMOG 2 github repo
 	- edit your forked version
 	- Change smog2.gitversion.def, such that the "clone" line lists your forked version
-	- your Sylabs AUTH KEY must be exported, in order for scs-build to request the image be created under your account 
+	- SYLABS_AUTH_TOKENS must be exported, in order for scs-build to request the image be created under your account 
 
 For more options on how to use the Singularity container, consult the smog-server or Sylabs pages.
 
