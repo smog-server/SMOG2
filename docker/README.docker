@@ -36,16 +36,22 @@ The SMOG 2 container has smog2 and all smog tools already in the path. You shoul
 
 3. HOW TO GENERATE A NEW CONTAINER
 
-There are cases when you may want the ease of using Docker containers, but the smog-server team has not provided one for the version you want to use.  For example, if you edit the code, you may want a personal container for using it. To help, we also provide a simple script that will generate a new docker container for you (usually takes a few minutes to complete). 
+There are cases when you may want the ease of using Docker containers, but the smog-server team has not provided one for the version you would like to use.  For example, if you edit the code, you may want a personal container for it. To help, we also provide a simple script that will generate a new docker container for you (usually takes a few minutes to complete). 
 
 >./docker.create.bash gitversion
 
-This will create a new container called smogserver/smog2:gitversion, which will contain the most recent committed version of the code that is available in the official smog-server Github repo. If you want to make containers for versions that you have modified, then follow these steps:
+This will create a new container on your local machine called smogserver/smog2:gitversion, which will contain the most recent committed version of the code that is available in the official smog-server Github repo.  If you want to make containers for versions that you have modified, then follow these steps:
 	- fork the SMOG 2 Github repo
 	- commit your changes to your forked version
 	- edit the "clone" line in the file Dockerfile.gitverion, such that it will clone the forked repo
 	- (optionally) In order for you to avoid confusion, edit docker.create.bash. Change the name of the image to something that differs from the official smogserver images. 
 	- run docker.create.bash
+
+Cross compilation: By default, this script will only build an image for the architecture that is native to the machine being used for the build.  If you want to build a cross-platform container and push it to DockerHub, then try:
+
+>./docker.create.bash gitversion cross
+
+Note that you will need to change the variable $docker_username, so that the script will try to push the new container to your account. You must also already have buildx and a new builder enabled. 
 
 The script is part of the SMOG 2 distribution. If you are viewing this message from within the container, then you should be able to find the script in the directory /opt/smog2/docker.  
 

@@ -2,8 +2,23 @@
 # this script will build a new docker container from the current smog2 repo
 # multiple tags can be added by adding more -t flags at build time
 tag=$1
-containername=smogserver/smog2:$tag
-docker build --no-cache -t $containername -f Dockerfile.$tag .
+option=$2
+docker_username="smogserver"
+containername=$docker_username/smog2:$tag
+if [ "$option" == "cross" ]
+then
+	# this build a cross-platform container. It also pushes the container to your DockerHub repo. For a simpler build, see the commented command, below
+	echo Will attempt to build and push a cross-platform version of the SMOG 2 container for DockerHub account $docker_username and SMOG version $tag
+	docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 --no-cache -t $containername -f Dockerfile.$tag .
+elif [ "$option" == "" ]
+then
+	echo Will attempt to build a local native-platform version of the SMOG 2 container: container called $containername
+	docker build --no-cache -t $containername -f Dockerfile.$tag .
+else
+
+	echo \"$option\" is not a supported option 
+	exit
+fi
 
 if [ $? == 0 ]
 then
