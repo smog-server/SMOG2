@@ -5,7 +5,7 @@
 #perl4smog=""
 #smog2dir=""
 
-echo "\nStarting to configure SMOG 2\n"
+echo "Starting to configure SMOG 2"
 
 ## don't change anything below this line
 if [ -z ${smog2dir+x} ]
@@ -74,7 +74,8 @@ There may be a typo, or Perl may be broken.
 
 fi
 
-echo "Perl version to be used is $perl4smog\nMake sure this is the version you wish to use.\n"
+echo "Perl version to be used is $perl4smog
+Make sure this is the version you wish to use."
 
 
 for link in SBM_AA  SBM_AA+gaussian  SBM_calpha  SBM_calpha+gaussian
@@ -164,7 +165,9 @@ if [ -e $smog2dir/header ]
 then
 	rm -f $smog2dir/header
 fi
-echo "\nDone configuring. Will check for basic functionality.\n"
+echo "
+Done configuring. Will check for basic functionality.
+"
 cd $smog2dir
 export PATH=$smog2dir/bin:$PATH
 ./test-config
@@ -172,12 +175,14 @@ export PATH=$smog2dir/bin:$PATH
 if (( $? == 0 ))
 then
 
-	echo "\nConfiguration successful!!\n"
-	echo For the current session, will pre-pend $smog2dir/bin to your PATH.  If you plan to use SMOG 2 regularly, it is recommended you add the following line to the .bashrc or .zshrc file:
-	echo
-	echo PATH=$smog2dir/bin:\$PATH
-	echo
-	echo It is also highly recommended that you download and run smog-check, to confirm everything is working well
+	echo "
+Configuration successful!!
+
+For the current session, will pre-pend $smog2dir/bin to your PATH.  If you plan to use SMOG 2 regularly, it is recommended you add the following line to the .bashrc or .zshrc file:
+	
+PATH=$smog2dir/bin:\$PATH
+
+It is also highly recommended that you download and run smog-check, to confirm everything is working well"
 
 else
 	echo SMOG 2 configuration did not complete successfully. See messages above. 
