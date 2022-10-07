@@ -869,12 +869,12 @@ sub checkExtras {
 sub printOrderedBonds
 {
 
-	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$whichPDL2,$indexhandle,$allatoms,$bondvectors) = @_;
+	my($bondFunctHandle1,$whichPDL1,$bondHandle2,$isBOND,$whichPDL2,$indexhandle,$allatoms,$bondvectors) = @_;
 	my @bondCache; ## CACHE BONDS TO ORDER
 
 	## Cache Bonds ##
 	calculateBonds1($bondFunctHandle1,$whichPDL1,\@bondCache,$indexhandle,$allatoms,$bondvectors);
-	calculateBonds2($bondHandle2,$whichPDL2,\@bondCache,$indexhandle,$allatoms,$bondvectors);
+	calculateBonds2($bondHandle2,$isBOND,$whichPDL2,\@bondCache,$indexhandle,$allatoms,$bondvectors);
 	## Sort bonds by i then j ## 
 	@bondCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) } @bondCache;
 
@@ -914,12 +914,18 @@ print "Setting intra-residue bonds distances\n";
 #call connCalculateBondsHelper() for each chain in PDB
 sub calculateBonds2
 {
-	my($bondHandle,$whichPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
-	print "Setting inter-residue bonds for chain:\n";
+	my($bondHandle,$isBOND,$whichPDL,$bondCache,$indexhandle,$allatoms,$bondvectors) = @_;
+	my %isBOND=%{$isBOND};
+	print "Setting inter-residue bonds for:\n";
 	foreach my $chain(sort { $a <=> $b } keys %{$bondHandle})
 	{
-		my $chainn=$chain+1;
-		print "\t$chainn...\n";
+		if(exists $isBOND{$chain}){
+			print "\tuser-defined bond $isBOND{$chain}...\n";
+		
+		}else{
+			my $chainn=$chain+1;
+			print "\tchain $chainn...\n";
+		}
 		calculateBondsHelper2($bondHandle->{$chain},$whichPDL->{$chain},$bondCache,$indexhandle,$allatoms,$bondvectors);
 	
 	}
@@ -1174,11 +1180,11 @@ sub bondFuncParser
 # Combined bond calculation,sorting, and printing
 sub printOrderedAngles
 {
-	my($AngleData,$bondPDL,$indexhandle,$allatoms,$bondvectors) = @_;
+	my($AngleData,$isBOND,$bondPDL,$indexhandle,$allatoms,$bondvectors) = @_;
 	my @angleCache; ## CACHE BONDS TO ORDER
 
 	## Cache Bonds ##
-	CalculateAngles($AngleData,$bondPDL,\@angleCache,$indexhandle,$allatoms,$bondvectors);
+	CalculateAngles($AngleData,$isBOND,$bondPDL,\@angleCache,$indexhandle,$allatoms,$bondvectors);
 
 	## Sort angles by i,j then k ## 
 	@angleCache = sort {($a->{"i"} <=> $b->{"i"}) || ($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"})} @angleCache;
@@ -1199,11 +1205,17 @@ sub printOrderedAngles
 # CalculateAnglesHelper() calculates the angles for each chain
 sub CalculateAngles
 {
-	my($angleFunctHandle,$whichPDL,$angleCache,$indexhandle,$allatoms,$bondvectors) = @_;
-	print "Working on chain:\n"; 
+	my($angleFunctHandle,$isBOND,$whichPDL,$angleCache,$indexhandle,$allatoms,$bondvectors) = @_;
+	my %isBOND=%{$isBOND};
+	print "Working on:\n"; 
 	foreach my $chain(sort { $a <=> $b } keys %{$angleFunctHandle}){
-		my $chainn=$chain+1;
-		print "\t$chainn...\n";
+		if(exists $isBOND{$chain}){
+			print "\tuser-defined bond $isBOND{$chain}...\n";
+		
+		}else{
+			my $chainn=$chain+1;
+			print "\tchain $chainn...\n";
+		}
 		CalculateAnglesHelper($angleFunctHandle->{$chain},$whichPDL->{$chain},$angleCache,$indexhandle,$allatoms,$bondvectors);
 	}
 }
@@ -1221,10 +1233,10 @@ sub CalculateAnglesHelper
 		my $left = $bondvectors->{"$atomi1-$atomi2"};
 		my $right = $bondvectors->{"$atomi3-$atomi2"};
 		if (! defined $left){
-			smog_quit("Internal error. left atom pair $atomi1-$atomi2 not defined when building an angle. This is a known issue with the code that sometimes causes problems. We are working to resolve the issue.");
+			smog_quit("Internal error 4. left atom pair $atomi1-$atomi2 not defined when building an angle. This should not happen. Please report to the SMOG 2 developers.");
 		}
 		if (! defined $right){
-			smog_quit("Internal error. right atom pair $atomi3-$atomi2 not defined when building an angle. This is a known issue with the code that sometimes causes problems. We are working to resolve the issue.");
+			smog_quit("Internal error 5. right atom pair $atomi3-$atomi2 not defined when building an angle. This should not happen. Please report to the SMOG 2 developers.");
 		}
 		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
 		
@@ -1332,10 +1344,10 @@ sub angleFuncParser
 # Combined dihedral calculation,sorting, and printing
 sub printOrderedDihedrals
 {
-	my($DihedralData,$bondPDL,$allatoms,$bondvectors) = @_;
+	my($DihedralData,$isBOND,$bondPDL,$allatoms,$bondvectors) = @_;
 	my @diheCache; ## CACHE BONDS TO ORDER
 	## Cache Bonds ##
-	CalculateDihedrals($DihedralData,$bondPDL,\@diheCache,$allatoms,$bondvectors);
+	CalculateDihedrals($DihedralData,$isBOND,$bondPDL,\@diheCache,$allatoms,$bondvectors);
 	## Sort dihedrals by i, then j then k then l ## 
 	@diheCache = sort {($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"f"} <=> $b->{"f"}) || ($a->{"i"} <=> $b->{"i"}) || ($a->{"l"} <=> $b->{"l"})} @diheCache;
 	my %blist;	
@@ -1356,11 +1368,17 @@ sub printOrderedDihedrals
 # Setup the calculation of dihedral angles of all combined residues,
 sub CalculateDihedrals
 {
-	my($diheFunctHandle,$whichPDL,$diheCache,$allatoms,$bondvectors) = @_;
-	print "Working on chain:\n";
+	my($diheFunctHandle,$isBOND,$whichPDL,$diheCache,$allatoms,$bondvectors) = @_;
+	my %isBOND=%{$isBOND};
+	print "Working on:\n";
 	foreach my $chain(sort { $a <=> $b } keys %{$diheFunctHandle}){
-		my $chainn=$chain+1;
-		print "\t$chainn...\n";
+		if(exists $isBOND{$chain}){
+			print "\tuser-defined bond $isBOND{$chain}...\n";
+		
+		}else{
+			my $chainn=$chain+1;
+			print "\tchain $chainn...\n";
+		}
 		CalculateDihedralsHelper($diheFunctHandle->{$chain},$whichPDL->{$chain},$diheCache,$allatoms,$bondvectors);
 	}
 }
@@ -2593,9 +2611,16 @@ EOT
 
 sub freeMemoryForShadow
 {
-	undef %resPDL;undef %bondPDL;
-	undef %AngleData;undef %DihedralData;
-	undef %BondData;undef $contactPDL;undef %foundBtype; undef %foundAtype, undef %foundDtype;
+	undef %resPDL;
+	undef %bondPDL;
+	undef %isBOND;
+	undef %AngleData;
+	undef %DihedralData;
+	undef %BondData;
+	undef $contactPDL;
+	undef %foundBtype;
+	undef %foundAtype;
+	undef %foundDtype;
 }
 
 sub parseTemplatesAndPDB
@@ -2681,15 +2706,15 @@ sub printBondedTopOutput {
 	## CALCULATE BONDS/CONNECTED BONDS ##
 	print "Checking and saving bonds\n";
 	my %bondvectors;
-	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%bondPDL,\%atomIndex2Line,\%allAtoms,\%bondvectors);
+	printOrderedBonds(\%bondFunctionals,\%resPDL,\%BondData,\%isBOND,\%bondPDL,\%atomIndex2Line,\%allAtoms,\%bondvectors);
 
 	## CALCULATE ANGLES ##
 	print "Checking and saving angles\n";
-	printOrderedAngles(\%AngleData,\%bondPDL,\%atomIndex2Line,\%allAtoms,\%bondvectors);
+	printOrderedAngles(\%AngleData,\%isBOND,\%bondPDL,\%atomIndex2Line,\%allAtoms,\%bondvectors);
 
 	## CALCULATE DIHEDRALS ##
 	print "Checking and saving dihedrals\n";
-	printOrderedDihedrals(\%DihedralData,\%bondPDL,\%allAtoms,\%bondvectors);
+	printOrderedDihedrals(\%DihedralData,\%isBOND,\%bondPDL,\%allAtoms,\%bondvectors);
 
 }
 

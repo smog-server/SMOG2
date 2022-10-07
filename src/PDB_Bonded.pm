@@ -36,7 +36,7 @@ use smog_common;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %bondFunctionals %AngleData %DihedralData %BondData %resPDL %bondPDL %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS checkPDB);
+qw(%eGTable $energyGroups $interactionThreshold %fTypes %residues $termRatios %allAtoms parseCONTACT $contactPDL catPDL $totalAtoms returnFunction intToFunc funcToInt %bondFunctionals %AngleData %DihedralData %BondData %resPDL %isBOND %bondPDL %dihedralFunctionals %angleFunctionals setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings $interactions clearPDBMemory clearBifMemory parsePDBATOMS checkPDB);
 
 our %tempPDL = ();
 our %tempPDLB = ();
@@ -45,6 +45,7 @@ our %tempPDLB = ();
 our %tempPDLbType = ();
 our %resPDL;
 our %bondPDL;
+our %isBOND;
 our %indexMap;
 my $angToNano = 0.1;
 
@@ -68,9 +69,16 @@ our %ignoreBONDed;
 ## CLEAR VARIABLE MEMORY ##
 ###########################
 sub clearPDBMemory {
-undef %tempPDL;undef %tempPDLB; undef %tempPDLbType;undef %resPDL;undef %bondPDL; 
-undef %AngleData;undef %DihedralData;
-undef %BondData;undef $totalAtoms;
+undef %tempPDL;
+undef %tempPDLB;
+undef %tempPDLbType;
+undef %resPDL;
+undef %bondPDL; 
+undef %isBOND; 
+undef %AngleData;
+undef %DihedralData;
+undef %BondData;
+undef $totalAtoms;
 #undef $contactPDL; 
 undef %indexMap;
 #for coarse graining contact maps we need to know the atomNum<->resNum mapping
@@ -438,6 +446,7 @@ sub parsePDBATOMS
 	my $PDBresstart;
 	my %bondlists;
 	my %bondlistsEG;
+	my $BONDNUM = 0;
 	print "Organizing PDB data\n";
 	if($CGstage == 1){
 		$atominhash=\%residueBackup;
@@ -517,13 +526,19 @@ sub parsePDBATOMS
 			}
 
 			my $newindex=0;
-			# %keep is a hash that maps global indexes to the fragment
+			# %keep is a hash that maps global pdl indexes to the fragment
 			my %keep;
+			foreach my $kk(list(slice($fragment,4))){
+				$keep{$kk}=$newindex;
+				$newindex++;
+			}
+
+			# find the positions of the newly-bonded atoms in the piddle 
 			my $indexA;
 			my $indexB;
 			my @local2global;
+			$newindex=0;
 			foreach my $kk(list(slice($fragment,3))){
-				$keep{$kk}=$newindex;
 				push(@local2global,$kk);
 				if($idxA==$kk){
 					$indexA=$newindex;
@@ -533,6 +548,8 @@ sub parsePDBATOMS
 				}
 				$newindex++;
 			}
+
+
 
 			# go through fragment, find keys that are in keep (i.e. the atoms in the fragment). Then iterate through each array and convert
 			# bondlistFragment and energygroupsFragment are for storing the bonds and energy groups of bonds associated with the fragment that is being used for the BOND.  
@@ -556,7 +573,8 @@ sub parsePDBATOMS
 
 			# save the coordinates of this piddle, for later use. 
 			$bondPDL{$counter}=$fragment;
-	
+			$BONDNUM++;
+			$isBOND{$counter}=$BONDNUM;
 			connCreateInteractionsSingleBOND(\%bondlistFragment,\%energygroupsFragment,\@bTypesFragment,$counter,$chaina,$chainb,$indexA,$indexB,$atomA,$atomB,$resA,$resB,$eG,\@local2global); 
 
 			$counter++;
@@ -655,6 +673,10 @@ sub parsePDBATOMS
 				$tempB[$putIndex]=$bType;
 			}
 			$K--;
+			# this is added so that we know the PDL index, as well as the global gro index
+			for (my $I=0;$I<=$#temp;$I++){
+				push(@{$temp[$I]},$I+1+$totalAtoms);
+			}
 			if($residues{$residue}->{"atomCount"} == -1){
 				$totalAtoms+=$atomsInRes;
 			}else{
