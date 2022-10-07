@@ -1220,6 +1220,12 @@ sub CalculateAnglesHelper
 		my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
 		my $left = $bondvectors->{"$atomi1-$atomi2"};
 		my $right = $bondvectors->{"$atomi3-$atomi2"};
+		if (! defined $left){
+			smog_quit("Internal error. left atom pair $atomi1-$atomi2 not defined when building an angle. This is a known issue with the code that sometimes causes problems. We are working to resolve the issue.");
+		}
+		if (! defined $right){
+			smog_quit("Internal error. right atom pair $atomi3-$atomi2 not defined when building an angle. This is a known issue with the code that sometimes causes problems. We are working to resolve the issue.");
+		}
 		my $acos = mathFunctions::rad_to_deg(mathFunctions::acos(sclr(inner($left,$right))));
 		
 		if($atomi1 > $atomi3) { 
