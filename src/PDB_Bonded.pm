@@ -994,7 +994,7 @@ sub connCreateInteractionsSingleBOND
         {
 		$AngleData{$counter} = cat(@tempArr);
 	}else{
-		smog_note("No angles were generated about this user-defined BOND. This is unusual. If would be good to check your structure, BOND definitions and templates, to make sure this is what you expect.");
+		smog_quit("No angles were generated about this user-defined BOND. This is unusual. If would be good to check your structure, BOND definitions and templates, to make sure this is what you expect.",0);
         }
 	# array to hold dihedrals that have the BOND as the central bond.  i.e. i-j-k-l and j-k is the bond
 	@tempArr = ();

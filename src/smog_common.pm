@@ -106,9 +106,9 @@ sub warnsummary
 	}
 
 	if ($allwarncount == 1){
-		print "\n\n NOTE: There was $allwarncount warning. It is recommended that you read all warnings carefully.\n\n"; 
+		print "\n\nNOTE: There was $allwarncount warning. It is recommended that you read all warnings carefully.\n\n"; 
 	}elsif ($allwarncount > 1){
-		print "\n\n NOTE: There were $allwarncount warnings. It is recommended that you read all warnings carefully.\n\n"; 
+		print "\n\nNOTE: There were $allwarncount warnings. It is recommended that you read all warnings carefully.\n\n"; 
 	}
 }
 
