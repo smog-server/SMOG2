@@ -103,7 +103,9 @@ sub checkPDB
 	my $residue; my $atom;my $atomSerial;
 	my $atomsInRes; 
 	my $i; 
-	$totalAtoms = 0;my $nbType;my $residueType; my $pairType;
+	my $nbType;
+	my $residueType;
+	my $pairType;
 	my $atomCounter=0;
 	my $chainNumber = 0;
 	my $residueIndex=1;
@@ -391,11 +393,6 @@ sub checkPDB
 				smog_quit("Residue $residue found in PDB, but it does not appear to be defined in the .bif file.  This issue is usually detected when using smog_adjustPDB. Issue found at line:\n$record");
 
 			}
-			if($residues{$residue}->{"atomCount"} == -1){
-				$totalAtoms+=$atomsInRes;
-			}else{
-				$totalAtoms+=$residues{$residue}->{"atomCount"};
-			}
 			## CONCAT RESIDUE ##
 			$residueIndex++;
 				
@@ -549,8 +546,6 @@ sub parsePDBATOMS
 				$newindex++;
 			}
 
-
-
 			# go through fragment, find keys that are in keep (i.e. the atoms in the fragment). Then iterate through each array and convert
 			# bondlistFragment and energygroupsFragment are for storing the bonds and energy groups of bonds associated with the fragment that is being used for the BOND.  
 			my %bondlistFragment;
@@ -678,7 +673,7 @@ sub parsePDBATOMS
 				push(@{$temp[$I]},$I+1+$totalAtoms);
 			}
 			if($residues{$residue}->{"atomCount"} == -1){
-				$totalAtoms+=$atomsInRes;
+				$totalAtoms+=$#temp+1;
 			}else{
 				$totalAtoms+=$residues{$residue}->{"atomCount"};
 			}
@@ -1047,9 +1042,15 @@ sub connCreateInteractionsSingleBOND
 
 
 	}
+
         if(@tempArr)
-        {$DihedralData{$counter} = pdl(@tempArr);
+        {
+		$DihedralData{$counter} = pdl(@tempArr);
+	}else{
+		smog_quit("No dihedral angles were generated about this user-defined BOND. This is unusual. If would be good to check your structure, BOND definitions and templates, to make sure this is what you expect.",0);
         }
+
+
 	if(@tempArr1){
 		addBONDdihToChain($counter,\@tempArr1,$chain1,$index2);
 	}
