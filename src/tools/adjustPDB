@@ -510,7 +510,7 @@ sub adjustInputFile{
 						}
 					}else{
 						# exit
-						smog_quit("Alternate locator found. If you would like to keep the first coordinates given within a set of atoms with alternate locators (typically, location A), then you need to use the -treatAltLoc option. Offending line:\n$pArr[$k]");
+						smog_quit("Alternate locator found. If you would like to keep the first coordinates given within a set of atoms with alternate locators (typically, location A), then you need to use the -AltLocs option. Offending line:\n$pArr[$k]");
 					}
 				}
 					$chainName = substr($pArr[$k],21,1);
