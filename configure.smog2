@@ -33,6 +33,8 @@ then
 		smog_error
 	fi
 	cp -r * $smog_install_path
+	rm -r $smog_install_path/SMOG-CHECK
+	orig_dir=`pwd`
 	smog2dir=$smog_install_path
 fi
 
@@ -208,6 +210,7 @@ then
 	then
 		# make it read-only, to prevent errors later
 		chmod a-w $smog_install_path
+		cd $orig_dir
 	fi
 	echo "
 Configuration successful!!
@@ -216,7 +219,7 @@ For the current session, will pre-pend $smog2dir/bin to your PATH.  If you plan 
 	
 PATH=$smog2dir/bin:\$PATH
 
-It is also highly recommended that you download and run smog-check, to confirm everything is working well"
+It is also highly recommended that you run smog-check (in the directory SMOG-CHECK), to confirm everything is working well"
 
 else
 	echo SMOG 2 configuration did not complete successfully. See messages above. 
