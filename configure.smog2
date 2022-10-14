@@ -5,7 +5,36 @@
 #perl4smog=""
 #smog2dir=""
 
+smog_error () {
+	echo !!!!!!!!!!Installation incomplete!!!!!!!!!!
+	kill -INT $$
+}
+
 echo "Starting to configure SMOG 2"
+if [ ! -z ${smog_install_path+x} ]
+then
+	echo Install directory set. Will try to install in $smog_install_path
+	if [[ ! "$smog_install_path" =~ ^\/ ]]
+	then
+		echo Must provide absolute path for install directory.
+		smog_error
+	fi
+
+	if [ -e $smog_install_path ]
+	then
+		echo $smog_install_path  already exists
+		smog_error
+	fi
+	mkdir -p $smog_install_path
+	if [ $? != 0 ]
+	then
+		echo Could not create directory $smog_install_path
+		echo Check that you have proper permissions to save here
+		smog_error
+	fi
+	cp -r * $smog_install_path
+	smog2dir=$smog_install_path
+fi
 
 ## don't change anything below this line
 if [ -z ${smog2dir+x} ]
@@ -29,35 +58,35 @@ fi
 if [ ! -z "$1" ]  
 then
 	echo Args not allowed with configure script. Will not try to configure smog2
-	return 1
+	smog_error
 fi
 
 if [ ! -d $smog2dir ]
 then
 	echo  "Can't find the directory "$smog2dir" (smog2dir)."
 	echo $ERROR
-	return 1
+	smog_error
 fi
 
 if [ ! -e $smog2dir/src/smogv2 ]
 then
 	echo  "Can't find smog2 source code in "$smog2dir" (smog2dir)."
 	echo $ERROR
-	return 1
+	smog_error
 fi
 
 echo Will configure the version of SMOG 2 found in $smog2dir
 
-if [[ "$perl4smog" == "" ]]  
+if [ -z ${perl4smog+x} ]
 then
-	echo Since perl4smog was not given, the script is going to search for it.
+	echo Since perl4smog was not defined, the script is going to search for a version of perl that is in the PATH.
 	perlf=`which perl`
 	N=`echo $perlf | wc -l`
 	if (( $N == 0 ))
 	then
 		echo "perl not found in your path, and perl4smog was not set in config script."
 		echo $ERROR
-		return 1
+		smog_error
 	else
 		perl4smog=$perlf
 	fi
@@ -70,7 +99,7 @@ then
 ERROR: The defined version of Perl (perl4smog=$perl4smog) does not appear to be functional.
 There may be a typo, or Perl may be broken. 
 "
-	return 1
+	smog_error
 
 fi
 
@@ -175,6 +204,11 @@ export PATH=$smog2dir/bin:$PATH
 if (( $? == 0 ))
 then
 
+	if [ ! -z ${smog_install_path+x} ]
+	then
+		# make it read-only, to prevent errors later
+		chmod a-w $smog_install_path
+	fi
 	echo "
 Configuration successful!!
 
@@ -187,4 +221,9 @@ It is also highly recommended that you download and run smog-check, to confirm e
 else
 	echo SMOG 2 configuration did not complete successfully. See messages above. 
 fi
-
+# clean up variables that are no longer needed.
+unset perl4smog
+unset PERLLIB
+unset PERL5LIB
+unset SMOG_PATH
+unset SMOG_COMMIT
