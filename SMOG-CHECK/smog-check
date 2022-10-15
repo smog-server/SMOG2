@@ -32,6 +32,7 @@ export BIFSIF_STATIC_TESTING=`pwd`/share/templates/SBM_AA_STATIC
 export BIFSIF_AA_MATCH=`pwd`/share/templates/SBM_match
 export BIFSIF_AA_2CG=`pwd`/share/templates/SBM_2cg
 export BIFSIF_AA_CR2=`pwd`/share/templates/SBM_cr2
+export BIFSIF_AA_BOND=`pwd`/share/templates/SBM_AA_BOND
 export TOLERANCE=0.001
 export PRECISION=10000
 

@@ -137,3 +137,6 @@ DNA.terminal.BMG openSMOG AA default ; 95
 
 ; check BOND with CA model
 1AKEapo_v3.BOND CA default ;103
+
+; check complicated AA model with BONDs
+glycans.BOND AA-BOND default; 104
