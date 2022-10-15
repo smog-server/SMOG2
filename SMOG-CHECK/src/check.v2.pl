@@ -1048,6 +1048,45 @@ sub setmodelflags{
  return ($default,$gaussian,$usermap,$free);
 }
 
+sub getBONDs
+{
+ my ($PDB)=@_;
+ open(FILE,"share/PDB.files/$PDB.pdb") or smog_quit("Can not open $PDB");
+ my @bonds;
+ my %atoms;
+ my $chainnum=1;
+ my $atomindex=0;
+ my $nbonds=0;
+ while(<FILE>){
+  my $LINE=$_;
+  if($LINE =~ m/^ATOM|^HETATM/){
+   $atomindex++;
+   my $ai=substr($LINE,6,5);  
+   $ai=trim($ai);
+   $atoms{"$chainnum $ai"}=$atomindex; 
+  }
+
+  if ($LINE =~ m/^TER/){
+   $chainnum++;
+  }
+
+  if($LINE =~ m/^BOND/){
+   chomp($LINE);
+   my @A=split(/\s+/,$LINE);
+   my $chain1=$A[1];
+   my $at1=$A[2];
+   my $chain2=$A[3];
+   my $at2=$A[4];
+   $at1=$atoms{"$chain1 $at1"};
+   $at2=$atoms{"$chain2 $at2"};
+   $bonds[$nbonds][0]=$at1;
+   $bonds[$nbonds][1]=$at2;
+   $nbonds++;
+  }
+ }
+ return \@bonds;
+}
+
 sub checkSCM
 {
  my ($freecoor)=@_;
@@ -1507,6 +1546,8 @@ EOT
   $chargeNB{$defname}=0.0;
   $sigmaCA=$sigmaCA*10.0;
  }elsif($model eq "AA" || $model eq "AA-2cg" || $model eq "AA-nb-cr2" || $model eq "AA-BOND"){
+  my $bonds=getBONDs($PDB);
+  NEED TO CONVERT TO ARRAY AND THEN COMPARE
   $sigma=$sigma/10;
   $rep_s12=$sigma**12*$epsilon;
   $defname="NB_1";
