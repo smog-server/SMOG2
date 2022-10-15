@@ -39,7 +39,7 @@ https://mailman.rice.edu/mailman/listinfo/smog-users
 
 ########################################################
 
-              CONFIGURING/INSTALLING SMOG 2
+              CONFIGURE/INSTALL SMOG 2
 
 There are several ways to install/configure SMOG 2 on
 your machine. Depending on your needs and accessible
@@ -125,7 +125,15 @@ run the configure script.
 
 >source configure.smog2
 
-When this is run, it will try to determine which version of Perl to use.  Specifically, it will use "which perl" to find the version, and  smog2 will be configured with this version. However, it is not uncommon that users have multiple  version of Perl available, where the version found is smog-incompatible. If you know which version of Perl you want to run, you can export an environment variable, or set a variable  when sourcing. For example, if the version of Perl you want to use is /opt/local/bin/perl, then you could do:
+When this is run, it will try to determine which version of
+Perl to use.  Specifically, it will use "which perl" to find
+the version, and  smog2 will be configured with this version.
+However, it is not uncommon that users have multiple  version
+of Perl available, where the version found is smog-incompatible.
+If you know which version of Perl you want to run, you can
+export an environment variable, or set a variable  when sourcing.
+For example, if the version of Perl you want to use is 
+/opt/local/bin/perl, then you could do
 
 >export perl4smog="/opt/local/bin/perl"
 >source configure.smog2
@@ -134,9 +142,12 @@ or
 
 >perl4smog="/opt/local/bin/perl" source configure.smog2
 
-If you want to install smog2 (i.e. configure in a specific directory and make it read-only), then use the smog_install_path variable.  For example, if we wanted to install it in /usr/bin/smog2, one could do
+If you want to install smog2 (i.e. configure in a specific
+directory and write-protect), then use the smog_install_dir
+variable. For example, if one wanted to install it in
+/usr/bin/smog2, one could do
 
->smog_install_path="/usr/bin/smog2" perl4smog="/opt/local/bin/perl" source configure.smog2
+>smog_install_dir="/usr/bin/smog2" perl4smog="/opt/local/bin/perl" source configure.smog2
 
 If configuration is complete, you will have a directory
 $smog2dir/bin, which will contain wrappers for SMOG 2,
@@ -161,10 +172,11 @@ see README file in the SMOG-CHECK directory.
 
 			USAGE
 
-If your configuration step completes successfully, 
-running SMOG 2 can be quite simple.  
+If your configuration/installation step completes
+successfully, running SMOG 2 can be quite simple.  
 
-Note: It is assumed that $SMOG_PATH is properly defined.
+Note: It is assumed that $SMOG_PATH is the main
+SMOG 2 directory.
 
 To use the default C-alpha model (proteins only) 
 

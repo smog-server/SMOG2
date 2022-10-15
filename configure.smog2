@@ -11,31 +11,31 @@ smog_error () {
 }
 
 echo "Starting to configure SMOG 2"
-if [ ! -z ${smog_install_path+x} ]
+if [ ! -z ${smog_install_dir+x} ]
 then
-	echo Install directory set. Will try to install in $smog_install_path
-	if [[ ! "$smog_install_path" =~ ^\/ ]]
+	echo Install directory set. Will try to install in $smog_install_dir
+	if [[ ! "$smog_install_dir" =~ ^\/ ]]
 	then
 		echo Must provide absolute path for install directory.
 		smog_error
 	fi
 
-	if [ -e $smog_install_path ]
+	if [ -e $smog_install_dir ]
 	then
-		echo $smog_install_path  already exists
+		echo $smog_install_dir  already exists
 		smog_error
 	fi
-	mkdir -p $smog_install_path
+	mkdir -p $smog_install_dir
 	if [ $? != 0 ]
 	then
-		echo Could not create directory $smog_install_path
+		echo Could not create directory $smog_install_dir
 		echo Check that you have proper permissions to save here
 		smog_error
 	fi
-	cp -r * $smog_install_path
-	rm -r $smog_install_path/SMOG-CHECK
+	cp -r * $smog_install_dir
+	rm -r $smog_install_dir/SMOG-CHECK
 	orig_dir=`pwd`
-	smog2dir=$smog_install_path
+	smog2dir=$smog_install_dir
 fi
 
 ## don't change anything below this line
@@ -206,10 +206,10 @@ export PATH=$smog2dir/bin:$PATH
 if (( $? == 0 ))
 then
 
-	if [ ! -z ${smog_install_path+x} ]
+	if [ ! -z ${smog_install_dir+x} ]
 	then
-		# make it read-only, to prevent errors later
-		chmod a-w $smog_install_path
+		# write-protect, to prevent errors later
+		chmod a-w $smog_install_dir
 		cd $orig_dir
 	fi
 	echo "
