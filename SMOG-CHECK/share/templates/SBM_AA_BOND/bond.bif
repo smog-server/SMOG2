@@ -44,23 +44,23 @@
           <atom>O5</atom>
           <atom>C1</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C2</atom>
           <atom>O2</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C3</atom>
           <atom>O3</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C4</atom>
           <atom>O4</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C5</atom>
           <atom>C6</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C6</atom>
           <atom>O6</atom>
         </bond>
@@ -107,19 +107,19 @@
           <atom>O5</atom>
           <atom>C1</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C2</atom>
           <atom>O2</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C3</atom>
           <atom>O3</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C4</atom>
           <atom>O4</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C5</atom>
           <atom>C6</atom>
         </bond>
@@ -152,15 +152,15 @@
       </atoms>
       <bonds>
         <!--BACKBONE-->
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C1</atom>
           <atom>C2</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C1</atom>
           <atom>O11</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C1</atom>
           <atom>O12</atom>
         </bond>
@@ -188,47 +188,47 @@
           <atom>O6</atom>
           <atom>C2</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C4</atom>
           <atom>O4</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C5</atom>
           <atom>N</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>N</atom>
           <atom>C</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C</atom>
           <atom>O</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C</atom>
           <atom>CT</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C6</atom>
           <atom>C7</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C7</atom>
           <atom>C8</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C7</atom>
           <atom>O7</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C8</atom>
           <atom>C9</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C8</atom>
           <atom>O8</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C9</atom>
           <atom>O9</atom>
         </bond>
@@ -279,35 +279,35 @@
           <atom>O5</atom>
           <atom>C1</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C2</atom>
           <atom>N</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>N</atom>
           <atom>C</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C</atom>
           <atom>O</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C</atom>
           <atom>CT</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C3</atom>
           <atom>O3</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C4</atom>
           <atom>O4</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C5</atom>
           <atom>C6</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C6</atom>
           <atom>O6</atom>
         </bond>
@@ -355,23 +355,23 @@
           <atom>O5</atom>
           <atom>C1</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C2</atom>
           <atom>O2</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C3</atom>
           <atom>O3</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C4</atom>
           <atom>O4</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C5</atom>
           <atom>C6</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C6</atom>
           <atom>O6</atom>
         </bond>
@@ -419,23 +419,23 @@
           <atom>O5</atom>
           <atom>C1</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C2</atom>
           <atom>O2</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C3</atom>
           <atom>O3</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C4</atom>
           <atom>O4</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C5</atom>
           <atom>C6</atom>
         </bond>
-        <bond energyGroup="free_g">
+        <bond energyGroup="bb_g">
           <atom>C6</atom>
           <atom>O6</atom>
         </bond>

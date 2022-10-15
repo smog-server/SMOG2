@@ -87,14 +87,6 @@
       <bType>*</bType>
       <bType>*</bType>
     </dihedral>
-    <!-- GLYCAN DIHEDRALS -->
-    <dihedral func="dihedral_free()" energyGroup="free_g">
-      <bType>*</bType>
-      <bType>*</bType>
-      <bType>*</bType>
-      <bType>*</bType>
-    </dihedral>
-
   </dihedrals>
   <!-- IMPROPERS -->
   <impropers>

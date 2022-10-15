@@ -2742,6 +2742,7 @@ sub checkbonds
    }else{
    ## bond has already been assigned.
     $doublebond++;
+    $fail_log .= failed_message("Duplicate bond: $A[0] and $A[1]");
    }
   }elsif($A[2] == 6){
    $RECOGNIZEDBTYPES++;

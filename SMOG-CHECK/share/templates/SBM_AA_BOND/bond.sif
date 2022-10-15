@@ -8,7 +8,6 @@
     <function name="bond_harmonic" directive="bonds"/>
     <function name="bond_type6" directive="bonds"/>
     <function name="angle_harmonic" directive="angles"/>
-    <function name="dihedral_free" directive="dihedrals"/>
     <function name="dihedral_cosine" directive="dihedrals"/>
     <function name="dihedral_harmonic" directive="dihedrals"/>
     <function name="contact_1" directive="pairs" exclusions="1"/>
@@ -37,7 +36,6 @@
 
       <!-- GLYCAN ENERGY GROUP -->
       <energyGroup name="bb_g" residueType="glycan" normalize="0"/>
-      <energyGroup name="free_g" residueType="glycan" normalize="0"/>
       <!-- Global Contacts Settings -->
       <contactGroup name="c" intraRelativeStrength="1" normalize="1"/>
       <!-- Contact/Dihedral Group ratio: These are only used when normalization is turned on for energy groups-->
