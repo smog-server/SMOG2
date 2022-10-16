@@ -165,6 +165,7 @@ sub checkPDB
 
 	$endfound=0;
 	my $lastresindex="null";
+        my %BONDlist;
 	 ## LOOP THROUGH EACH LINE ##
 	for (my $K=0;$K<=$#PDBDATA;$K++){
 		my $record=$PDBDATA[$K];
@@ -201,10 +202,15 @@ sub checkPDB
 					$resat="atom";
 				} 
 				my @TMP = split(/\s+/,$record);
-				if(@TMP <= 5){
+				if(@TMP != 6){
 					smog_quit("Tag BOND must have 5 arguments (chain A, $resat number A, chain B, $resat number B, energy group). Offending line:\n$record");
 				}
 				my($trig,$chaina,$atoma,$chainb,$atomb,$eG) = split(/\s+/,$record);
+				if(exists $BONDlist{"$chaina $atoma $chainb $atomb"}){
+					smog_quit("The following BOND is defined more than once in the PDB file (chainA, atomnumA, chainB, atomnumB): $chaina, $atoma, $chainb, $atomb\nIf you suppress this error, the bond (and associated angles) will appear multiple times in the force field (.top file).")
+				}
+				$BONDlist{"$chaina $atoma $chainb $atomb"}=1;
+				$BONDlist{"$chainb $atomb $chaina $atoma"}=1;
 				
 				#internally, chains are indexed 0,1...
 				$chaina--;

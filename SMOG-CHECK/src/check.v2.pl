@@ -1547,7 +1547,6 @@ EOT
   $sigmaCA=$sigmaCA*10.0;
  }elsif($model eq "AA" || $model eq "AA-2cg" || $model eq "AA-nb-cr2" || $model eq "AA-BOND"){
   my $bonds=getBONDs($PDB);
-  NEED TO CONVERT TO ARRAY AND THEN COMPARE
   $sigma=$sigma/10;
   $rep_s12=$sigma**12*$epsilon;
   $defname="NB_1";
