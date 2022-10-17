@@ -58,7 +58,7 @@ quit_init();
 
 # FAILLIST is a list of all the tests.
 # If you are developing and testing your own forcefield, which may not need to conform to certain checks, then you may want to disable some tests by  removing the test name from this list. However, do so at your own risk.
-our @FAILLIST = ('NAME','DEFAULTS, num entries','DEFAULTS, nbfunc','DEFAULTS, comb-rule','DEFAULTS, gen-pairs','DEFAULTS, fudgeLJ','DEFAULTS, fudgeQQ','1 MOLECULE','ATOMTYPES UNIQUE','ALPHANUMERIC ATOMTYPES','TOP FIELDS FOUND','TOP FIELDS RECOGNIZED','MASS', 'CHARGE','moleculetype=Macromolecule','nrexcl=3', 'PARTICLE', 'C6 VALUES', 'C12 VALUES','ATOMTYPES, SIGMA','ATOMTYPES, EPSILON', 'SUPPORTED BOND TYPES', 'OPEN GRO','GRO-TOP CONSISTENCY', 'BOND STRENGTHS', 'BOND LENGTHS','ANGLE TYPES', 'ANGLE WEIGHTS', 'ANGLE VALUES','DUPLICATE BONDS', 'DUPLICATE ANGLES', 'GENERATED ANGLE COUNT','GENERATED ANGLE IN TOP','ANGLES IN TOP GENERATED', 'IMPROPER WEIGHTS', 'CA IMPROPERS EXIST','OMEGA IMPROPERS EXIST','SIDECHAIN IMPROPERS EXIST','MATCH DIH WEIGHTS','DIHEDRAL ANGLES','ALL POSSIBLE MATCHED DIHEDRALS PRESENT','CA DIHEDRAL WEIGHTS', 'DUPLICATE TYPE 1 DIHEDRALS','DUPLICATE TYPE 2 DIHEDRALS','DUPLICATE TYPE 3 DIHEDRALS','1-3 DIHEDRAL PAIRS','3-1 DIHEDRAL PAIRS','1-3 ORDERING OF DIHEDRALS','1-3 DIHEDRAL RELATIVE WEIGHTS','STRENGTHS OF RIGID DIHEDRALS','STRENGTHS OF OMEGA DIHEDRALS','STRENGTHS OF PROTEIN BB DIHEDRALS','STRENGTHS OF PROTEIN SC DIHEDRALS','STRENGTHS OF NUCLEIC BB DIHEDRALS','STRENGTHS OF NUCLEIC SC DIHEDRALS','STRENGTHS OF LIGAND DIHEDRALS','STACK-NONSTACK RATIO','PROTEIN BB/SC RATIO','NUCLEIC SC/BB RATIO','AMINO/NUCLEIC DIHEDRAL RATIO','AMINO/LIGAND DIHEDRAL RATIO','NUCLEIC/LIGAND DIHEDRAL RATIO','NONZERO DIHEDRAL ENERGY','CONTACT/DIHEDRAL RATIO','1-3 DIHEDRAL ANGLE VALUES','DIHEDRAL IN TOP GENERATED','GENERATED DIHEDRAL IN TOP','STACKING CONTACT WEIGHTS','NON-STACKING CONTACT WEIGHTS','NON-STACKING 2CG CONTACT WEIGHTS','NON-STACKING CG RATIO','LONG CONTACTS', 'CA CONTACT WEIGHTS', 'CONTACT DISTANCES','GAUSSIAN CONTACT WIDTHS','GAUSSIAN CONTACT EXCLUDED VOLUME','CONTACTS NUCLEIC i-j=1','CONTACTS PROTEIN i-j=4','CONTACTS PROTEIN i-j!>4','SCM CONTACT COMPARISON','STATIC CONTACT COMPARISON','NUMBER OF EXCLUSIONS', 'BOX DIMENSIONS','GENERATION OF ANGLES/DIHEDRALS','OPEN CONTACT FILE','NCONTACTS','TOTAL ENERGY','TYPE6 ATOMS','CLASSIFYING DIHEDRALS','NON-ZERO EXIT','ATOM FIELDS','ATOM CHARGES','FREE PAIRS APPEAR IN CONTACTS','EXTRAS: ATOMTYPES','EXTRAS: BONDTYPES','EXTRAS: ANGLETYPES','EXTRAS: DIHEDRALTYPES','EXTRAS: NB_PARAMS','NONZERO LIGAND DIHEDRAL VALUE','BONDS: EXPECTED FOUND','BONDS: FOUND EXPECTED','GMX COMPATIBLE','DIHEDRAL COUNTING: OFF','DIHEDRAL COUNTING: ON','OPENSMOG CONTACTS: EXPRESSION','OPENSMOG CONTACTS: PARAMETERS','OPENSMOG CONTACTS: INTERACTIONS','OPENSMOG: XML EXISTS');
+our @FAILLIST = ('NAME','DEFAULTS, num entries','DEFAULTS, nbfunc','DEFAULTS, comb-rule','DEFAULTS, gen-pairs','DEFAULTS, fudgeLJ','DEFAULTS, fudgeQQ','1 MOLECULE','ATOMTYPES UNIQUE','ALPHANUMERIC ATOMTYPES','TOP FIELDS FOUND','TOP FIELDS RECOGNIZED','MASS', 'CHARGE','moleculetype=Macromolecule','nrexcl=3', 'PARTICLE', 'C6 VALUES', 'C12 VALUES','ATOMTYPES, SIGMA','ATOMTYPES, EPSILON', 'SUPPORTED BOND TYPES', 'OPEN GRO','GRO-TOP CONSISTENCY', 'BOND STRENGTHS', 'BOND LENGTHS','ANGLE TYPES', 'ANGLE WEIGHTS', 'ANGLE VALUES','DUPLICATE BONDS', 'DUPLICATE ANGLES', 'GENERATED ANGLE COUNT','GENERATED ANGLE IN TOP','ANGLES IN TOP GENERATED', 'IMPROPER WEIGHTS', 'CA IMPROPERS EXIST','OMEGA IMPROPERS EXIST','SIDECHAIN IMPROPERS EXIST','MATCH DIH WEIGHTS','DIHEDRAL ANGLES','ALL POSSIBLE MATCHED DIHEDRALS PRESENT','CA DIHEDRAL WEIGHTS', 'DUPLICATE TYPE 1 DIHEDRALS','DUPLICATE TYPE 2 DIHEDRALS','DUPLICATE TYPE 3 DIHEDRALS','1-3 DIHEDRAL PAIRS','3-1 DIHEDRAL PAIRS','1-3 ORDERING OF DIHEDRALS','1-3 DIHEDRAL RELATIVE WEIGHTS','STRENGTHS OF RIGID DIHEDRALS','STRENGTHS OF OMEGA DIHEDRALS','STRENGTHS OF PROTEIN BB DIHEDRALS','STRENGTHS OF PROTEIN SC DIHEDRALS','STRENGTHS OF NUCLEIC BB DIHEDRALS','STRENGTHS OF NUCLEIC SC DIHEDRALS','STRENGTHS OF LIGAND DIHEDRALS','STACK-NONSTACK RATIO','PROTEIN BB/SC RATIO','NUCLEIC SC/BB RATIO','AMINO/NUCLEIC DIHEDRAL RATIO','AMINO/LIGAND DIHEDRAL RATIO','NUCLEIC/LIGAND DIHEDRAL RATIO','NONZERO DIHEDRAL ENERGY','CONTACT/DIHEDRAL RATIO','1-3 DIHEDRAL ANGLE VALUES','DIHEDRAL IN TOP GENERATED','GENERATED DIHEDRAL IN TOP','STACKING CONTACT WEIGHTS','NON-STACKING CONTACT WEIGHTS','NON-STACKING 2CG CONTACT WEIGHTS','NON-STACKING CG RATIO','LONG CONTACTS', 'CA CONTACT WEIGHTS', 'CONTACT DISTANCES','GAUSSIAN CONTACT WIDTHS','GAUSSIAN CONTACT EXCLUDED VOLUME','CONTACTS NUCLEIC i-j=1','CONTACTS PROTEIN i-j=4','CONTACTS PROTEIN i-j!>4','SCM CONTACT COMPARISON','STATIC CONTACT COMPARISON','NUMBER OF EXCLUSIONS', 'BOX DIMENSIONS','GENERATION OF ANGLES/DIHEDRALS','OPEN CONTACT FILE','NCONTACTS','TOTAL ENERGY','TYPE6 ATOMS','CLASSIFYING DIHEDRALS','NON-ZERO EXIT','ATOM FIELDS','ATOM CHARGES','FREE PAIRS APPEAR IN CONTACTS','EXTRAS: ATOMTYPES','EXTRAS: BONDTYPES','EXTRAS: ANGLETYPES','EXTRAS: DIHEDRALTYPES','EXTRAS: NB_PARAMS','NONZERO LIGAND DIHEDRAL VALUE','BONDS: EXPECTED FOUND','BONDS: FOUND EXPECTED','GMX COMPATIBLE','DIHEDRAL COUNTING: OFF','DIHEDRAL COUNTING: ON','OPENSMOG CONTACTS: EXPRESSION','OPENSMOG CONTACTS: PARAMETERS','OPENSMOG CONTACTS: INTERACTIONS','OPENSMOG: XML EXISTS','USER-DEFINED BONDS PRESENT');
 #removed tests: 'OPEN G96','G96 FIELDS',
 # default location of test PDBs
 our $PDB_DIR="share/PDB.files";
@@ -73,8 +73,7 @@ our $free;
 our @FILETYPES=("top","gro","ndx","settings","contacts","output","contacts.SCM", "contacts.CG","grompp","editconf","out.mdp","contacts.ShadowOutput","box.gro","gro4SCM.gro","top4SCM.top","xml");
 
 # bunch of global vars.  A bit sloppy.  Many could be local.
-our ($AMINO_PRESENT,$angleEps,@atombondedtype,%atombondedtypes,%atombondedtypes2,@ATOMNAME,@ATOMTYPE,$BBRAD,%BBTYPE,$bondEps,$bondMG,$bondtype6,%C12NB,%C6NB,$chargeAT,%chargeNB,%CHECKED,@CID,$CONTD,$STACKSCALE,$dihedralcounting,$CONTENERGY,$CONTR,$CONTTYPE,$default,%defcharge,$defname,$DENERGY,$dihmatch,$DIH_MAX,$DIH_MIN,$DISP_MAX,@EDrig_T,@EDrig_Tc,@ED_T,@ED_Tc,$epsilon,$epsilonCAC,$epsilonCAD,%FAIL,$FAILED,$fail_log,@FIELDS,$gaussian,@GRODATA,$impEps,$improper_gen_N,$ION_PRESENT,$LIGAND_DIH,$LIGAND_PRESENT,%massNB,%matchangle_val,%matchangle_weight,%matchbond_val,%matchbond_weight,%matchdihedral_val,%matchdihedral_weight,$model,@MOLTYPE,%MOLTYPEBYRES,$NA_DIH,$NCONTACTS,$NUCLEIC_PRESENT,$NUMATOMS,$NUMATOMS_LIGAND,$omegaEps,$PDB,$phi_gen_N,$PRO_DIH,$R_CD,$rep_s12,@RESNUM,%restypecount,$ringEps,$R_N_SC_BB,$R_P_BB_SC,$sigma,$sigmaCA,$theta_gen_N,%TYPE,$type6count,$usermap,@XT,@YT,@ZT);
-
+our ($AMINO_PRESENT,$angleEps,@atombondedtype,%atombondedtypes,%atombondedtypes2,@ATOMNAME,@ATOMTYPE,$BBRAD,%BBTYPE,$bondEps,$bondMG,$bondtype6,%C12NB,%C6NB,$chargeAT,%chargeNB,%CHECKED,@CID,$CONTD,$STACKSCALE,$dihedralcounting,$CONTENERGY,$CONTR,$CONTTYPE,$default,%defcharge,$defname,$DENERGY,$dihmatch,$DIH_MAX,$DIH_MIN,$DISP_MAX,@EDrig_T,@EDrig_Tc,@ED_T,@ED_Tc,$epsilon,$epsilonCAC,$epsilonCAD,%FAIL,$FAILED,$fail_log,@FIELDS,$gaussian,@GRODATA,$impEps,$improper_gen_N,$ION_PRESENT,$LIGAND_DIH,$LIGAND_PRESENT,%massNB,%matchangle_val,%matchangle_weight,%matchbond_val,%matchbond_weight,%matchdihedral_val,%matchdihedral_weight,$model,@MOLTYPE,%MOLTYPEBYRES,$NA_DIH,$NCONTACTS,$NUCLEIC_PRESENT,$NUMATOMS,$NUMATOMS_LIGAND,$omegaEps,$PDB,$phi_gen_N,$PRO_DIH,$R_CD,$rep_s12,@RESNUM,%restypecount,$ringEps,$R_N_SC_BB,$R_P_BB_SC,$sigma,$sigmaCA,$theta_gen_N,%TYPE,$type6count,$usermap,@XT,@YT,@ZT,%bond_array);
 my %supported_directives = ( 'defaults' => '1','atomtypes' => '1','moleculetype' => '1','nonbond_params' => '0','bondtypes' => '0','angletypes' => '0','dihedraltypes' => '0','atoms' => '1','bonds' => '1','angles' => '1','dihedrals' => '1','pairs' => '1','exclusions' => '1','system' => '1','molecules' => '1');
 
 # list the bonds that are free in the free-templates
@@ -100,6 +99,7 @@ my %bonds_by_residue_hash;
 my %bonds_by_residue_array;
 my %expectedbonds;
 my %foundbonds;
+my %BONDS;
 my $NUMOFATOMS;
 # $NUMOFATOMS was made global for top-gro comparisons
 
@@ -1052,7 +1052,7 @@ sub getBONDs
 {
  my ($PDB)=@_;
  open(FILE,"share/PDB.files/$PDB.pdb") or smog_quit("Can not open $PDB");
- my @bonds;
+ my %bonds;
  my %atoms;
  my $chainnum=1;
  my $atomindex=0;
@@ -1079,12 +1079,14 @@ sub getBONDs
    my $at2=$A[4];
    $at1=$atoms{"$chain1 $at1"};
    $at2=$atoms{"$chain2 $at2"};
-   $bonds[$nbonds][0]=$at1;
-   $bonds[$nbonds][1]=$at2;
-   $nbonds++;
+   if($at1<$at2){
+    $bonds{"$at1-$at2"}=0;
+   }else{
+    $bonds{"$at2-$at1"}=0;
+   }
   }
  }
- return \@bonds;
+ return \%bonds;
 }
 
 sub checkSCM
@@ -1547,6 +1549,7 @@ EOT
   $sigmaCA=$sigmaCA*10.0;
  }elsif($model eq "AA" || $model eq "AA-2cg" || $model eq "AA-nb-cr2" || $model eq "AA-BOND"){
   my $bonds=getBONDs($PDB);
+  %BONDS=%{$bonds};
   $sigma=$sigma/10;
   $rep_s12=$sigma**12*$epsilon;
   $defname="NB_1";
@@ -2698,7 +2701,6 @@ sub checkbonds
  $bondtype6=0;
  $type6count=0;
  my $Nbonds=0;
- my %bond_array;
  undef %bond_array;
  my $string;
  my $NBONDS=0;
@@ -2889,8 +2891,32 @@ sub checkbonds
  if($model =~ m/^AA$/ && $default eq "yes"){
   &checkbondgen;
  }
+ if($model =~ m/^AA-BOND$/){
+  &checkBONDs;
+  undef %BONDS;
+ }else{
+  $FAIL{'USER-DEFINED BONDS PRESENT'}=-1;
+ }
 
  return (\@theta_gen,\%theta_gen_as);
+}
+
+sub checkBONDs
+{
+ my $NFOUNDBONDS=0;
+ my $NBONDS=0;
+ foreach my $key(sort keys %BONDS){
+  $NBONDS++;
+  if(defined $bond_array{$key}){
+   $BONDS{$key}=1;
+   $NFOUNDBONDS++;
+  }else{
+   $fail_log .= failed_message("User-defined BOND not found in the top file: BOND missing between atoms Expected $key.");
+  }
+ }
+ if($NBONDS == $NFOUNDBONDS  && $NBONDS != 0){
+  $FAIL{'USER-DEFINED BONDS PRESENT'}=0;
+ } 
 }
 
 sub checkbondgen
