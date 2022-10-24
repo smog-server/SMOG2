@@ -11,7 +11,7 @@ then
 	echo Will attempt to build and push a cross-platform version of the SMOG 2 container for DockerHub account $docker_username and SMOG version $tag
 	docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 --no-cache -t $containername -f Dockerfile.SMOG-OpenSMOG.$tag .
 	# optionally add more tags
-	# docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 --no-cache -t $containername -t smogserver/smog2:latest -t smogserver/smog2:stable -f Dockerfile.$tag .
+	#docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 --no-cache -t $containername -t smogserver/smog2:latest -t smogserver/smog2:stable -f Dockerfile.SMOG-OpenSMOG.$tag .
 elif [ "$option" == "" ]
 then
 	echo Will attempt to build a local native-platform version of the SMOG 2 container: container called $containername
