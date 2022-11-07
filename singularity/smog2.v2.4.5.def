@@ -2,7 +2,7 @@ Bootstrap: library
 From: smog-server/library/osperl
 
 %labels
-    SMOG v2.4.5-pre1
+    SMOG v2.4.5
 
 %environment
     PATH=/opt/smog2/bin:$PATH
@@ -13,7 +13,7 @@ From: smog-server/library/osperl
 %post
     git clone -n https://github.com/smog-server/SMOG2.git /opt/smog2
     cd /opt/smog2
-    git checkout tags/v2.4.5-pre1
+    git checkout tags/v2.4.5
     rm -rf .git
     cd /opt/smog2
     sed -i '5,6d' configure.smog2
