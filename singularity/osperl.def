@@ -10,7 +10,7 @@ From: ubuntu:22.04
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
     apt-get update
     apt-get upgrade -y
-    apt-get install -y --no-install-recommends cpanminus vim  git-all   patch make cmake pdl default-jre libxml-simple-perl nano emacs
+    apt-get install -y --no-install-recommends cpanminus vim  git-all   patch make cmake pdl default-jre libxml-simple-perl nano emacs 
     cpanm String::Util Exporter XML::Validator::Schema
     rm -rf /root/.cpanm
     rm -rf /var/lib/apt/lists/*

@@ -1,0 +1,34 @@
+FROM --platform=$BUILDPLATFORM ubuntu:22.04
+CMD ["bash"]
+ENV PATH=/opt/smog2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV TZ=Europe/Kiev
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone # buildkit
+RUN apt-get update && \
+	apt-get upgrade -y && \
+	apt-get install -y --no-install-recommends cpanminus vim git-all patch make cmake pdl default-jre libxml-simple-perl nano emacs wget && \
+	cpanm String::Util Exporter XML::Validator::Schema && \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/* && \
+	rm -rf /root/.cpanm && \
+	rm -rf /var/lib/apt/lists/* 
+# Install miniconda
+ENV CONDA_DIR /opt/conda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
+     /bin/bash ~/miniconda.sh -b -p /opt/conda
+
+# Put conda in path so we can use conda activate
+ENV PATH=$CONDA_DIR/bin:$PATH
+RUN conda install -c conda-forge -y OpenSMOG=1.1.1 && \
+	conda remove --force cudatoolkit  && \
+	conda clean --all 
+RUN mkdir /opt/smog2 && \
+	git clone -n https://github.com/smog-server/SMOG2.git /opt/smog2 && \
+	cd /opt/smog2 && \
+	git checkout tags/v2.4.5 && \
+	rm -rf /opt/smog2/.git && \
+ 	mkdir /workdir # buildkit
+RUN useradd -rm -d /home/smoguser -s /bin/bash -g root -G sudo -u 1001 smoguser -p "$(openssl passwd -1 smoguser)" # buildkit
+RUN chown -R smoguser /opt/smog2 # buildkit
+USER smoguser
+WORKDIR /home/smoguser
+RUN cd /opt/smog2 && sed -i '5,6d' configure.smog2 && perl4smog=/usr/bin/perl smog2dir=/opt/smog2 bash /opt/smog2/configure.smog2
