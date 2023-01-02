@@ -56,7 +56,8 @@ Docker and Singularity.
 OPTION 2 - Using apt-get (Ubuntu)
 Getting Perl configured for SMOG 2 on Ubuntu can be quite simple. 
 
-You can generally run these two commands with sudo, or as root, and you will be ready to run SMOG 2 (See "FINAL STEPS...." below)
+You can generally run these two commands with sudo, or as root, 
+and you will be ready to run SMOG 2 (See "FINAL STEPS...." below)
  
 >apt-get install -y --no-install-recommends cpanminus pdl default-jre libxml-simple-perl 
 
