@@ -56,7 +56,7 @@
   </xs:simpleType>
   <xs:simpleType name="OpenSMOGType">
     <xs:restriction base="xs:string">
-      <xs:pattern value="^contact$"/>
+      <xs:pattern value="^contact$|^dihedral$"/>
     </xs:restriction>
   </xs:simpleType>
   <!--FUNCTION TYPE -->

@@ -335,7 +335,7 @@ sub checkDihedralFunctionDef
 		if($funcname =~ m/\?\?/){
 			smog_quit("Double question marks not allowed in dihedral definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
 		}
-		if(whatAmI($vars[1]) > 2){
+		if(whatAmI($vars[1]) > 2 and ! exists $functions->{$funcname}->{"IsCustom"} ){
 			smog_quit ("Dihedral weight can only contain numbers: Problematic declaration (in .b file): $funcString");
 		}
 		if($fType == -1 && $normalize == 1){

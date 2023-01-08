@@ -33,7 +33,7 @@ use Exporter;
 use XML::Simple qw(:strict);
 use XML::LibXML;
 our @ISA = 'Exporter';
-our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddBondedOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction OpenSMOGAddNBsettoXML %fTypes %fTypesArgNum %OSrestrict);
+our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddContactOShash AddDihedralOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction OpenSMOGAddNBsettoXML %fTypes %fTypesArgNum %OSrestrict);
 our %fTypes;
 our %fTypesArgNum;
 our $OpenSMOG;
@@ -44,8 +44,8 @@ our %NBtypespresent;
 ########## OpenSMOG routines
 sub OShashAddFunction{
 	my ($OSref,$type,$name,$expr,$params)=@_;
-	if($type ne "contacts"){
-		smog_quit("OpenSMOG currently only supports modified contact potentials through \"functions\" declarations. Nonbonded custom potentials may be defined in the .nb file. Issue processing $name");
+	if($type ne "contacts" and $type ne "dihedrals"){
+		smog_quit("OpenSMOG currently only supports modified contact and dihedral potentials through \"functions\" declarations. Nonbonded custom potentials may be defined in the .nb file. Issue processing $name");
 	}
 	my $ref=\%{$OSref->{$type}->{$type . "_type"}->{$name}};
 	$ref->{expression}->{"expr"}=$expr;
@@ -79,7 +79,7 @@ sub OpenSMOGfunctionExists{
 	}
 }
 
-sub AddBondedOShash{
+sub AddContactOShash{
 	my ($OSref,$stuff)=@_;
 	my @stuff=@{$stuff};
 	my $ref=\%{$OSref->{$stuff[2]}->{$stuff[2] . "_type"}->{$stuff[3]}};
@@ -88,6 +88,24 @@ sub AddBondedOShash{
 	$tmphash{"i"}=$stuff[0];
 	$tmphash{"j"}=$stuff[1];
 	my $parn=4;
+	foreach my $param(@{$ref->{parameter}}){
+		$tmphash{$param}=$stuff[$parn];
+		$parn++;
+	}
+	push(@{$ref->{interaction}},\%tmphash);
+}
+
+sub AddDihedralOShash{
+	my ($OSref,$stuff)=@_;
+	my @stuff=@{$stuff};
+	my $ref=\%{$OSref->{$stuff[4]}->{$stuff[4] . "_type"}->{$stuff[5]}};
+# @stuff is the array that contains the following information: i, j, k, l, interaction type, function name, @parameter (in the order found in $OSref->{$type}->{$name}->{parameters} array)
+	my %tmphash;
+	$tmphash{"i"}=$stuff[0];
+	$tmphash{"j"}=$stuff[1];
+	$tmphash{"k"}=$stuff[2];
+	$tmphash{"l"}=$stuff[3];
+	my $parn=6;
 	foreach my $param(@{$ref->{parameter}}){
 		$tmphash{$param}=$stuff[$parn];
 		$parn++;
@@ -158,6 +176,8 @@ sub OpenSMOGwriteXML{
 		foreach my $type(sort keys %{$handle0}){
 			if($type eq "contacts"){
 				$xmlout .= OpenSMOGwriteXMLcontacts($handle0,$type,$space);
+			}elsif($type eq "dihedrals"){
+				$xmlout .= OpenSMOGwriteXMLdihedrals($handle0,$type,$space);
 			}elsif($type eq "constants"){
 				$xmlout .= OpenSMOGwriteXMLconstants($handle0,$type,$space);
 			}elsif($type eq "nonbond"){
@@ -272,6 +292,77 @@ sub OpenSMOGwriteXMLcontacts{
 		return "";
 	}
 }
+sub OpenSMOGwriteXMLdihedrals{
+	my ($handle0,$type,$space)=@_;
+	my $ones="$space";
+	my $twos="$space$space";
+	my $threes="$space$space$space";
+	
+	my $localxmlout = "$space<$type>\n";
+	my $handle1=$handle0->{$type};
+	foreach my $subtype(sort keys %{$handle1}){
+	   	my $handle2=$handle1->{$subtype};
+	   	foreach my $name(sort keys %{$handle2}){
+	   		my $handle3=$handle2->{"$name"};
+			my $anydefined=0;
+	   	     	foreach my $param(@{$handle3->{interaction}}){
+				if(defined $param){
+					$anydefined=1;
+					last;
+				}
+			}
+			if($anydefined==0){
+				# means none of the interactions exist in the final system.  So, don't write this type
+				next;
+			}
+
+	   	     	$localxmlout .= "$twos<$subtype name=\"$name\">\n";
+			my $expr=$handle3->{expression}->{"expr"};
+	   	     	$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
+			my @paramlist=@{$handle3->{parameter}};
+	   	     	foreach my $param(@paramlist){
+	   	     		$localxmlout .= "$threes<parameter>$param</parameter>\n";
+	   	     	}
+	   	     	foreach my $param(@{$handle3->{interaction}}){
+				if(!defined $param){
+					#must have been deleted
+					next;
+				}
+	   	     		$localxmlout .="$threes<interaction";
+	   	     		my %tmphash=%{$param};
+				foreach my $key("arb"){
+					my $J=$tmphash{$key};
+					print("testing $key $J\n");
+				}
+				foreach my $key("i","j","k","l",@paramlist){
+   	     				my $fmt;
+   	     				# write integers as integers.  Everything else as scientific notation
+   	     				if($tmphash{$key} =~ m/^[0-9]*$/){
+   	     					$fmt="%i";
+   	     				}else{
+   	     					$fmt="%7.5e";
+   	     				}
+   	     				my $val=sprintf("$fmt",$tmphash{$key});
+   	     				$localxmlout .=" $key=\"$val\"";
+				}
+	   	     		$localxmlout .="/>\n";
+	   	     	}
+	   	     	$localxmlout .= "$twos</$subtype>\n";
+           	 }
+	}
+	$localxmlout .= "$ones</$type>\n";
+	my @num=split(/\s+/,$localxmlout);
+	my $num = @num; 
+	if($num > 3){	
+		# there must be some content, so write it.
+		return $localxmlout;
+	}else{
+		return "";
+	}
+}
+
+
+
 
 sub OpenSMOGwriteXMLnonbond{
 	my ($handle0,$type,$space,$ionnm)=@_;
@@ -392,11 +483,6 @@ sub OpenSMOGextractXML{
         if(length($checkPackage) > 0) { smog_quit("Perl module XML::LibXML not installed. Since you are using OpenSMOG, we can not continue...")}
         # this was a workaround to a cryptic shared variable error in perl
 	use if 0==0 , "XML::LibXML";
-	my $space=" ";
-	my $ones="$space";
-	my $twos="$space$space";
-	my $threes="$space$space$space";
-	# this is a very limited XML writer that is made specifically for OpenSMOG-formatted contact hashes
 	OpenSMOGextractContacts($OSref,$keepatoms);
 	OpenSMOGextractNonBonds($OSref,$keepatoms,$typesinsystem);
 	OpenSMOGwriteXML($OSref,$OpenSMOGxml,"This file was generated using smog_extract");
@@ -493,6 +579,15 @@ sub newOpenSMOGfunction{
 	# even though OpenSMOG doesn't use gromacs directives, various checks in the code use the directive name for checking validity of function definitions.
 	if($fh->{$fN}->{"OpenSMOGtype"} eq "contact"){
 		$fh->{$fN}->{"directive"}="pairs";
+		# creating this element to keep track of the fact that it was a custom term.
+		$fh->{$fN}->{"IsCustom"}=1;
+	}elsif($fh->{$fN}->{"OpenSMOGtype"} eq "dihedral"){
+		$fh->{$fN}->{"directive"}="dihedrals";
+		# creating this element to keep track of the fact that it was a custom term.
+		$fh->{$fN}->{"IsCustom"}=1;
+	}else{
+		my $name=$fh->{$fN}->{"OpenSMOGtype"};
+		smog_quit("Function $fN has OpenSMOGtype of $name, which is not supported.");
 	}
 
 	my $pot=$fh->{$fN}->{"OpenSMOGpotential"};

@@ -114,13 +114,6 @@ our %dihParseSeen;
 our %contactParseSeen;
 our $normalizevals;
 
-my @formatvalues;
-   $formatvalues[0]=" %12.9e\n";
-   $formatvalues[1]=" %12.9e %12.9e\n";
-   $formatvalues[2]=" %12.9e %12.9e %12.9e\n";
-   $formatvalues[3]=" %12.9e %12.9e %12.9e %12.9e\n";
-   $formatvalues[4]=" %12.9e %12.9e %12.9e %12.9e %12.9e\n";
-   $formatvalues[5]=" %12.9e %12.9e %12.9e %12.9e %12.9e %12.9e\n";
 #######END GLOBAL DEFS#######
 #######MAIN PROGRAM####### 
 
@@ -278,6 +271,15 @@ sub setglobals {
 	@directivesList=("comments","defaults","atomtypes","bondtypes","angletypes","dihedraltypes","nonbond_params","moleculetype","atoms","bonds","angles","dihedrals","pairs","exclusions","position_restraints","system","molecules");
 }
 
+sub formatvalues {
+	my ($len)=@_;
+	my $string="";
+	for (my $I=0;$I<$len+1;$I++){
+		$string .= " %12.9e";
+	}
+	$string .= "\n";
+	return($string); 
+}
 sub parse_args {
 	## parse command line options ##
 	# -o output top file name, default is smog.top
@@ -613,11 +615,20 @@ sub initializeDirectives {
 
 #adds something to the topfile at the bottom of a directive
 sub addToTop {
-	my($directive,$stuff) = @_;
+	my($directive,$stuff,$OSdir) = @_;
 		
 	if($directive =~ m/^OpenSMOG$/){
 		# if $directive is OpenSMOG, then $stuff is the address of the array that contains the following information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
-		AddBondedOShash($OSref,$stuff);
+		if(! defined $OSdir){
+			smog_quit("internal error: OS 1");
+		}elsif( $OSdir eq "contact"){
+			AddContactOShash($OSref,$stuff);
+		}elsif( $OSdir eq "dihedral"){
+			AddDihedralOShash($OSref,$stuff);
+		}else{
+			smog_quit("internal error: OS 2");
+		}
+
         }else{
 		my $dir=$directives{$directive};
 		$linesInDirectivesWithContent[$dir]+= hascontent($stuff);
@@ -1064,7 +1075,7 @@ sub bondOutput
 				}
         		}	
 ## Format output <i j function p1 p2 ... pn>
-			my $paramFormat=$formatvalues[$#paramArr];
+			my $paramFormat=formatvalues($#paramArr);
 			$formattedString = sprintf("%d\t%d\t%d\t$paramFormat",$i,$j,$fType,@paramArr);
 			$outputString = "$outputString$formattedString";
        		}
@@ -1307,7 +1318,7 @@ sub angleOutput
 					smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
 				}
 	 		## Format output <i j k function p1 p2 ... pn>
-				my $paramFormat=$formatvalues[$#paramArr];
+				my $paramFormat=formatvalues($#paramArr);
 				$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
 				$outputString = "$outputString$formattedString";
 			}else{
@@ -1352,17 +1363,26 @@ sub printOrderedDihedrals
 	@diheCache = sort {($a->{"j"} <=> $b->{"j"}) || ($a->{"k"} <=> $b->{"k"}) || ($a->{"f"} <=> $b->{"f"}) || ($a->{"i"} <=> $b->{"i"}) || ($a->{"l"} <=> $b->{"l"})} @diheCache;
 	my %blist;	
 	## Print our sorted bonds ##
-	foreach my $p(@diheCache){
-                my $i=$p->{"i"};
-                my $l=$p->{"l"};
-                $blist{"$i $l"}=0;
-                $blist{"$l $i"}=0;
-
-		addToTop("dihedrals",$p->{"v"});
+        if(defined $OpenSMOG){
+		if($interactions->{"nrexcl"} >=3){
+                	%excludebonded=(%excludebonded,%blist);
+		}
 	}
-        if(defined $OpenSMOG && $interactions->{"nrexcl"} >=3){
-                %excludebonded=(%excludebonded,%blist);
-        }
+	foreach my $p(@diheCache){
+	        my $i=$p->{"i"};
+	        my $l=$p->{"l"};
+	        $blist{"$i $l"}=0;
+	        $blist{"$l $i"}=0;
+		if($p->{"f"} == -2){
+			if(! defined $OpenSMOG){
+				my $name=${$p->{"v"}}[2];
+				smog_quit("\"$name\" appears to be a custom dihedral. Custom dihedrals are only supported with the -OpenSMOG option.");
+			}
+			addToTop("OpenSMOG",$p->{"v"},"dihedral");
+		}else{
+			addToTop("dihedrals",$p->{"v"},"dihedral");
+		}
+	}
 }
 
 # Setup the calculation of dihedral angles of all combined residues,
@@ -1417,6 +1437,7 @@ sub CalculateDihedralsHelper
 					($atomi1,$atomi2,$atomi3,$atomi4)=($atomi4,$atomi3,$atomi2,$atomi1);
 				}
 				my ($val,$fType) = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
+
 				if(!$val) {next;}
 				# j,k,f are meta data
 				push @{$diheCache}, {'i'=> $atomi1,'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4, 'f' => $fType, 'v' => $val};
@@ -1434,6 +1455,7 @@ sub CalculateDihedralsHelper
 				my $acos=dihfrombonds($b1,$b2,$b3);
 
 				my ($val,$fType)=dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1);
+				if(!$val) {next;}
 				push @{$diheCache}, {'i'=> $atomi1, 'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4,'f' => $fType, 'v' => $val};
 			}
 	 	   }
@@ -1466,10 +1488,12 @@ sub dihedralOutput
 	my $fType="";       
  	my $formattedString="";
 	my @paramArr;
+	my $funcName;
 	my $funci=0; my @fTypei;
 	foreach my $fun(@funcs)
 	{
-		($fType,@paramArr) = diheFuncParser($fun);
+		# funcName is only used for OS features
+		($fType,$funcName,@paramArr) = diheFuncParser($fun);
 		if($fType ==-1){
 			 ## don't write angle. Make gromacs use dihedraltype
 			my $type=checkdihedraltype($ai,$aj,$ak,$al,$allatoms);
@@ -1481,13 +1505,19 @@ sub dihedralOutput
                         }else{
                                 $outputString .= "\n";
                         }
-		}elsif($fType > 0){
+		}elsif($fType != 0){
 
 	 		if($anyfree!=0 and (exists $freeangles{"$ai-$aj-$ak"} or exists $freeangles{"$ak-$aj-$ai"} or exists $freeangles{"$aj-$ak-$al"} or exists $freeangles{"$al-$ak-$aj"})  ){
 				# skip
 			}else{
 				# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
-				$paramArr[0]=evalsub($paramArr[0],$values);
+				if ($fType == -2){
+					# if OS potential, then the angle is the second value
+					$paramArr[1]=evalsub($paramArr[1],$values);
+				}else{
+					$paramArr[0]=evalsub($paramArr[0],$values);
+				}
+
 				if( $fType == 1 || $fType == 4){
 			            	# Angle will be scaled by multiplicity factor n, if they are cosine functions
 			        	$paramArr[0] *= $paramArr[2];
@@ -1496,9 +1526,42 @@ sub dihedralOutput
 
 				$funci++;
 				## If dihedral kd is normalized or has scaling&normalize ##
-			 	$paramArr[1]*=$ratio;
+				if ($fType == -2){
+					# if OS potential, then weight is the first value
+			 		$paramArr[0]*=$ratio;
+				}else{
+			 		$paramArr[1]*=$ratio;
+				}
 				## Format output <i j k function p1 p2 ... pn>
-				my $paramFormat=$formatvalues[$#paramArr];
+#### HERE IS WHERE I WILL PUT THE -2 check
+### fType == -2 means OS, so pass the address of the array holding the OS-formatted stuff.
+				if($fType == -2){
+					my @array;
+					## organize the array of info
+                #unshift(@{$paramArr},"contact_gaussian");
+                #unshift(@{$paramArr},"contacts");
+                #unshift(@{$paramArr},"OpenSMOG");
+
+# @stuff is the array that contains the following information: i, j, interaction type, function name, @parameter (in the order found in $OSref->{$type}->{$name}->{parameters} array)
+					$array[0]=$ai;
+					$array[1]=$aj;
+					$array[2]=$ak;
+					$array[3]=$al;
+					$array[4]="dihedrals";
+					$array[5]= $funcName;
+					foreach my $en(@paramArr){
+						push(@array,$en);
+					}
+					#add parameters
+        				if(OpenSMOGfunctionExists($OSref,"dihedrals","$funcName") == 0){
+        				        my $potential = $OpenSMOGpothash->{$funcName}->{expression};
+
+        				        my $parhandle=\@{$OpenSMOGpothash->{$funcName}->{parameters}};
+        				        OShashAddFunction($OSref,"dihedrals","$funcName","$potential",$parhandle);
+        				}
+					return(\@array,$fType);
+				}
+				my $paramFormat=formatvalues($#paramArr);
 
 				if($fType == 1 || $fType == 4) {
 					$paramFormat=" %12.9e %12.9e %u\n";
@@ -1520,7 +1583,7 @@ sub diheFuncParser
 	my($diheFunc) = @_;
 	if(exists $dihParseSeen{$diheFunc}{"fType"}){
 		# if we have parsed this before, just write it.  Don't mess with everything else.
-		return ($dihParseSeen{$diheFunc}{"fType"},@{$dihParseSeen{$diheFunc}{"paramArr"}});
+		return ($dihParseSeen{$diheFunc}{"fType"},$dihParseSeen{$diheFunc}{"funcName"},@{$dihParseSeen{$diheFunc}{"paramArr"}});
 	}
  	my $fType;my @paramArr; my $directive;
 	my $funcName = "";my $params = "";
@@ -1532,7 +1595,8 @@ sub diheFuncParser
 	@paramArr = split(",",$params); ## Parse all parameters;
 	$dihParseSeen{$diheFunc}{"fType"}=$fType;
 	$dihParseSeen{$diheFunc}{"paramArr"}=\@paramArr;
-	return ($fType,@paramArr);
+	$dihParseSeen{$diheFunc}{"funcName"}=$funcName;
+	return ($fType,$funcName,@paramArr);
 }
 
 sub calculateContacts
@@ -1647,7 +1711,7 @@ sub calculateContacts
 			$epsilon_array[$i] *= $multFactor;
 		}
 		($directive,$addExclusions,$outputString) = contactOutput($funct_array[$i],$atoma_array[$i],$atomb_array[$i],$dist_array[$i],$epsilon_array[$i],$normalize_array[$i]);
-		addToTop($directive,$outputString);
+		addToTop($directive,$outputString,"contact");
 		if($addExclusions && !exists $excludebonded{"$atoma_array[$i] $atomb_array[$i]"}) { addToTop("exclusions",$atoma_array[$i]."	".$atomb_array[$i]."\n"); }
 	}
 
