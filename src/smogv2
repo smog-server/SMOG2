@@ -621,10 +621,8 @@ sub addToTop {
 		# if $directive is OpenSMOG, then $stuff is the address of the array that contains the following information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
 		if(! defined $OSdir){
 			smog_quit("internal error: OS 1");
-		}elsif( $OSdir eq "contact"){
-			AddContactOShash($OSref,$stuff);
-		}elsif( $OSdir eq "dihedral"){
-			AddDihedralOShash($OSref,$stuff);
+		}elsif( $OSdir eq "contact" or $OSdir eq "dihedral"){
+			AddInteractionOShash($OSdir,$OSref,$stuff);
 		}else{
 			smog_quit("internal error: OS 2");
 		}
@@ -1533,16 +1531,9 @@ sub dihedralOutput
 			 		$paramArr[1]*=$ratio;
 				}
 				## Format output <i j k function p1 p2 ... pn>
-#### HERE IS WHERE I WILL PUT THE -2 check
-### fType == -2 means OS, so pass the address of the array holding the OS-formatted stuff.
 				if($fType == -2){
 					my @array;
 					## organize the array of info
-                #unshift(@{$paramArr},"contact_gaussian");
-                #unshift(@{$paramArr},"contacts");
-                #unshift(@{$paramArr},"OpenSMOG");
-
-# @stuff is the array that contains the following information: i, j, interaction type, function name, @parameter (in the order found in $OSref->{$type}->{$name}->{parameters} array)
 					$array[0]=$ai;
 					$array[1]=$aj;
 					$array[2]=$ak;

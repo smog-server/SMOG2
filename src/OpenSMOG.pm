@@ -33,7 +33,7 @@ use Exporter;
 use XML::Simple qw(:strict);
 use XML::LibXML;
 our @ISA = 'Exporter';
-our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddContactOShash AddDihedralOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction OpenSMOGAddNBsettoXML %fTypes %fTypesArgNum %OSrestrict);
+our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddInteractionOShash AddDihedralOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction OpenSMOGAddNBsettoXML %fTypes %fTypesArgNum %OSrestrict);
 our %fTypes;
 our %fTypesArgNum;
 our $OpenSMOG;
@@ -79,39 +79,33 @@ sub OpenSMOGfunctionExists{
 	}
 }
 
-sub AddContactOShash{
-	my ($OSref,$stuff)=@_;
+sub AddInteractionOShash{
+	my ($inttype,$OSref,$stuff)=@_;
 	my @stuff=@{$stuff};
-	my $ref=\%{$OSref->{$stuff[2]}->{$stuff[2] . "_type"}->{$stuff[3]}};
+	my $nameindex;
+	if($inttype eq "contact"){
+		$nameindex=2;
+	}elsif ($inttype eq "dihedral"){
+		$nameindex=4;
+	}else{
+		smog_quit("Internal error: OS Interactions hash issue 1");
+	}
+
+	my $ref=\%{$OSref->{$stuff[$nameindex]}->{$stuff[$nameindex] . "_type"}->{$stuff[$nameindex+1]}};
 # @stuff is the array that contains the following information: i, j, interaction type, function name, @parameter (in the order found in $OSref->{$type}->{$name}->{parameters} array)
 	my %tmphash;
 	$tmphash{"i"}=$stuff[0];
 	$tmphash{"j"}=$stuff[1];
-	my $parn=4;
+	if ($inttype eq "dihedral"){
+		$tmphash{"k"}=$stuff[2];
+		$tmphash{"l"}=$stuff[3];
+	}
+	my $parn=$nameindex+2;
 	foreach my $param(@{$ref->{parameter}}){
 		$tmphash{$param}=$stuff[$parn];
 		$parn++;
 	}
 	push(@{$ref->{interaction}},\%tmphash);
-}
-
-sub AddDihedralOShash{
-	my ($OSref,$stuff)=@_;
-	my @stuff=@{$stuff};
-	my $ref=\%{$OSref->{$stuff[4]}->{$stuff[4] . "_type"}->{$stuff[5]}};
-# @stuff is the array that contains the following information: i, j, k, l, interaction type, function name, @parameter (in the order found in $OSref->{$type}->{$name}->{parameters} array)
-	my %tmphash;
-	$tmphash{"i"}=$stuff[0];
-	$tmphash{"j"}=$stuff[1];
-	$tmphash{"k"}=$stuff[2];
-	$tmphash{"l"}=$stuff[3];
-	my $parn=6;
-	foreach my $param(@{$ref->{parameter}}){
-		$tmphash{$param}=$stuff[$parn];
-		$parn++;
-	}
-	push(@{$ref->{interaction}},\%tmphash);
-
 }
 
 sub AddNonbondOShash{
@@ -174,10 +168,8 @@ sub OpenSMOGwriteXML{
 		my $handle0=$OSref;
 
 		foreach my $type(sort keys %{$handle0}){
-			if($type eq "contacts"){
-				$xmlout .= OpenSMOGwriteXMLcontacts($handle0,$type,$space);
-			}elsif($type eq "dihedrals"){
-				$xmlout .= OpenSMOGwriteXMLdihedrals($handle0,$type,$space);
+			if($type eq "contacts" or $type eq "dihedrals"){
+				$xmlout .= OpenSMOGwriteXMLinteractions($type,$handle0,$type,$space);
 			}elsif($type eq "constants"){
 				$xmlout .= OpenSMOGwriteXMLconstants($handle0,$type,$space);
 			}elsif($type eq "nonbond"){
@@ -228,12 +220,19 @@ sub OpenSMOGwriteXMLconstants{
 	}
 }
 
-sub OpenSMOGwriteXMLcontacts{
-	my ($handle0,$type,$space)=@_;
+sub OpenSMOGwriteXMLinteractions{
+	my ($inttype,$handle0,$type,$space)=@_;
 	my $ones="$space";
 	my $twos="$space$space";
 	my $threes="$space$space$space";
-	
+	my @interactingindices;
+	if($inttype eq "contacts"){
+		@interactingindices=("i","j");
+	}elsif($inttype eq "dihedrals"){
+		@interactingindices=("i","j","k","l");
+	}else{
+		smog_quit("Internal error: XML writing error 1");
+	}
 	my $localxmlout = "$space<$type>\n";
 	my $handle1=$handle0->{$type};
 	foreach my $subtype(sort keys %{$handle1}){
@@ -266,7 +265,7 @@ sub OpenSMOGwriteXMLcontacts{
 				}
 	   	     		$localxmlout .="$threes<interaction";
 	   	     		my %tmphash=%{$param};
-				foreach my $key("i","j",@paramlist){
+				foreach my $key(@interactingindices,@paramlist){
    	     				my $fmt;
    	     				# write integers as integers.  Everything else as scientific notation
    	     				if($tmphash{$key} =~ m/^[0-9]*$/){
@@ -292,77 +291,6 @@ sub OpenSMOGwriteXMLcontacts{
 		return "";
 	}
 }
-sub OpenSMOGwriteXMLdihedrals{
-	my ($handle0,$type,$space)=@_;
-	my $ones="$space";
-	my $twos="$space$space";
-	my $threes="$space$space$space";
-	
-	my $localxmlout = "$space<$type>\n";
-	my $handle1=$handle0->{$type};
-	foreach my $subtype(sort keys %{$handle1}){
-	   	my $handle2=$handle1->{$subtype};
-	   	foreach my $name(sort keys %{$handle2}){
-	   		my $handle3=$handle2->{"$name"};
-			my $anydefined=0;
-	   	     	foreach my $param(@{$handle3->{interaction}}){
-				if(defined $param){
-					$anydefined=1;
-					last;
-				}
-			}
-			if($anydefined==0){
-				# means none of the interactions exist in the final system.  So, don't write this type
-				next;
-			}
-
-	   	     	$localxmlout .= "$twos<$subtype name=\"$name\">\n";
-			my $expr=$handle3->{expression}->{"expr"};
-	   	     	$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
-			my @paramlist=@{$handle3->{parameter}};
-	   	     	foreach my $param(@paramlist){
-	   	     		$localxmlout .= "$threes<parameter>$param</parameter>\n";
-	   	     	}
-	   	     	foreach my $param(@{$handle3->{interaction}}){
-				if(!defined $param){
-					#must have been deleted
-					next;
-				}
-	   	     		$localxmlout .="$threes<interaction";
-	   	     		my %tmphash=%{$param};
-				foreach my $key("arb"){
-					my $J=$tmphash{$key};
-					print("testing $key $J\n");
-				}
-				foreach my $key("i","j","k","l",@paramlist){
-   	     				my $fmt;
-   	     				# write integers as integers.  Everything else as scientific notation
-   	     				if($tmphash{$key} =~ m/^[0-9]*$/){
-   	     					$fmt="%i";
-   	     				}else{
-   	     					$fmt="%7.5e";
-   	     				}
-   	     				my $val=sprintf("$fmt",$tmphash{$key});
-   	     				$localxmlout .=" $key=\"$val\"";
-				}
-	   	     		$localxmlout .="/>\n";
-	   	     	}
-	   	     	$localxmlout .= "$twos</$subtype>\n";
-           	 }
-	}
-	$localxmlout .= "$ones</$type>\n";
-	my @num=split(/\s+/,$localxmlout);
-	my $num = @num; 
-	if($num > 3){	
-		# there must be some content, so write it.
-		return $localxmlout;
-	}else{
-		return "";
-	}
-}
-
-
-
 
 sub OpenSMOGwriteXMLnonbond{
 	my ($handle0,$type,$space,$ionnm)=@_;
