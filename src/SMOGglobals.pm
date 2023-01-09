@@ -38,6 +38,6 @@ our %OSrestrict;
 our %NBtypespresent;
 
 sub initOSrestrict {
-	foreach my $i ("q1", "q2", "r", "r_c", "i", "j", "k", "l", "m", "n", "type1", "type2", "sqrt", "exp", "log", "sin", "cos", "sec", "csc", "tan", "cot", "asin", "acos", "atan", "sinh", "cosh", "tanh", "erf", "erfc", "min", "max", "abs", "floor", "ceil", "step", "delta", "select", "null"){ $OSrestrict{$i}=0;}
+	foreach my $i ("q1", "q2", "theta", "r", "r_c", "i", "j", "k", "l", "m", "n", "type1", "type2", "sqrt", "exp", "log", "sin", "cos", "sec", "csc", "tan", "cot", "asin", "acos", "atan", "sinh", "cosh", "tanh", "erf", "erfc", "min", "max", "abs", "floor", "ceil", "step", "delta", "select", "null"){ $OSrestrict{$i}=0;}
 }
 1;
