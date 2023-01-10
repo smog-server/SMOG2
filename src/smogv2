@@ -1510,8 +1510,10 @@ sub dihedralOutput
 			}else{
 				# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
 				if ($fType == -2){
-					# if OS potential, then the angle is the second value
-					$paramArr[1]=evalsub($paramArr[1],$values);
+					# if OS potential, then every parameter (except for weight, which is the first) may contain a ?
+					for(my $in=1;$in<=$#paramArr;$in++){
+						$paramArr[$in]=evalsub($paramArr[$in],$values);
+					}
 				}else{
 					$paramArr[0]=evalsub($paramArr[0],$values);
 				}
