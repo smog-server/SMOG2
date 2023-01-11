@@ -798,7 +798,7 @@ sub runsmog
   $freecoor="";
  }
 
- my $ARGS=" -i $PDB_DIR/$PDB.pdb -g $PDB.gro -o $PDB.top -n $PDB.ndx -s $PDB.contacts -SCMorig $OpenSMOG $freecoor $g96";
+ my $ARGS=" -i $PDB_DIR/$PDB.pdb -g $PDB.gro -o $PDB.top -n $PDB.ndx -s $PDB.contacts -SCMorig $OpenSMOG $freecoor $g96 -keep4SCM";
 
 # prepare the flags
  if($default eq "yes"){
@@ -832,7 +832,6 @@ sub runsmog
    $ARGS .= " -c $PDB_DIR/$PDB.contacts ";
  }
 # run smog2
- $ARGS .=" -keep4SCM";
  `$EXEC_NAME $ARGS &> $PDB.output`;
 }
 
@@ -1243,9 +1242,7 @@ sub smogchecker
   }else{
    &checkg96;
   }
-  if($contactmodel !~ m/-userC$/){ 
-   &checkgro4SCM; 
-  }
+  &checkgro4SCM; 
   &checkndx;
   &checktop($OpenSMOG,$model,$gaussian);
   &finalchecks;
@@ -3276,51 +3273,53 @@ sub checkdihedrals
 
   ##if dihedral is type 1, then save the information, so we can make sure the next is n=3
   if(exists $A[7]){
-   if($A[7] == 1){
-    my $maxdiff;
-    $numberofdihedrals++;
-    $LAST_W=$A[6];
-    $string_last=$string;
-    $DANGLE_LAST=$A[5];
-  # only going to check the value for matching if type 1
-    my $dihval;
-    if(defined  $dihmatch){
-     # the differences should be zero, since it is simply read from a file
-     $maxdiff=10E-10;
-     # heterogeneous bonds need to be checked (obtained from compare file).
-     my $at1=$atombondedtype[$A[0]];
-     my $at2=$atombondedtype[$A[1]];
-     my $at3=$atombondedtype[$A[2]];
-     my $at4=$atombondedtype[$A[3]];
-     my $dname="$at1-$at2-$at3-$at4";
-     $seendihedrals{$dname}=0;
-     if(exists $matchdihedral_weight{"$dname"}){
-      # check for the expected values of the weight, if defined 
-      my $dweight=$matchdihedral_weight{"$dname"};
-      # to convert to gromacs conventions for angles, one must multiply my the multiplicity and add 180.
-      $dihval=$matchdihedral_val{"$dname"}*$A[7]+180.0;
-      if(abs($A[6]- $dweight) > 10E-10){
-       $fail_log .= failed_message("dihedral has incorrect weight. Expected $dweight. Found:\n\t$LINE");
-      }else{
-       $CORRECTDIHEDRALWEIGHTS++;
-      }	
+   my $maxdiff;
+   $numberofdihedrals++;
+   $LAST_W=$A[6];
+   $string_last=$string;
+   $DANGLE_LAST=$A[5];
+  #only going to check the value for matching if type 1
+   my $dihval;
+   my $calced;
+   if(defined  $dihmatch){
+    $calced="predefined as";
+    # the differences should be zero, since it is simply read from a file
+    $maxdiff=10E-10;
+    # heterogeneous bonds need to be checked (obtained from compare file).
+    my $at1=$atombondedtype[$A[0]];
+    my $at2=$atombondedtype[$A[1]];
+    my $at3=$atombondedtype[$A[2]];
+    my $at4=$atombondedtype[$A[3]];
+    my $dname="$at1-$at2-$at3-$at4";
+    $seendihedrals{$dname}=0;
+    if(exists $matchdihedral_weight{"$dname"}){
+     # check for the expected values of the weight, if defined 
+     my $dweight=$matchdihedral_weight{"$dname"};
+     # to convert to gromacs conventions for angles, one must multiply my the multiplicity and add 180.
+     $dihval=$matchdihedral_val{"$dname"}*$A[7]+180.0;
+     if(abs($A[6]- $dweight) > 10E-10){
+      $fail_log .= failed_message("dihedral has incorrect weight. Expected $dweight. Found:\n\t$LINE");
      }else{
-      # since one only needs to provide weights that are used, 
-      # we verify here, as opposed to checking all possible combinations earlier
-      smogcheck_error("Bonded types $at1 $at2 $at3 $at4 don\'t have a defined reference dihedral angle weight.")
-     }
+      $CORRECTDIHEDRALWEIGHTS++;
+     }	
     }else{
-     # if not matching based on sif, then calculate the dihedral angle
-     $dihval=getdihangle(\@A);
-     $maxdiff=0.1;
+     # since one only needs to provide weights that are used, 
+     # we verify here, as opposed to checking all possible combinations earlier
+     smogcheck_error("Bonded types $at1 $at2 $at3 $at4 don\'t have a defined reference dihedral angle weight.")
     }
-    my $diff=dihdelta($A[5],$dihval);
-    if($diff > $maxdiff){
-     $fail_log .= failed_message("dihedral has incorrect angle. Expected $dihval. Found:\n\t$LINE\n(diff=$diff)");
-    }else{
-     $CORRECTDIHEDRALANGLES++;
-    }	
+   }else{
+    $calced="calculated to be";
+    # if not matching based on sif, then calculate the dihedral angle
+    # 180 added introduces the negative sign on the cos (SMOG-specific convention)
+    $dihval=getdihangle(\@A)+180;
+    $maxdiff=$TOLERANCE;
    }
+   my $diff=dihdelta($A[5],$dihval);
+   if(abs($diff) > $maxdiff){
+    $fail_log .= failed_message("dihedral has incorrect angle. $calced $dihval. Found:\n\t$LINE\n(diff=$diff)");
+   }else{
+    $CORRECTDIHEDRALANGLES++;
+   }	
    $LAST_N=$A[7];
    if($A[7] == $MULTDIHE && ($string eq $string_last)){
     $S3_match++; 
@@ -3399,12 +3398,10 @@ sub checkdihedrals
 
   if($A[4] == 2){
    $numberofdihedrals++;
-   # for some reason, 0 is different for impropers
-   my $dihval=getdihangle(\@A)+180;
+   my $dihval=getdihangle(\@A);
    my $diff=dihdelta($A[5],$dihval);
-   if($diff > 0.1){
-    # this script uses the gro file, whereas the .top was based on the pdb, which has higher precision.
-    $fail_log .= failed_message("dihedral has incorrect angle. Expected $dihval. Found:\n\t$LINE\n(diff=$diff)");
+   if(abs($diff) > $TOLERANCE){
+    $fail_log .= failed_message("dihedral has incorrect angle. calculated as $dihval. Found:\n\t$LINE\n(diff=$diff)");
    }else{
     $CORRECTDIHEDRALANGLES++;
    }
@@ -3484,21 +3481,8 @@ sub checkdihedrals
    my $angle1=$dihedral_array1_A{$pair};
    my $target3=($angle1-180.0)*$MULTDIHE+180;
    my $angle3=$dihedral_array3_A{$pair};
-   my $dif=$angle3-$target3;
-   until($dif < 180){
-    $dif-=360; 
-   }
-   until($dif > -180){
-    $dif+=360; 
-   }
-#   until($angle1>0){
-#    $angle1+=360;
-#   }
-#   until($angle3>0){
-#    $angle3+=360;
-#   }
-   print("$angle1 $target3 $dif\n");
-   if((($angle3 % 360.0) > $MINTHR*($MULTDIHE*$angle1 % 360.0) and ($angle3 % 360.0) < $MAXTHR*($MULTDIHE*$angle1 % 360.0)) or (($angle3 % 360.0) < ($MAXTHR-1) and ($MULTDIHE*$angle1 % 360.0) < ($MAXTHR-1) )){
+   my $dif=dihdelta($angle3,$target3);
+   if(abs($dif)<$TOLERANCE){
     $matchingpairs_A++;
    }else{
     $fail_log .= failed_message("Relative angles between a N=1 and N=$MULTDIHE dihedral is not consistent: $pair,$angle1,$angle3");
@@ -4246,7 +4230,7 @@ sub getdihangle
  my $l=$atoms[3];
  my $multiplicity;
  my $ftype=$atoms[4];
- if($ftype==1){
+ if($ftype==1 or $ftype == 4){
   $multiplicity=$atoms[7];
  }else{
   $multiplicity=1.0;
@@ -4264,9 +4248,9 @@ sub getdihangle
  my $dot;
  my @cross;
  my $angle;
- $U[0]=$XT[$i]-$XT[$j];
- $U[1]=$YT[$i]-$YT[$j];
- $U[2]=$ZT[$i]-$ZT[$j];
+ $U[0]=$XT[$j]-$XT[$i];
+ $U[1]=$YT[$j]-$YT[$i];
+ $U[2]=$ZT[$j]-$ZT[$i];
 
  $V[0]=$XT[$k]-$XT[$j];
  $V[1]=$YT[$k]-$YT[$j];
@@ -4320,6 +4304,7 @@ sub getdihangle
  if($cross[0]*$V[0]+$cross[1]*$V[1]+$cross[2]*$V[2] <0){
   $angle*=-1.0;
  }
+ # account for multiplicity
  $angle*=$multiplicity;
  return $angle
 }
