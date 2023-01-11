@@ -3484,8 +3484,16 @@ sub checkdihedrals
     $fail_log .= failed_message("Relative weight between a N=1 and N=$MULTDIHE dihedral is not consistent: $pair, $dihedral_array1_W{$pair}, $dihedral_array3_W{$pair}");
    }
    my $angle1=$dihedral_array1_A{$pair};
-   my $angle3=$dihedral_array3_A{$pair}-180*($MULTDIHE-1);
-   if((($angle3 % 360.0) > $MINTHR*($MULTDIHE*$angle1 % 360.0) and ($angle3 % 360.0) < $MAXTHR*($MULTDIHE*$angle1 % 360.0)) or (($angle3 % 360.0) < ($MAXTHR-1) and ($MULTDIHE*$angle1 % 360.0) < ($MAXTHR-1) )){
+   my $target3=($angle1-180.0)*$MULTDIHE+180;
+   my $angle3=$dihedral_array3_A{$pair};
+   my $dif=$angle3-$target3;
+   until($dif < 180){
+    $dif-=360;
+   }
+   until($dif > -180){
+    $dif+=360;
+   }
+   if(abs($dif)<$TOLERANCE){
     $matchingpairs_A++;
    }else{
     $fail_log .= failed_message("Relative angles between a N=1 and N=$MULTDIHE dihedral is not consistent: $pair,$angle1,$angle3");
