@@ -1463,16 +1463,17 @@ sub CalculateDihedralsHelper
 sub dihfrombonds
 {
 	my ($b1,$b2,$b3)=@_;
+	# b1, b2 and b3 are unit vectors
 	my $n1 = norm(crossp($b1,$b2));
 	my $n2 = norm(crossp($b2,$b3));
-	my $m1 = crossp($n1,$b2);
+	my $m1 = crossp($b2,$n1);
 	
-	my $cos = atan2(inner($m1,$n2),inner($n1,$n2));
-        my $negcos = $cos;#$cos->where($cos < 0);
+	my $acos = atan2(inner($m1,$n2),inner($n1,$n2));
+#        my $negcos = $cos;#$cos->where($cos < 0);
        
-        $negcos*=-1;
-	$negcos+=mathFunctions::pi();
-	my $acos = sclr(mathFunctions::rad_to_deg($cos))+180;
+#        $negcos*=-1;
+#	$negcos+=mathFunctions::pi();
+	$acos = sclr(mathFunctions::rad_to_deg($acos)); #+180;
 	return $acos;
 }
 

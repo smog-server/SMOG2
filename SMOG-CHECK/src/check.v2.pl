@@ -3312,8 +3312,7 @@ sub checkdihedrals
     }else{
      # if not matching based on sif, then calculate the dihedral angle
      $dihval=getdihangle(\@A);
-     # rather large allowable difference, since there a precision difference between the PDB, which defines the .top, and the precision of the .gro, which is used by the script to calculate the angles for comparison.
-     $maxdiff=3.0;
+     $maxdiff=0.1;
     }
     my $diff=dihdelta($A[5],$dihval);
     if($diff > $maxdiff){
@@ -3403,8 +3402,7 @@ sub checkdihedrals
    # for some reason, 0 is different for impropers
    my $dihval=getdihangle(\@A)+180;
    my $diff=dihdelta($A[5],$dihval);
-   if($diff > 3.0){
-    # this is a somewhat generous threshold for comparing angles.  However, the reason is that 
+   if($diff > 0.1){
     # this script uses the gro file, whereas the .top was based on the pdb, which has higher precision.
     $fail_log .= failed_message("dihedral has incorrect angle. Expected $dihval. Found:\n\t$LINE\n(diff=$diff)");
    }else{
@@ -3484,7 +3482,22 @@ sub checkdihedrals
     $fail_log .= failed_message("Relative weight between a N=1 and N=$MULTDIHE dihedral is not consistent: $pair, $dihedral_array1_W{$pair}, $dihedral_array3_W{$pair}");
    }
    my $angle1=$dihedral_array1_A{$pair};
-   my $angle3=$dihedral_array3_A{$pair}-180*($MULTDIHE-1);
+   my $target3=($angle1-180.0)*$MULTDIHE+180;
+   my $angle3=$dihedral_array3_A{$pair};
+   my $dif=$angle3-$target3;
+   until($dif < 180){
+    $dif-=360; 
+   }
+   until($dif > -180){
+    $dif+=360; 
+   }
+#   until($angle1>0){
+#    $angle1+=360;
+#   }
+#   until($angle3>0){
+#    $angle3+=360;
+#   }
+   print("$angle1 $target3 $dif\n");
    if((($angle3 % 360.0) > $MINTHR*($MULTDIHE*$angle1 % 360.0) and ($angle3 % 360.0) < $MAXTHR*($MULTDIHE*$angle1 % 360.0)) or (($angle3 % 360.0) < ($MAXTHR-1) and ($MULTDIHE*$angle1 % 360.0) < ($MAXTHR-1) )){
     $matchingpairs_A++;
    }else{
@@ -4307,7 +4320,7 @@ sub getdihangle
  if($cross[0]*$V[0]+$cross[1]*$V[1]+$cross[2]*$V[2] <0){
   $angle*=-1.0;
  }
- $angle+=$multiplicity;
+ $angle*=$multiplicity;
  return $angle
 }
 
