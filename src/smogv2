@@ -2292,15 +2292,13 @@ sub convertPDBToGroNdx
 		print "$outputg96 written\n"; 
 	}
 
-	if($userProvidedMap==0){
-	# we are generating a map, so save full PDB-precision gro
-		open(GRO,">$outputGRO4SCM") or smog_quit("can not open $outputGRO4SCM for writing");
-		print GRO "Temp Gro file with PDB precision for SCM calculations.\n";
-		print GRO $counter,"\n";
-		print GRO "$atominfo4SCM";
-		print GRO "$xrange $yrange $zrange\n";
-		close(GRO);
-	}
+	# save full PDB-precision gro. -keep4SCM not given, then it will be deleted later.
+	open(GRO,">$outputGRO4SCM") or smog_quit("can not open $outputGRO4SCM for writing");
+	print GRO "Temp Gro file with PDB precision for SCM calculations.\n";
+	print GRO $counter,"\n";
+	print GRO "$atominfo4SCM";
+	print GRO "$xrange $yrange $zrange\n";
+	close(GRO);
 
 	
  ## CREATE NDX FILE ##

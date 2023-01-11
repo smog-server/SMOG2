@@ -798,7 +798,7 @@ sub runsmog
   $freecoor="";
  }
 
- my $ARGS=" -i $PDB_DIR/$PDB.pdb -g $PDB.gro -o $PDB.top -n $PDB.ndx -s $PDB.contacts -SCMorig $OpenSMOG $freecoor $g96";
+ my $ARGS=" -i $PDB_DIR/$PDB.pdb -g $PDB.gro -o $PDB.top -n $PDB.ndx -s $PDB.contacts -SCMorig $OpenSMOG $freecoor $g96 -keep4SCM";
 
 # prepare the flags
  if($default eq "yes"){
@@ -832,7 +832,6 @@ sub runsmog
    $ARGS .= " -c $PDB_DIR/$PDB.contacts ";
  }
 # run smog2
- $ARGS .=" -keep4SCM";
  `$EXEC_NAME $ARGS &> $PDB.output`;
 }
 
@@ -1243,9 +1242,7 @@ sub smogchecker
   }else{
    &checkg96;
   }
-  if($contactmodel !~ m/-userC$/){ 
-   &checkgro4SCM; 
-  }
+  &checkgro4SCM; 
   &checkndx;
   &checktop($OpenSMOG,$model,$gaussian);
   &finalchecks;
@@ -3312,11 +3309,9 @@ sub checkdihedrals
     }else{
      # if not matching based on sif, then calculate the dihedral angle
      $dihval=getdihangle(\@A);
-     # rather large allowable difference, since there a precision difference between the PDB, which defines the .top, and the precision of the .gro, which is used by the script to calculate the angles for comparison.
-     $maxdiff=3.0;
     }
     my $diff=dihdelta($A[5],$dihval);
-    if($diff > $maxdiff){
+    if(abs($diff) > $TOLERANCE){
      $fail_log .= failed_message("dihedral has incorrect angle. Expected $dihval. Found:\n\t$LINE\n(diff=$diff)");
     }else{
      $CORRECTDIHEDRALANGLES++;
@@ -3403,7 +3398,7 @@ sub checkdihedrals
    # for some reason, 0 is different for impropers
    my $dihval=getdihangle(\@A)+180;
    my $diff=dihdelta($A[5],$dihval);
-   if($diff > $TOLERANCE){
+   if(abs($diff) > $TOLERANCE){
     $fail_log .= failed_message("dihedral has incorrect angle. Expected $dihval. Found:\n\t$LINE\n(diff=$diff)");
    }else{
     $CORRECTDIHEDRALANGLES++;
