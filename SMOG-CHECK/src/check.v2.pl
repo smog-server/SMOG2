@@ -3403,9 +3403,7 @@ sub checkdihedrals
    # for some reason, 0 is different for impropers
    my $dihval=getdihangle(\@A)+180;
    my $diff=dihdelta($A[5],$dihval);
-   if($diff > 3.0){
-    # this is a somewhat generous threshold for comparing angles.  However, the reason is that 
-    # this script uses the gro file, whereas the .top was based on the pdb, which has higher precision.
+   if($diff > $TOLERANCE){
     $fail_log .= failed_message("dihedral has incorrect angle. Expected $dihval. Found:\n\t$LINE\n(diff=$diff)");
    }else{
     $CORRECTDIHEDRALANGLES++;
@@ -3486,13 +3484,7 @@ sub checkdihedrals
    my $angle1=$dihedral_array1_A{$pair};
    my $target3=($angle1-180.0)*$MULTDIHE+180;
    my $angle3=$dihedral_array3_A{$pair};
-   my $dif=$angle3-$target3;
-   until($dif < 180){
-    $dif-=360;
-   }
-   until($dif > -180){
-    $dif+=360;
-   }
+   my $dif=dihdelta($angle3,$target3);
    if(abs($dif)<$TOLERANCE){
     $matchingpairs_A++;
    }else{
@@ -4315,7 +4307,7 @@ sub getdihangle
  if($cross[0]*$V[0]+$cross[1]*$V[1]+$cross[2]*$V[2] <0){
   $angle*=-1.0;
  }
- $angle+=$multiplicity;
+ $angle*=$multiplicity;
  return $angle
 }
 
