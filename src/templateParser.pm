@@ -320,6 +320,9 @@ sub checkDihedralFunctionDef
 		my $funcname=$name[$I];
 
  		$usedFunctions{$funcname}=1;
+		if(! exists $functions->{$funcname}){
+			smog_quit("Function $funcname is used in the .b file, but it was not declared in the .sif file.");
+		}
         	if($functions->{$funcname}->{"directive"}  ne "dihedrals"){smog_quit ("$funcname is not a valid dihedral function. Problematic declaration (in .b file): $funcString");}
 
 		my $nargs_exp=$fTypesArgNum{"$funcname"};

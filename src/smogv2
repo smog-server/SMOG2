@@ -218,6 +218,10 @@ sub setglobals {
 		'angle_free' => '0',
 		'dihedral_cosine'=>'1',
 		'dihedral_cosine4'=>'4',
+		'dihedral_ncos'=>'1',
+		'dihedral_ncos4'=>'4',
+		'dihedral_pcos'=>'1',
+		'dihedral_pcos4'=>'4',
 		'dihedral_harmonic' => '2',
 		'dihedral_bytype' => '-1',
 		'dihedral_free' => '0',
@@ -227,6 +231,7 @@ sub setglobals {
 		'contact_gaussian'=>'6'
 		);
 	# note, only bonds are properly set in fTypesArgNum.  The rest will be updated later.
+	# note: dihedral_cosine and dihedral_ncos are identical.  By default, SMOG uses negative cosine functions.  For back compatibility, we have have left in the old dihedral_cosine, even though there is now dihedral_pcos (positive cosine) and dihedral_ncos (negative cosine)
 	%fTypesArgNum = ('bond_harmonic' => '2',
 		'bond_bytype' => '0',
 		'bond_type6' => '2',
@@ -235,6 +240,10 @@ sub setglobals {
 		'angle_free' => '0',
 		'dihedral_cosine'=>'3',
 		'dihedral_cosine4'=>'3',
+		'dihedral_ncos'=>'3',
+		'dihedral_ncos4'=>'3',
+		'dihedral_pcos'=>'3',
+		'dihedral_pcos4'=>'3',
 		'dihedral_harmonic' => '2',
 		'dihedral_bytype' => '0',
 		'dihedral_free' => '0',
@@ -1467,13 +1476,8 @@ sub dihfrombonds
 	my $n1 = norm(crossp($b1,$b2));
 	my $n2 = norm(crossp($b2,$b3));
 	my $m1 = crossp($b2,$n1);
-	
 	my $acos = atan2(inner($m1,$n2),inner($n1,$n2));
-#        my $negcos = $cos;#$cos->where($cos < 0);
-       
-#        $negcos*=-1;
-#	$negcos+=mathFunctions::pi();
-	$acos = sclr(mathFunctions::rad_to_deg($acos)); #+180;
+	$acos = sclr(mathFunctions::rad_to_deg($acos)); 
 	return $acos;
 }
 
@@ -1482,7 +1486,7 @@ sub dihedralOutput
  	my($inputFunc,$ai,$aj,$ak,$al,$values,$ratio,$eG,$allatoms) = @_;
  	$inputFunc = trim($inputFunc);
  	## If $input contains a + ##
- 	my @funcs = split(/\+/,$inputFunc);
+ 	my @funcs = split(/\+(?=[^\)]*(?:\(|$))/,$inputFunc);
 	my $outputString="";
 	my $fType="";       
  	my $formattedString="";
@@ -1519,12 +1523,23 @@ sub dihedralOutput
 					$paramArr[0]=evalsub($paramArr[0],$values);
 				}
 
-				if( $fType == 1 || $fType == 4){
-			            	# Angle will be scaled by multiplicity factor n, if they are cosine functions
-			        	$paramArr[0] *= $paramArr[2];
-					$paramArr[0] += 180;
-				}
+                                if($funcName eq "dihedral_cosine" or $funcName eq "dihedral_cosine4" ){
+					if( $fType == 1 || $fType == 4){
+				            	# Angle will be scaled by multiplicity factor n, if they are cosine functions
+				        	$paramArr[0] *= $paramArr[2];
+	                                }
 
+                                       # this adds the negative sign in front of cosines, since that is
+                                       # standard with SMOG models.  If not using these functions, don't add it
+                                        $paramArr[0] += 180;
+				}elsif($funcName eq "dihedral_ncos" or $funcName eq "dihedral_ncos4"){
+				       # ncos and cosine are very similar.  The only difference is that 
+				       # with ncos the given angle is not multiplied by the multiplicity 
+                                       # this adds the negative sign in front of cosines, since that is
+                                       # standard with SMOG models.  If not using these functions, don't add it
+                                        $paramArr[0] += 180;
+				} 
+				print("$paramArr[0] $paramArr[1]\n");
 				$funci++;
 				## If dihedral kd is normalized or has scaling&normalize ##
 				if ($fType == -2){
