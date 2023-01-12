@@ -279,8 +279,14 @@ my $date=printhostdate();
 print TOPOUT "$date";
 print TOPOUT "$DATA[0]\n";
 
-	if($DATA[0] =~ m/-OpenSMOG/ && ! defined $OpenSMOG){
+	if(! defined $OpenSMOG){
+		if($DATA[0] =~ m/-OpenSMOG/i ){
 		smog_note("Found \"-OpenSMOG\" in the top file. This typically means that an OpenSMOG xml file should accompany the provided top file.  But, \"-OpenSMOG\" was not used to specify an input xml file for smog_extract.  Double check and make sure this was intentional.");
+		}
+
+		if(! defined $DIRLIST{"pairs"}){
+			smog_note("\"pairs\" directive not found.  This may occur because you are using a force field for OpenSMOG, in which case the contact information is in the XML file.");
+		}
 	}
 
 

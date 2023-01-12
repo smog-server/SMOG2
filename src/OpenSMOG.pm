@@ -143,7 +143,7 @@ sub readOpenSMOGxml {
 	my ($XMLin)=@_;
 	if(-f $XMLin){
 		my $xml = new XML::Simple;
-		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name",constant=>"name"},ForceArray=>["contacts_type","constant","parameter","interaction","nonbond_param"]);
+		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name",dihedrals_type=>"name",constant=>"name"},ForceArray=>["contacts_type","dihedrals_type","constant","parameter","interaction","nonbond_param"]);
 		return $data;
 	}else{
 		return 1;
@@ -412,6 +412,7 @@ sub OpenSMOGextractXML{
         # this was a workaround to a cryptic shared variable error in perl
 	use if 0==0 , "XML::LibXML";
 	OpenSMOGextractContacts($OSref,$keepatoms);
+	OpenSMOGextractDihedrals($OSref,$keepatoms);
 	OpenSMOGextractNonBonds($OSref,$keepatoms,$typesinsystem);
 	OpenSMOGwriteXML($OSref,$OpenSMOGxml,"This file was generated using smog_extract");
 	return \%OpenSMOGatoms2restrain;
@@ -429,7 +430,7 @@ sub OpenSMOGextractContacts{
 		   		my $handle3=$handle2->{"$name"}->{interaction};
 		   	     	#foreach my $param(@{$handle3->{interaction}}){
 		   	     	for (my $I=0;$I<=$#{$handle3};$I++){
-					if(OpenSMOGkeepinteraction(${$handle3}[$I],$keepatoms)){
+					if(OpenSMOGkeepContact(${$handle3}[$I],$keepatoms)){
 						delete ${$handle3}[$I];
 						# if evals to 1, then delete
 					}
@@ -439,6 +440,31 @@ sub OpenSMOGextractContacts{
 		}
 	}
 }
+
+
+sub OpenSMOGextractDihedrals{
+	my ($OSref,$keepatoms)=@_;
+	my $type="dihedrals";
+	if(defined $OSref->{$type}){
+		print "Dihedrals found in OpenSMOG XML file.  Will extract.\n";
+		my $handle1=$OSref->{$type};
+		foreach my $subtype(sort keys %{$handle1}){
+		   	my $handle2=$handle1->{$subtype};
+		   	foreach my $name(sort keys %{$handle2}){
+		   		my $handle3=$handle2->{"$name"}->{interaction};
+		   	     	#foreach my $param(@{$handle3->{interaction}}){
+		   	     	for (my $I=0;$I<=$#{$handle3};$I++){
+					if(OpenSMOGkeepDihedral(${$handle3}[$I],$keepatoms)){
+						delete ${$handle3}[$I];
+						# if evals to 1, then delete
+					}
+					# this renumbers, or removes the interaction
+		   	     	}
+        	   	 }
+		}
+	}
+}
+
 
 sub OpenSMOGextractNonBonds{
 	my ($OSref,$keepatoms,$typesinsystem)=@_;
@@ -464,7 +490,7 @@ sub OpenSMOGextractNonBonds{
 	}
 }
 
-sub OpenSMOGkeepinteraction {
+sub OpenSMOGkeepContact {
 	my ($tmphash,$keepatoms)=@_;
         if(exists $keepatoms->{$tmphash->{"i"}} && exists $keepatoms->{$tmphash->{"j"}}){
 		$tmphash->{"i"}=$keepatoms->{$tmphash->{"i"}};
@@ -474,6 +500,32 @@ sub OpenSMOGkeepinteraction {
 		$OpenSMOGatoms2restrain{$keepatoms->{$tmphash->{"i"}}}=1;
 	}elsif(exists $keepatoms->{$tmphash->{"j"}}){
 		$OpenSMOGatoms2restrain{$keepatoms->{$tmphash->{"j"}}}=1;
+	}
+	return 1;
+}
+
+sub OpenSMOGkeepDihedral {
+	my ($tmphash,$keepatoms)=@_;
+        if(exists $keepatoms->{$tmphash->{"i"}} && exists $keepatoms->{$tmphash->{"j"}} && exists $keepatoms->{$tmphash->{"k"}} && exists $keepatoms->{$tmphash->{"l"}}){
+		$tmphash->{"i"}=$keepatoms->{$tmphash->{"i"}};
+		$tmphash->{"j"}=$keepatoms->{$tmphash->{"j"}};
+		$tmphash->{"k"}=$keepatoms->{$tmphash->{"k"}};
+		$tmphash->{"l"}=$keepatoms->{$tmphash->{"l"}};
+		return 0;
+	}else{
+		if(exists $keepatoms->{$tmphash->{"i"}}){
+			$OpenSMOGatoms2restrain{$keepatoms->{$tmphash->{"i"}}}=1;
+		}
+		if(exists $keepatoms->{$tmphash->{"j"}}){
+			$OpenSMOGatoms2restrain{$keepatoms->{$tmphash->{"j"}}}=1;
+		}
+
+		if(exists $keepatoms->{$tmphash->{"k"}}){
+			$OpenSMOGatoms2restrain{$keepatoms->{$tmphash->{"k"}}}=1;
+		}
+		if(exists $keepatoms->{$tmphash->{"l"}}){
+			$OpenSMOGatoms2restrain{$keepatoms->{$tmphash->{"l"}}}=1;
+		}
 	}
 	return 1;
 }
