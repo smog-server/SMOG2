@@ -1485,8 +1485,15 @@ sub dihedralOutput
 {
  	my($inputFunc,$ai,$aj,$ak,$al,$values,$ratio,$eG,$allatoms) = @_;
  	$inputFunc = trim($inputFunc);
- 	## If $input contains a + ##
- 	my @funcs = split(/\+(?=[^\)]*(?:\(|$))/,$inputFunc);
+	my @funcs;
+	# splitFunctions is a more robust function parser, but it outputs data 
+	# in the wrong format for this routine. So, we'll fix the org of @funcs
+	my ($name,$var)=splitFunction($inputFunc);
+	my @vars=@{$var};
+	my @names=@{$name};
+	for (my $I=0;$I<=$#vars;$I++){
+		push(@funcs,"$names[$I]($vars[$I])");
+	}
 	my $outputString="";
 	my $fType="";       
  	my $formattedString="";
@@ -1539,7 +1546,6 @@ sub dihedralOutput
                                        # standard with SMOG models.  If not using these functions, don't add it
                                         $paramArr[0] += 180;
 				} 
-				print("$paramArr[0] $paramArr[1]\n");
 				$funci++;
 				## If dihedral kd is normalized or has scaling&normalize ##
 				if ($fType == -2){
