@@ -311,6 +311,9 @@ sub OpenSMOGwriteXMLnonbond{
 	   		$localxmlout .= "$threes<cutoff distance=\"$handle3->{cutoff}\"/>\n";
 		}
 		my $expr=$handle3->{expression}->{"expr"};
+		if(! defined $expr){
+			smog_quit("Custom non-bonded potential was not found in the OpenSMOG XML file. This can happen if you are adding ions that use custom potentials to a system that does not have a custom potential defined. Check your input XML file.");
+		}
 		$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
 		my @paramlist=();
 		my $paramlistnull=0;
@@ -403,7 +406,7 @@ sub OpenSMOGwriteXMLnonbond{
 }
 
 sub OpenSMOGextractXML{
-	my ($OSref,$OpenSMOGxml,$keepatoms,$typesinsystem)=@_;
+	my ($OSref,$OpenSMOGxml,$keepatoms,$typesinsystem,$header)=@_;
         # OSref is a handle to the hash holding all information to be written.
         # $OpenSMOGxml is the output file name
 	# Only load the module if we are writing an OpenSMOG file
@@ -414,7 +417,7 @@ sub OpenSMOGextractXML{
 	OpenSMOGextractContacts($OSref,$keepatoms);
 	OpenSMOGextractDihedrals($OSref,$keepatoms);
 	OpenSMOGextractNonBonds($OSref,$keepatoms,$typesinsystem);
-	OpenSMOGwriteXML($OSref,$OpenSMOGxml,"This file was generated using smog_extract");
+	OpenSMOGwriteXML($OSref,$OpenSMOGxml,$header,);
 	return \%OpenSMOGatoms2restrain;
 }
 
@@ -616,7 +619,7 @@ sub checkOpenSMOGparam{
 }
 
 sub OpenSMOGAddNBsettoXML{
-	my ($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer,$ionnm)=@_;
+	my ($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer,$ionnm,$header)=@_;
 	# read the input XML
 	my $data=readOpenSMOGxml($OpenSMOG);
 	# add content
@@ -629,7 +632,7 @@ sub OpenSMOGAddNBsettoXML{
         $data->{nonbond}->{nonbond_bytype}->{cutoff}=$data->{nonbond}->{nonbond_bytype}->{cutoff}->{'distance'};
 
 	# write new XML
-	OpenSMOGwriteXML($data,$OpenSMOGout,"Ion parameters were added with smog_ions",$ionnm);
+	OpenSMOGwriteXML($data,$OpenSMOGout,$header,$ionnm);
 }
 
 1;

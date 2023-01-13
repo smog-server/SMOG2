@@ -139,7 +139,10 @@ $outputtop=checksuffix($outputtop,".top");
 $outputmap=checksuffix($outputmap,".map");
 $restrainedmap=checksuffix($restrainedmap,".map");
 $indexFile=checksuffix($indexFile,".ndx");
-
+if(defined $OpenSMOGout){
+	$OpenSMOGout=checksuffix($OpenSMOGout,".xml");
+	checkalreadyexists($OpenSMOGout);
+}
 foreach my $filen($outputgro, $outputtop, $outputmap,$restrainedmap){
 	checkalreadyexists($filen);
 }
@@ -657,7 +660,16 @@ if(defined $OpenSMOG){
 	if($xmldata == 1){
 		smog_quit("File $OpenSMOG can not be opened.");
 	}
-	my $OpenSMOGatoms2restrain=OpenSMOGextractXML($xmldata,$OpenSMOGout,\%keepatoms,\%typesinsystem);
+	my $date=printhostdate();
+	$gitver=getgitver; 
+	my $gitmess="";
+	if($gitver ne ""){
+	        $gitmess="; THIS VERSION OF SMOG_IONS IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
+			}
+			
+	my $comment="; This is an XML file generated with smog_extract (version $VERSION), using the command:\n; smog_extract $inputArguments\n$date$gitmess";
+
+	my $OpenSMOGatoms2restrain=OpenSMOGextractXML($xmldata,$OpenSMOGout,\%keepatoms,\%typesinsystem,$comment);
 	my %OpenSMOGatoms2restrain=%{$OpenSMOGatoms2restrain};
 	foreach my $I (keys %OpenSMOGatoms2restrain){
 		$atoms2restrain{$I}=1;

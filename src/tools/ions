@@ -130,6 +130,7 @@ if(defined $OpenSMOG && ! -e $OpenSMOG){
 	smog_quit("Can not open file $OpenSMOG for reading.");
 }
 if(defined $OpenSMOGout){
+	$OpenSMOGout=checksuffix($OpenSMOGout,".xml");
 	checkalreadyexists($OpenSMOGout);
 }
 
@@ -485,7 +486,7 @@ while (<FILE>){
 	my $LINEORIG=$LINE;
 	chomp($LINE);
 	my ($data,$comment)=checkcomment($LINE);
-	if($comment =~ m/-OpenSMOG/ && ! defined $OpenSMOG){
+	if($comment =~ m/-OpenSMOG/i && ! defined $OpenSMOG){
 		smog_note("Found \"-OpenSMOG\" in the top file. This typically means that an OpenSMOG xml file should accompany the provided top file.  But, \"-OpenSMOG\" was not used to specify an input xml file for smog_ions.  Double check and make sure this was intentional.");
 	}
 	if(checkforinclude($LINE,$data,*TOPOUT)){next;};
@@ -619,7 +620,16 @@ while (<FILE>){
 	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
 		# add it to XML
 		if(defined $OpenSMOG){
-			OpenSMOGAddNBsettoXML($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer,$addname);
+			my $date=printhostdate();
+			$gitver=getgitver; 
+			my $gitmess="";
+			if($gitver ne ""){
+			        $gitmess="; THIS VERSION OF SMOG_IONS IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
+			}
+			
+			my $comment="; This is an XML file generated with smog_ions (version $VERSION), using the command:\n; smog_ions $inputArguments\n$date$gitmess";
+
+			OpenSMOGAddNBsettoXML($OpenSMOG,$OpenSMOGout,$AddCustomParmsToXML,$NBbuffer,$addname,$comment);
 		} elsif($NBPpresent==0 && $NBbuffer ne ""){
 		# if we did not find a nonbond_params, and we are not adding to the XML, add it now.
 			print TOPOUT "[ nonbond_params ]\n$NBbuffer\n\n";
