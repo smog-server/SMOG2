@@ -1,0 +1,36 @@
+Bootstrap: library
+From: smog-server/library/osperl
+
+%labels
+    SMOG v2.4.5 with OpenSMOG v1.1.1
+
+%environment
+    export LC_ALL=C
+    export perl4smog=/usr/bin/perl
+    export smog2dir=/opt/smog2
+    export CONDA_DIR=/opt/conda
+    export PATH=$CONDA_DIR/bin:/opt/smog2/bin:$PATH
+
+%post
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y --no-install-recommends cpanminus vim  git-all   patch make cmake pdl default-jre libxml-simple-perl nano emacs wget
+    git clone -n https://github.com/smog-server/SMOG2.git /opt/smog2
+    cd /opt/smog2
+    git checkout tags/v2.4.5
+    rm -rf .git
+    cd /opt/smog2
+    sed -i '5,6d' configure.smog2
+    perl4smog=/usr/bin/perl smog2dir=/opt/smog2 bash /opt/smog2/configure.smog2
+    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh 
+    /bin/bash ~/miniconda.sh -b -p /opt/conda
+    /opt/conda/bin/conda install -c conda-forge -y OpenSMOG=1.1.1 
+    /opt/conda/bin/conda remove --force cudatoolkit  
+    /opt/conda/bin/conda clean --all
+
+%runscript
+    bash
+
+%help
+    This is a singularity container for SMOG 2. Once you launch the container, SMOG 2 and SMOG tools should be in your path. Pretty simple, huh?
+
