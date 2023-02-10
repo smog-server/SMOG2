@@ -554,6 +554,7 @@ sub printTop {
 	}
 	close($OUTPUT);
     	return($comments);
+
 }
 
 # utility method to set all the initial directive comments
@@ -1443,11 +1444,13 @@ sub CalculateDihedralsHelper
 				if($atomi2 > $atomi3) { #then reverse order
 					($atomi1,$atomi2,$atomi3,$atomi4)=($atomi4,$atomi3,$atomi2,$atomi1);
 				}
-				my ($val,$fType) = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
-
-				if(!$val) {next;}
+				my ($valArray,$fTypeArray) = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
+				my @arr=@{$valArray};
+				my @Farr=@{$fTypeArray};
+				for(my $I=0;$I<=$#arr;$I++){
+					push @{$diheCache}, {'i'=> $atomi1,'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4, 'f' => $Farr[$I], 'v' => $arr[$I]};
+				}
 				# j,k,f are meta data
-				push @{$diheCache}, {'i'=> $atomi1,'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4, 'f' => $fType, 'v' => $val};
 			}else{
 				## Improper dihedral. must calculate everything
 
@@ -1461,12 +1464,15 @@ sub CalculateDihedralsHelper
 				my $b3=$A4-$A3;
 				my $acos=dihfrombonds($b1,$b2,$b3);
 
-				my ($val,$fType)=dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1);
-				if(!$val) {next;}
-				push @{$diheCache}, {'i'=> $atomi1, 'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4,'f' => $fType, 'v' => $val};
+				my ($valArray,$fTypeArray)=dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1);
+				my @arr=@{$valArray};
+				my @Farr=@{$fTypeArray};
+				for(my $I=0;$I<=$#arr;$I++){
+					push @{$diheCache}, {'i'=> $atomi1,'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4, 'f' => $Farr[$I], 'v' => $arr[$I]};
+				}
 			}
-	 	   }
-	 }
+		}
+	}
 }
 
 sub dihfrombonds
@@ -1477,13 +1483,12 @@ sub dihfrombonds
 	my $n2 = norm(crossp($b2,$b3));
 	my $m1 = crossp($b2,$n1);
 	my $acos = atan2(inner($m1,$n2),inner($n1,$n2));
-	$acos = sclr(mathFunctions::rad_to_deg($acos)); 
 	return $acos;
 }
 
 sub dihedralOutput
 {
- 	my($inputFunc,$ai,$aj,$ak,$al,$values,$ratio,$eG,$allatoms) = @_;
+ 	my($inputFunc,$ai,$aj,$ak,$al,$value,$ratio,$eG,$allatoms) = @_;
  	$inputFunc = trim($inputFunc);
 	my @funcs;
 	# splitFunctions is a more robust function parser, but it outputs data 
@@ -1500,10 +1505,20 @@ sub dihedralOutput
 	my @paramArr;
 	my $funcName;
 	my $funci=0; my @fTypei;
+ 	my @OSarray=();
+ 	my @fTypeArray=();
 	foreach my $fun(@funcs)
 	{
 		# funcName is only used for OS features
 		($fType,$funcName,@paramArr) = diheFuncParser($fun);
+		push(@fTypeArray,$fType);
+		# convert to degrees, except when using OpenSMOG
+		my $value_local;
+		if ($fType == -2){
+			$value_local=sclr($value);
+		}else{
+			$value_local= sclr(mathFunctions::rad_to_deg($value)); 
+		}
 		if($fType ==-1){
 			 ## don't write angle. Make gromacs use dihedraltype
 			my $type=checkdihedraltype($ai,$aj,$ak,$al,$allatoms);
@@ -1515,6 +1530,8 @@ sub dihedralOutput
                         }else{
                                 $outputString .= "\n";
                         }
+
+			push(@OSarray,"$outputString");
 		}elsif($fType != 0){
 
 	 		if($anyfree!=0 and (exists $freeangles{"$ai-$aj-$ak"} or exists $freeangles{"$ak-$aj-$ai"} or exists $freeangles{"$aj-$ak-$al"} or exists $freeangles{"$al-$ak-$aj"})  ){
@@ -1523,11 +1540,19 @@ sub dihedralOutput
 				# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
 				if ($fType == -2){
 					# if OS potential, then every parameter (except for weight, which is the first) may contain a ?
-					for(my $in=1;$in<=$#paramArr;$in++){
-						$paramArr[$in]=evalsub($paramArr[$in],$values);
+					my $ind=-2;
+					if( exists $OpenSMOGpothash->{$funcName}->{weight}){
+						$ind=exists $OpenSMOGpothash->{$funcName}->{weight};
+					}
+
+					for(my $in=0;$in<=$#paramArr;$in++){
+						if($in !=$ind){
+							# replace ? on all terms, except for weight
+							$paramArr[$in]=evalsub($paramArr[$in],$value_local);
+						}
 					}
 				}else{
-					$paramArr[0]=evalsub($paramArr[0],$values);
+					$paramArr[0]=evalsub($paramArr[0],$value_local);
 				}
 
                                 if($funcName eq "dihedral_cosine" or $funcName eq "dihedral_cosine4" ){
@@ -1549,8 +1574,11 @@ sub dihedralOutput
 				$funci++;
 				## If dihedral kd is normalized or has scaling&normalize ##
 				if ($fType == -2){
+					if(exists $OpenSMOGpothash->{$funcName}->{weight}){
+			 			my $ind=$OpenSMOGpothash->{$funcName}->{weight};
+						$paramArr[$ind]*=$ratio;
+					}
 					# if OS potential, then weight is the first value
-			 		$paramArr[0]*=$ratio;
 				}else{
 			 		$paramArr[1]*=$ratio;
 				}
@@ -1574,7 +1602,8 @@ sub dihedralOutput
         				        my $parhandle=\@{$OpenSMOGpothash->{$funcName}->{parameters}};
         				        OShashAddFunction($OSref,"dihedrals","$funcName","$potential",$parhandle);
         				}
-					return(\@array,$fType);
+					push(@OSarray,\@array);
+					next;
 				}
 				my $paramFormat=formatvalues($#paramArr);
 
@@ -1586,10 +1615,11 @@ sub dihedralOutput
 				}
 				$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
 				$outputString = "$outputString$formattedString";
+				push(@OSarray,"$formattedString");
 			}
 		}
 	}
-	return ($outputString,$fType);
+	return (\@OSarray,\@fTypeArray);
 }
  
 # Given a user defined dihedral function, parse values

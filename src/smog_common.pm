@@ -592,7 +592,7 @@ sub checkPotentialFunction{
 	$funclist[0] =~ s/^(\w+)=//g;
 	my @par=split(/[\(\)\*\/\-\+\,\^]+/,$funclist[0]);
 	foreach my $M(@par){
-		unless(whatAmI($M) < 3 || exists $OSrestrict{$M} || exists $phash{$M} || defined $ref{$M} || exists $definedexpressions{$M}){
+		unless(whatAmI($M) < 3 || exists $OSrestrict{$M} || exists $phash{$M} || defined $ref{$M} || exists $definedexpressions{$M} || $M eq ""){
 			smog_quit("OpenSMOG energy function appears to be expressed using the quantity \"$M\". However, this does not appear to correspond to a default OpenMM function, parameter, constant, or subsequently-defined expression. Issue with energy function:\n$fullfunc",1);
 		}
 	}

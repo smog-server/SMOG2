@@ -354,6 +354,20 @@ sub checkDihedralFunctionDef
 		}elsif($I != 0 and $fTypei[0] != $fType){
 		        smog_quit ("Sums of dihedrals of different types is not supported.");
 		}
+		if($fType == -2){
+			# if nothing matched, then we must be using an OpenSMOG potentials.  Let's check a few things.
+			# energynorm can't be used for the weight if normalization is turned off.
+			if($normalize){
+				if( !exists $OpenSMOGpothash->{$funcname}->{weight}){
+					smog_quit("$funcname dihedral type does not have a parameter called \"weight\", but this function is being used in a normalized energy group ($eG, in .nb file): $funcString")
+				}
+				my $pot=$functions->{$funcname}->{"OpenSMOGpotential"};
+	 			if(OSfunchelper($pot)==1) {
+					smog_quit("If normalization is turned on for an OpenSMOG potential, then the functional form must be \"+/-weight[*/](<function of coordinates and other parameters>)\". The definition for function $funcname in the .sif file appears to not comply with this standard, which could lead to issues. While the current format check is extremely rigid, if the potential is of the form weight*<any function>, then you can safely ignore this message. However, simply enclosing the function in parentheses would get rid of this error.\nFound: $functions->{$funcname}->{\"OpenSMOGpotential\"}");	
+				}
+			}
+
+		}
 	}
 }
 
@@ -499,8 +513,7 @@ sub checkContactFunctionDef
 				smog_quit("$funcname contact type (defined in .sif) can not have normalization turned on without the \"weight\" parameter being given as \"energynorm\". Problematic declaration in contact group $cG (in .nb file): $funcString")
 			}
 			my $pot=$functions->{$funcname}->{"OpenSMOGpotential"};
-			$pot =~ s/^(-?)weight[\*\/]//g;
- 			if($pot !~ m/^(\((?:[^()]++|(?1))*\))$/ || $pot =~ m/weight/ ) {
+ 			if(OSfunchelper($pot) == 1) {
 				smog_quit("If normalization is turned on for an OpenSMOG potential, then the functional form must be \"+/-weight[*/](<function of coordinates and other parameters>)\". The definition for function $funcname in the .sif file appears to not comply with this standard, which could lead to issues. While the current format check is extremely rigid, if the potential is of the form weight*<any function>, then you can safely ignore this message. However, in that case, simply enclosing the function in parentheses would get rid of this error.\nFound: $functions->{$funcname}->{\"OpenSMOGpotential\"}");	
 			}
 		}
@@ -514,6 +527,17 @@ sub checkContactFunctionDef
 	}
 	if($funcname =~ m/\?\?/){
 		smog_quit("Double question marks not allowed in contact definition.\nSee the following function defined in the .nb file:\n\t$funcString\n");
+	}
+}
+
+sub OSfunchelper
+{
+	my ($pot)=@_;
+	$pot =~ s/^(-?)weight[\*\/]//g;
+ 	if($pot !~ m/^(\((?:[^()]++|(?1))*\))$/ || $pot =~ m/weight/ ) {
+		return 1;
+	}else{
+		return 0;
 	}
 }
 
