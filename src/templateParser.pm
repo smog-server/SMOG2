@@ -1443,7 +1443,7 @@ sub getMolInfo{
 		$interactions->{"molname"}=$interHandle[0]->{"molname"};
 		$interactions->{"nrexcl"}=$interHandle[0]->{"nrexcl"};
 		if ($interactions->{"nrexcl"} > 3){
-			smog_quit("nrexcl must be less than or equal to 3. While larger values may work, it can also lead to somewhat unpredictable results.");
+			smog_quit("Generally, nrexcl should be less than or equal to 3. While larger values may work, it can also lead to unexpected results.",0);
 		}
 	}else{
 		smog_note("name of moleculetype not given in .nb file. Will use \"Macromolecule\".");	
