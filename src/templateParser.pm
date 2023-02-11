@@ -355,7 +355,6 @@ sub checkDihedralFunctionDef
 		        smog_quit ("Sums of dihedrals of different types is not supported.");
 		}
 		if($fType == -2){
-			# if nothing matched, then we must be using an OpenSMOG potentials.  Let's check a few things.
 			# energynorm can't be used for the weight if normalization is turned off.
 			if($normalize){
 				if( !exists $OpenSMOGpothash->{$funcname}->{weight}){
@@ -423,6 +422,8 @@ sub checkContactFunctionDef
 	my @vars=split(/\,/,$var[0]);
 	my $nargs = $#vars + 1;
 	my $funcname=$name[0];
+	my $fType=$fTypes{"$funcname"};
+
 	if(defined $OpenSMOG && !exists ${$OpenSMOGpothash}{$funcname}){
 		smog_quit("contact function $funcname not supported with -OpenSMOG");
 	}
@@ -500,9 +501,9 @@ sub checkContactFunctionDef
                 
 	}elsif($funcname eq "contact_free"){
 
-	}else{
+	}elsif($fType == -2){
 
-		# if nothing matched, then we must be using an OpenSMOG potentials.  Let's check a few things.
+		# OpenSMOG potentials.  Let's check a few things.
 		# energynorm can't be used for the weight if normalization is turned off.
 		if($normalize){
 			if( !exists $OpenSMOGpothash->{$funcname}->{weight}){
@@ -516,6 +517,9 @@ sub checkContactFunctionDef
 				smog_quit("If normalization is turned on for an OpenSMOG potential, then the functional form must be \"+/-weight[*/](<function of coordinates and other parameters>)\". The definition for function $funcname in the .sif file appears to not comply with this standard, which could lead to issues. While the current format check is extremely rigid, if the potential is of the form weight*<any function>, then you can safely ignore this message. However, in that case, simply enclosing the function in parentheses would get rid of this error.\nFound: $functions->{$funcname}->{\"OpenSMOGpotential\"}");	
 			}
 		}
+	}else{
+		# this should never happen, unless there is a bug and somehow a function has not been mapped.
+		smog_quit("Internal error 6. This should not happen. Please report to the SMOG 2 developers.");
 	}
 
  	$usedFunctions{$funcname}=1;
