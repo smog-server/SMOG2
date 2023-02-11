@@ -366,7 +366,6 @@ sub checkDihedralFunctionDef
 					smog_quit("If normalization is turned on for an OpenSMOG potential, then the functional form must be \"+/-weight[*/](<function of coordinates and other parameters>)\". The definition for function $funcname in the .sif file appears to not comply with this standard, which could lead to issues. While the current format check is extremely rigid, if the potential is of the form weight*<any function>, then you can safely ignore this message. However, simply enclosing the function in parentheses would get rid of this error.\nFound: $functions->{$funcname}->{\"OpenSMOGpotential\"}");	
 				}
 			}
-
 		}
 	}
 }
@@ -1777,7 +1776,7 @@ sub sifFunctions{
 		if($functions->{$funcName}->{"directive"} eq "OpenSMOG"){
 			newOpenSMOGfunction($OpenSMOGpothash,$functions,$funcName);
 		        if(!defined $OpenSMOG){
-				smog_quit("Function $funcName is defined in .sif file, but it is only supported with the -OpenSMOG flag. If your system will not use this function, then you are fine.  However, if you do use this function, SMOG 2 is going to exit without completing.",0);
+				smog_quit("Function $funcName is defined in .sif file, but it is only supported with the -OpenSMOG flag. If your system will not use this function, then you may suppress this error with the -warn option. However, if you suppress the error and do use the function, then SMOG 2 will likely exhibit unpredictable behavior.");
         		}
 		}
 

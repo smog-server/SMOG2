@@ -1382,10 +1382,6 @@ sub printOrderedDihedrals
 	        $blist{"$i $l"}=0;
 	        $blist{"$l $i"}=0;
 		if($p->{"f"} == -2){
-			if(! defined $OpenSMOG){
-				my $name=${$p->{"v"}}[2];
-				smog_quit("\"$name\" appears to be a custom dihedral. Custom dihedrals are only supported with the -OpenSMOG option.");
-			}
 			addToTop("OpenSMOG",$p->{"v"},"dihedral");
 		}else{
 			addToTop("dihedrals",$p->{"v"},"dihedral");
