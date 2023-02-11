@@ -1442,6 +1442,11 @@ sub getMolInfo{
 		my @interHandle = @{$data->{"moltype"}};
 		$interactions->{"molname"}=$interHandle[0]->{"molname"};
 		$interactions->{"nrexcl"}=$interHandle[0]->{"nrexcl"};
+		my $nrexcl=$interactions->{"nrexcl"};
+	        if(defined $OpenSMOG && $nrexcl != 3){
+			smog_quit("OpenMM only supported nrexcl=3.  Found $nrexcl in the template definition for the force field.");
+		}
+
 		if ($interactions->{"nrexcl"} > 3){
 			smog_quit("Generally, nrexcl should be less than or equal to 3. While larger values may work, it can also lead to unexpected results.",0);
 		}
@@ -1451,8 +1456,6 @@ sub getMolInfo{
 		smog_note("value of nrexcl not given in .nb file. Will use 3.");	
 		$interactions->{"nrexcl"}=3;
 	}
-
-
 }
 sub CustomNonBondedCheckAdjust{
 	my ($data,$OSref)=@_;
