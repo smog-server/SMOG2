@@ -257,7 +257,7 @@ sub setglobals {
 
         initOSrestrict();
 	$OpenSMOGpothash=\%OpenSMOGpot;
-	# predefine the mapping of openMM functions for common potentials
+	# predefine the mapping of openMM functions for default SMOG 2 potentials
 	$OpenSMOGpothash->{contact_1}->{expression}="A/r^N-B/r^M";
 	push(@{$OpenSMOGpothash->{contact_1}->{parameters}},"A");
 	push(@{$OpenSMOGpothash->{contact_1}->{parameters}},"B");
@@ -271,7 +271,6 @@ sub setglobals {
 	push(@{$OpenSMOGpothash->{contact_gaussian}->{parameters}},"r0");
 	push(@{$OpenSMOGpothash->{contact_gaussian}->{parameters}},"sigmaG");
 	push(@{$OpenSMOGpothash->{contact_gaussian}->{parameters}},"a");
-
 
 	$OpenSMOGpothash->{contact_free}->{expression}="";
 
@@ -597,7 +596,6 @@ sub initializeDirectives {
 	addToTop("angles","\n[ angles ]\n");
 	addToTop("angles",";ai\taj\tak\tfunc\t th0(deg)        Ka\n");
   	addToTop("dihedrals","\n[ dihedrals ]\n");
-  	addToTop("dihedrals","\n[ dihedrals ]\n");
 	addToSCMbuffer("dihedrals","\n[ dihedrals ]\n");
   	addToTop("dihedrals",";ai\taj\tak\tal\tfunc\t phi0(deg)       Kd              mult\n");
 	addToTop("pairs","\n[ pairs ]\n");
@@ -639,7 +637,7 @@ sub addToTop {
 	my($directive,$stuff,$OSdir) = @_;
 		
 	if($directive =~ m/^OpenSMOG$/){
-		# if $directive is OpenSMOG, then $stuff is the address of the array that contains the following information: i, j, interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
+		# if $directive is OpenSMOG, then $stuff is the address of the array that contains the following information: i, j, [k, j,] interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
 		if(! defined $OSdir){
 			smog_quit("internal error: OS 1");
 		}elsif( $OSdir eq "contact" or $OSdir eq "dihedral"){
