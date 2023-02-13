@@ -114,6 +114,7 @@ our %dihParseSeen;
 our %contactParseSeen;
 our $normalizevals;
 our $SCMbuffer;
+my @OSswitchlist;
 #######END GLOBAL DEFS#######
 #######MAIN PROGRAM####### 
 
@@ -274,6 +275,56 @@ sub setglobals {
 
 	$OpenSMOGpothash->{contact_free}->{expression}="";
 
+
+	# dihedrals OpenSMOG potentials
+	$OpenSMOGpothash->{dihedral_cosine}->{expression}="weight*(1-cos(multiplicity*(theta-theta0)))";
+	push(@{$OpenSMOGpothash->{dihedral_cosine}->{parameters}},"theta0");
+	push(@{$OpenSMOGpothash->{dihedral_cosine}->{parameters}},"weight");
+	push(@{$OpenSMOGpothash->{dihedral_cosine}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_cosine}->{weight}=1;
+	push(@OSswitchlist,"dihedral_cosine");
+
+	$OpenSMOGpothash->{dihedral_ncos}->{expression}="weight*(1-cos(multiplicity*theta-theta0))";
+	push(@{$OpenSMOGpothash->{dihedral_ncos}->{parameters}},"theta0");
+	push(@{$OpenSMOGpothash->{dihedral_ncos}->{parameters}},"weight");
+	push(@{$OpenSMOGpothash->{dihedral_ncos}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_ncos}->{weight}=1;
+	push(@OSswitchlist,"dihedral_ncos");
+
+	$OpenSMOGpothash->{dihedral_pcos}->{expression}="weight*(1+cos(multiplicity*theta-theta0))";
+	push(@{$OpenSMOGpothash->{dihedral_pcos}->{parameters}},"theta0");
+	push(@{$OpenSMOGpothash->{dihedral_pcos}->{parameters}},"weight");
+	push(@{$OpenSMOGpothash->{dihedral_pcos}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_pcos}->{weight}=1;
+	push(@OSswitchlist,"dihedral_pcos");
+
+	$OpenSMOGpothash->{dihedral_cosine4}->{expression}="weight*(1-cos(multiplicity*(theta-theta0)))";
+	push(@{$OpenSMOGpothash->{dihedral_cosine4}->{parameters}},"theta0");
+	push(@{$OpenSMOGpothash->{dihedral_cosine4}->{parameters}},"weight");
+	push(@{$OpenSMOGpothash->{dihedral_cosine4}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_cosine4}->{weight}=1;
+	push(@OSswitchlist,"dihedral_cosine4");
+
+	$OpenSMOGpothash->{dihedral_ncos4}->{expression}="weight*(1-cos(multiplicity*theta-theta0))";
+	push(@{$OpenSMOGpothash->{dihedral_ncos4}->{parameters}},"theta0");
+	push(@{$OpenSMOGpothash->{dihedral_ncos4}->{parameters}},"weight");
+	push(@{$OpenSMOGpothash->{dihedral_ncos4}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_ncos4}->{weight}=1;
+	push(@OSswitchlist,"dihedral_ncos4");
+
+	$OpenSMOGpothash->{dihedral_pcos4}->{expression}="weight*(1+cos(multiplicity*theta-theta0))";
+	push(@{$OpenSMOGpothash->{dihedral_pcos4}->{parameters}},"theta0");
+	push(@{$OpenSMOGpothash->{dihedral_pcos4}->{parameters}},"weight");
+	push(@{$OpenSMOGpothash->{dihedral_pcos4}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_pcos4}->{weight}=1;
+	push(@OSswitchlist,"dihedral_pcos4");
+
+	$OpenSMOGpothash->{dihedral_harmonic}->{expression}="weight*(0.5*min(dtheta, 2*pi-dtheta)^2); dtheta = abs(theta-theta0); pi = 3.1415926535";
+	push(@{$OpenSMOGpothash->{dihedral_harmonic}->{parameters}},"theta0");
+	push(@{$OpenSMOGpothash->{dihedral_harmonic}->{parameters}},"weight");
+	$OpenSMOGpothash->{dihedral_harmonic}->{weight}=1;
+	push(@OSswitchlist,"dihedral_harmonic");
+
 	## this is the topfile buffer stuff
 	%directives = ("comments",1,"defaults",2,"atomtypes",3,"bondtypes",4,"angletypes",5,"dihedraltypes",6,"nonbond_params",7,"moleculetype",8,"atoms",9,"bonds",10,"angles",11,"dihedrals",12,"pairs",13,"exclusions",14,"position_restraints",15,"system",16,"molecules",17);
 	# %directivesatomnumber indicates the number of atoms associated with each directive. This is used to make sure that there are no duplicate declarations in the types sections
@@ -290,6 +341,7 @@ sub formatvalues {
 	$string .= "\n";
 	return($string); 
 }
+
 sub parse_args {
 	## parse command line options ##
 	# -o output top file name, default is smog.top
@@ -677,7 +729,6 @@ sub addToSCMbufferArr{
 		push  @{$SCMbuffer->{$directive}}, $line;
 	}
 }
-
 
 #read file "extras" in template directory
 sub addExtras {
@@ -2758,6 +2809,12 @@ sub freeMemoryForShadow
 	undef %foundDtype;
 }
 
+sub OpenSMOGSwitchPotFlag{
+	foreach my $I(@OSswitchlist){
+		$fTypes{$I}=-2;
+	}
+}
+
 sub parseTemplatesAndPDB
 {
 	my ($inputFolder,$inputPDB,$CGenabled,$CGstage) = @_;
@@ -2799,7 +2856,11 @@ sub parseTemplatesAndPDB
 
 	# no need to initialize these things if we are only making a map file
 	&initializeDirectives;
-
+	
+	if(defined $OpenSMOG){
+		# switch some potentials to be treated as OpenSMOG potentials.  This will ensure they are saved to the xml file
+		&OpenSMOGSwitchPotFlag;
+	}	
 	print "\nPre-processing templates\n";
 	## Find Bonds ##
 	createBondFunctionals();

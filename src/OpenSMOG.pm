@@ -42,6 +42,7 @@ our %OpenSMOGatoms2restrain;
 our %OSrestrict;
 our %NBtypespresent;
 ########## OpenSMOG routines
+
 sub OShashAddFunction{
 	my ($OSref,$type,$name,$expr,$params)=@_;
 	if($type ne "contacts" and $type ne "dihedrals"){
