@@ -69,21 +69,21 @@ our %ignoreBONDed;
 ## CLEAR VARIABLE MEMORY ##
 ###########################
 sub clearPDBMemory {
-undef %tempPDL;
-undef %tempPDLB;
-undef %tempPDLbType;
-undef %resPDL;
-undef %bondPDL; 
-undef %isBOND; 
-undef %AngleData;
-undef %DihedralData;
-undef %BondData;
-undef $totalAtoms;
-#undef $contactPDL; 
-undef %indexMap;
-#for coarse graining contact maps we need to know the atomNum<->resNum mapping
-%allAtomsBackup = %{ dclone (\%allAtoms) };
-undef %allAtoms; 
+	undef %tempPDL;
+	undef %tempPDLB;
+	undef %tempPDLbType;
+	undef %resPDL;
+	undef %bondPDL; 
+	undef %isBOND; 
+	undef %AngleData;
+	undef %DihedralData;
+	undef %BondData;
+	undef $totalAtoms;
+	#undef $contactPDL; 
+	undef %indexMap;
+	#for coarse graining contact maps we need to know the atomNum<->resNum mapping
+	%allAtomsBackup = %{ dclone (\%allAtoms) };
+	undef %allAtoms; 
 }
 
 ####################################################################

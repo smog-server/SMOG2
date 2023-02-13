@@ -69,7 +69,6 @@ my $centersystem;
 my $boxbuffer=1; 
 our $OpenSMOG; 
 my $OpenSMOGxml="";
-my $OSref;
 my $CAGdefault = 0;
 my $saveSCMorig=0;
 my $printversion;
@@ -115,6 +114,7 @@ our %contactParseSeen;
 our $normalizevals;
 our $SCMbuffer;
 my @OSswitchlist;
+my $OSref;
 #######END GLOBAL DEFS#######
 #######MAIN PROGRAM####### 
 
@@ -162,6 +162,11 @@ if(! defined $keep4SCM){
 if($CGenabled == 1) { #Coarse graining, do everything over with new templates
     	clearBifMemory();
 	clearPDBMemory();
+	# clear OS stuff for the initial AA input
+	undef %{$OSref};
+	my %OS;
+	$OSref   = \%OS;
+
 	undef %presentatomtypes;
 	$CGstage = 1;
 	print "\nParsing templates for coarse graining... ";
