@@ -1537,7 +1537,7 @@ sub dihedralOutput
  	my $formattedString="";
 	my @paramArr;
 	my $funcName;
-	my $funci=0; my @fTypei;
+	my @fTypei;
  	my @OSarray=();
  	my @fTypeArray=();
 	foreach my $fun(@funcs)
@@ -1547,11 +1547,6 @@ sub dihedralOutput
 		push(@fTypeArray,$fType);
 		# convert to degrees, except when using OpenSMOG
 		my $value_local;
-		if ($fType == -2){
-			$value_local=sclr($value);
-		}else{
-			$value_local= sclr(mathFunctions::rad_to_deg($value)); 
-		}
 		if($fType ==-1){
 			 ## don't write angle. Make gromacs use dihedraltype
 			my $type=checkdihedraltype($ai,$aj,$ak,$al,$allatoms);
@@ -1572,6 +1567,7 @@ sub dihedralOutput
 			}else{
 				# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
 				if ($fType == -2){
+					$value_local=sclr($value);
 					# if OS potential, then every parameter (except for weight, which is the first) may contain a ?
 					my $ind=-2;
 					if( exists $OpenSMOGpothash->{$funcName}->{weight}){
@@ -1584,39 +1580,11 @@ sub dihedralOutput
 							$paramArr[$in]=evalsub($paramArr[$in],$value_local);
 						}
 					}
-				}else{
-					$paramArr[0]=evalsub($paramArr[0],$value_local);
-				}
-
-                                if($funcName eq "dihedral_cosine" or $funcName eq "dihedral_cosine4" ){
-					if( $fType == 1 || $fType == 4){
-				            	# Angle will be scaled by multiplicity factor n, if they are cosine functions
-				        	$paramArr[0] *= $paramArr[2];
-	                                }
-
-                                       # this adds the negative sign in front of cosines, since that is
-                                       # standard with SMOG models.  If not using these functions, don't add it
-                                        $paramArr[0] += 180;
-				}elsif($funcName eq "dihedral_ncos" or $funcName eq "dihedral_ncos4"){
-				       # ncos and cosine are very similar.  The only difference is that 
-				       # with ncos the given angle is not multiplied by the multiplicity 
-                                       # this adds the negative sign in front of cosines, since that is
-                                       # standard with SMOG models.  If not using these functions, don't add it
-                                        $paramArr[0] += 180;
-				} 
-				$funci++;
-				## If dihedral kd is normalized or has scaling&normalize ##
-				if ($fType == -2){
 					if(exists $OpenSMOGpothash->{$funcName}->{weight}){
 			 			my $ind=$OpenSMOGpothash->{$funcName}->{weight};
 						$paramArr[$ind]*=$ratio;
 					}
-					# if OS potential, then weight is the first value
-				}else{
-			 		$paramArr[1]*=$ratio;
-				}
-				## Format output <i j k function p1 p2 ... pn>
-				if($fType == -2){
+
 					my @array;
 					## organize the array of info
 					$array[0]=$ai;
@@ -1636,19 +1604,46 @@ sub dihedralOutput
         				        OShashAddFunction($OSref,"dihedrals","$funcName","$potential",$parhandle);
         				}
 					push(@OSarray,\@array);
-					next;
-				}
-				my $paramFormat=formatvalues($#paramArr);
 
-				if($fType == 1 || $fType == 4) {
-					$paramFormat=" %12.9e %12.9e %u\n";
-				}elsif($fType == 2){    
-                               ### CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
-                                       if($paramArr[0]>180){$paramArr[0]-=360;}elsif($paramArr[0]<-180){$paramArr[0]+=360;}
+				}else{
+					$value_local= sclr(mathFunctions::rad_to_deg($value)); 
+					# not OS
+					$paramArr[0]=evalsub($paramArr[0],$value_local);
+
+                                	if($funcName eq "dihedral_cosine" or $funcName eq "dihedral_cosine4" ){
+						if( $fType == 1 || $fType == 4){
+					            	# Angle will be scaled by multiplicity factor n, if they are cosine functions
+					        	$paramArr[0] *= $paramArr[2];
+	                        	        }
+
+                                	       # this adds the negative sign in front of cosines, since that is
+                                	       # standard with SMOG models.  If not using these functions, don't add it
+                                	        $paramArr[0] += 180;
+					}elsif($funcName eq "dihedral_ncos" or $funcName eq "dihedral_ncos4"){
+					       # ncos and cosine are very similar.  The only difference is that 
+					       # with ncos the given angle is not multiplied by the multiplicity 
+                                	       # this adds the negative sign in front of cosines, since that is
+                                	       # standard with SMOG models.  If not using these functions, don't add it
+                                	        $paramArr[0] += 180;
+					}
+
+
+			 		$paramArr[1]*=$ratio;
+
+
+					## Format output <i j k function p1 p2 ... pn>
+					my $paramFormat=formatvalues($#paramArr);
+
+					if($fType == 1 || $fType == 4) {
+						$paramFormat=" %12.9e %12.9e %u\n";
+					}elsif($fType == 2){    
+                               #	## CONVERT FIX RIGID/IMPROPER DIHEDRALS ANGLES TO GROMACS CONVENTION ###
+                                	       if($paramArr[0]>180){$paramArr[0]-=360;}elsif($paramArr[0]<-180){$paramArr[0]+=360;}
+					}
+					$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
+					$outputString = "$outputString$formattedString";
+					push(@OSarray,"$formattedString");
 				}
-				$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
-				$outputString = "$outputString$formattedString";
-				push(@OSarray,"$formattedString");
 			}
 		}
 	}
