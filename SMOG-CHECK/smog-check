@@ -17,6 +17,13 @@ export perl4smog=`tail -n 1 $smog_exec| awk '{print $1}'`
 export SMOG_PATH=`tail -n 1 $smog_exec| awk '{print $2}' | sed "s/src\/smogv2$//g"`
 `grep PERL $smog_exec`
 CURDIR=`pwd`
+
+if [ ! -w "$CURDIR" ]
+then
+	echo "Current directory is not writable. Perhaps it is write-protected.  Quitting smog-check"
+	exit 1
+fi
+
 CURDIR=$CURDIR/src
 
 export PERLLIB=$PERLLIB:$CURDIR/modules
@@ -37,9 +44,9 @@ export TOLERANCE=0.001
 export PRECISION=10000
 
 src/cleanup.bash
+mkdir FAILED
 
 echo "preparation steps completed.  Will now launch smog-check"
 echo
 
-mkdir FAILED
 echo share/PDB.files/all.pdbs | $perl4smog src/check.v2.pl "$@"
