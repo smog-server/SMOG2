@@ -6,12 +6,15 @@ use Math::Trig qw(acos_real rad2deg);
 use smog_common;
 use check_common;
 use OpenSMOG;
+use SMOGglobals;
 
 # This is the main script that runs SMOG 2 and then checks to see if the generated files are correct.
 # This is intended to be a brute-force evaluation of everything that should appear. Since this is
 # a testing script, it is not designed to be efficient, but to be thorough, and foolproof...  perhaps over time we will clean this up.  But, it gets the job done.
 
 our $VERSION;
+our %OSrestrict;
+initOSrestrict();
 
 #*************
 # ENV variable options (only developers will use these)
@@ -338,6 +341,7 @@ sub addOpenSMOG
     @expectedattributes=("i","j","k","l","theta0","weight");
     $convertvalue{theta0}="180/3.1415926535*(theta0)"
    }elsif($funcs eq "dihedral_cosine"){
+    print("HERE\n");
     $directive="dihedrals";
     $ftype=1;
     $expectedfunction="weight*(1-cos(multiplicity*(theta-theta0)))";
@@ -479,8 +483,10 @@ sub collectinteractions
       my $exp2=$convertvalue{$name};
       for(my $J=0;$J<scalar(@array);$J++){
        my $namet=$array[$J];
-       my $valt=${$entry}{$namet};
-       $exp2=~ s/$namet/$valt/g;
+       if(! exists $OSrestrict{$namet}){
+        my $valt=${$entry}{$namet};
+        $exp2=~ s/$namet/$valt/g;
+       }
       }
       # convert to gromacs angles
       $val=eval($exp2);
