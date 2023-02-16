@@ -312,13 +312,13 @@ sub addOpenSMOG
     }else{
      internal_error("OpenSMOG: contact_1-10-12 checking not implemented for model $model with gaussian=$gaussian");
     }
-   }elsif($funcs eq "gaussian"){
+   }elsif($funcs eq "contact_gaussian"){
     $directive="pairs";
     $ftype=6;
     if($gaussian eq "yes"){
-     $expectedfunction="A/r^12-B/r^10";
-     @expectedparams=("A","B");
-     @expectedattributes=("i","j","B","A");
+     $expectedfunction="A*((1+a/(A*r^12))*(1-exp(-(r-r0)^2/(2*sigmaG^2)))-1)";
+     @expectedparams=("A","r0","sigmaG","a");
+     @expectedattributes=("i","j","A","r0","sigmaG","a");
     }else{
      internal_error("OpenSMOG: gaussian checking not implemented for gaussian=$gaussian");
     }
