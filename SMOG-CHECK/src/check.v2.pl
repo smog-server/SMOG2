@@ -273,11 +273,19 @@ sub addOpenSMOG
  my @expectedattributes;
  my $interactionpass=1;
  my $addstuff;
- my $ftype; 
+ my $ftype;
+ my %foundlist; 
  foreach my $key("contacts", "dihedrals"){
  # for now, only checking contacts. will need to add constants and nb params
  #keys %{$openXML}){
   my $xmlhandle=$openXML->{"$key"}->{$key . "_type"};
+  if(defined $xmlhandle){
+   if($key eq "contacts"){
+    $foundlist{"pairs"}=1;
+   }else{
+    $foundlist{$key}=1;
+   }
+  }
   foreach my $funcs(keys %{$xmlhandle}){
    my $directive;
    my %convertvalue;
@@ -412,7 +420,7 @@ sub addOpenSMOG
  if($parampassP==$parampassN){
   $parampass=0;
  }
- return ($topdata,$functionform,$parampass,$interactionpass);
+ return ($topdata,$functionform,$parampass,$interactionpass,\%foundlist);
 }
 
 sub arraycomp
@@ -1960,11 +1968,14 @@ sub checktop
    my $openEXPR=1;
    my $openPARAMS=1;
    my $openINTER=1;
-   ($topdata,$openEXPR,$openPARAMS,$openINTER)=addOpenSMOG($topdata,$openXML,$model,$gaussian);
+   my $foundlist;
+   ($topdata,$openEXPR,$openPARAMS,$openINTER,$foundlist)=addOpenSMOG($topdata,$openXML,$model,$gaussian);
    $FAIL{'OPENSMOG: EXPRESSION'}=$openEXPR;
    $FAIL{'OPENSMOG: PARAMETERS'}=$openPARAMS;
    $FAIL{'OPENSMOG: INTERACTIONS'}=$openINTER;
-   $FOUND{'pairs'}=1;
+   foreach my $key(keys %{$foundlist}){
+    $FOUND{$key}=1;
+   }
   }
  }
 
