@@ -58,7 +58,7 @@ quit_init();
 
 # FAILLIST is a list of all the tests.
 # If you are developing and testing your own forcefield, which may not need to conform to certain checks, then you may want to disable some tests by  removing the test name from this list. However, do so at your own risk.
-our @FAILLIST = ('NAME','DEFAULTS, num entries','DEFAULTS, nbfunc','DEFAULTS, comb-rule','DEFAULTS, gen-pairs','DEFAULTS, fudgeLJ','DEFAULTS, fudgeQQ','1 MOLECULE','ATOMTYPES UNIQUE','ALPHANUMERIC ATOMTYPES','TOP FIELDS FOUND','TOP FIELDS RECOGNIZED','MASS', 'CHARGE','moleculetype=Macromolecule','nrexcl=3', 'PARTICLE', 'C6 VALUES', 'C12 VALUES','ATOMTYPES, SIGMA','ATOMTYPES, EPSILON', 'SUPPORTED BOND TYPES', 'OPEN GRO','GRO-TOP CONSISTENCY', 'BOND STRENGTHS', 'BOND LENGTHS','ANGLE TYPES', 'ANGLE WEIGHTS', 'ANGLE VALUES','DUPLICATE BONDS', 'DUPLICATE ANGLES', 'GENERATED ANGLE COUNT','GENERATED ANGLE IN TOP','ANGLES IN TOP GENERATED', 'IMPROPER WEIGHTS', 'CA IMPROPERS EXIST','OMEGA IMPROPERS EXIST','SIDECHAIN IMPROPERS EXIST','MATCH DIH WEIGHTS','DIHEDRAL ANGLES','ALL POSSIBLE MATCHED DIHEDRALS PRESENT','CA DIHEDRAL WEIGHTS', 'DUPLICATE TYPE 1 DIHEDRALS','DUPLICATE TYPE 2 DIHEDRALS','DUPLICATE TYPE 3 DIHEDRALS','1-3 DIHEDRAL PAIRS','3-1 DIHEDRAL PAIRS','1-3 ORDERING OF DIHEDRALS','1-3 DIHEDRAL RELATIVE WEIGHTS','STRENGTHS OF RIGID DIHEDRALS','STRENGTHS OF OMEGA DIHEDRALS','STRENGTHS OF PROTEIN BB DIHEDRALS','STRENGTHS OF PROTEIN SC DIHEDRALS','STRENGTHS OF NUCLEIC BB DIHEDRALS','STRENGTHS OF NUCLEIC SC DIHEDRALS','STRENGTHS OF LIGAND DIHEDRALS','STACK-NONSTACK RATIO','PROTEIN BB/SC RATIO','NUCLEIC SC/BB RATIO','AMINO/NUCLEIC DIHEDRAL RATIO','AMINO/LIGAND DIHEDRAL RATIO','NUCLEIC/LIGAND DIHEDRAL RATIO','NONZERO DIHEDRAL ENERGY','CONTACT/DIHEDRAL RATIO','1-3 DIHEDRAL ANGLE VALUES','DIHEDRAL IN TOP GENERATED','GENERATED DIHEDRAL IN TOP','STACKING CONTACT WEIGHTS','NON-STACKING CONTACT WEIGHTS','NON-STACKING 2CG CONTACT WEIGHTS','NON-STACKING CG RATIO','LONG CONTACTS', 'CA CONTACT WEIGHTS', 'CONTACT DISTANCES','GAUSSIAN CONTACT WIDTHS','GAUSSIAN CONTACT EXCLUDED VOLUME','CONTACTS NUCLEIC i-j=1','CONTACTS PROTEIN i-j=4','CONTACTS PROTEIN i-j!>4','SCM CONTACT COMPARISON','STATIC CONTACT COMPARISON','NUMBER OF EXCLUSIONS', 'BOX DIMENSIONS','GENERATION OF ANGLES/DIHEDRALS','OPEN CONTACT FILE','NCONTACTS','TOTAL ENERGY','TYPE6 ATOMS','CLASSIFYING DIHEDRALS','NON-ZERO EXIT','ATOM FIELDS','ATOM CHARGES','FREE PAIRS APPEAR IN CONTACTS','EXTRAS: ATOMTYPES','EXTRAS: BONDTYPES','EXTRAS: ANGLETYPES','EXTRAS: DIHEDRALTYPES','EXTRAS: NB_PARAMS','NONZERO LIGAND DIHEDRAL VALUE','BONDS: EXPECTED FOUND','BONDS: FOUND EXPECTED','GMX COMPATIBLE','DIHEDRAL COUNTING: OFF','DIHEDRAL COUNTING: ON','OPENSMOG CONTACTS: EXPRESSION','OPENSMOG CONTACTS: PARAMETERS','OPENSMOG CONTACTS: INTERACTIONS','OPENSMOG: XML EXISTS','USER-DEFINED BONDS PRESENT');
+our @FAILLIST = ('NAME','DEFAULTS, num entries','DEFAULTS, nbfunc','DEFAULTS, comb-rule','DEFAULTS, gen-pairs','DEFAULTS, fudgeLJ','DEFAULTS, fudgeQQ','1 MOLECULE','ATOMTYPES UNIQUE','ALPHANUMERIC ATOMTYPES','TOP FIELDS FOUND','TOP FIELDS RECOGNIZED','MASS', 'CHARGE','moleculetype=Macromolecule','nrexcl=3', 'PARTICLE', 'C6 VALUES', 'C12 VALUES','ATOMTYPES, SIGMA','ATOMTYPES, EPSILON', 'SUPPORTED BOND TYPES', 'OPEN GRO','GRO-TOP CONSISTENCY', 'BOND STRENGTHS', 'BOND LENGTHS','ANGLE TYPES', 'ANGLE WEIGHTS', 'ANGLE VALUES','DUPLICATE BONDS', 'DUPLICATE ANGLES', 'GENERATED ANGLE COUNT','GENERATED ANGLE IN TOP','ANGLES IN TOP GENERATED', 'IMPROPER WEIGHTS', 'CA IMPROPERS EXIST','OMEGA IMPROPERS EXIST','SIDECHAIN IMPROPERS EXIST','MATCH DIH WEIGHTS','DIHEDRAL ANGLES','ALL POSSIBLE MATCHED DIHEDRALS PRESENT','CA DIHEDRAL WEIGHTS', 'DUPLICATE TYPE 1 DIHEDRALS','DUPLICATE TYPE 2 DIHEDRALS','DUPLICATE TYPE 3 DIHEDRALS','1-3 DIHEDRAL PAIRS','3-1 DIHEDRAL PAIRS','1-3 ORDERING OF DIHEDRALS','1-3 DIHEDRAL RELATIVE WEIGHTS','STRENGTHS OF RIGID DIHEDRALS','STRENGTHS OF OMEGA DIHEDRALS','STRENGTHS OF PROTEIN BB DIHEDRALS','STRENGTHS OF PROTEIN SC DIHEDRALS','STRENGTHS OF NUCLEIC BB DIHEDRALS','STRENGTHS OF NUCLEIC SC DIHEDRALS','STRENGTHS OF LIGAND DIHEDRALS','STACK-NONSTACK RATIO','PROTEIN BB/SC RATIO','NUCLEIC SC/BB RATIO','AMINO/NUCLEIC DIHEDRAL RATIO','AMINO/LIGAND DIHEDRAL RATIO','NUCLEIC/LIGAND DIHEDRAL RATIO','NONZERO DIHEDRAL ENERGY','CONTACT/DIHEDRAL RATIO','1-3 DIHEDRAL ANGLE VALUES','DIHEDRAL IN TOP GENERATED','GENERATED DIHEDRAL IN TOP','STACKING CONTACT WEIGHTS','NON-STACKING CONTACT WEIGHTS','NON-STACKING 2CG CONTACT WEIGHTS','NON-STACKING CG RATIO','LONG CONTACTS', 'CA CONTACT WEIGHTS', 'CONTACT DISTANCES','GAUSSIAN CONTACT WIDTHS','GAUSSIAN CONTACT EXCLUDED VOLUME','CONTACTS NUCLEIC i-j=1','CONTACTS PROTEIN i-j=4','CONTACTS PROTEIN i-j!>4','SCM CONTACT COMPARISON','STATIC CONTACT COMPARISON','NUMBER OF EXCLUSIONS', 'BOX DIMENSIONS','GENERATION OF ANGLES/DIHEDRALS','OPEN CONTACT FILE','NCONTACTS','TOTAL ENERGY','TYPE6 ATOMS','CLASSIFYING DIHEDRALS','NON-ZERO EXIT','ATOM FIELDS','ATOM CHARGES','FREE PAIRS APPEAR IN CONTACTS','EXTRAS: ATOMTYPES','EXTRAS: BONDTYPES','EXTRAS: ANGLETYPES','EXTRAS: DIHEDRALTYPES','EXTRAS: NB_PARAMS','NONZERO LIGAND DIHEDRAL VALUE','BONDS: EXPECTED FOUND','BONDS: FOUND EXPECTED','GMX COMPATIBLE','DIHEDRAL COUNTING: OFF','DIHEDRAL COUNTING: ON','OPENSMOG: EXPRESSION','OPENSMOG: PARAMETERS','OPENSMOG: INTERACTIONS','OPENSMOG: XML EXISTS','USER-DEFINED BONDS PRESENT');
 #removed tests: 'OPEN G96','G96 FIELDS',
 # default location of test PDBs
 our $PDB_DIR="share/PDB.files";
@@ -261,7 +261,11 @@ sub addOpenSMOG
  my ($topdata,$openXML,$model,$gaussian)=@_;
 
  my $functionform=1;
+ my $functionformN=0;
+ my $functionformP=0;
  my $parampass=1;
+ my $parampassN=0;
+ my $parampassP=0;
 
  my $paramlist=1;
  my $expectedfunction;
@@ -270,60 +274,143 @@ sub addOpenSMOG
  my $interactionpass=1;
  my $addstuff;
  my $ftype; 
- foreach my $key("contacts"){
+ foreach my $key("contacts", "dihedrals"){
  # for now, only checking contacts. will need to add constants and nb params
  #keys %{$openXML}){
   my $xmlhandle=$openXML->{"$key"}->{$key . "_type"};
   foreach my $funcs(keys %{$xmlhandle}){
-
+   my $directive;
+   my %convertvalue;
    # determine what is expected in this contact term
+   # expected function is the OpenMM custom potential form
+   # expectedparams is the list of parameters that should be found in the xml
+   # expectedattributes is the order in which to write values to the internal "top" data
+   # convertvalue gives an expression for converting angles to gromacs conventions
    if($funcs eq "bond_type6"){
+    $directive="bonds";
     $ftype=6;
-     $expectedfunction="eps*0.5*(r-r0)^2";
-     @expectedparams=("eps","r0");
-     @expectedattributes=("i","j","r0","eps");
-   }else{
+    $expectedfunction="eps*0.5*(r-r0)^2";
+    @expectedparams=("eps","r0");
+    @expectedattributes=("i","j","r0","eps");
+   }elsif($funcs eq "contact_1-6-12"){
+    $directive="pairs";
     $ftype=1;
     if($model eq "AA" && $gaussian eq "no"){
      $expectedfunction="A/r^12-B/r^6";
      @expectedparams=("A","B");
-     # note that B is before A.  this is necessary
      @expectedattributes=("i","j","B","A");
-    }elsif($model eq "CA" && $gaussian eq "no"){
+    }else{
+     internal_error("OpenSMOG: contact_1-6-12 checking not implemented for model $model with gaussian=$gaussian");
+    }
+   }elsif($funcs eq "contact_1-10-12"){
+    $directive="pairs";
+    $ftype=1;
+    if($model eq "CA" && $gaussian eq "no"){
      $expectedfunction="A/r^12-B/r^10";
      @expectedparams=("A","B");
-     # note that B is before A.  this is necessary
      @expectedattributes=("i","j","B","A");
-    }elsif($gaussian eq "yes"){
-     $expectedfunction="A*((1+a/(A*r^12))*(1-exp(-(r-r0)^2/(2*sigmaG^2)))-1)";
-     @expectedparams=("A","r0","sigmaG","a");
-     @expectedattributes=("i","j","A","r0","sigmaG","a");
     }else{
-     internal_error("OpenSMOG checking not implemented for model $model and gaussian=$gaussian");
+     internal_error("OpenSMOG: contact_1-10-12 checking not implemented for model $model with gaussian=$gaussian");
     }
+   }elsif($funcs eq "gaussian"){
+    $directive="pairs";
+    $ftype=6;
+    if($gaussian eq "yes"){
+     $expectedfunction="A/r^12-B/r^10";
+     @expectedparams=("A","B");
+     @expectedattributes=("i","j","B","A");
+    }else{
+     internal_error("OpenSMOG: gaussian checking not implemented for gaussian=$gaussian");
+    }
+   }elsif($funcs eq "dihedral_harmonic"){
+    $directive="dihedrals";
+    $ftype=2;
+    $expectedfunction="weight*(0.5*min(dtheta, 2*pi-dtheta)^2); dtheta = abs(theta-theta0); pi = 3.1415926535";
+    @expectedparams=("theta0","weight");
+    @expectedattributes=("i","j","k","l","theta0","weight");
+    $convertvalue{theta0}="180/3.1415926535*(theta0)"
+   }elsif($funcs eq "dihedral_cosine"){
+    $directive="dihedrals";
+    $ftype=1;
+    $expectedfunction="weight*(1-cos(multiplicity*(theta-theta0)))";
+    @expectedparams=("theta0","weight","multiplicity");
+    @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
+    $convertvalue{theta0}="(180/3.1415926535*(theta0))*multiplicity+180"
+   }elsif($funcs eq "dihedral_ncos"){
+    $directive="dihedrals";
+    $ftype=1;
+    $expectedfunction="weight*(1-cos(multiplicity*theta-theta0))";
+    @expectedparams=("theta0","weight","multiplicity");
+    @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
+    $convertvalue{theta0}="(180/3.1415926535*(theta0))+180"
+   }elsif($funcs eq "dihedral_pcos"){
+    $directive="dihedrals";
+    $ftype=1;
+    $expectedfunction="weight*(1+cos(multiplicity*theta-theta0))";
+    @expectedparams=("theta0","weight","multiplicity");
+    @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
+    $convertvalue{theta0}="(180/3.1415926535*(theta0))"
+   }elsif($funcs eq "dihedral_cosine4"){
+    $directive="dihedrals";
+    $ftype=4;
+    $expectedfunction="weight*(1-cos(multiplicity*(theta-theta0)))";
+    @expectedparams=("theta0","weight","multiplicity");
+    @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
+    $convertvalue{theta0}="(180/3.1415926535*(theta0))*multiplicity+180"
+   }elsif($funcs eq "dihedral_ncos4"){
+    $directive="dihedrals";
+    $ftype=4;
+    $expectedfunction="weight*(1-cos(multiplicity*theta-theta0))";
+    @expectedparams=("theta0","weight","multiplicity");
+    @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
+    $convertvalue{theta0}="(180/3.1415926535*(theta0))+180"
+   }elsif($funcs eq "dihedral_pcos4"){
+    $directive="dihedrals";
+    $ftype=4;
+    $expectedfunction="weight*(1+cos(multiplicity*theta-theta0))";
+    @expectedparams=("theta0","weight","multiplicity");
+    @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
+    $convertvalue{theta0}="(180/3.1415926535*(theta0))"
+   }else{
+    internal_error("OpenSMOG: Unknown Custom Potential $funcs found in XML file");
    }
+
    my $expr=$xmlhandle->{$funcs}->{'expression'}->{'expr'};
+   $functionformP++;
    if($expr eq $expectedfunction){
-    $functionform=0;
+    $functionformN++;
+   }else{
+    $fail_log.="OS expr did not match for $funcs.  Expected \"$expr\" and found \"$expectedfunction\".\n"; 
    }
 
    # If the expected parameters and found parameters are identical, then we will have 1+2N true hits 
    my $paramhandle=$xmlhandle->{$funcs}->{'parameter'};
-   $parampass=arraycomp(\@expectedparams,$paramhandle);
-
-   ($interactionpass,$addstuff)=collectcontactinteractions(\@expectedattributes,$openXML->{"$key"}->{$key . "_type"}->{$funcs}->{'interaction'},$ftype);
-   if($funcs eq "bond_type6"){
-    if(!defined $topdata->{'bonds'}){
-     ${$topdata->{'bonds'}}[0]=" [ bonds ]";
-    }
-    push(@{$topdata->{'bonds'}},@{$addstuff});
+   my $cc=arraycomp(\@expectedparams,$paramhandle);
+   $parampassP++;
+   if($cc==0){
+    $parampassN++;
    }else{
-    if(!defined $topdata->{'pairs'}){
-     ${$topdata->{'pairs'}}[0]=" [ pairs ]";
-    }
-    push(@{$topdata->{'pairs'}},@{$addstuff});
+    $fail_log .="OS parameters were not identical for $funcs.\n";
    }
+   my $fieldcount;
+   if($directive eq "pairs" or $directive eq "bonds"){
+    $fieldcount=2;
+   }elsif($directive eq "dihedrals"){
+    $fieldcount=4;
+   }
+   ($interactionpass,$addstuff)=collectinteractions(\@expectedattributes,$openXML->{"$key"}->{$key . "_type"}->{$funcs}->{'interaction'},$ftype,$fieldcount,\%convertvalue);
+   # add content  
+   if(!defined $topdata->{$directive}){
+    ${$topdata->{$directive}}[0]=" [ $directive ]";
+   }
+   push(@{$topdata->{$directive}},@{$addstuff});
   }
+ }
+ if($functionformP==$functionformN){
+  $functionform=0;
+ }
+ if($parampassP==$parampassN){
+  $parampass=0;
  }
  return ($topdata,$functionform,$parampass,$interactionpass);
 }
@@ -337,26 +424,35 @@ sub arraycomp
  my @handle2=@{$handle2};
  my $pcount=0;
  my $pass=1;
+ my $string1="";
+ my $string2="";
  if(scalar(@handle1) == scalar(@handle2)){
   # if they are the same length, then they may be identical. Otherwise, they are different.
   for (my $I=0;$I<=$#handle2;$I++){
    if($handle1[$I] eq $handle2[$I]){
     $pcount++;
    }
+   $string1.="$handle1[$I] ";
+   $string2.="$handle2[$I] ";
   }
   if(scalar(@handle1)==$pcount && $pcount !=0){
    $pass=0; 
+  }else{
+   $fail_log.="OS: parameter lists differ.\nFound:$string1\nand\n$string2\n";
   }
+ }else{
+  $fail_log="OS parameter lists have different lengths\n";
  }
  return $pass;
 }
 
-sub collectcontactinteractions
+sub collectinteractions
 {
  # this subroutine takes two handles, one for an array, one for an array of hashes.  It then checks that the array entries are the same as the keys of each hash.  Returns 0 if everything is in order and 1 otherwise.
 
- my ($array,$arrayofhashes,$ftype)=@_;
+ my ($array,$arrayofhashes,$ftype,$typefield,$convertvalue)=@_;
  my @array=@{$array}; 
+ my %convertvalue=%{$convertvalue};
  my @arrayofhashes=@{$arrayofhashes}; 
  my $mustmatch=scalar(@arrayofhashes)*scalar(@array); 
  my $matched=0;
@@ -366,15 +462,37 @@ sub collectcontactinteractions
   if(keys %{$entry} == scalar(@array)){
    for(my $I=0;$I<scalar(@array);$I++){
     my $name=$array[$I];
-    if ($I==2){
+    if ($I==$typefield){
      $string .="$ftype ";
     }
     if(defined ${$entry}{$name}){
-     $string .="${$entry}{$name} ";
+     my $val=${$entry}{$name};
+     if(defined $convertvalue{$name}){
+      my $exp2=$convertvalue{$name};
+      for(my $J=0;$J<scalar(@array);$J++){
+       my $namet=$array[$J];
+       my $valt=${$entry}{$namet};
+       $exp2=~ s/$namet/$valt/g;
+      }
+      # convert to gromacs angles
+      $val=eval($exp2);
+     }
+     $string .="$val ";
      $matched++;
+    }else{
+     internal_error("Missing value for parameter in OS def.\n$string\n$name\n");
     }
    }
    push (@addstuff,$string);
+  }else{
+   print("missing keys\n");
+   foreach my $I(keys %{$entry}){
+    print("key $I\n")
+   }
+   foreach my $I(@array){
+    print("array $I\n")
+   }
+   internal_error("Wrong number of params in OS def.");
   }
  }
 
@@ -1192,9 +1310,9 @@ sub smogchecker
   $FAIL{'STATIC CONTACT COMPARISON'}=-1;
  }
  if($OpenSMOG eq "no"){
-  $FAIL{'OPENSMOG CONTACTS: EXPRESSION'}=-1;
-  $FAIL{'OPENSMOG CONTACTS: PARAMETERS'}=-1;
-  $FAIL{'OPENSMOG CONTACTS: INTERACTIONS'}=-1;
+  $FAIL{'OPENSMOG: EXPRESSION'}=-1;
+  $FAIL{'OPENSMOG: PARAMETERS'}=-1;
+  $FAIL{'OPENSMOG: INTERACTIONS'}=-1;
   $FAIL{'OPENSMOG: XML EXISTS'}=-1;
  }
 
@@ -1843,9 +1961,9 @@ sub checktop
    my $openPARAMS=1;
    my $openINTER=1;
    ($topdata,$openEXPR,$openPARAMS,$openINTER)=addOpenSMOG($topdata,$openXML,$model,$gaussian);
-   $FAIL{'OPENSMOG CONTACTS: EXPRESSION'}=$openEXPR;
-   $FAIL{'OPENSMOG CONTACTS: PARAMETERS'}=$openPARAMS;
-   $FAIL{'OPENSMOG CONTACTS: INTERACTIONS'}=$openINTER;
+   $FAIL{'OPENSMOG: EXPRESSION'}=$openEXPR;
+   $FAIL{'OPENSMOG: PARAMETERS'}=$openPARAMS;
+   $FAIL{'OPENSMOG: INTERACTIONS'}=$openINTER;
    $FOUND{'pairs'}=1;
   }
  }
@@ -3195,7 +3313,7 @@ sub checkdihedrals
  my @theta_gen=@{$theta_gen};
  my %theta_gen_as=%{$theta_gen_as};
  my @topdata=@{$N1};
- my (%dihedral_array1,%dihedral_array2,%dihedral_array3,%dihedral_array1_W,%dihedral_array3_W,%dihedral_array1_A,%dihedral_array3_A,%seendihedrals,);
+ my (%dihedral_array1,%dihedral_array2,%dihedral_array3,%dihedral_array1_W,%dihedral_array3_W,%dihedral_array1_A,%dihedral_array3_A,%seendihedrals);
  my $CORIMP=0;
  if($model ne "CA" ){
   $FAIL{'CA DIHEDRAL WEIGHTS'}=-1;
