@@ -14,6 +14,7 @@ use SMOGglobals;
 
 our $VERSION;
 our %OSrestrict;
+our $PI;
 initOSrestrict();
 
 #*************
@@ -339,50 +340,49 @@ sub addOpenSMOG
     $expectedfunction="weight*(0.5*min(dtheta, 2*pi-dtheta)^2); dtheta = abs(theta-theta0); pi = 3.1415926535";
     @expectedparams=("theta0","weight");
     @expectedattributes=("i","j","k","l","theta0","weight");
-    $convertvalue{theta0}="180/3.1415926535*(theta0)"
+    $convertvalue{theta0}="180/$PI*(theta0)"
    }elsif($funcs eq "dihedral_cosine"){
-    print("HERE\n");
     $directive="dihedrals";
     $ftype=1;
     $expectedfunction="weight*(1-cos(multiplicity*(theta-theta0)))";
     @expectedparams=("theta0","weight","multiplicity");
     @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
-    $convertvalue{theta0}="(180/3.1415926535*(theta0))*multiplicity+180"
+    $convertvalue{theta0}="(180/$PI*(theta0))*multiplicity+180"
    }elsif($funcs eq "dihedral_ncos"){
     $directive="dihedrals";
     $ftype=1;
     $expectedfunction="weight*(1-cos(multiplicity*theta-theta0))";
     @expectedparams=("theta0","weight","multiplicity");
     @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
-    $convertvalue{theta0}="(180/3.1415926535*(theta0))+180"
+    $convertvalue{theta0}="(180/$PI*(theta0))+180"
    }elsif($funcs eq "dihedral_pcos"){
     $directive="dihedrals";
     $ftype=1;
     $expectedfunction="weight*(1+cos(multiplicity*theta-theta0))";
     @expectedparams=("theta0","weight","multiplicity");
     @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
-    $convertvalue{theta0}="(180/3.1415926535*(theta0))"
+    $convertvalue{theta0}="(180/$PI*(theta0))"
    }elsif($funcs eq "dihedral_cosine4"){
     $directive="dihedrals";
     $ftype=4;
     $expectedfunction="weight*(1-cos(multiplicity*(theta-theta0)))";
     @expectedparams=("theta0","weight","multiplicity");
     @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
-    $convertvalue{theta0}="(180/3.1415926535*(theta0))*multiplicity+180"
+    $convertvalue{theta0}="(180/$PI*(theta0))*multiplicity+180"
    }elsif($funcs eq "dihedral_ncos4"){
     $directive="dihedrals";
     $ftype=4;
     $expectedfunction="weight*(1-cos(multiplicity*theta-theta0))";
     @expectedparams=("theta0","weight","multiplicity");
     @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
-    $convertvalue{theta0}="(180/3.1415926535*(theta0))+180"
+    $convertvalue{theta0}="(180/$PI*(theta0))+180"
    }elsif($funcs eq "dihedral_pcos4"){
     $directive="dihedrals";
     $ftype=4;
     $expectedfunction="weight*(1+cos(multiplicity*theta-theta0))";
     @expectedparams=("theta0","weight","multiplicity");
     @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
-    $convertvalue{theta0}="(180/3.1415926535*(theta0))"
+    $convertvalue{theta0}="(180/$PI*(theta0))"
    }else{
     internal_error("OpenSMOG: Unknown Custom Potential $funcs found in XML file");
    }
@@ -1022,7 +1022,7 @@ sub setmodelflags{
   $free="yes";
   $bondrescale=0.6;
   $anglerescale=1.35;
-  $MULTDIHE=4;
+  $MULTDIHE=6;
  }elsif($contactmodel =~ m/^shadow-gaussian$/ || $contactmodel =~ m/^cutoff-gaussian$/){
   print "Will use gaussian contacts\n";
   $default="no";
@@ -3448,6 +3448,10 @@ sub checkdihedrals
     # 180 added introduces the negative sign on the cos (SMOG-specific convention)
     $dihval=getdihangle(\@A)+180;
     $maxdiff=$TOLERANCE;
+    if($MULTDIHE != 1 and $MULTDIHE != 3){
+     # When using OpenSMOG checks, angles are off by a slightly larger value when multiplicity is not 1 or 3. This is probably because we compare in degrees, but the XML is in radians.  So, there is some lost precision.
+     $maxdiff*=2;
+    }
    }
    my $diff=dihdelta($A[5],$dihval);
    if(abs($diff) > $maxdiff){

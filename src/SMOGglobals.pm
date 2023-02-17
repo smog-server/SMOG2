@@ -32,11 +32,11 @@ use Exporter;
 use XML::Simple qw(:strict);
 use XML::LibXML;
 our @ISA = 'Exporter';
-our @EXPORT = qw(initOSrestrict %OSrestrict %NBtypespresent);
+our @EXPORT = qw(initOSrestrict %OSrestrict %NBtypespresent $PI);
 # make a list of names that can't be used as parameters in OpenSMOG.
 our %OSrestrict;
 our %NBtypespresent;
-
+our $PI=3.14159265358979;
 sub initOSrestrict {
 	foreach my $i ("q1", "q2", "theta", "r", "r_c", "i", "j", "k", "l", "m", "n", "type1", "type2", "sqrt", "exp", "log", "sin", "cos", "sec", "csc", "tan", "cot", "asin", "acos", "atan", "sinh", "cosh", "tanh", "erf", "erfc", "min", "max", "abs", "floor", "ceil", "step", "delta", "select", "null"){ $OSrestrict{$i}=0;}
 }

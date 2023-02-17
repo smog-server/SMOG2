@@ -25,13 +25,13 @@
 <!-- DIHEDRALS -->
 <dihedrals>	
 	<!-- NUCLEIC DIHEDRALS -->
-	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,4)" energyGroup="bb_n">
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,6)" energyGroup="bb_n">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,4)" energyGroup="sc_n">
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,6)" energyGroup="sc_n">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
@@ -44,13 +44,13 @@
 	<bType>*</bType>
 	</dihedral>
 	<!-- AMINO DIHEDRALS -->
-	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,4)" energyGroup="bb_a">
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,6)" energyGroup="bb_a">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
 	</dihedral>
-	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,4)" energyGroup="sc_a">
+	<dihedral func="dihedral_cosine(?,1,1)+dihedral_cosine(?,0.5,6)" energyGroup="sc_a">
 	<bType>*</bType>
 	<bType>*</bType>
 	<bType>*</bType>
