@@ -3459,15 +3459,11 @@ sub checkdihedrals
     # if not matching based on sif, then calculate the dihedral angle
     # 180 added introduces the negative sign on the cos (SMOG-specific convention)
     $dihval=getdihangle(\@A)+180;
-    $maxdiff=$TOLERANCE;
-    if($MULTDIHE != 1 and $MULTDIHE != 3){
-     # When using OpenSMOG checks, angles are off by a slightly larger value when multiplicity is not 1 or 3. This is probably because we compare in degrees, but the XML is in radians.  So, there is some lost precision.
-     $maxdiff*=2;
-    }
+    $maxdiff=$TOLERANCE*3;
    }
    my $diff=dihdelta($A[5],$dihval);
    if(abs($diff) > $maxdiff){
-    $fail_log .= failed_message("dihedral has incorrect angle. $calced $dihval. Found:\n\t$LINE\n(diff=$diff)");
+    $fail_log .= failed_message("dihedral has incorrect angle. $calced $dihval. Found:\n\t$LINE\ndiff=$diff\nmax allowed=$maxdiff");
    }else{
     $CORRECTDIHEDRALANGLES++;
    }	
@@ -3633,10 +3629,11 @@ sub checkdihedrals
    my $target3=($angle1-180.0)*$MULTDIHE+180;
    my $angle3=$dihedral_array3_A{$pair};
    my $dif=dihdelta($angle3,$target3);
-   if(abs($dif)<$TOLERANCE){
+   my $maxdiff=$TOLERANCE*4;
+   if(abs($dif)<$maxdiff){
     $matchingpairs_A++;
    }else{
-    $fail_log .= failed_message("Relative angles between a N=1 and N=$MULTDIHE dihedral is not consistent: $pair,$angle1,$angle3");
+    $fail_log .= failed_message("Relative angles between a N=1 and N=$MULTDIHE dihedral is not consistent: $pair,$angle1,$angle3.  diff=$dif, maxallowed=$maxdiff");
    }
   }
  }

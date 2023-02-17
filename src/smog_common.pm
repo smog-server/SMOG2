@@ -44,7 +44,7 @@ our %reverthash;
 our $BaseN;
 our %OSrestrict;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub validateXML checkPotentialFunction GetCustomParms getgitver $VERSION );
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub  validateXML checkPotentialFunction GetCustomParms getgitver $VERSION );
 our %supported_directives;
 #####################
 # Error routiness   #
@@ -456,10 +456,11 @@ sub trim {
 sub evalsub
 {
 	my ($expression,$value)=@_;
-	$expression =~ s/\?/$value/g;
+	$expression =~ s/\?/\($value\)/g;
 	$expression = eval($expression);
 	return $expression;
 }
+
 sub getgitver
 {
 	if(defined $ENV{SMOG_COMMIT}){

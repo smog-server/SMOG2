@@ -100,6 +100,7 @@ our %NBtypespresent;
 our %PAIRtypespresent;
 our %pairtypesused;
 our %fTypes;
+our %fTypesdefault;
 our %fTypesArgNum;
 our %OpenSMOGpot;
 our $OpenSMOGpothash;
@@ -286,6 +287,7 @@ sub setglobals {
 	push(@{$OpenSMOGpothash->{dihedral_cosine}->{parameters}},"theta0");
 	push(@{$OpenSMOGpothash->{dihedral_cosine}->{parameters}},"weight");
 	push(@{$OpenSMOGpothash->{dihedral_cosine}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_cosine}->{theta0}=0;
 	$OpenSMOGpothash->{dihedral_cosine}->{weight}=1;
 	push(@OSswitchlist,"dihedral_cosine");
 
@@ -293,6 +295,7 @@ sub setglobals {
 	push(@{$OpenSMOGpothash->{dihedral_ncos}->{parameters}},"theta0");
 	push(@{$OpenSMOGpothash->{dihedral_ncos}->{parameters}},"weight");
 	push(@{$OpenSMOGpothash->{dihedral_ncos}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_ncos}->{theta0}=0;
 	$OpenSMOGpothash->{dihedral_ncos}->{weight}=1;
 	push(@OSswitchlist,"dihedral_ncos");
 
@@ -300,6 +303,7 @@ sub setglobals {
 	push(@{$OpenSMOGpothash->{dihedral_pcos}->{parameters}},"theta0");
 	push(@{$OpenSMOGpothash->{dihedral_pcos}->{parameters}},"weight");
 	push(@{$OpenSMOGpothash->{dihedral_pcos}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_pcos}->{theta0}=0;
 	$OpenSMOGpothash->{dihedral_pcos}->{weight}=1;
 	push(@OSswitchlist,"dihedral_pcos");
 
@@ -307,6 +311,7 @@ sub setglobals {
 	push(@{$OpenSMOGpothash->{dihedral_cosine4}->{parameters}},"theta0");
 	push(@{$OpenSMOGpothash->{dihedral_cosine4}->{parameters}},"weight");
 	push(@{$OpenSMOGpothash->{dihedral_cosine4}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_cosine4}->{theta0}=0;
 	$OpenSMOGpothash->{dihedral_cosine4}->{weight}=1;
 	push(@OSswitchlist,"dihedral_cosine4");
 
@@ -314,6 +319,7 @@ sub setglobals {
 	push(@{$OpenSMOGpothash->{dihedral_ncos4}->{parameters}},"theta0");
 	push(@{$OpenSMOGpothash->{dihedral_ncos4}->{parameters}},"weight");
 	push(@{$OpenSMOGpothash->{dihedral_ncos4}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_ncos4}->{theta0}=0;
 	$OpenSMOGpothash->{dihedral_ncos4}->{weight}=1;
 	push(@OSswitchlist,"dihedral_ncos4");
 
@@ -321,12 +327,14 @@ sub setglobals {
 	push(@{$OpenSMOGpothash->{dihedral_pcos4}->{parameters}},"theta0");
 	push(@{$OpenSMOGpothash->{dihedral_pcos4}->{parameters}},"weight");
 	push(@{$OpenSMOGpothash->{dihedral_pcos4}->{parameters}},"multiplicity");
+	$OpenSMOGpothash->{dihedral_pcos4}->{theta0}=0;
 	$OpenSMOGpothash->{dihedral_pcos4}->{weight}=1;
 	push(@OSswitchlist,"dihedral_pcos4");
 
 	$OpenSMOGpothash->{dihedral_harmonic}->{expression}="weight*(0.5*min(dtheta, 2*pi-dtheta)^2); dtheta = abs(theta-theta0); pi = 3.1415926535";
 	push(@{$OpenSMOGpothash->{dihedral_harmonic}->{parameters}},"theta0");
 	push(@{$OpenSMOGpothash->{dihedral_harmonic}->{parameters}},"weight");
+	$OpenSMOGpothash->{dihedral_harmonic}->{theta0}=0;
 	$OpenSMOGpothash->{dihedral_harmonic}->{weight}=1;
 	push(@OSswitchlist,"dihedral_harmonic");
 
@@ -1623,7 +1631,12 @@ sub dihedralOutput
 			}else{
 				# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
 				if ($fType == -2){
-					$value_local=sclr($value);
+					if(exists $fTypesdefault{$funcName}){
+						# this is a default dihedral function.  So, use degrees when evaluating ? expressions
+						$value_local= sclr(mathFunctions::rad_to_deg($value)); 
+					}else{
+						$value_local=sclr($value);
+					}
 					# if OS potential, then every parameter (except for weight, which is the first) may contain a ?
 					my $ind=-2;
 					if( exists $OpenSMOGpothash->{$funcName}->{weight}){
@@ -1631,9 +1644,17 @@ sub dihedralOutput
 					}
 
 					for(my $in=0;$in<=$#paramArr;$in++){
-						if($in !=$ind){
+						if($in != $ind){
 							# replace ? on all terms, except for weight
 							$paramArr[$in]=evalsub($paramArr[$in],$value_local);
+							
+							if(exists $fTypesdefault{$funcName}){
+								# this is one of the default dihedral functions.  So, convert back to radians
+								if($OpenSMOGpothash->{$funcName}->{theta0} == $in){
+									
+									$paramArr[$in]= mathFunctions::deg_to_rad($paramArr[$in]); 
+								}
+							}
 						}
 					}
 					if(exists $OpenSMOGpothash->{$funcName}->{weight}){
@@ -1665,7 +1686,6 @@ sub dihedralOutput
 					$value_local= sclr(mathFunctions::rad_to_deg($value)); 
 					# not OS
 					$paramArr[0]=evalsub($paramArr[0],$value_local);
-
                                 	if($funcName eq "dihedral_cosine" or $funcName eq "dihedral_cosine4" ){
 						if( $fType == 1 || $fType == 4){
 					            	# Angle will be scaled by multiplicity factor n, if they are cosine functions
@@ -2817,6 +2837,8 @@ sub freeMemoryForShadow
 sub OpenSMOGSwitchPotFlag{
 	foreach my $I(@OSswitchlist){
 		$fTypes{$I}=-2;
+                # this hash is to allow the code to know when we are using an OpenSMOG potential for default dihedral definitions.  The issue that arises is that OpenMM uses radians and SMOG2 uses degrees in the template files (for default potentials). For custom potentials, then the user provides expressions in radians, and this flag is not needed.
+		$fTypesdefault{$I}=0;
 	}
 }
 
