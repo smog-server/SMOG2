@@ -74,7 +74,7 @@ sub clearfiles
 
 sub failsum
 {
- my ($FAIL,$FAILLIST)=@_;
+ my ($FAIL,$FAILLIST,$DUMP)=@_;
  my %FAIL=%{$FAIL};
  my @FAILLIST=@{$FAILLIST};
  my $printbuffer="";
@@ -99,13 +99,24 @@ sub failsum
   $printbuffer .= sprintf ("\n     LIST OF FAILED TESTS:\n");
   foreach my $TEST (@FAILLIST){
    if($FAIL{$TEST}>0){
-    $printbuffer .= sprintf ("        %s\n",$TEST);
+   
+    if(defined $DUMP){
+     $printbuffer .= sprintf ("FAILED      %s\n",$TEST);
+    }else{
+     $printbuffer .= sprintf ("        %s\n",$TEST);
+    }
     $FAILED++;
     $NFAILED++;
    }elsif($FAIL{$TEST}==0){
+    if(defined $DUMP){
+     $printbuffer .= sprintf ("PASSED      %s\n",$TEST);
+    }
     $NPASSED++;
    }elsif($FAIL{$TEST}==-1){
     $NNA++;
+    if(defined $DUMP){
+     $printbuffer .= sprintf ("NOT TESTED  %s\n",$TEST);
+    }
    }else{
     internal_error("FAILLIST entry $TEST error");
    }

@@ -21,6 +21,7 @@ initOSrestrict();
 # ENV variable options (only developers will use these)
 # if smog_keepfiles is defined, then output files will be saved, even if the system passes
 # if smog_regenmaps is defined, then reference contact maps will be generated and saved, if they do not already exist/
+# if smog_dump is defined, more testing information is printed
 
 our $keepfiles=1;
 if (exists $ENV{'smog_keepfiles'}){
@@ -32,6 +33,12 @@ our $CHECKMAP=1;
 if (exists $ENV{'smog_regenmaps'}){
 	print ("NOTE: smog_regenmaps is defined: will regenerate contact maps and possibly overwrite existing reference maps in share/maprefs.\n");
 	$CHECKMAP=0;
+}
+
+our $smogdump;
+if (exists $ENV{'smog_dump'}){
+	print ("NOTE: smog_dump is defined: will write more output to screen, even if the test passes\n");
+	$smogdump=0;
 }
 
 
@@ -1231,7 +1238,7 @@ sub checkSCM
  }
 
  if($model eq "AA" || $model eq "AA-2cg" || $model eq "AA-nb-cr2" || $model eq "AA-BOND"){
-  my $SHADOWARGS="-freecoor -g $PDB.gro4SCM.gro -t $PDB.top -ch $PDB.ndx -o $PDB.contacts.SCM -m shadow -c $CONTD -s $CONTR -br $BBRAD";
+  my $SHADOWARGS="-freecoor -g $PDB.gro4SCM.gro -t $PDB.top4SCM.top -ch $PDB.ndx -o $PDB.contacts.SCM -m shadow -c $CONTD -s $CONTR -br $BBRAD";
 
   if($default eq "yes"){
    if ($checkBOND == 0){
@@ -1247,7 +1254,7 @@ sub checkSCM
   `java -jar $SCM $SHADOWARGS &> $PDB.meta2.output`;
 
  }elsif($model eq "AA-match"){
-  my $SHADOWARGS="-freecoor -g $PDB.gro4SCM.gro -t $PDB.top -ch $PDB.ndx -o $PDB.contacts.SCM -m shadow -c $CONTD -s $CONTR -br $BBRAD -bif $TEMPLATE_DIR_AA_MATCH/*.bif";
+  my $SHADOWARGS="-freecoor -g $PDB.gro4SCM.gro -t $PDB.top4SCM.top -ch $PDB.ndx -o $PDB.contacts.SCM -m shadow -c $CONTD -s $CONTR -br $BBRAD -bif $TEMPLATE_DIR_AA_MATCH/*.bif";
   `java -jar $SCM $SHADOWARGS &> $PDB.meta2.output`;
 
  }elsif($model eq "CA"){
@@ -4456,7 +4463,7 @@ sub singletestsummary
   }
  }
 
- my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+ my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST,$smogdump);
  if($FAILED > 0){
  my $tmpstring = <<"EOT";
 ************************************************************* 
