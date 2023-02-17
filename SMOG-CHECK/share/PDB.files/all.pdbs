@@ -116,15 +116,15 @@ terminaltest AA cutoff-gaussian 5.0 0.8 1.2 1.0 2.0 1.0 1.0 1.0 2.5 0.01 1.0 1.4
 ; check use of NB type 2 parameters
 protein-RNA AA-nb-cr2 default ;93
 
-; check openSMOG routines
-1AKEapo_v2 openSMOG AA default ;94
-DNA.terminal.BMG openSMOG AA default ; 95
-1A01-AMP openSMOG AA default-gaussian ;96
-2ci2_v2 openSMOG CA default ;97
-2ci2_v2 openSMOG CA default-gaussian ;98
+; check OpenSMOG routines
+1AKEapo_v2 OpenSMOG AA default ;94
+DNA.terminal.BMG OpenSMOG AA default ; 95
+1A01-AMP OpenSMOG AA default-gaussian ;96
+2ci2_v2 OpenSMOG CA default ;97
+2ci2_v2 OpenSMOG CA default-gaussian ;98
 
-; free with openSMOG
-1AKEapo_v2 openSMOG AA shadow-free 5.0 1.4 1.2 1.0 2.0 1.0 1.0 1.0 2.5 0.01 1.0 1.4 5.0 0.2 -1 1E-6 3E-9 1.0 ;99
+; free with OpenSMOG
+1AKEapo_v2 OpenSMOG AA shadow-free 5.0 1.4 1.2 1.0 2.0 1.0 1.0 1.0 2.5 0.01 1.0 1.4 5.0 0.2 -1 1E-6 3E-9 1.0 ;99
 
 ;ADD CUSTOM FORCE TEST; 99
 ;ADD CUSTOM FORCE TEST with 2 types; 100
@@ -132,7 +132,7 @@ DNA.terminal.BMG openSMOG AA default ; 95
 ; free-format PDB coordinate checks
 ; NOTE: There is no specific test for this.  We just run files with the format changed and make sure the correct model is produced.
 2ci2_v2.freecoor freecoor AA default ; 100
-2ci2_v2.freecoor openSMOG freecoor AA default ; 101
+2ci2_v2.freecoor OpenSMOG freecoor AA default ; 101
 2ci2_v2.freecoor  freecoor CA default ;102
 
 ; check BOND with CA model
@@ -143,3 +143,4 @@ glycans.BOND AA-BOND default; 104
 
 ; check all dihedral function types in gromacs and opensmog
 RNA+protein AA-DIHE default; 105
+RNA+protein OpenSMOG AA-DIHE default; 106

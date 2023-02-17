@@ -315,7 +315,7 @@ sub addOpenSMOG
    }elsif($funcs eq "contact_1-6-12"){
     $directive="pairs";
     $ftype=1;
-    if($model eq "AA" && $gaussian eq "no"){
+    if(($model eq "AA" || $model eq "AA-DIHE") && $gaussian eq "no"){
      $expectedfunction="A/r^12-B/r^6";
      @expectedparams=("A","B");
      @expectedattributes=("i","j","B","A");
