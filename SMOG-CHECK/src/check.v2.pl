@@ -65,6 +65,7 @@ our $TEMPLATE_DIR_AA_MATCH=$ENV{'BIFSIF_AA_MATCH'};
 our $TEMPLATE_DIR_AA_2CG=$ENV{'BIFSIF_AA_2CG'};
 our $TEMPLATE_DIR_AA_CR2=$ENV{'BIFSIF_AA_CR2'};
 our $TEMPLATE_DIR_AA_BOND=$ENV{'BIFSIF_AA_BOND'};
+our $TEMPLATE_DIR_AA_DIHE=$ENV{'BIFSIF_AA_DIHE'};
 quit_init();
 
 # FAILLIST is a list of all the tests.
@@ -955,6 +956,8 @@ sub runsmog
    $ARGS .= " -t $TEMPLATE_DIR_AA_CR2 ";
   }elsif($model eq "AA-BOND"){
    $ARGS .= " -t $TEMPLATE_DIR_AA_BOND ";
+  }elsif($model eq "AA-DIHE"){
+   $ARGS .= " -t $TEMPLATE_DIR_AA_DIHE ";
   }else{
    smogcheck_error("Unrecognized model when preparing default SMOG 2 flags.");
   }
@@ -1052,13 +1055,15 @@ sub setmodelflags{
  }
  if($model =~ m/CA/){
   print "Testing CA model\n";
- }elsif($model =~ m/AA/){
+ }elsif($model =~ m/^AA/){
   print "Testing AA model\n";
   if($model =~ m/^AA-2cg$/){
    print "Testing multiple contact groups\n";
   }elsif($model =~ m/^AA-BOND$/){
    print "Testing BOND routines in AA model\n";
    $checkBOND=0;
+  }elsif($model =~ m/^AA-DIHE$/){
+   print "Testing all dihedrals functions in AA model\n";
   }elsif($model =~ m/^AA-nb-cr2$/){
    print "Testing nb type 2 functions\n";
    $combrule=2;
@@ -1169,7 +1174,7 @@ sub setmodelflags{
  if($model eq "CA"){
   $bondEps=20000;
   $angleEps=40;
- }elsif($model eq "AA" || $model eq "AA-2cg" || $model eq "AA-nb-cr2" || $model eq "AA-BOND"){
+ }elsif(checkAAlist($model)){
   $bondEps=10000;
   $angleEps=80;
  }elsif($model eq "AA-match"){
@@ -1237,7 +1242,7 @@ sub checkSCM
   $freecoor="";
  }
 
- if($model eq "AA" || $model eq "AA-2cg" || $model eq "AA-nb-cr2" || $model eq "AA-BOND"){
+ if(checkAAlist($model)){
   my $SHADOWARGS="-freecoor -g $PDB.gro4SCM.gro -t $PDB.top4SCM.top -ch $PDB.ndx -o $PDB.contacts.SCM -m shadow -c $CONTD -s $CONTR -br $BBRAD";
 
   if($default eq "yes"){
@@ -1311,7 +1316,7 @@ sub checkSCM
   $fail_log .= failed_message("smog-check could not generate identical SCM map. Check $PDB.contacts.ShadowOutput and $PDB.contacts.SCM");
  }
  if(! -e "$PDB.contacts.SCM" and $CHECKMAP == 1){
-  smogcheck_error("Unable to re-generate contact map");
+  smogcheck_error("Contact map doesn't exist, and map re-generation not turned on.");
  } 
 }
 
@@ -1683,7 +1688,7 @@ EOT
   $massNB{$defname}=1.0;
   $chargeNB{$defname}=0.0;
   $sigmaCA=$sigmaCA*10.0;
- }elsif($model eq "AA" || $model eq "AA-2cg" || $model eq "AA-nb-cr2" || $model eq "AA-BOND"){
+ }elsif(checkAAlist($model)){
   my $bonds=getBONDs($PDB);
   %BONDS=%{$bonds};
   $sigma=$sigma/10;
@@ -1772,7 +1777,7 @@ EOT
   }
   close(MATCH);
  }else{
-  smogcheck_error("unknown model type.");
+  smogcheck_error("unknown model type: $model");
  }
  # make some special entries to handle extras
  if($model eq "AA" && $default ne "yes"){
@@ -3901,7 +3906,7 @@ sub checkpairs
    }else{
     $fail_log .= failed_message("A contact appears to be the wrong distance.  From the .gro (or .contact) file, we found r=$CALCD, and from the .top r=$Cdist.\n\t$LINE");
    }
-  }elsif($model eq "AA" || $model eq "AA-match" || $model eq "AA-2cg" || $model eq "AA-BOND"){
+  }elsif(checkAAlist($model)){
    $W=($A[3]*$A[3])/(4*$A[4]);
    $Cdist=(2.0*$A[4]/($A[3]))**(1.0/6.0);
    $CALCD=getpairdist(\*CMAP,$A[0],$A[1]);
@@ -3931,7 +3936,7 @@ sub checkpairs
    }else{
     $fail_log .= failed_message("EpsilonC values\n\tValue: Target\n\t$W $epsilonCAC\n\tline:\n\t$LINE");
    }
-  }elsif($model eq "AA" || $model eq "AA-match" || $model eq "AA-2cg" || $model eq "AA-nb-cr2" || $model eq "AA-BOND"){
+  }elsif(checkAAlist($model)){
    $Cdist = int(($Cdist * $PRECISION)/10.0)/($PRECISION*10.0);
    if($Cdist <= $CONTD/10.0){
     $LONGCONT++;
@@ -3984,7 +3989,7 @@ sub checkpairs
     }
    }
   }else{
-   smogcheck_error("Model not recognized.");
+   smogcheck_error("Model not recognized: $model");
   }
   # truncate the epsilon, for comparison purposes later.
   $W=int(($W * $PRECISION))/($PRECISION*1.0);
@@ -4010,7 +4015,7 @@ sub checkpairs
    $FAIL{'GAUSSIAN CONTACT EXCLUDED VOLUME'}=-1;
    $FAIL{'GAUSSIAN CONTACT WIDTHS'}=-1;
  }
- if($model eq "AA" || $model eq "AA-match" || $model eq "AA-2cg" || $model eq "AA-nb-cr2" || $model eq "AA-BOND"){
+ if(checkAAlist($model)){
   if($LONGCONT == $NCONTACTS){
    $FAIL{'LONG CONTACTS'}=0;
   }
@@ -4041,7 +4046,7 @@ sub checkpairs
   $FAIL{'STACKING CONTACT WEIGHTS'}=-1;	
   $FAIL{'NON-STACKING CONTACT WEIGHTS'}=-1;	
  }else{ 
-  smogcheck_error("Unrecognized model when checking contacts.");
+  smogcheck_error("Unrecognized model when checking contacts: $model");
  }
  if($freepair ==0){
   $FAIL{'FREE PAIRS APPEAR IN CONTACTS'}=0;	
@@ -4183,7 +4188,7 @@ sub finalchecks
   }else{
    smogcheck_error("Unable to generate angles ($theta_gen_N), or dihedrals ($phi_gen_N)...");
   }
- }elsif($model eq "AA" || $model eq "AA-match" || $model eq "AA-2cg" || $model eq "AA-nb-cr2" || $model eq "AA-BOND"){
+ }elsif(checkAAlist($model)){
   if($theta_gen_N > 0 and $phi_gen_N > 0 and $improper_gen_N > 0){
    $FAIL{'GENERATION OF ANGLES/DIHEDRALS'}=0;
 
@@ -4191,7 +4196,7 @@ sub finalchecks
     smogcheck_error("Unable to generate angles ($theta_gen_N), dihedrals ($phi_gen_N), or impropers ($improper_gen_N)...");
   }
  }else{
-  smogcheck_error("Unrecognized model when checking values.");
+  smogcheck_error("Unrecognized model when checking values: $model");
  }
  ## check the energy per dihedral and where the dihedral is SC/BB NA/AMINO
  if($DISP_MAX == 0){
@@ -4516,7 +4521,17 @@ EOT
  }
 }
 
-
+sub checkAAlist
+{
+ my ($model)=@_;
+ my @AAlist=("AA","AA-2cg","AA-nb-cr2","AA-BOND","AA-DIHE");
+ foreach my $i (@AAlist){
+  if($i eq $model){
+   return 1;
+  }
+ } 
+ return 0;
+}
 
 sub validatebifmaps
 {

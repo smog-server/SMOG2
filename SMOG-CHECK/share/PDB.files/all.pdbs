@@ -140,3 +140,6 @@ DNA.terminal.BMG openSMOG AA default ; 95
 
 ; check complicated AA model with BONDs
 glycans.BOND AA-BOND default; 104
+
+; check all dihedral function types in gromacs and opensmog
+RNA+protein AA-DIHE default; 105
