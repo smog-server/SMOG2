@@ -66,6 +66,7 @@ our $TEMPLATE_DIR_AA_2CG=$ENV{'BIFSIF_AA_2CG'};
 our $TEMPLATE_DIR_AA_CR2=$ENV{'BIFSIF_AA_CR2'};
 our $TEMPLATE_DIR_AA_BOND=$ENV{'BIFSIF_AA_BOND'};
 our $TEMPLATE_DIR_AA_DIHE=$ENV{'BIFSIF_AA_DIHE'};
+our $TEMPLATE_DIR_AA_DIHE4=$ENV{'BIFSIF_AA_DIHE4'};
 quit_init();
 
 # FAILLIST is a list of all the tests.
@@ -85,7 +86,7 @@ our $free;
 our @FILETYPES=("top","gro","ndx","settings","contacts","output","contacts.SCM", "contacts.CG","grompp","editconf","out.mdp","contacts.ShadowOutput","box.gro","gro4SCM.gro","top4SCM.top","xml");
 
 # bunch of global vars.  A bit sloppy.  Many could be local.
-our ($AMINO_PRESENT,$angleEps,@atombondedtype,%atombondedtypes,%atombondedtypes2,@ATOMNAME,@ATOMTYPE,$BBRAD,%BBTYPE,$bondEps,$bondMG,$bondtype6,%C12NB,%C6NB,$chargeAT,%chargeNB,%CHECKED,@CID,$CONTD,$STACKSCALE,$dihedralcounting,$CONTENERGY,$CONTR,$CONTTYPE,$default,%defcharge,$defname,$DENERGY,$dihmatch,$DIH_MAX,$DIH_MIN,$DISP_MAX,@EDrig_T,@EDrig_Tc,@ED_T,@ED_Tc,$epsilon,$epsilonCAC,$epsilonCAD,%FAIL,$FAILED,$fail_log,@FIELDS,$gaussian,@GRODATA,$impEps,$improper_gen_N,$ION_PRESENT,$LIGAND_DIH,$LIGAND_PRESENT,%massNB,%matchangle_val,%matchangle_weight,%matchbond_val,%matchbond_weight,%matchdihedral_val,%matchdihedral_weight,$model,@MOLTYPE,%MOLTYPEBYRES,$NA_DIH,$NCONTACTS,$NUCLEIC_PRESENT,$NUMATOMS,$NUMATOMS_LIGAND,$omegaEps,$PDB,$phi_gen_N,$PRO_DIH,$R_CD,$rep_s12,@RESNUM,%restypecount,$ringEps,$R_N_SC_BB,$R_P_BB_SC,$sigma,$sigmaCA,$theta_gen_N,%TYPE,$type6count,$usermap,@XT,@YT,@ZT,%bond_array);
+our ($AMINO_PRESENT,$angleEps,@atombondedtype,%atombondedtypes,%atombondedtypes2,@ATOMNAME,@ATOMTYPE,$BBRAD,%BBTYPE,$bondEps,$bondMG,$bondtype6,%C12NB,%C6NB,$chargeAT,%chargeNB,%CHECKED,@CID,$CONTD,$STACKSCALE,$dihedralcounting,$CONTENERGY,$CONTR,$CONTTYPE,$default,%defcharge,$defname,$DENERGY,$dihmatch,$DIH_MAX,$DIH_MIN,$DISP_MAX,@EDrig_T,@EDrig_Tc,@ED_T,@ED_Tc,$epsilon,$epsilonCAC,$epsilonCAD,%FAIL,$FAILED,$fail_log,@FIELDS,$gaussian,@GRODATA,$impEps,$improper_gen_N,$ION_PRESENT,$LIGAND_DIH,$LIGAND_PRESENT,%massNB,%matchangle_val,%matchangle_weight,%matchbond_val,%matchbond_weight,%matchdihedral_val,%matchdihedral_weight,$model,@MOLTYPE,%MOLTYPEBYRES,$NA_DIH,$NCONTACTS,$NUCLEIC_PRESENT,$NUMATOMS,$NUMATOMS_LIGAND,$omegaEps,$PDB,$phi_gen_N,$PRO_DIH,$R_CD,$rep_s12,@RESNUM,%restypecount,$ringEps,$R_N_SC_BB,$R_P_BB_SC,$sigma,$sigmaCA,$theta_gen_N,%TYPE,$type6count,$usermap,@XT,@YT,@ZT,%bond_array,$DihDefType);
 my %supported_directives = ( 'defaults' => '1','atomtypes' => '1','moleculetype' => '1','nonbond_params' => '0','bondtypes' => '0','angletypes' => '0','dihedraltypes' => '0','atoms' => '1','bonds' => '1','angles' => '1','dihedrals' => '1','pairs' => '1','exclusions' => '1','system' => '1','molecules' => '1');
 
 # list the bonds that are free in the free-templates
@@ -315,7 +316,7 @@ sub addOpenSMOG
    }elsif($funcs eq "contact_1-6-12"){
     $directive="pairs";
     $ftype=1;
-    if(($model eq "AA" || $model eq "AA-DIHE") && $gaussian eq "no"){
+    if(($model eq "AA" || $model eq "AA-DIHE" || $model eq "AA-DIHE4") && $gaussian eq "no"){
      $expectedfunction="A/r^12-B/r^6";
      @expectedparams=("A","B");
      @expectedattributes=("i","j","B","A");
@@ -958,6 +959,8 @@ sub runsmog
    $ARGS .= " -t $TEMPLATE_DIR_AA_BOND ";
   }elsif($model eq "AA-DIHE"){
    $ARGS .= " -t $TEMPLATE_DIR_AA_DIHE ";
+  }elsif($model eq "AA-DIHE4"){
+   $ARGS .= " -t $TEMPLATE_DIR_AA_DIHE4 ";
   }else{
    smogcheck_error("Unrecognized model when preparing default SMOG 2 flags.");
   }
@@ -992,7 +995,8 @@ sub setmodelflags{
  $combrule=1; 
  # default is to not care about BONDs
  $checkBOND=1; 
-
+ # default dihedal type.  Normally 1, but we sometimes use 4.
+ $DihDefType=1;
  # bondrescale and anglerescale are only non-1 value if testing free.  We bundled the eval test in here.
  $bondrescale=1;
  $anglerescale=1;
@@ -1064,6 +1068,9 @@ sub setmodelflags{
    $checkBOND=0;
   }elsif($model =~ m/^AA-DIHE$/){
    print "Testing all dihedrals functions in AA model\n";
+  }elsif($model =~ m/^AA-DIHE4$/){
+   print "Testing all type-4 dihedrals functions in AA model\n";
+   $DihDefType=4;
   }elsif($model =~ m/^AA-nb-cr2$/){
    print "Testing nb type 2 functions\n";
    $combrule=2;
@@ -3472,7 +3479,7 @@ sub checkdihedrals
     $S3_match++; 
     # we don't check anything at this point, so that we can compare n=1 and n=3 relative to each other 
    }
-   if($A[4] == 1 && $A[7] == 1 ){
+   if($A[4] == $DihDefType && $A[7] == 1 ){
     my $F;
     if($model eq "CA"){
      if(($A[6] > $MINTHR*$epsilonCAD && $A[6] < $MAXTHR*$epsilonCAD)){
@@ -4521,7 +4528,7 @@ EOT
 sub checkAAlist
 {
  my ($model)=@_;
- my @AAlist=("AA","AA-2cg","AA-nb-cr2","AA-BOND","AA-DIHE");
+ my @AAlist=("AA","AA-2cg","AA-nb-cr2","AA-BOND","AA-DIHE","AA-DIHE4");
  foreach my $i (@AAlist){
   if($i eq $model){
    return 1;

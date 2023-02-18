@@ -144,3 +144,5 @@ glycans.BOND AA-BOND default; 104
 ; check all dihedral function types in gromacs and opensmog
 RNA+protein AA-DIHE default; 105
 RNA+protein OpenSMOG AA-DIHE default; 106
+RNA+protein AA-DIHE4 default; 107
+RNA+protein OpenSMOG AA-DIHE4 default; 108
