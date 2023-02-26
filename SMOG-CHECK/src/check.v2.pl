@@ -3910,7 +3910,7 @@ sub checkpairs
    }else{
     $fail_log .= failed_message("A contact appears to be the wrong distance.  From the .gro (or .contact) file, we found r=$CALCD, and from the .top r=$Cdist.\n\t$LINE");
    }
-  }elsif(checkAAlist($model)){
+  }elsif(checkAAlist($model) || $model eq "AA-match"){
    $W=($A[3]*$A[3])/(4*$A[4]);
    $Cdist=(2.0*$A[4]/($A[3]))**(1.0/6.0);
    $CALCD=getpairdist(\*CMAP,$A[0],$A[1]);
@@ -3930,7 +3930,7 @@ sub checkpairs
    }
 
   }else{
-   smogcheck_error("Contact-model combination not recognized.");
+   smogcheck_error("Contact-model combination (gaussian=$gaussian, model=$model) not recognized.");
   }
   # so long as the contacts are not with ligands, then we add the sum
   if($model eq "CA"){
@@ -3940,7 +3940,7 @@ sub checkpairs
    }else{
     $fail_log .= failed_message("EpsilonC values\n\tValue: Target\n\t$W $epsilonCAC\n\tline:\n\t$LINE");
    }
-  }elsif(checkAAlist($model)){
+  }elsif(checkAAlist($model) || $model eq "AA-match"){
    $Cdist = int(($Cdist * $PRECISION)/10.0)/($PRECISION*10.0);
    if($Cdist <= $CONTD/10.0){
     $LONGCONT++;
@@ -4019,7 +4019,7 @@ sub checkpairs
    $FAIL{'GAUSSIAN CONTACT EXCLUDED VOLUME'}=-1;
    $FAIL{'GAUSSIAN CONTACT WIDTHS'}=-1;
  }
- if(checkAAlist($model)){
+ if(checkAAlist($model) || $model eq "AA-match"){
   if($LONGCONT == $NCONTACTS){
    $FAIL{'LONG CONTACTS'}=0;
   }
@@ -4192,7 +4192,7 @@ sub finalchecks
   }else{
    smogcheck_error("Unable to generate angles ($theta_gen_N), or dihedrals ($phi_gen_N)...");
   }
- }elsif(checkAAlist($model)){
+ }elsif(checkAAlist($model) || $model eq "AA-match"){
   if($theta_gen_N > 0 and $phi_gen_N > 0 and $improper_gen_N > 0){
    $FAIL{'GENERATION OF ANGLES/DIHEDRALS'}=0;
 
