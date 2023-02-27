@@ -3910,7 +3910,7 @@ sub checkpairs
    }else{
     $fail_log .= failed_message("A contact appears to be the wrong distance.  From the .gro (or .contact) file, we found r=$CALCD, and from the .top r=$Cdist.\n\t$LINE");
    }
-  }elsif(checkAAlist($model) || $model eq "AA-match"){
+  }elsif((checkAAlist($model) || $model eq "AA-match") && $model ne "AA-nb-cr2"){
    $W=($A[3]*$A[3])/(4*$A[4]);
    $Cdist=(2.0*$A[4]/($A[3]))**(1.0/6.0);
    $CALCD=getpairdist(\*CMAP,$A[0],$A[1]);
