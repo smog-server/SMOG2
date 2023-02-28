@@ -70,7 +70,9 @@ Information about each of these commands can be found online. We have found them
 
 
 -- On Linux, there are sometimes group ID issues that do not allow the container to mount and write to a user's directories. In that case, you may need to rebuild the container, but change the --user value in the Dockerfile, such that it matches the ID of the user on the host machine. 
-
+Here is some discussion on permission issues with Docker, which may be helpful:
+ - https://mydeveloperplanet.com/2022/10/19/docker-files-and-volumes-permission-denied/
+ - https://medium.com/@nielssj/docker-volumes-and-file-system-permissions-772c1aee23ca
 
 5. MORE INFORMATION
 
