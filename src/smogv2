@@ -2374,6 +2374,7 @@ sub convertPDBToGroNdx
 	my $atominfo4SCM="";
         my $linenum=0;
 	my $lastTERline=0;
+	my $atomnum=0;
 	while($line=<PDB>)
 	{
 		
@@ -2393,6 +2394,7 @@ sub convertPDBToGroNdx
 	 		$atomName = trim(substr($line, 12, 4));
 	 	       	$resName = trim(substr($line,17,4));
          	       	if(!exists $residues{$resName}->{"atoms"}->{$atomName}){next;}
+			$atomnum++;
 	
          	       	if(defined $freecoor){
          	       		# Read the PDB coordinates as free-format.
@@ -2458,6 +2460,10 @@ sub convertPDBToGroNdx
 	 	       	$atominfo4SCM .= sprintf("$groSCMfmt",$resCounter,$resName,$atomName,$atomNum,$x,$y,$z);
 	 	       	$lastTER=0;  
 	 	}
+	}
+
+	if($atomnum == 0){
+		smog_quit("No atoms found in $inputPDB.  This is sometimes be due to coarse-gaining, if the structure doesn't have any of the corresponding CG atoms.");
 	}
 ## default box size if 1nm larger than system size in each direction
 	my $xrange=($xmax-$xmin)+$boxbuffer*2;
