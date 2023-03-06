@@ -16,7 +16,7 @@ sub check_modXML
  my $FAILSUM=0;
  my $tool="modifyXML";
  my $printbuffer="";
- my @FAILLIST = ('NON-ZERO EXIT','N MODIFIED DIHEDRALS','N MODIFIED CONTACTS','GMX COMPATIBLE');
+ my @FAILLIST = ('NON-ZERO EXIT','N MODIFIED DIHEDRALS','N MODIFIED CONTACTS');
  %FAIL=resettests(\%FAIL,\@FAILLIST);
 
 # generate an AA model RNA 
@@ -32,8 +32,6 @@ sub check_modXML
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $indexfile="share/PDB.files/sample.AA.ndx";
  my $settings="share/PDB.files/xmlsettings.1.in";
- my $RC=1.5;
- my $RD=1.2;
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml < $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
 # my ($samedirs,$dihlength,$dihmatch,$conlength,$conmatch)=comparetopsrescale("AA.tmp.top","smog.rescaled.top",$indexfile,$grpsel,$RC,$RD);
@@ -47,17 +45,17 @@ sub check_modXML
  $FAILSUM += $FAILED;
  if($FAILED !=0){
   `mkdir tmp`;
-  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top"){
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `cp $file tmp`;
   }
-  savefailed(1,("output.$tool","smog.rescaled.top","smog.rescaled.top","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","topol.tpr","smog.rescaled.box.gro","smog.rescaled.editconf","smog.rescaled.grompp","smog.rescaled.out.mdp"));
+  savefailed(1,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
   print "$printbuffer\n";
-  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top"){
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `mv tmp/$file .`;
   }
   `rmdir tmp`;
  }else{
-  clearfiles(("output.$tool","smog.rescaled.top","topol.tpr","smog.rescaled.box.gro","smog.rescaled.editconf","smog.rescaled.grompp","smog.rescaled.out.mdp"));
+  clearfiles(("output.$tool","AA.tmp.out.xml"));
  }
 
  return ($FAILSUM, $printbuffer);
