@@ -6,7 +6,7 @@
 #                          Ailun Wang, Heiko Lammert, Ryan Hayes,
 #                               Jose Onuchic & Paul Whitford
 #
-#          Copyright (c) 2015,2016,2018,2021,2022 The SMOG development team at
+#        Copyright (c) 2015,2016,2018,2021,2022,2023 The SMOG development team at
 #                      The Center for Theoretical Biological Physics
 #                       Rice University and Northeastern University
 #
@@ -33,7 +33,7 @@ use Exporter;
 use XML::Simple qw(:strict);
 use XML::LibXML;
 our @ISA = 'Exporter';
-our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddInteractionOShash AddDihedralOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML newOpenSMOGfunction OpenSMOGAddNBsettoXML %fTypes %fTypesArgNum %OSrestrict);
+our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddInteractionOShash AddDihedralOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML OpenSMOGscaleXML newOpenSMOGfunction OpenSMOGAddNBsettoXML %fTypes %fTypesArgNum %OSrestrict);
 our %fTypes;
 our %fTypesArgNum;
 our $OpenSMOG;
@@ -405,6 +405,227 @@ sub OpenSMOGwriteXMLnonbond{
 		return "";
 	}
 }
+
+sub OpenSMOGscaleXML{
+	my ($OSref,$Ngrps,$grpnms,$groupnames,$atomgroup,$outputXML,$header)=@_;
+        # OSref is a handle to the hash holding all information to be written.
+        # $outputXML is the output file name
+	foreach my $I(keys %{$OSref}){
+		if($I eq "contacts" or $I eq "dihedrals"){
+			print("Rescale $I in the XML file (Y/N)?\n");
+			my $reply=getreply();
+			if($reply == 0){
+				&rescaleXML($OSref,$I,$Ngrps,$grpnms,$groupnames,$atomgroup);
+
+			}
+		}
+	}
+	OpenSMOGwriteXML($OSref,$outputXML,$header,);
+}
+
+sub getreply{
+	my $rep=<STDIN>;
+	chomp($rep);
+	until($rep =~ m/^(\s+)?[yn](\s+)?$/i ){
+		print("\"$rep\" is an invalid choice. Y, or N, only.\n");
+		$rep=<STDIN>;
+		chomp($rep);
+	}
+	if ($rep =~ m/y/i){
+		return 0;
+	}else{
+		return 1;
+	}
+}
+
+sub rescaleXML{
+	my ($OSref,$type,$Ngrps,$grpnms,$groupnames,$atomgroup)=@_;
+	# OSref is the xml hash
+	# type is the type of interaction to work with (contact, dihedral...)
+	# Ngrps is the number of groups in the index file
+	# atomgroup is the hash of hash of atoms in each index group
+	# groupnms and groupnames...
+	my $cont=0;
+	until($cont == 1){
+		print "Which $type set should be rescaled?\n";
+		my %index;
+		my $c=0;
+		my $lhandle=$OSref->{$type}->{"$type\_type"};
+		foreach my $types(sort keys %{$lhandle}){
+			print "    $types\n";
+		}
+		my $grp="";
+		my $tmp=0;
+		until(defined ${$lhandle}{$grp}){
+			if($tmp>0){
+				print "\"$grp\" is not a valid $type set.\n";
+			}
+			print "Give the name of the $type set you wish to rescale.\n";
+			$grp=<STDIN>;
+			chomp($grp);
+			$grp =~ s/^\s+//g;
+			$grp =~ s/\s+$//g;
+			$tmp++;
+		}
+
+		# get the list of parameters, groups and factors for rescaling
+		my ($groupD,$groupC1,$groupC2,$chghash)=rescaleXMLsettings($lhandle,$type,$grp,$Ngrps,$grpnms,$groupnames,$atomgroup);
+		if($type eq "contacts"){
+			rescaleXMLcontacts($lhandle->{$grp},$atomgroup,$groupC1,$groupC2,$chghash);
+		}elsif($type eq "dihedrals"){
+			rescaleXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash);
+		}else{
+			internal_error("rescale XML selection issue.");
+		}
+
+		print "Rescale another set of $type? (Y/N)\n";
+		$cont=getreply()		
+	}
+}
+
+sub rescaleXMLsettings{
+	my ($lhandle,$type,$grp,$Ngrps,$grpnms)=@_;
+	# this routine gets information from the user about which parameters to rescale	
+	my @grpnms=@{$grpnms};
+	my $llhandle=$lhandle->{$grp};
+	my $groupD="";
+	my $groupC1="";
+	my $groupC2="";
+	if($type eq "dihedrals"){
+		listgroups($Ngrps,$grpnms);
+		print "Select the index of the group for dihedral rescaling?\n";
+		$groupD=selectgroup($Ngrps);
+		$groupD=$grpnms[$groupD];
+	}elsif($type eq "contacts"){
+		listgroups($Ngrps,$grpnms);
+		print "Select the index of the first atom group for contact rescaling?\n";
+		$groupC1=selectgroup($Ngrps);
+		print "Select the index of the second atom group for contact rescaling?\n";
+		$groupC2=selectgroup($Ngrps);
+		$groupC1=$grpnms[$groupC1];
+		$groupC2=$grpnms[$groupC2];
+	}else{
+		internal_error("XML group selection error.");
+	}
+
+	my @scalevals;
+	my %tmphash;
+	my %changehash;
+	# changehash will hold a parameter name as the key, and the change factor as the val
+	foreach my $param(@{$llhandle->{"parameter"}}){
+		$tmphash{$param}=1;
+	}
+
+	my $getsets=0;
+	until($getsets==1){
+		print "Which parameter would you like to rescale?\nAvailable parameters:\n";
+		foreach my $param(keys %tmphash){
+			print("$param\n");
+		}
+
+		# list the parameters for this term
+		my $rescaleparam="";
+		my $cont=1;
+		until($cont==0){
+			$rescaleparam=<STDIN>;
+			chomp($rescaleparam);
+			if(exists $tmphash{$rescaleparam}){
+				$cont=0;
+			}else{
+				print("\"$rescaleparam\" is not a valid parameter name. Please try again.\n");
+			}
+			# select which parameter to rescale
+			# give the rescaling factor - make sure it is a number
+		}
+		# do the rescaling
+		delete $tmphash{$rescaleparam};
+		print "How would you like to change the value of $rescaleparam?\nFormat: [+-*/]<number> :\n";
+		$cont=1;
+		my $rescaleby="";
+		until($cont==0){
+			# give the rescaling factor - make sure it is a number and begins with an operator
+			$rescaleby=<STDIN>;
+			chomp($rescaleby);
+			$cont=checkXMLfactor($rescaleby);
+			if($cont==1){
+				print("\"$rescaleby\" does not appear to comply with the required format:[+-*/]<number>\nTry again\n");
+			}
+		}
+		$changehash{$rescaleparam}=$rescaleby;
+		if(scalar keys %tmphash > 0){
+			print ("Would you like to modify another parameter for set $grp of $type?\n");
+			$getsets=getreply();
+		}else{
+			$getsets=1;
+		}
+	}
+	return ($groupD, $groupC1, $groupC2,\%changehash);
+}
+
+sub rescaleXMLcontacts{
+	my($XMLhandle,$atomgroup,$groupC1,$groupC2,$chghash)=@_;
+	my %atomhash1=%{$atomgroup->{$groupC1}};
+	my %atomhash2=%{$atomgroup->{$groupC2}};
+	foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+		my $i=$interaction->{"i"};
+		if(defined $atomhash1{$i}){
+			my $j=$interaction->{"j"};
+			if(defined $atomhash2{$j}){
+				foreach my $param(keys %{$chghash}){
+					my $curval=$interaction->{$param};
+					$interaction->{$param}=eval("($curval)$chghash->{$param}");
+				}
+			}
+		}elsif(defined $atomhash2{$i}){
+			my $j=$interaction->{"j"};
+			if(defined $atomhash1{$j}){
+				foreach my $param(keys %{$chghash}){
+					my $curval=$interaction->{$param};
+					$interaction->{$param}=eval("($curval)$chghash->{$param}");
+				}
+			}
+		}
+	}
+}
+
+sub rescaleXMLdihedrals{
+	my($XMLhandle,$atomgroup,$groupD,$chghash)=@_;
+	my %atomhash=%{$atomgroup->{$groupD}};
+	foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+		my $i=$interaction->{"i"};
+		if(defined $atomhash{$i}){
+			my $j=$interaction->{"j"};
+			if(defined $atomhash{$j}){
+				my $k=$interaction->{"k"};
+				if(defined $atomhash{$k}){
+					my $l=$interaction->{"l"};
+					if(defined $atomhash{$l}){
+						foreach my $param(keys %{$chghash}){
+							my $curval=$interaction->{$param};
+							$interaction->{$param}=eval("($curval)$chghash->{$param}");
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+sub checkXMLfactor {
+	my ($val)=@_;
+	if($val !~ m/^[\+\-\*\/]/){
+		smog_quit("Incorrect format.  Must begin with a +, -, / or *.");
+	}
+	$val =~ s/^[+-\/\*]//g;
+	$val=whatAmI($val);
+	if($val == 1 || $val == 2){
+		return 0;
+	}else{
+		return 1;
+	}
+}
+
+
 
 sub OpenSMOGextractXML{
 	my ($OSref,$OpenSMOGxml,$keepatoms,$typesinsystem,$header)=@_;

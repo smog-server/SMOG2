@@ -152,7 +152,7 @@ then
 	echo $smog_exec \"\$\@\" >> $smog2dir/bin/smog2
 	chmod 755 $smog2dir/bin/smog2
 
-	for tool in adjustPDB tablegen optim extract scale-energies ions 
+	for tool in adjustPDB tablegen optim extract scale-energies ions scaleXML 
 	do
 		echo Creating wrapper $smog2dir/bin/smog_$tool
 		cat $smog2dir/header > $smog2dir/bin/smog_$tool 
@@ -174,7 +174,7 @@ else
 		echo $smog_exec \"\$\@\" >> $smog2dir/bin/smog2
 		chmod 755 $smog2dir/bin/smog2
 	fi
-	for tool in adjustPDB tablegen optim extract scale-energies ions
+	for tool in adjustPDB tablegen optim extract scale-energies ions scaleXML
 	do
 		if [ -e $smog2dir/bin/smog_$tool ]
 		then

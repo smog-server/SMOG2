@@ -44,7 +44,7 @@ our %reverthash;
 our $BaseN;
 our %OSrestrict;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub  validateXML checkPotentialFunction GetCustomParms getgitver $VERSION );
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub  validateXML checkPotentialFunction GetCustomParms getgitver selectgroup listgroups $VERSION );
 our %supported_directives;
 #####################
 # Error routiness   #
@@ -634,5 +634,28 @@ sub GetCustomParms{
 	}
 }
 
+sub listgroups
+{
+	my ($Ngrps,$grpnms)=@_;
+	my @grpnms=@{$grpnms};
+	print "index\t:\tgroup name\n";
+	for(my $I=0;$I<$Ngrps;$I++){
+		print "$I\t:\t$grpnms[$I]\n";
+	}
+}
+
+sub selectgroup
+{
+	my ($maxN)=@_;
+	my $tmp=<STDIN>;
+	chomp($tmp);
+	unless($tmp =~ m/^\d+$/){
+		smog_quit("$tmp is an invalid selection");
+	}
+	if($tmp <0 or $tmp >=$maxN){
+		smog_quit("selection must be positive and less than or $maxN");
+	}
+	return $tmp;
+}
 
 1;
