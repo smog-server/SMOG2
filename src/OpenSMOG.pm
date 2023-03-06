@@ -412,7 +412,7 @@ sub OpenSMOGscaleXML{
         # $outputXML is the output file name
 	foreach my $I(keys %{$OSref}){
 		if($I eq "contacts" or $I eq "dihedrals"){
-			print("Rescale $I in the XML file (Y/N)?\n");
+			print("Modify $I parameters in the XML file (Y/N)?\n");
 			my $reply=getreply();
 			if($reply == 0){
 				&rescaleXML($OSref,$I,$Ngrps,$grpnms,$groupnames,$atomgroup);
@@ -431,6 +431,7 @@ sub getreply{
 		$rep=<STDIN>;
 		chomp($rep);
 	}
+	print "\n";
 	if ($rep =~ m/y/i){
 		return 0;
 	}else{
@@ -447,7 +448,7 @@ sub rescaleXML{
 	# groupnms and groupnames...
 	my $cont=0;
 	until($cont == 1){
-		print "Which $type set should be rescaled?\n";
+		print "Select which $type group for which you would like to modify parameters.\n";
 		my %index;
 		my $c=0;
 		my $lhandle=$OSref->{$type}->{"$type\_type"};
@@ -460,25 +461,34 @@ sub rescaleXML{
 			if($tmp>0){
 				print "\"$grp\" is not a valid $type set.\n";
 			}
-			print "Give the name of the $type set you wish to rescale.\n";
+			print "selection:";
 			$grp=<STDIN>;
 			chomp($grp);
 			$grp =~ s/^\s+//g;
 			$grp =~ s/\s+$//g;
 			$tmp++;
 		}
-
+		print "\n";
 		# get the list of parameters, groups and factors for rescaling
 		my ($groupD,$groupC1,$groupC2,$chghash)=rescaleXMLsettings($lhandle,$type,$grp,$Ngrps,$grpnms,$groupnames,$atomgroup);
 		if($type eq "contacts"){
-			rescaleXMLcontacts($lhandle->{$grp},$atomgroup,$groupC1,$groupC2,$chghash);
+			print "Will adjust the following parameters:\n";
+			print "type: $type\n";
+			print "set: $grp\n";
+			print "atom groups: ${$grpnms}[$groupC1] and ${$grpnms}[$groupC2]\n";
+			print "parameter(s), modification factor(s):\n";
+			foreach my $param(keys %{$chghash}){
+				print "$param, $chghash->{$param}\n";
+			}
+			modifyXMLcontacts($lhandle->{$grp},$atomgroup,$groupC1,$groupC2,$chghash);
+			print "Contact modification completed\n\n";
 		}elsif($type eq "dihedrals"){
-			rescaleXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash);
+			modifyXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash);
 		}else{
 			internal_error("rescale XML selection issue.");
 		}
 
-		print "Rescale another set of $type? (Y/N)\n";
+		print "Modify additional $type parameters? (Y/N)\n";
 		$cont=getreply()		
 	}
 }
@@ -492,16 +502,22 @@ sub rescaleXMLsettings{
 	my $groupC1="";
 	my $groupC2="";
 	if($type eq "dihedrals"){
+		print "Select the index of the atom group for which you want to change parameters.\n";
 		listgroups($Ngrps,$grpnms);
-		print "Select the index of the group for dihedral rescaling?\n";
+		print "selection:";
 		$groupD=selectgroup($Ngrps);
 		$groupD=$grpnms[$groupD];
+		print "\n";
 	}elsif($type eq "contacts"){
+		print "Select the index of the first atom group for modifying contact parameters.\n";
 		listgroups($Ngrps,$grpnms);
-		print "Select the index of the first atom group for contact rescaling?\n";
+		print "selection:";
 		$groupC1=selectgroup($Ngrps);
-		print "Select the index of the second atom group for contact rescaling?\n";
+		print "\n";
+		print "Select the index of the second atom group for modifying contact parameters.\n";
+		print "selection:";
 		$groupC2=selectgroup($Ngrps);
+		print "\n";
 		$groupC1=$grpnms[$groupC1];
 		$groupC2=$grpnms[$groupC2];
 	}else{
@@ -519,10 +535,10 @@ sub rescaleXMLsettings{
 	my $getsets=0;
 	until($getsets==1){
 		print "Which parameter would you like to rescale?\nAvailable parameters:\n";
-		foreach my $param(keys %tmphash){
+		foreach my $param(sort keys %tmphash){
 			print("$param\n");
 		}
-
+		print "selection:";
 		# list the parameters for this term
 		my $rescaleparam="";
 		my $cont=1;
@@ -534,12 +550,11 @@ sub rescaleXMLsettings{
 			}else{
 				print("\"$rescaleparam\" is not a valid parameter name. Please try again.\n");
 			}
-			# select which parameter to rescale
-			# give the rescaling factor - make sure it is a number
 		}
+		print "\n";
 		# do the rescaling
 		delete $tmphash{$rescaleparam};
-		print "How would you like to change the value of $rescaleparam?\nFormat: [+-*/]<number> :\n";
+		print "How would you like to change the value of $rescaleparam? (format: [+-*/]<number>)\n";
 		$cont=1;
 		my $rescaleby="";
 		until($cont==0){
@@ -549,11 +564,14 @@ sub rescaleXMLsettings{
 			$cont=checkXMLfactor($rescaleby);
 			if($cont==1){
 				print("\"$rescaleby\" does not appear to comply with the required format:[+-*/]<number>\nTry again\n");
+			}elsif($cont==2){
+				print "Incorrect format.  Must begin with a +, -, / or *.\n";
 			}
 		}
+		print "\n";
 		$changehash{$rescaleparam}=$rescaleby;
 		if(scalar keys %tmphash > 0){
-			print ("Would you like to modify another parameter for set $grp of $type?\n");
+			print ("Would you like to modify another parameter for set $grp of $type? (Y/N)\n");
 			$getsets=getreply();
 		}else{
 			$getsets=1;
@@ -562,16 +580,17 @@ sub rescaleXMLsettings{
 	return ($groupD, $groupC1, $groupC2,\%changehash);
 }
 
-sub rescaleXMLcontacts{
+sub modifyXMLcontacts{
 	my($XMLhandle,$atomgroup,$groupC1,$groupC2,$chghash)=@_;
 	my %atomhash1=%{$atomgroup->{$groupC1}};
 	my %atomhash2=%{$atomgroup->{$groupC2}};
+
 	foreach my $interaction(@{$XMLhandle->{"interaction"}}){
 		my $i=$interaction->{"i"};
 		if(defined $atomhash1{$i}){
 			my $j=$interaction->{"j"};
 			if(defined $atomhash2{$j}){
-				foreach my $param(keys %{$chghash}){
+				foreach my $param(sort keys %{$chghash}){
 					my $curval=$interaction->{$param};
 					$interaction->{$param}=eval("($curval)$chghash->{$param}");
 				}
@@ -579,7 +598,7 @@ sub rescaleXMLcontacts{
 		}elsif(defined $atomhash2{$i}){
 			my $j=$interaction->{"j"};
 			if(defined $atomhash1{$j}){
-				foreach my $param(keys %{$chghash}){
+				foreach my $param(sort keys %{$chghash}){
 					my $curval=$interaction->{$param};
 					$interaction->{$param}=eval("($curval)$chghash->{$param}");
 				}
@@ -588,7 +607,7 @@ sub rescaleXMLcontacts{
 	}
 }
 
-sub rescaleXMLdihedrals{
+sub modifyXMLdihedrals{
 	my($XMLhandle,$atomgroup,$groupD,$chghash)=@_;
 	my %atomhash=%{$atomgroup->{$groupD}};
 	foreach my $interaction(@{$XMLhandle->{"interaction"}}){
@@ -614,7 +633,7 @@ sub rescaleXMLdihedrals{
 sub checkXMLfactor {
 	my ($val)=@_;
 	if($val !~ m/^[\+\-\*\/]/){
-		smog_quit("Incorrect format.  Must begin with a +, -, / or *.");
+		return 2;
 	}
 	$val =~ s/^[+-\/\*]//g;
 	$val=whatAmI($val);
@@ -653,7 +672,6 @@ sub OpenSMOGextractContacts{
 		   	my $handle2=$handle1->{$subtype};
 		   	foreach my $name(sort keys %{$handle2}){
 		   		my $handle3=$handle2->{"$name"}->{interaction};
-		   	     	#foreach my $param(@{$handle3->{interaction}}){
 		   	     	for (my $I=0;$I<=$#{$handle3};$I++){
 					if(OpenSMOGkeepContact(${$handle3}[$I],$keepatoms)){
 						delete ${$handle3}[$I];
@@ -677,7 +695,6 @@ sub OpenSMOGextractDihedrals{
 		   	my $handle2=$handle1->{$subtype};
 		   	foreach my $name(sort keys %{$handle2}){
 		   		my $handle3=$handle2->{"$name"}->{interaction};
-		   	     	#foreach my $param(@{$handle3->{interaction}}){
 		   	     	for (my $I=0;$I<=$#{$handle3};$I++){
 					if(OpenSMOGkeepDihedral(${$handle3}[$I],$keepatoms)){
 						delete ${$handle3}[$I];

@@ -649,11 +649,13 @@ sub selectgroup
 	my ($maxN)=@_;
 	my $tmp=<STDIN>;
 	chomp($tmp);
+	$tmp =~ s/^\s+//g;
+	$tmp =~ s/\s+$//g;
 	unless($tmp =~ m/^\d+$/){
 		smog_quit("$tmp is an invalid selection");
 	}
 	if($tmp <0 or $tmp >=$maxN){
-		smog_quit("selection must be positive and less than or $maxN");
+		smog_quit("selection must be positive and less than or equal to $maxN");
 	}
 	return $tmp;
 }
