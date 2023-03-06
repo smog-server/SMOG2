@@ -7,6 +7,7 @@ use check_table;
 use check_ions;
 use check_scale;
 use check_extract;
+use check_modXML;
 
 # This is the main script that runs SMOG2 tools and then checks to see if the generated files are correct.
 print <<EOT;
@@ -29,6 +30,7 @@ my $EXEC_SMOG=$ENV{'smog_exec'};
 my $SMOGDIR=$ENV{'SMOG_PATH'};
 my $EXEC_ADJUST=$ENV{'exec_adjust'};
 my $EXEC_IONS=$ENV{'exec_ions'};
+my $EXEC_MODXML=$ENV{'exec_modXML'};
 my $EXEC_EXTRACT=$ENV{'exec_extract'};
 my $EXEC_SCALE=$ENV{'exec_scale'};
 my $EXEC_TABLE=$ENV{'exec_table'};
@@ -94,11 +96,18 @@ if(defined $checkthese{"scale-energies"} || @ARGV==0){
  if($FAILED >0){$FAILSUM++};
  $tested++;
 }
+if(defined $checkthese{"modifyXML"} || @ARGV==0){
+ print "\nTesting smog_modifyXML\n";
+ ($FAILED,$message)=check_modXML($EXEC_MODXML,$PDB_DIR,$CHECKGMX,$GMXVER,$GMXPATH,$GMXEXEC,$GMXEDITCONF,$GMXMDP,$GMXMDPCA);
+ if($FAILED >0){$FAILSUM++};
+ $tested++;
+}
+
 if($FAILSUM>0){
  print "\n\nSOME TESTS FAILED.  SEE EARLIER MESSAGES\n\n";	
  exit (1);
 }elsif($tested==0){
- print "\n\nNo tests performed... Possible options: adjustPDB, tablegen, scale-energies, extract, ions\n\n"; 
+ print "\n\nNo tests performed... Possible options: adjustPDB, tablegen, scale-energies, extract, ions, modifyXML\n\n"; 
  exit (1);
 }elsif($testall ==0){
  print "\n\nPassed all SMOG tool checks!\n\n"; 

@@ -410,7 +410,7 @@ sub OpenSMOGscaleXML{
 	my ($OSref,$Ngrps,$grpnms,$groupnames,$atomgroup,$outputXML,$header)=@_;
         # OSref is a handle to the hash holding all information to be written.
         # $outputXML is the output file name
-	foreach my $I(keys %{$OSref}){
+	foreach my $I(sort keys %{$OSref}){
 		if($I eq "contacts" or $I eq "dihedrals"){
 			print("Modify $I parameters in the XML file (Y/N)?\n");
 			my $reply=getreply();
@@ -475,14 +475,23 @@ sub rescaleXML{
 			print "Will adjust the following parameters:\n";
 			print "type: $type\n";
 			print "set: $grp\n";
-			print "atom groups: ${$grpnms}[$groupC1] and ${$grpnms}[$groupC2]\n";
+			print "atom groups: $groupC1 and $groupC2\n";
 			print "parameter(s), modification factor(s):\n";
-			foreach my $param(keys %{$chghash}){
+			foreach my $param(sort keys %{$chghash}){
 				print "$param, $chghash->{$param}\n";
 			}
 			modifyXMLcontacts($lhandle->{$grp},$atomgroup,$groupC1,$groupC2,$chghash);
 			print "Contact modification completed\n\n";
 		}elsif($type eq "dihedrals"){
+			print "Will adjust the following parameters:\n";
+			print "type: $type\n";
+			print "set: $grp\n";
+			print "atom group: $groupD\n";
+			print "parameter(s), modification factor(s):\n";
+			foreach my $param(sort keys %{$chghash}){
+				print "$param, $chghash->{$param}\n";
+			}
+
 			modifyXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash);
 		}else{
 			internal_error("rescale XML selection issue.");
