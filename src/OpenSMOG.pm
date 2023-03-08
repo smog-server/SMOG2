@@ -554,6 +554,8 @@ sub rescaleXMLsettings{
 		until($cont==0){
 			$rescaleparam=<STDIN>;
 			chomp($rescaleparam);
+			$rescaleparam =~ s/^\s+//g;
+			$rescaleparam =~ s/\s+$//g;
 			if(exists $tmphash{$rescaleparam}){
 				$cont=0;
 			}else{
@@ -570,11 +572,13 @@ sub rescaleXMLsettings{
 			# give the rescaling factor - make sure it is a number and begins with an operator
 			$rescaleby=<STDIN>;
 			chomp($rescaleby);
+			$rescaleby =~ s/^\s+//g;
+			$rescaleby =~ s/\s+$//g;
 			$cont=checkXMLfactor($rescaleby);
 			if($cont==1){
 				print("\"$rescaleby\" does not appear to comply with the required format:[+-*/]<number>\nTry again\n");
 			}elsif($cont==2){
-				print "Incorrect format.  Must begin with a +, -, / or *.\n";
+				print "Incorrect format of \"$rescaleby\".  Must begin with a +, -, / or *.\n";
 			}
 		}
 		print "\n";
