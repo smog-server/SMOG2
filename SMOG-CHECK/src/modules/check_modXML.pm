@@ -29,14 +29,15 @@ sub check_modXML
  }
 
  print "\tChecking smog_modifyXML: test 1\n";
+ my $tmpbuffer="";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $indexfile="share/PDB.files/sample.AA.ndx";
- my $settings="share/PDB.files/xmlsettings.1.in.tmp";
+ my $settings="share/PDB.files/xmlsettings.1.in";
  my ($settings,$conhash,$dihhash)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- &compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
 
  &testsperformed($TESTED,\%FAIL);
 
@@ -48,7 +49,7 @@ sub check_modXML
    `cp $file tmp`;
   }
   savefailed(1,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
-  print "$printbuffer\n";
+  print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `mv tmp/$file .`;
   }
@@ -56,12 +57,40 @@ sub check_modXML
  }else{
   clearfiles(("output.$tool","AA.tmp.out.xml"));
  }
- foreach my $I(@FAILLIST){
-  if(!defined $TESTED->{$I}){
-   print "ERROR!!! Test \"$I\" not checked.";
-   $FAILSUM++;
+
+ print "\tChecking smog_modifyXML: test 2\n";
+ my $tmpbuffer="";
+ &testsperformed($TESTED,\%FAIL);
+ %FAIL=resettests(\%FAIL,\@FAILLIST);
+ my $indexfile="share/PDB.files/sample.AA.ndx";
+ my $settings="share/PDB.files/xmlsettings.2.in";
+ my ($settings,$conhash,$dihhash)=processsettings($settings);
+ `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
+ $FAIL{"NON-ZERO EXIT"}=$?;
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+
+ &testsperformed($TESTED,\%FAIL);
+
+ ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+ $FAILSUM += $FAILED;
+ if($FAILED !=0){
+  `mkdir tmp`;
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `cp $file tmp`;
   }
+  savefailed(1,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `mv tmp/$file .`;
+  }
+  `rmdir tmp`;
+ }else{
+  clearfiles(("output.$tool","AA.tmp.out.xml"));
  }
+
+
+
+ $FAILSUM+=checkalltested(\@FAILLIST,\%FAIL);
 
  return ($FAILSUM, $printbuffer);
 
@@ -129,18 +158,17 @@ sub compareXMLsmodify
  # read in original and new top files
  my $xmlold=readOpenSMOGxml($old);
  my $xmlnew=readOpenSMOGxml($new);
- &checkheadparams($fail,$xmlold,$xmlnew);
+ my $pbuffer="";
+ $pbuffer .= checkheadparams($fail,$xmlold,$xmlnew);
  # read in the ndx file
  print "\t";
  my ($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
  
  my @grpnms=@{$grpnms};
- my %groupnames=%{$groupnames};
  my %atomgroup=%{$atomgroup};
- &checkconstants($fail,$xmlold,$xmlnew);
+ $pbuffer .=checkconstants($fail,$xmlold,$xmlnew);
 
- &checkcontacts($fail,$xmlold,$xmlnew,$atomgroup,$conhash);
- # make 3 hashes of atoms.  They will be groupD, groupC1 and groupC2
+ $pbuffer.=checkcontacts($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$conhash);
 
  # make sure elements are identical for all non-contact and non-dihedral listings
 
@@ -148,14 +176,17 @@ sub compareXMLsmodify
 	# if the subtype was not supposed to be modified, make sure the two sets are identical
 		# for this, make temp hashes that will hold all interactions, with unique keys - this will probably be "i-j-k...-param1-param2..."  The param order will be based on ordered names.  Compare in both directions to ensure they are identical
 	# if the subtype was supposed to be changed, then save to the hash with projected/modified values.  Then, compare this against what was made by modifyXML.  The two should be identical.  
-
+ return $pbuffer;
 }
 
 sub checkconstants{ 
  # checks that the overall structure of the XML files is the same.
  my ($fail,$xmlold,$xmlnew)=@_;
+ my $printbuffer="";
  if((defined $xmlold->{'constants'} &&  defined $xmlnew->{'constants'}) || (! defined $xmlold->{'constants'} && ! defined $xmlnew->{'constants'})){
   ${$fail}{'CONSTANTS EXIST'}=0;
+ }else{
+  $printbuffer .= "\"constants\" only found in one of the xml files\n";
  }
  if(defined $xmlold->{'constants'} &&  defined $xmlnew->{'constants'}){
   my $c=0;
@@ -168,23 +199,33 @@ sub checkconstants{
     if(defined $hold{$I}){
      if($hold{$I} eq $hnew{$I}){
       $m++;
+     }else{
+      $printbuffer .= "Parameters $I has different values in the xml files.\n";
      }
+    }else{
+     $printbuffer .= "Parameters $I not found in new XML file.\n";
     }
    }
   }
   if($c==$m && $c != 0){
    ${$fail}{'CONSTANTS'}=0;
+  }else{
+   $printbuffer .= "Not all \"constants\" had same values\n";
   }
  }else{
   ${$fail}{'CONSTANTS'}=-1;
  }
+ return $printbuffer;
 } 
 
 sub checkcontacts{ 
  # checks that the overall structure of the XML files is the same.
- my ($fail,$xmlold,$xmlnew,$atomgroup,$conhash)=@_;
+ my ($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$conhash)=@_;
+ my $printbuffer="";
  if((defined $xmlold->{'contacts'} &&  defined $xmlnew->{'contacts'}) || (! defined $xmlold->{'constants'} && ! defined $xmlnew->{'constants'})){
   ${$fail}{'CONTACTS EXIST'}=0;
+ }else{
+  $printbuffer .= "\"contacts\" present in only one xml.\n";
  }
 
  my $intc=0;
@@ -199,31 +240,98 @@ sub checkcontacts{
   my %hold=%{$xmlold->{'contacts'}};
   my %hnew=%{$xmlnew->{'contacts'}};
   foreach my $type(keys %{$hold{'contacts_type'}}){
-   #
+   # temp hashes that will store the selected atom groups.
+   my %cg0;
+   my %cg1;
+   my %params;
+   if(defined $conhash->{$type}){
+    # found a contact type that was supposed to be changed.
+    # get the parameters;
+    %params=%{$conhash->{$type}->{parms}};
+    my $g0=${$conhash->{$type}->{groups}}[0];
+    my $g1=${$conhash->{$type}->{groups}}[1];
+    %cg0=%{$atomgroup->{${$grpnms}[$g0]}};
+    %cg1=%{$atomgroup->{${$grpnms}[$g1]}};
+   }
    my $interactionhashold=$hold{'contacts_type'}->{$type};
    my $interactionhashnew=$hnew{'contacts_type'}->{$type};
    my %compnew;
    my %compold;
+   # save new xml data
    foreach my $K(@{$interactionhashnew->{'interaction'}}){
     # each entry is a hash
     my %hash=%{$K};
     my $string="";
     foreach my $key(sort keys %hash){
-     $string .= "$key $hash{$key} ";
+     my $value;
+     if($key !~ m/^[ij]$/){
+      $value=sprintf("%.4e", $hash{$key});
+     }else{
+      $value=$hash{$key};
+     }
+     $string .= "$key $value ";
     }
     $compnew{$string}=0;
-   } 
+   }
 
-   foreach my $K(@{$interactionhashold->{'interaction'}}){
-    # each entry is a hash
-    my %hash=%{$K};
-    my $string="";
-    foreach my $key(sort keys %hash){
-     $string .= "$key $hash{$key} ";
+   # deal with original xml and see if it needs to be modified
+   if(defined $conhash->{$type}){
+    # update values to the expected numbers
+    foreach my $K(@{$interactionhashold->{'interaction'}}){
+     # each entry is a hash
+     my %hash=%{$K};
+     my $string="";
+
+     my $i=$hash{"i"};
+     my $j=$hash{"j"};
+     my $mod=1;
+     if((defined $cg0{$i} && defined $cg1{$j} ) || ( defined $cg1{$i} && defined $cg0{$j})){
+      # change something about this contact
+      foreach my $key(sort keys %hash){
+       my $value;
+       if (defined $params{$key}){
+        # this is parameter to update
+        $value=eval("$hash{$key}$params{$key}");
+        $value=sprintf("%.4e", $value);
+       }else{
+        $value=$hash{$key};
+       }
+       $string .= "$key $value ";
+      }
+     }else{
+      # atoms not in groups, just save
+      foreach my $key(sort keys %hash){
+       my $value;
+       if($key !~ m/^[ij]$/){
+        $value=sprintf("%.4e", $hash{$key});
+       }else{
+        $value=$hash{$key};
+       }
+       $string .= "$key $value ";
+      }
+     }
+     $compold{$string}=0;
+    } 
+   }else{
+    # not changing this set, so just copy
+
+    foreach my $K(@{$interactionhashold->{'interaction'}}){
+     # each entry is a hash
+     my %hash=%{$K};
+     my $string="";
+     foreach my $key(sort keys %hash){
+      my $value;
+      if($key !~ m/^[ij]$/){
+       $value=sprintf("%.4e", $hash{$key});
+      }else{
+       $value=$hash{$key};
+      }
+      $string .= "$key $value ";
+     }
+     $compold{$string}=0;
     }
-    $compold{$string}=0;
    } 
-    $intc++;
+   $intc++;
    if(scalar keys %compold == scalar keys %compnew){
     $intm++;
     foreach my $I(keys %compold){
@@ -231,19 +339,24 @@ sub checkcontacts{
      if(defined $compnew{$I}){
       $inttm++;
      }else{
-      print "Interaction key $I expected, but not found in new xml\n";
+      $printbuffer .= "Interaction key \"$I\" expected, but not found in new xml\n";
      }
     }
+    foreach my $I(keys %compnew){
+     $inttc++;
+     if(defined $compold{$I}){
+      $inttm++;
+     }else{
+      $printbuffer .= "Interaction key \"$I\" found in new xml, but not expected\n";
+     }
+    }
+ 
+   }else{
+    my $nold=scalar keys %compold;
+    my $nnew=scalar keys %compnew;
+    $printbuffer .= "Different number of contact interactions in XML files (old, $nold; new, $nnew).\n";
    }
-   # map the new hash to a lookup table for comparison
-   # keys can be "key val key val.." for each interaction
-   # when making the hash for the old, apply the changes
-
-
-   # compare the two hashes
   }
-  #use Data::Dumper;
-  #print(Dumper(%hold));
  }else{
   ${$fail}{'CONTACTS EXIST'}=-1;
  }
@@ -253,14 +366,16 @@ sub checkcontacts{
  }
  if($inttc==$inttm && $inttc > 0){
   ${$fail}{'INTERACTION VALUES: CONTACTS'}=0;
+ }else{
+  $printbuffer .= "Not all contact interactions matched.\n";
  }
+ return "$printbuffer";
 } 
-
-
 
 sub checkheadparams{ 
  # checks that the overall structure of the XML files is the same.
  my ($fail,$xmlold,$xmlnew)=@_;
+ my $printmessage="";
  my $chead=0;
  my $mhead=0;
  my $cparam=0;
@@ -285,7 +400,7 @@ sub checkheadparams{
     if($xmlnew->{$I}->{$J}->{$K}->{'expression'}->{'expr'} eq $xmlold->{$I}->{$J}->{$K}->{'expression'}->{'expr'}){
      ${$fail}{'EXPRESSION'}=0;
     }else{
-     print "Expression not the same for new and old XML files.";
+     $printmessage .= "Expression not the same for new and old XML files.\n";
     }
     $cparam++;
     if($#newparams == $#oldparams){
@@ -302,6 +417,7 @@ sub checkheadparams{
  }
  ${$fail}{'XML TREE'}=abs($chead-$mhead);
  ${$fail}{'PARAM LISTS'}=abs($cparam-$mparam);
+ return $printmessage;
 }
 
 return 1;

@@ -6,7 +6,7 @@ use Exporter;
 our $PDB_DIR;
 our @ISA = 'Exporter';
 our @EXPORT =
-qw(internal_error smogcheck_error savefailed clearfiles failed_message failsum filediff resettests testsperformed compare_table timediff checkrestraintfile initgmxparams runGMX removeifexists removedireifexists);
+qw(internal_error smogcheck_error savefailed clearfiles failed_message failsum filediff resettests testsperformed compare_table checkalltested timediff checkrestraintfile initgmxparams runGMX removeifexists removedireifexists);
 
 
 sub removeifexists
@@ -209,6 +209,20 @@ sub resettests
         $FAIL{$item}=1;
  }
  return %FAIL;
+}
+
+sub checkalltested
+{ 
+ my ($FAILLIST,$TESTED)=@_;
+ my @FAILLIST=@{$FAILLIST};
+ my $FAILSUM=0;
+ foreach my $I(@FAILLIST){
+  if(!defined $TESTED->{$I}){
+   print "ERROR!!! Test \"$I\" not checked.";
+   $FAILSUM++;
+  }
+ }
+ return $FAILSUM;
 }
 
 sub testsperformed

@@ -1,21 +1,2 @@
-Y
-contact_1-6-12
-0
-1
-A
-/1.2
-Y
-B
-+0.00001
-n
-y
-dihedral_ncos
-2
-multiplicity
-*2
-y
-theta0
-+12
-N
-N
-
+contacts contact_1-6-12 grp 0 grp 1 param A /1.2 param B +0.00001 
+dihedrals dihedral_ncos grp 2 param multiplicity *2 param theta0 +12

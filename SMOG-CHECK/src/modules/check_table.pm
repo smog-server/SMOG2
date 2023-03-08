@@ -17,6 +17,8 @@ sub check_table
  my $tool="table";
  my $name;
  my @FAILLIST = ('NON-ZERO EXIT','CORRECT VALUES');
+ my %TESTED;
+ my $TESTED=\%TESTED;
  %FAIL=resettests(\%FAIL,\@FAILLIST);
 
  print "\tChecking default table\n"; 
@@ -32,6 +34,7 @@ sub check_table
   clearfiles(("table.xvg","output.$tool"));
  }
 
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
 
  print "\tChecking custom table\n"; 
@@ -46,6 +49,7 @@ sub check_table
   clearfiles(("table.2.xvg","output.$tool"));
  }
 
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
 
  $name="kCal300";
@@ -61,6 +65,7 @@ sub check_table
   clearfiles(("table.$name.xvg","output.$tool"));
  }
 
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
 
  $name="kJ300";
@@ -76,6 +81,7 @@ sub check_table
   clearfiles(("table.$name.xvg","output.$tool"));
  }
 
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
 
  $name="kJ100";
@@ -90,9 +96,7 @@ sub check_table
  }else{
   clearfiles(("table.$name.xvg","output.$tool"));
  }
-
-
-
+ $FAILSUM+=checkalltested(\@FAILLIST,\%FAIL);
  $FAILSUM += $FAILED;
  return ($FAILSUM, $printbuffer);
 }

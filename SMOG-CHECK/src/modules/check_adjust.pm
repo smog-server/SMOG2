@@ -30,6 +30,8 @@ sub check_adjust
   $gitshift=0;
  }
 
+ my %TESTED;
+ my $TESTED=\%TESTED;
  open(ORIG,"$origpdb") or internal_error("Unable to open $origpdb");
  while(<ORIG>){
   $LINESorig++;
@@ -39,6 +41,7 @@ sub check_adjust
  # TEST 1
  print "\tChecking smog_adjustPDB with legacy naming.\n";
  $TESTNUM++;
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("adjusted.pdb");
@@ -74,6 +77,7 @@ sub check_adjust
  # TEST 2 
  print "\tChecking smog_adjustPDB with user-specified file name (legacy).\n";
  $TESTNUM++;
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("$newpdb");
@@ -107,6 +111,7 @@ sub check_adjust
  print "\tChecking smog_adjustPDB with default exact matching.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/mangled.resnames.pdb";
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("$newpdb");
@@ -140,6 +145,7 @@ sub check_adjust
  print "\tChecking smog_adjustPDB with default exact matching and altlocs.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/mangled.resnames.altlocs.pdb";
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("$newpdb");
@@ -174,6 +180,7 @@ sub check_adjust
  $TESTNUM++;
  my $origpdb="$pdbdir/mangled.atomnames.pdb";
  my $mapfile="$mapdir/sbmMapExact.alts";
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("$newpdb");
@@ -208,6 +215,7 @@ sub check_adjust
  $TESTNUM++;
  my $origpdb="$pdbdir/mangled.atomnames.lf.pdb";
  my $mapfile="$mapdir/sbmMapExact.lf.alts";
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("$newpdb");
@@ -247,6 +255,7 @@ sub check_adjust
  $TESTNUM++;
  my $origpdb="$pdbdir/mangled.atomnames.pdb";
  my $mapfile="$mapdir/sbmMapExact.alts";
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  removeifexists("$newpdb");
  `$exec -map $mapfile -i $origpdb -o $newpdb -large &> output.$tool`;
@@ -283,6 +292,7 @@ sub check_adjust
  print "\tChecking smog_adjustPDB with default exact matching, removewater and official/dirty PDB.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/2ci2.official.pdb";
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  $FAIL{"FILE LENGTH"}=-1;
@@ -314,6 +324,7 @@ sub check_adjust
  print "\tChecking smog_adjustPDB with default exact matching, removewater, official/dirty PDB and PDBresnum.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/2ci2.official.pdb";
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  $FAIL{"FILE LENGTH"}=-1;
@@ -345,6 +356,7 @@ sub check_adjust
  print "\tChecking smog_adjustPDB with default exact matching, removeH, PDBresnum, near-official/dirty PDB.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/1cis.nearofficial.pdb";
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  $FAIL{"FILE LENGTH"}=-1;
@@ -376,6 +388,7 @@ sub check_adjust
  print "\tChecking smog_adjustPDB with default exact matching, near-official/dirty PDB with insertions.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/6qnr-partIns.pdb";
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  $FAIL{"FILE LENGTH"}=-1;
@@ -407,6 +420,7 @@ sub check_adjust
  print "\tChecking smog_adjustPDB with default exact matching, near-official/dirty PDB, insertions and sorting.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/6qnr-partIns.pdb";
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  $FAIL{"FILE LENGTH"}=-1;
@@ -434,7 +448,7 @@ sub check_adjust
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
-
+ $FAILSUM+=checkalltested(\@FAILLIST,\%FAIL);
 
  return ($FAILSUM, $printbuffer);
 

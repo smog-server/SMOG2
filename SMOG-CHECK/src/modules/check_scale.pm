@@ -17,6 +17,10 @@ sub check_scale
  my $tool="scale";
  my $printbuffer="";
  my @FAILLIST = ('NON-ZERO EXIT','UNCHANGED DIRECTIVES','N DIHEDRALS','N SCALED DIHEDRALS','N CONTACTS','N SCALED CONTACTS','GMX COMPATIBLE');
+ my %TESTED;
+ my $TESTED=\%TESTED;
+
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
 
 # generate an AA model RNA 
@@ -29,6 +33,7 @@ sub check_scale
 
  print "\tChecking smog_scale-energies with all-atom model: rescaling terms\n";
 
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $indexfile="share/PDB.files/sample.AA.ndx";
  my $grpsel="$pdbdir/in.groups";
@@ -63,6 +68,7 @@ sub check_scale
 
  print "\tChecking smog_scale-energies with all-atom model: removing terms\n";
 
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $indexfile="share/PDB.files/sample.AA.ndx";
  my $grpsel="$pdbdir/in.groups";
@@ -86,6 +92,7 @@ sub check_scale
  }else{
   clearfiles(("output.$tool","$outfile.top","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","topol.tpr","$outfile.box.gro","$outfile.editconf","$outfile.grompp","$outfile.out.mdp"));
  }
+ $FAILSUM+=checkalltested(\@FAILLIST,\%FAIL);
  return ($FAILSUM, $printbuffer);
 
 }

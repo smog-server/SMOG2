@@ -37,7 +37,8 @@ sub check_extract
  my $printbuffer;
  my $tool="extract";
  my @FAILLIST = ('NON-ZERO EXIT','EXTRA MAP FILE GENERATED','GMX COMPATIBLE');
-
+ my %TESTED;
+ my $TESTED=\%TESTED;
  %FAIL=resettests(\%FAIL,\@FAILLIST);
 
 # generate an AA model RNA 
@@ -50,6 +51,7 @@ sub check_extract
   print "\tChecking smog_extract with all-atom model: no restraints\n";
   for(my $group=0;$group<3;$group++){
 
+   &testsperformed($TESTED,\%FAIL);
    %FAIL=resettests(\%FAIL,\@FAILLIST);
    print "\tChecking with index group $group\n";
    `echo $group | $exec -f AA.tmp.top -g AA.tmp.gro -n $pdbdir/sample.AA.ndx  &> output.$tool`;
@@ -74,6 +76,7 @@ sub check_extract
   print "\tChecking smog_extract with all-atom model: no restraints: non-standard fields\n";
   for(my $group=0;$group<2;$group++){
 
+   &testsperformed($TESTED,\%FAIL);
    %FAIL=resettests(\%FAIL,\@FAILLIST);
    print "\tChecking with index group $group\n";
    `echo $group | $exec -f $pdbdir/large.top -g $pdbdir/large.gro -n $pdbdir/large.ndx  &> output.$tool`;
@@ -96,6 +99,7 @@ sub check_extract
   print "\tChecking smog_extract with all-atom model: no restraints: non-standard fields: ndxorder on\n";
   for(my $group=0;$group<2;$group++){
 
+   &testsperformed($TESTED,\%FAIL);
    %FAIL=resettests(\%FAIL,\@FAILLIST);
    print "\tChecking with index group $group\n";
    `echo $group | $exec -f $pdbdir/large.top -g $pdbdir/large.gro -n $pdbdir/large.ndx -ndxorder &> output.$tool`;
@@ -119,6 +123,7 @@ sub check_extract
   print "\tChecking smog_extract with all-atom model: restraints: non-standard fields\n";
   for(my $group=0;$group<2;$group++){
 
+   &testsperformed($TESTED,\%FAIL);
    %FAIL=resettests(\%FAIL,\@FAILLIST);
    print "\tChecking with index group $group\n";
    `echo $group | $exec -f $pdbdir/large.top -g $pdbdir/large.gro -n $pdbdir/large.ndx -restraints 100 &> output.$tool`;
@@ -137,6 +142,7 @@ sub check_extract
     clearfiles(("output.$tool","extracted.top","extracted.gro","atomindex.map","restrained.map","topol.tpr","extracted.box.gro","extracted.editconf","extracted.grompp","extracted.out.mdp"));
    }
   } 
+ $FAILSUM+=checkalltested(\@FAILLIST,\%FAIL);
 
  return ($FAILSUM, $printbuffer);
 

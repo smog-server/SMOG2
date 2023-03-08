@@ -35,6 +35,8 @@ sub check_ions
  my $FAILSUM=0;
  my $printbuffer;
  my $tool="ions";
+ my %TESTED;
+ my $TESTED=\%TESTED;
 # init arrays of things to check
 
   # major index will be parameter set.  Minor index will list name (0), number (1), charge (2), mass (3), C12 (4), C6 (5)
@@ -55,6 +57,7 @@ sub check_ions
  for(my $i=0;$i<=$#PARAMS;$i++){
   print "\tChecking smog_ions with all-atom model: parameter set $i\n";
 
+  &testsperformed($TESTED,\%FAIL);
   %FAIL=resettests(\%FAIL,\@FAILLIST);
 
   `$exec -f AA.tmp.top -g AA.tmp.gro -ionnm $PARAMS[$i][0] -ionn  $PARAMS[$i][1] -ionq $PARAMS[$i][2] -ionm $PARAMS[$i][3] -ionC12 $PARAMS[$i][4] -ionC6 $PARAMS[$i][5]   &> output.$tool`;
@@ -120,6 +123,7 @@ sub check_ions
  foreach my $IONNAME (keys %idefsm){
   print "\tChecking smog_ions with all-atom model and $IONNAME: parameter set read from $tdir\n";
 
+  &testsperformed($TESTED,\%FAIL);
   %FAIL=resettests(\%FAIL,\@FAILLIST);
 
   `$exec -f AA.tmp.top -g AA.tmp.gro -ionnm $IONNAME -ionn 100 -t $tdir  &> output.$tool`;
@@ -152,6 +156,7 @@ sub check_ions
  for(my $i=0;$i<=$#PARAMS;$i++){
   print "\tChecking smog_ions with C-alpha model: parameter set $i\n";
 
+  &testsperformed($TESTED,\%FAIL);
   %FAIL=resettests(\%FAIL,\@FAILLIST);
 
   `$exec -f CA.tmp.top -g CA.tmp.gro -ionnm $PARAMS[$i][0] -ionn  $PARAMS[$i][1] -ionq $PARAMS[$i][2] -ionm $PARAMS[$i][3] -ionC12 $PARAMS[$i][4] -ionC6 $PARAMS[$i][5]   &> output.$tool`;
@@ -171,7 +176,7 @@ sub check_ions
   }
  }
  clearfiles(("CA.tmp.contacts", "CA.tmp.contacts.CG", "CA.tmp.gro" , "CA.tmp.ndx" , "CA.tmp.top"));
- 
+ $FAILSUM+=checkalltested(\@FAILLIST,\%FAIL); 
  return ($FAILSUM, $printbuffer);
 
 }
