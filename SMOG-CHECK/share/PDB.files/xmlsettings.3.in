@@ -1,0 +1,2 @@
+contacts contact_1-6-12 grp 2 grp 1 param A /1.2 param B +0.00001 
+dihedrals dihedral_cosine grp 1 param multiplicity *2 param theta0 +12

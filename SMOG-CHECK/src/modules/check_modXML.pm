@@ -88,6 +88,46 @@ sub check_modXML
   clearfiles(("output.$tool","AA.tmp.out.xml"));
  }
 
+ print "\tChecking smog_modifyXML: test 3\n";
+# generate an AA model RNA 
+ `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/AA_ions_Wang22.v1 -dname AA.tmp -OpenSMOG > output.smog`;
+ unless($? == 0){
+  internal_error("SMOG 2 crashed.  Fix SMOG 2 before testing smog_modifyXML.");
+ }else{
+  clearfiles("output.smog");
+ }
+
+ my $tmpbuffer="";
+ &testsperformed($TESTED,\%FAIL);
+ %FAIL=resettests(\%FAIL,\@FAILLIST);
+ my $indexfile="share/PDB.files/sample.AA.ndx";
+ my $settings="share/PDB.files/xmlsettings.3.in";
+ my ($settings,$conhash,$dihhash)=processsettings($settings);
+ `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
+ $FAIL{"NON-ZERO EXIT"}=$?;
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+
+ &testsperformed($TESTED,\%FAIL);
+
+ ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+ $FAILSUM += $FAILED;
+ if($FAILED !=0){
+  `mkdir tmp`;
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `cp $file tmp`;
+  }
+  savefailed(1,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `mv tmp/$file .`;
+  }
+  `rmdir tmp`;
+ }else{
+  clearfiles(("output.$tool","AA.tmp.out.xml"));
+ }
+
+
+
  $FAILSUM+=checkalltested(\@FAILLIST,$TESTED);
 
  return ($FAILSUM, $printbuffer);
@@ -195,13 +235,13 @@ sub checkconstants{
    foreach my $I(keys %hnew){
     $c++;
     if(defined $hold{$I}){
-     if($hold{$I} eq $hnew{$I}){
+     if($hold{$I}->{"value"} eq $hnew{$I}->{"value"}){
       $m++;
      }else{
-      $printbuffer .= "Parameters $I has different values in the xml files.\n";
+      $printbuffer .= "Parameter $I has different values in the xml files. $hold{$I} $hnew{$I}\n";
      }
     }else{
-     $printbuffer .= "Parameters $I not found in new XML file.\n";
+     $printbuffer .= "Parameter $I not found in new XML file.\n";
     }
    }
   }
@@ -378,6 +418,8 @@ sub checkheadparams{
  my $mhead=0;
  my $cparam=0;
  my $mparam=0;
+ my $cexp=0;
+ my $mexp=0;
  foreach my $I(sort keys %{$xmlold}){
   $chead++;
   if(defined ${$xmlnew}{$I}){
@@ -393,21 +435,24 @@ sub checkheadparams{
     if(defined ${$xmlnew->{$I}->{$J}}{$K}){
      $mhead++;
     }
-    my @oldparams=@{$xmlold->{$I}->{$J}->{$K}->{'parameter'}};
-    my @newparams=@{$xmlnew->{$I}->{$J}->{$K}->{'parameter'}};
-    if($xmlnew->{$I}->{$J}->{$K}->{'expression'}->{'expr'} eq $xmlold->{$I}->{$J}->{$K}->{'expression'}->{'expr'}){
-     ${$fail}{'EXPRESSION'}=0;
-    }else{
-     $printmessage .= "Expression not the same for new and old XML files.\n";
-    }
-    $cparam++;
-    if($#newparams == $#oldparams){
-     $mparam++;
-    }
-    for (my $L=0;$L<=$#newparams;$L++){
+    if($I ne "constants" and $I ne "nonbond"){
+     my @oldparams=@{$xmlold->{$I}->{$J}->{$K}->{'parameter'}};
+     my @newparams=@{$xmlnew->{$I}->{$J}->{$K}->{'parameter'}};
+     $cexp++;
+     if($xmlnew->{$I}->{$J}->{$K}->{'expression'}->{'expr'} eq $xmlold->{$I}->{$J}->{$K}->{'expression'}->{'expr'}){
+      $mexp++;
+     }else{
+      $printmessage .= "Expressions not the same for new and old XML files.\n";
+     }
      $cparam++;
-     if($oldparams[$L] eq $newparams[$L]){
+     if($#newparams == $#oldparams){
       $mparam++;
+     }
+     for (my $L=0;$L<=$#newparams;$L++){
+      $cparam++;
+      if($oldparams[$L] eq $newparams[$L]){
+       $mparam++;
+      }
      }
     }
    }
@@ -415,6 +460,7 @@ sub checkheadparams{
  }
  ${$fail}{'XML TREE'}=abs($chead-$mhead);
  ${$fail}{'PARAM LISTS'}=abs($cparam-$mparam);
+ ${$fail}{'EXPRESSION'}=abs($cexp-$mexp);
  return $printmessage;
 }
 

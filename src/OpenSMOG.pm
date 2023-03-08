@@ -448,7 +448,7 @@ sub rescaleXML{
 	# groupnms and groupnames...
 	my $cont=0;
 	until($cont == 1){
-		print "Select which $type group for which you would like to modify parameters.\n";
+		print "Select which $type group you would like to modify parameters.\n";
 		my %index;
 		my $c=0;
 		my $lhandle=$OSref->{$type}->{"$type\_type"};
