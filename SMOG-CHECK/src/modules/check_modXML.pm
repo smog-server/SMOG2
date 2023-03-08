@@ -88,9 +88,7 @@ sub check_modXML
   clearfiles(("output.$tool","AA.tmp.out.xml"));
  }
 
-
-
- $FAILSUM+=checkalltested(\@FAILLIST,\%FAIL);
+ $FAILSUM+=checkalltested(\@FAILLIST,$TESTED);
 
  return ($FAILSUM, $printbuffer);
 
