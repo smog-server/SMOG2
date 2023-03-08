@@ -17,7 +17,7 @@ sub check_modXML
  my $FAILSUM=0;
  my $tool="modifyXML";
  my $printbuffer="";
- my @FAILLIST = ('NON-ZERO EXIT','XML TREE','CONSTANTS','CONSTANTS EXIST','CONTACTS EXIST','DIHEDRALS EXIST','PARAM LISTS','EXPRESSION','INTERACTION COUNT: CONTACTS','INTERACTION VALUES: CONTACTS','INTERACTION COUNT: DIHEDRALS','INTERACTION VALUES: DIHEDRALS');
+ my @FAILLIST = ('NON-ZERO EXIT','XML TREE','CONSTANTS','CONSTANTS EXIST','CONTACTS EXIST','DIHEDRALS EXIST','PARAM LISTS','EXPRESSION','INTERACTION COUNT: CONTACTS','INTERACTION VALUES: CONTACTS','INTERACTION COUNT: DIHEDRALS','INTERACTION VALUES: DIHEDRALS','NONBOND EXIST','EXPRESSION: NONBOND','NONBOND PARAM VALUES');
  my %TESTED;
  my $TESTED=\%TESTED;
 # generate an AA model RNA 
@@ -205,6 +205,7 @@ sub compareXMLsmodify
  my @grpnms=@{$grpnms};
  my %atomgroup=%{$atomgroup};
  $pbuffer .=checkconstants($fail,$xmlold,$xmlnew);
+ $pbuffer .=checknonbonded($fail,$xmlold,$xmlnew);
 
  $pbuffer.=checkcontacts($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$conhash);
  $pbuffer.=checkdihedrals($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$dihhash);
@@ -628,6 +629,55 @@ sub checkheadparams{
  ${$fail}{'EXPRESSION'}=abs($cexp-$mexp);
  return $printmessage;
 }
+
+sub checknonbonded{ 
+ # checks that nonbonded sections are the same
+ my ($fail,$xmlold,$xmlnew)=@_;
+ my $printbuffer="";
+ if((defined $xmlold->{'nonbond'} &&  defined $xmlnew->{'nonbond'}) || (! defined $xmlold->{'nonbond'} && ! defined $xmlnew->{'nonbond'})){
+  ${$fail}{'NONBOND EXIST'}=0;
+ }else{
+  $printbuffer .= "\"nonbond\" only found in one of the xml files\n";
+ }
+ if(defined $xmlold->{'nonbond'} &&  defined $xmlnew->{'nonbond'}){
+  my $c=0;
+  my $m=0;
+  my %hold=%{$xmlold->{'nonbond'}->{'nonbond_bytype'}};
+  my %hnew=%{$xmlnew->{'nonbond'}->{'nonbond_bytype'}};
+  if ($hnew{expression}->{'expr'} eq $hold{expression}->{'expr'}){
+   ${$fail}{'EXPRESSION: NONBOND'}=0;
+  }
+  my @pold=@{$hold{'nonbond_param'}};
+  my @pnew=@{$hnew{'nonbond_param'}};
+  my $nbcount=0;
+  my $nbmatch=0;
+  for(my $m=0;$m<$#pold;$m++){
+   my %thold=%{$pold[$m]};
+   my %thnew=%{$pnew[$m]};
+   foreach my $I(keys %thnew){
+    $nbcount++;
+    if($thnew{$I} eq $thold{$I}){
+     $nbmatch++;
+    }
+   }
+   foreach my $I(keys %thold){
+    $nbcount++;
+    if($thnew{$I} eq $thold{$I}){
+     $nbmatch++;
+    }
+   }
+  }
+  if($nbcount==0){
+   $printbuffer .= "Did not find any nonbonded parameters\n";   
+  }else{
+   ${$fail}{'NONBOND PARAM VALUES'}=abs($nbcount-$nbmatch);
+  }
+ }else{
+  ${$fail}{'EXPRESSION: NONBOND'}=-1;
+  ${$fail}{'NONBOND PARAM VALUES'}=-1;
+ }
+ return $printbuffer;
+} 
 
 sub truncaten
 {
