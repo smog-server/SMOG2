@@ -78,14 +78,14 @@ sub check_modXML
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `cp $file tmp`;
   }
-  savefailed(1,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  savefailed(2,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
   print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `mv tmp/$file .`;
   }
   `rmdir tmp`;
  }else{
-  clearfiles(("output.$tool","AA.tmp.out.xml"));
+  clearfiles(("output.$tool","AA.tmp.out.xml","AA.tmp.contacts","AA.tmp.gro","AA.tmp.ndx","AA.tmp.top","AA.tmp.xml"));
  }
 
  print "\tChecking smog_modifyXML: test 3\n";
@@ -116,14 +116,14 @@ sub check_modXML
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `cp $file tmp`;
   }
-  savefailed(1,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  savefailed(3,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
   print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `mv tmp/$file .`;
   }
   `rmdir tmp`;
  }else{
-  clearfiles(("output.$tool","AA.tmp.out.xml"));
+  clearfiles(("output.$tool","AA.tmp.out.xml","AA.tmp.contacts","AA.tmp.gro","AA.tmp.ndx","AA.tmp.top","AA.tmp.xml"));
  }
 
 
