@@ -83,7 +83,6 @@ sub check_scale
  $FAILSUM += $FAILED;
  if($FAILED !=0){
   savefailed(2,("output.$tool","smog.rescaled.top","smog.rescaled.top","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","topol.tpr","$outfile.top","$outfile.box.gro","$outfile.editconf","$outfile.grompp","$outfile.out.mdp"));
-  print "$printbuffer\n";
  }else{
   clearfiles(("output.$tool","$outfile.top","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","topol.tpr","$outfile.box.gro","$outfile.editconf","$outfile.grompp","$outfile.out.mdp"));
  }

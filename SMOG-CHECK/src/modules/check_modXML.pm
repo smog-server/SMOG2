@@ -3,6 +3,7 @@ use strict;
 use Exporter;
 use smog_common;
 use check_common;
+use OpenSMOG;
 our @ISA = 'Exporter';
 our @EXPORT = qw(check_modXML);
 
@@ -16,9 +17,9 @@ sub check_modXML
  my $FAILSUM=0;
  my $tool="modifyXML";
  my $printbuffer="";
- my @FAILLIST = ('NON-ZERO EXIT','N MODIFIED DIHEDRALS','N MODIFIED CONTACTS');
- %FAIL=resettests(\%FAIL,\@FAILLIST);
-
+ my @FAILLIST = ('NON-ZERO EXIT','XML TREE','CONSTANTS','CONSTANTS EXIST','CONTACTS EXIST','PARAM LISTS','EXPRESSION','INTERACTION COUNT: CONTACTS','INTERACTION VALUES: CONTACTS');
+ my %TESTED;
+ my $TESTED=\%TESTED;
 # generate an AA model RNA 
  `smog2 -i $pdbdir/tRNA.pdb -AA -dname AA.tmp -OpenSMOG > output.smog`;
  unless($? == 0){
@@ -28,18 +29,16 @@ sub check_modXML
  }
 
  print "\tChecking smog_modifyXML: test 1\n";
-
+ &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $indexfile="share/PDB.files/sample.AA.ndx";
- my $settings="share/PDB.files/xmlsettings.1.in";
- `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml < $settings &> output.$tool`;
+ my $settings="share/PDB.files/xmlsettings.1.in.tmp";
+ my ($settings,$conhash,$dihhash)=processsettings($settings);
+ `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
-# my ($samedirs,$dihlength,$dihmatch,$conlength,$conmatch)=comparetopsrescale("AA.tmp.top","smog.rescaled.top",$indexfile,$grpsel,$RC,$RD);
-# $FAIL{"UNCHANGED DIRECTIVES"}=$samedirs;
-# $FAIL{"N DIHEDRALS"}=$dihlength;
-# $FAIL{"N SCALED DIHEDRALS"}=$dihmatch;
-# $FAIL{"N CONTACTS"}=$conlength;
-# $FAIL{"N SCALED CONTACTS"}=$conmatch;
+ &compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+
+ &testsperformed($TESTED,\%FAIL);
 
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
@@ -57,52 +56,80 @@ sub check_modXML
  }else{
   clearfiles(("output.$tool","AA.tmp.out.xml"));
  }
+ foreach my $I(@FAILLIST){
+  if(!defined $TESTED->{$I}){
+   print "ERROR!!! Test \"$I\" not checked.";
+   $FAILSUM++;
+  }
+ }
 
  return ($FAILSUM, $printbuffer);
 
 }
 
-sub comparetopsrescale
+sub processsettings{
+ my ($settings)=@_;
+ # define some changes we want to introduce. This will be moved to a file for reading, later
+ my %conhash;
+ my %dihhash;
+ open(INSET,"$settings") or smog_quit("can not open $settings");
+ $settings ="";
+ while(<INSET>){
+  my %parhash;
+  my @grparr;
+  my $LINE=$_;
+  chomp($LINE);
+  $LINE =~ s/^\s+//g;
+  $LINE =~ s/\s+$//g;
+  my @A=split(/\s+/,$LINE);
+  my $last="";
+  my $name="";
+  my $type="";
+  for(my $I=0;$I<$#A;$I++){
+   if($A[$I] eq "contacts" || $A[$I] eq "dihedrals"){
+    $last=$A[$I];
+    $type=$A[$I];
+    $settings .= "Y\n";
+    $I++;
+    $settings .= "  $A[$I]  \n";
+    $name=$A[$I];
+   }elsif($A[$I] eq "grp"){
+    $last=$A[$I];
+    $I++;
+    $settings .= "  $A[$I]  \n";
+    push(@grparr,$A[$I]);
+   }elsif($A[$I] eq "param"){
+    if($last eq "param"){
+     $settings .= "Y\n";
+    }
+    $last=$A[$I];
+    $I++;
+    $settings .= "  $A[$I]  \n";
+    $I++;
+    $settings .= "  $A[$I]  \n";
+    $parhash{$A[$I-1]}=$A[$I];
+   }
+  }
+  $settings .= "N\n";
+  if($type eq "contacts"){
+   $conhash{$name}->{"parms"}=\%parhash;
+   $conhash{$name}->{"groups"}=\@grparr;
+  }elsif($type eq "dihedrals"){ 
+   $dihhash{$name}->{"parms"}=\%parhash;
+   $dihhash{$name}->{"groups"}=\@grparr;
+  }
+ }
+ $settings .= "N\n";
+ return ($settings,\%conhash,\%dihhash);
+}
+
+sub compareXMLsmodify
 {
- my ($old,$new,$indexFile,$grpsel,$RC,$RD)=@_;
+ my ($fail,$old,$new,$indexFile,$conhash,$dihhash)=@_;
  # read in original and new top files
- my $string=loadfile("$old");
- my ($DATA,$DIRLIST)=checkdirectives($string);
- my %DIRLIST=%{$DIRLIST};
- my @DATA=@{$DATA};
- $string=loadfile("$new");
- my ($DATA2,$DIRLIST2)=checkdirectives($string);
- my %DIRLIST2=%{$DIRLIST2};
- my @DATA2=@{$DATA2};
- my $samedirs=0; 
- my $dihlength=1;
- my $dihnum=1;
- my $dscaled=0; 
- my $sameatoms=0; 
- my $conlength=1;
- my $connum=1;
- my $cscaled=0; 
- my $consameatoms=0; 
-
- # check that unchanged directives remain unchanged
- foreach my $DIR("defaults","atomtypes","moleculetype","atoms","bonds","angles","molecules")
- {
-  $samedirs++;
-  if($DATA[$DIRLIST{"$DIR"}] eq $DATA2[$DIRLIST2{"$DIR"}]){
-   $samedirs--;
-  }else{
-   print "issue: directive $DIR changed, but it shouldn\'t\n";
-  }
- }
- if($RC!=0){
-  $samedirs++;
-  if($DATA[$DIRLIST{"exclusions"}] eq $DATA2[$DIRLIST2{"exclusions"}]){
-   $samedirs--;
-  }else{
-   print "issue: directive exclusions changed, but it shouldn\'t\n";
-  }
- }
-
+ my $xmlold=readOpenSMOGxml($old);
+ my $xmlnew=readOpenSMOGxml($new);
+ &checkheadparams($fail,$xmlold,$xmlnew);
  # read in the ndx file
  print "\t";
  my ($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
@@ -110,202 +137,171 @@ sub comparetopsrescale
  my @grpnms=@{$grpnms};
  my %groupnames=%{$groupnames};
  my %atomgroup=%{$atomgroup};
+ &checkconstants($fail,$xmlold,$xmlnew);
 
- # read in grp selection list
- open(GRPSEL,"$grpsel") or smog_quit("unable to open $grpsel");
- my $DGROUP=<GRPSEL>;
- chomp($DGROUP);
- $DGROUP=$grpnms[$DGROUP];
- my $CGROUP1=<GRPSEL>;
- chomp($CGROUP1);
- $CGROUP1=$grpnms[$CGROUP1];
- my $CGROUP2=<GRPSEL>;
- chomp($CGROUP2);
- $CGROUP2=$grpnms[$CGROUP2];
+ &checkcontacts($fail,$xmlold,$xmlnew,$atomgroup,$conhash);
+ # make 3 hashes of atoms.  They will be groupD, groupC1 and groupC2
 
- # check dihedrals
- my @D1 = split(/\n/,$DATA[$DIRLIST{"dihedrals"}]);
- my @D2 = split(/\n/,$DATA2[$DIRLIST2{"dihedrals"}]);
- if($RD != 0){
-  if($#D1 == $#D2){
-   $dihlength=0;
+ # make sure elements are identical for all non-contact and non-dihedral listings
+
+ # go through all contact and dihedral subtypes
+	# if the subtype was not supposed to be modified, make sure the two sets are identical
+		# for this, make temp hashes that will hold all interactions, with unique keys - this will probably be "i-j-k...-param1-param2..."  The param order will be based on ordered names.  Compare in both directions to ensure they are identical
+	# if the subtype was supposed to be changed, then save to the hash with projected/modified values.  Then, compare this against what was made by modifyXML.  The two should be identical.  
+
+}
+
+sub checkconstants{ 
+ # checks that the overall structure of the XML files is the same.
+ my ($fail,$xmlold,$xmlnew)=@_;
+ if((defined $xmlold->{'constants'} &&  defined $xmlnew->{'constants'}) || (! defined $xmlold->{'constants'} && ! defined $xmlnew->{'constants'})){
+  ${$fail}{'CONSTANTS EXIST'}=0;
+ }
+ if(defined $xmlold->{'constants'} &&  defined $xmlnew->{'constants'}){
+  my $c=0;
+  my $m=0;
+  my %hold=%{$xmlold->{'constants'}};
+  my %hnew=%{$xmlnew->{'constants'}};
+  if(scalar keys %hnew == scalar keys %hold){
+   foreach my $I(keys %hnew){
+    $c++;
+    if(defined $hold{$I}){
+     if($hold{$I} eq $hnew{$I}){
+      $m++;
+     }
+    }
+   }
   }
-  $dihnum=$#D1+1;
-  # rescaling dihedrals
-  my $commentshift1=0;
-  my $commentshift2=0;
-  for(my $I=1;$I<=$#D1;$I++){
-   until(! exists $D1[$I+$commentshift1] or  hascontent($D1[$I+$commentshift1])){
-    $commentshift1++;
-    $dihnum--;
-   }
-   until(! exists $D2[$I+$commentshift2] or  hascontent($D2[$I+$commentshift2])){
-    $commentshift2++;
-   }
-   my @A1=split(/\s+/,$D1[$I+$commentshift1]); 
-   my @A2=split(/\s+/,$D2[$I+$commentshift2]);
-    if($A1[0]==$A2[0] && $A1[1]==$A2[1] && $A1[2]==$A2[2] && $A1[3]==$A2[3]){
-     $sameatoms++;
-     my $rescale=0;
-     for(my $J=0;$J<4;$J++){
-      if(exists $atomgroup{$DGROUP}{$A1[$J]}){
-       $rescale++; 
-      }     
-     }
-     my $resc;
-     if($rescale==4 && $A1[4] != 2){
-      $resc=$RD;
-     }else{
-      $resc=1.0
-     }
-     if(abs($A1[6]*$resc-$A2[6])<0.001){
-      $dscaled++;
-     }else{
-      print "issue: dihedral not scaled properly. Should be scaled by $resc.\nold $D1[$I+$commentshift1]\nnew $D2[$I+$commentshift2]\n";
-     } 
-    }else{
-     print "issue: atom numbers don\'t match:\nold $D1[$I+$commentshift1]\nnew $D2[$I+$commentshift2]\n";
-    } 
+  if($c==$m && $c != 0){
+   ${$fail}{'CONSTANTS'}=0;
   }
  }else{
-  # this means we should check if the dihedrals are removed.
-  $dihlength=-1;
-  $dihnum=$#D1+1;
-  # rescaling dihedrals
-  my $I2=1;
-  my $commentshift1=0;
-  my $commentshift2=0;
-  for(my $I=1;$I<=$#D1;$I++){
-   until(! exists $D1[$I+$commentshift1] or  hascontent($D1[$I+$commentshift1])){
-    $commentshift1++;
-    $dihnum--;
-   }
-   my @A1=split(/\s+/,$D1[$I+$commentshift1]);
+  ${$fail}{'CONSTANTS'}=-1;
+ }
+} 
 
-   my $remove=0;
-   for(my $J=0;$J<4;$J++){
-    if(exists $atomgroup{$DGROUP}{$A1[$J]}){
-     $remove++; 
-    }     
-   }
-   if($remove==4 && $A1[4] == 1){
-    # this one should not be in the new file
-    $dihnum--;
-    next;
-   }
-   until(! exists $D2[$I2+$commentshift2] or  hascontent($D2[$I2+$commentshift2])){
-    $commentshift2++;
-   }
-   my @A2=split(/\s+/,$D2[$I2+$commentshift2]);
-
-   if($A1[0]==$A2[0] && $A1[1]==$A2[1] && $A1[2]==$A2[2] && $A1[3]==$A2[3]){
-    $sameatoms++;
-   }else{
-    print "issue: atom numbers don\'t match:\nold $D1[$I+$commentshift1]\nnew $D2[$I2+$commentshift2]\n";
-   } 
-   if(abs($A1[6]-$A2[6])<0.001){
-    $dscaled++;
-   }else{
-    print "issue: dihedral not set properly.\n$I, $commentshift1, $I2, $commentshift2\nold $D1[$I+$commentshift1]\nnew $D2[$I2+$commentshift2]\n";
-   } 
-   $I2++;
-  }
+sub checkcontacts{ 
+ # checks that the overall structure of the XML files is the same.
+ my ($fail,$xmlold,$xmlnew,$atomgroup,$conhash)=@_;
+ if((defined $xmlold->{'contacts'} &&  defined $xmlnew->{'contacts'}) || (! defined $xmlold->{'constants'} && ! defined $xmlnew->{'constants'})){
+  ${$fail}{'CONTACTS EXIST'}=0;
  }
 
- # check contacts
- my @C1 = split(/\n/,$DATA[$DIRLIST{"pairs"}]);
- my @C2 = split(/\n/,$DATA2[$DIRLIST2{"pairs"}]);
- if($RC != 0){
-  if($#C1 == $#C2){
-   $conlength=0;
-  }
-  $connum=$#C1+1;
-  # rescaling contacts
-  my $commentshift1=0;
-  my $commentshift2=0;
-  for(my $I=1;$I<=$#C1;$I++){
-   until(! exists $C1[$I+$commentshift1] or  hascontent($C1[$I+$commentshift1])){
-    $commentshift1++;
-    $connum--;
-   }
-   until(! exists $C2[$I+$commentshift2] or  hascontent($C2[$I+$commentshift2])){
-    $commentshift2++;
-   }
-   my @A1=split(/\s+/,$C1[$I+$commentshift1]); 
-   my @A2=split(/\s+/,$C2[$I+$commentshift2]);
+ my $intc=0;
+ my $intm=0;
+ my $inttc=0;
+ my $inttm=0;
+ if(defined $xmlold->{'contacts'} &&  defined $xmlnew->{'contacts'}){
+  # set up the index groups and parameter changes
+  #...
+  my $c=0;
+  my $m=0;
+  my %hold=%{$xmlold->{'contacts'}};
+  my %hnew=%{$xmlnew->{'contacts'}};
+  foreach my $type(keys %{$hold{'contacts_type'}}){
+   #
+   my $interactionhashold=$hold{'contacts_type'}->{$type};
+   my $interactionhashnew=$hnew{'contacts_type'}->{$type};
+   my %compnew;
+   my %compold;
+   foreach my $K(@{$interactionhashnew->{'interaction'}}){
+    # each entry is a hash
+    my %hash=%{$K};
+    my $string="";
+    foreach my $key(sort keys %hash){
+     $string .= "$key $hash{$key} ";
+    }
+    $compnew{$string}=0;
+   } 
 
-    if($A1[0]==$A2[0] && $A1[1]==$A2[1]){
-     $consameatoms++;
-     my $rescale=0;
-      if(exists $atomgroup{$CGROUP1}{$A1[0]} && exists $atomgroup{$CGROUP2}{$A1[1]}){
-       $rescale=1; 
-      }elsif(exists $atomgroup{$CGROUP2}{$A1[0]} && exists $atomgroup{$CGROUP1}{$A1[1]}){
-       $rescale=1; 
-      }
-     my $resc;
-     if($rescale==1 && $A1[2] == 1){
-      $resc=$RC;
+   foreach my $K(@{$interactionhashold->{'interaction'}}){
+    # each entry is a hash
+    my %hash=%{$K};
+    my $string="";
+    foreach my $key(sort keys %hash){
+     $string .= "$key $hash{$key} ";
+    }
+    $compold{$string}=0;
+   } 
+    $intc++;
+   if(scalar keys %compold == scalar keys %compnew){
+    $intm++;
+    foreach my $I(keys %compold){
+     $inttc++;
+     if(defined $compnew{$I}){
+      $inttm++;
      }else{
-      $resc=1.0
+      print "Interaction key $I expected, but not found in new xml\n";
      }
-     if(abs($A1[3]*$resc-$A2[3])<0.001 && abs($A1[4]*$resc-$A2[4])<0.001){
-      $cscaled++;
-     }else{
-      print "issue: contact not scaled properly. Should be scaled by $resc.\nold $C1[$I]\nnew $C2[$I]\n";
-     } 
-    }else{
-     print "issue: atom numbers don\'t match:\nold $C1[$I]\nnew $C2[$I]\n";
-    } 
+    }
+   }
+   # map the new hash to a lookup table for comparison
+   # keys can be "key val key val.." for each interaction
+   # when making the hash for the old, apply the changes
+
+
+   # compare the two hashes
   }
+  #use Data::Dumper;
+  #print(Dumper(%hold));
  }else{
-  # this means we should check if the contacts are removed.
-  $conlength=-1;
-  $connum=$#C1+1;
-  # rescaling contacts
-  my $I2=1;
-#  for(my $I=0;$I<=$#C1;$I++){
-#   my @A1=split(/\s+/,$C1[$I]); 
-#   my @A2=split(/\s+/,$C2[$I2]);
+  ${$fail}{'CONTACTS EXIST'}=-1;
+ }
 
-  my $commentshift1=0;
-  my $commentshift2=0;
-  for(my $I=1;$I<=$#C1;$I++){
-   until(! exists $C1[$I+$commentshift1] or  hascontent($C1[$I+$commentshift1])){
-    $commentshift1++;
-    $connum--;
-   }
-   my @A1=split(/\s+/,$C1[$I+$commentshift1]); 
+ if($intc==$intm && $intc > 0){
+  ${$fail}{'INTERACTION COUNT: CONTACTS'}=0;
+ }
+ if($inttc==$inttm && $inttc > 0){
+  ${$fail}{'INTERACTION VALUES: CONTACTS'}=0;
+ }
+} 
 
-   my $remove=0;
-   if(exists $atomgroup{$CGROUP1}{$A1[0]} && exists $atomgroup{$CGROUP2}{$A1[1]}){
-    $remove=1; 
-   }elsif(exists $atomgroup{$CGROUP2}{$A1[0]} && exists $atomgroup{$CGROUP1}{$A1[1]}){
-    $remove=1; 
-   }
-   if($remove==1){
-    $connum--;
-    next;
-   }
 
-   until(! exists $C2[$I2+$commentshift2] or  hascontent($C2[$I2+$commentshift2])){
-    $commentshift2++;
-   }
-   my @A2=split(/\s+/,$C2[$I2+$commentshift2]);
 
-   if($A1[0]==$A2[0] && $A1[1]==$A2[1]){
-    $consameatoms++;
-    if(abs($A1[3]-$A2[3])<0.001 && abs($A1[4]-$A2[4])<0.001){
-     $cscaled++;
+sub checkheadparams{ 
+ # checks that the overall structure of the XML files is the same.
+ my ($fail,$xmlold,$xmlnew)=@_;
+ my $chead=0;
+ my $mhead=0;
+ my $cparam=0;
+ my $mparam=0;
+ foreach my $I(sort keys %{$xmlold}){
+  $chead++;
+  if(defined ${$xmlnew}{$I}){
+   $mhead++;
+  }
+  foreach my $J(sort keys %{$xmlold->{$I}}){
+   $chead++;
+   if(defined ${$xmlnew->{$I}}{$J}){
+    $mhead++;
+   }
+   foreach my $K(sort keys %{$xmlold->{$I}->{$J}}){
+    $chead++;
+    if(defined ${$xmlnew->{$I}->{$J}}{$K}){
+     $mhead++;
+    }
+    my @oldparams=@{$xmlold->{$I}->{$J}->{$K}->{'parameter'}};
+    my @newparams=@{$xmlnew->{$I}->{$J}->{$K}->{'parameter'}};
+    if($xmlnew->{$I}->{$J}->{$K}->{'expression'}->{'expr'} eq $xmlold->{$I}->{$J}->{$K}->{'expression'}->{'expr'}){
+     ${$fail}{'EXPRESSION'}=0;
     }else{
-     print "issue: contact not set properly.\nold $C1[$I+$commentshift1]\nnew $C2[$I2+$commentshift2]\n";
-    } 
-   }else{
-    print "issue: atom numbers don\'t match:\nold $C1[$I+$commentshift1]\nnew $C2[$I2+$commentshift2]\n";
-   } 
-  $I2++;
+     print "Expression not the same for new and old XML files.";
+    }
+    $cparam++;
+    if($#newparams == $#oldparams){
+     $mparam++;
+    }
+    for (my $L=0;$L<=$#newparams;$L++){
+     $cparam++;
+     if($oldparams[$L] eq $newparams[$L]){
+      $mparam++;
+     }
+    }
+   }
   }
  }
- return ($samedirs,$dihlength,abs($dihnum-$dscaled),$conlength,abs($connum-$cscaled));
+ ${$fail}{'XML TREE'}=abs($chead-$mhead);
+ ${$fail}{'PARAM LISTS'}=abs($cparam-$mparam);
 }
 
 return 1;
