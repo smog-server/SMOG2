@@ -17,7 +17,7 @@ sub check_modXML
  my $FAILSUM=0;
  my $tool="modifyXML";
  my $printbuffer="";
- my @FAILLIST = ('NON-ZERO EXIT','XML TREE','CONSTANTS','CONSTANTS EXIST','CONTACTS EXIST','PARAM LISTS','EXPRESSION','INTERACTION COUNT: CONTACTS','INTERACTION VALUES: CONTACTS');
+ my @FAILLIST = ('NON-ZERO EXIT','XML TREE','CONSTANTS','CONSTANTS EXIST','CONTACTS EXIST','DIHEDRALS EXIST','PARAM LISTS','EXPRESSION','INTERACTION COUNT: CONTACTS','INTERACTION VALUES: CONTACTS','INTERACTION COUNT: DIHEDRALS','INTERACTION VALUES: DIHEDRALS');
  my %TESTED;
  my $TESTED=\%TESTED;
 # generate an AA model RNA 
@@ -207,13 +207,8 @@ sub compareXMLsmodify
  $pbuffer .=checkconstants($fail,$xmlold,$xmlnew);
 
  $pbuffer.=checkcontacts($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$conhash);
+ $pbuffer.=checkdihedrals($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$dihhash);
 
- # make sure elements are identical for all non-contact and non-dihedral listings
-
- # go through all contact and dihedral subtypes
-	# if the subtype was not supposed to be modified, make sure the two sets are identical
-		# for this, make temp hashes that will hold all interactions, with unique keys - this will probably be "i-j-k...-param1-param2..."  The param order will be based on ordered names.  Compare in both directions to ensure they are identical
-	# if the subtype was supposed to be changed, then save to the hash with projected/modified values.  Then, compare this against what was made by modifyXML.  The two should be identical.  
  return $pbuffer;
 }
 
@@ -256,11 +251,173 @@ sub checkconstants{
  return $printbuffer;
 } 
 
+sub checkdihedrals{ 
+ # checks that the overall structure of the XML files is the same.
+ my ($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$dihhash)=@_;
+ my $printbuffer="";
+ if((defined $xmlold->{'dihedrals'} &&  defined $xmlnew->{'dihedrals'}) || (! defined $xmlold->{'dihedrals'} && ! defined $xmlnew->{'dihedrals'})){
+  ${$fail}{'DIHEDRALS EXIST'}=0;
+ }else{
+  $printbuffer .= "\"dihedrals\" present in only one xml.\n";
+ }
+
+ my $intc=0;
+ my $intm=0;
+ my $inttc=0;
+ my $inttm=0;
+ if(defined $xmlold->{'dihedrals'} &&  defined $xmlnew->{'dihedrals'}){
+  # set up the index groups and parameter changes
+  #...
+  my $c=0;
+  my $m=0;
+  my %hold=%{$xmlold->{'dihedrals'}};
+  my %hnew=%{$xmlnew->{'dihedrals'}};
+  foreach my $type(keys %{$hold{'dihedrals_type'}}){
+   # temp hashes that will store the selected atom groups.
+   my %cg0;
+   my %cg1;
+   my %params;
+   if(defined $dihhash->{$type}){
+    # found a dihedral type that was supposed to be changed.
+    # get the parameters;
+    %params=%{$dihhash->{$type}->{parms}};
+    my $g0=${$dihhash->{$type}->{groups}}[0];
+    %cg0=%{$atomgroup->{${$grpnms}[$g0]}};
+   }
+   my $interactionhashold=$hold{'dihedrals_type'}->{$type};
+   my $interactionhashnew=$hnew{'dihedrals_type'}->{$type};
+   my %compnew;
+   my %compold;
+   # save new xml data
+   foreach my $K(@{$interactionhashnew->{'interaction'}}){
+    # each entry is a hash
+    my %hash=%{$K};
+    my $string="";
+    foreach my $key(sort keys %hash){
+     my $value;
+     if($key !~ m/^[ijkl]$/){
+      #$value=sprintf("%.2e", $hash{$key});
+      $value=truncaten($hash{$key});
+     }else{
+      $value=$hash{$key};
+     }
+     $string .= "$key $value ";
+    }
+    $compnew{$string}=0;
+   }
+
+   # deal with original xml and see if it needs to be modified
+   if(defined $dihhash->{$type}){
+    # update values to the expected numbers
+    foreach my $K(@{$interactionhashold->{'interaction'}}){
+     # each entry is a hash
+     my %hash=%{$K};
+     my $string="";
+
+     my $i=$hash{"i"};
+     my $j=$hash{"j"};
+     my $k=$hash{"k"};
+     my $l=$hash{"l"};
+     my $mod=1;
+     if(defined $cg0{$i} && defined $cg0{$j} && defined $cg0{$k} && defined $cg0{$l}){
+      # change something about this dihedralt 
+      foreach my $key(sort keys %hash){
+       my $value;
+       if (defined $params{$key}){
+        # this is parameter to update
+        $value=eval("$hash{$key}$params{$key}");
+        #$value=sprintf("%.2e", $value);
+        $value=truncaten($value);
+       }else{
+        $value=$hash{$key};
+        if($key !~ m/^[ijkl]$/){
+         #$value=sprintf("%.2e", $value);
+         $value=truncaten($value);
+        }
+       }
+       $string .= "$key $value ";
+      }
+     }else{
+      # atoms not in groups, just save
+      foreach my $key(sort keys %hash){
+       my $value;
+       if($key !~ m/^[ijkl]$/){
+        #$value=sprintf("%.2e", $hash{$key});
+        $value=truncaten($hash{$key});
+       }else{
+        $value=$hash{$key};
+       }
+       $string .= "$key $value ";
+      }
+     }
+     $compold{$string}=0;
+    } 
+   }else{
+    # not changing this set, so just copy
+
+    foreach my $K(@{$interactionhashold->{'interaction'}}){
+     # each entry is a hash
+     my %hash=%{$K};
+     my $string="";
+     foreach my $key(sort keys %hash){
+      my $value;
+      if($key !~ m/^[ijkl]$/){
+       #$value=sprintf("%.2e", $hash{$key});
+       $value=truncaten($hash{$key});
+      }else{
+       $value=$hash{$key};
+      }
+      $string .= "$key $value ";
+     }
+     $compold{$string}=0;
+    }
+   } 
+   $intc++;
+   if(scalar keys %compold == scalar keys %compnew){
+    $intm++;
+    foreach my $I(keys %compold){
+     $inttc++;
+     if(defined $compnew{$I}){
+      $inttm++;
+     }else{
+      $printbuffer .= "Interaction key \"$I\" expected, but not found in new xml\n";
+     }
+    }
+    foreach my $I(keys %compnew){
+     $inttc++;
+     if(defined $compold{$I}){
+      $inttm++;
+     }else{
+      $printbuffer .= "Interaction key \"$I\" found in new xml, but not expected\n";
+     }
+    }
+ 
+   }else{
+    my $nold=scalar keys %compold;
+    my $nnew=scalar keys %compnew;
+    $printbuffer .= "Different number of dihedral interactions in XML files (old, $nold; new, $nnew).\n";
+   }
+  }
+ }else{
+  ${$fail}{'DIHEDRALS EXIST'}=-1;
+ }
+
+ if($intc==$intm && $intc > 0){
+  ${$fail}{'INTERACTION COUNT: DIHEDRALS'}=0;
+ }
+ if($inttc==$inttm && $inttc > 0){
+  ${$fail}{'INTERACTION VALUES: DIHEDRALS'}=0;
+ }else{
+  $printbuffer .= "Not all dihedral interactions matched.\n";
+ }
+ return "$printbuffer";
+} 
+
 sub checkcontacts{ 
  # checks that the overall structure of the XML files is the same.
  my ($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$conhash)=@_;
  my $printbuffer="";
- if((defined $xmlold->{'contacts'} &&  defined $xmlnew->{'contacts'}) || (! defined $xmlold->{'constants'} && ! defined $xmlnew->{'constants'})){
+ if((defined $xmlold->{'contacts'} &&  defined $xmlnew->{'contacts'}) || (! defined $xmlold->{'contacts'} && ! defined $xmlnew->{'contacts'})){
   ${$fail}{'CONTACTS EXIST'}=0;
  }else{
   $printbuffer .= "\"contacts\" present in only one xml.\n";
@@ -303,7 +460,8 @@ sub checkcontacts{
     foreach my $key(sort keys %hash){
      my $value;
      if($key !~ m/^[ij]$/){
-      $value=sprintf("%.4e", $hash{$key});
+      #$value=sprintf("%.2e", $hash{$key});
+      $value=truncaten($hash{$key});
      }else{
       $value=$hash{$key};
      }
@@ -330,9 +488,14 @@ sub checkcontacts{
        if (defined $params{$key}){
         # this is parameter to update
         $value=eval("$hash{$key}$params{$key}");
-        $value=sprintf("%.4e", $value);
+        #$value=sprintf("%.2e", $value);
+        $value=truncaten($value);
        }else{
         $value=$hash{$key};
+        if($key !~ m/^[ij]$/){
+         #$value=sprintf("%.2e", $value);
+         $value=truncaten($value);
+        }
        }
        $string .= "$key $value ";
       }
@@ -341,7 +504,8 @@ sub checkcontacts{
       foreach my $key(sort keys %hash){
        my $value;
        if($key !~ m/^[ij]$/){
-        $value=sprintf("%.4e", $hash{$key});
+        #$value=sprintf("%.2e", $hash{$key});
+        $value=truncaten($hash{$key});
        }else{
         $value=$hash{$key};
        }
@@ -360,7 +524,8 @@ sub checkcontacts{
      foreach my $key(sort keys %hash){
       my $value;
       if($key !~ m/^[ij]$/){
-       $value=sprintf("%.4e", $hash{$key});
+       #$value=sprintf("%.2e", $hash{$key});
+       $value=truncaten($hash{$key});
       }else{
        $value=$hash{$key};
       }
@@ -462,6 +627,19 @@ sub checkheadparams{
  ${$fail}{'PARAM LISTS'}=abs($cparam-$mparam);
  ${$fail}{'EXPRESSION'}=abs($cexp-$mexp);
  return $printmessage;
+}
+
+sub truncaten
+{
+  # a likely-to-be unnecessarily complicated way of truncated scientific notion numbers
+  my ($value)=@_;
+  $value=sprintf("%.5e", $value);
+  $value =~ s/e/ /g;
+  my ($value, $places)=split(/ /,$value);
+  my $factor = 10**5;
+  my $v=int($value * $factor) / $factor;
+  $v="${v}e$places";
+  return $v;
 }
 
 return 1;
