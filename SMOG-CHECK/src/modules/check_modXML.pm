@@ -32,7 +32,7 @@ sub check_modXML
  my $tmpbuffer="";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $indexfile="share/PDB.files/sample.AA.ndx";
+ my $indexfile="share/PDB.files/xml.test.ndx";
  my $settings="share/PDB.files/xmlsettings.1.in";
  my ($settings,$conhash,$dihhash)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
@@ -62,7 +62,6 @@ sub check_modXML
  my $tmpbuffer="";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $indexfile="share/PDB.files/sample.AA.ndx";
  my $settings="share/PDB.files/xmlsettings.2.in";
  my ($settings,$conhash,$dihhash)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
@@ -100,7 +99,6 @@ sub check_modXML
  my $tmpbuffer="";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $indexfile="share/PDB.files/sample.AA.ndx";
  my $settings="share/PDB.files/xmlsettings.3.in";
  my ($settings,$conhash,$dihhash)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;

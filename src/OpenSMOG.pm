@@ -600,21 +600,16 @@ sub modifyXMLcontacts{
 
 	foreach my $interaction(@{$XMLhandle->{"interaction"}}){
 		my $i=$interaction->{"i"};
-		if(defined $atomhash1{$i}){
-			my $j=$interaction->{"j"};
-			if(defined $atomhash2{$j}){
-				foreach my $param(sort keys %{$chghash}){
-					my $curval=$interaction->{$param};
-					$interaction->{$param}=eval("($curval)$chghash->{$param}");
-				}
+		my $j=$interaction->{"j"};
+		if(defined $atomhash1{$i} && defined $atomhash2{$j}){
+			foreach my $param(sort keys %{$chghash}){
+				my $curval=$interaction->{$param};
+				$interaction->{$param}=eval("($curval)$chghash->{$param}");
 			}
-		}elsif(defined $atomhash2{$i}){
-			my $j=$interaction->{"j"};
-			if(defined $atomhash1{$j}){
-				foreach my $param(sort keys %{$chghash}){
-					my $curval=$interaction->{$param};
-					$interaction->{$param}=eval("($curval)$chghash->{$param}");
-				}
+		}elsif(defined $atomhash2{$i} && defined $atomhash1{$j}){
+			foreach my $param(sort keys %{$chghash}){
+				my $curval=$interaction->{$param};
+				$interaction->{$param}=eval("($curval)$chghash->{$param}");
 			}
 		}
 	}
