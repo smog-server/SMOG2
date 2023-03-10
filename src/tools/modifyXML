@@ -65,19 +65,42 @@ my $outputtop="scaled.top";
 my $help;
 my $inputXML="OpenSMOG.xml";
 my $outputXML="OpenSMOG.out.xml";
+my $modifytype;
+my $modifyset;
+my $modifygroup1;
+my $modifygroup2;
+my $modifyparameter;
+my $modifyparameterby;
 
 quit_init();
 note_init();
 checkForModules();
-usage() if (!GetOptions('help|?' => \$help,  'n=s' => \$indexFile, 'OpenSMOG=s' => \$inputXML, 'OpenSMOGout=s' => \$outputXML,  'warn=i' => \$maxwarn, '<>' => \&usage)
+usage() if (!GetOptions('help|?' => \$help,  'n=s' => \$indexFile, 'OpenSMOG=s' => \$inputXML, 'OpenSMOGout=s' => \$outputXML,  'warn=i' => \$maxwarn, '<>' => \&usage,'modtype=s' => \$modifytype, 'modset=s' => \$modifyset,'modgrp1=s'=>\$modifygroup1,'modgrp2=s'=>\$modifygroup2,'modparam=s'=>\$modifyparameter,'modby=s'=>\$modifyparameterby)
         or defined $help); 
 
 #add a flag to indicate which atom group name to scale
+# add checks for consistent parameter assignment
 
-warninfo();
+if(defined $modifytype || defined $modifyset || defined $modifygroup1 || defined $modifygroup2 ||  defined $modifyparameter || defined $modifyparameterby){
 
-if($inputXML eq $outputXML){
-        smog_quit("Input and output XML files can not have the same name: $outputXML");
+	if (! defined $modifytype || ! defined $modifyset || ! defined $modifygroup1 || !defined $modifyparameter || !defined $modifyparameterby){
+		smog_quit("When specifying modifications from the command line, one must specify -modtype, -modset, -modgrp1, -modgrp2 (for modtype contacts, only), -modparam and -modby.")
+	}
+
+}
+
+if (defined $modifytype ){
+	if ($modifytype eq "contacts"){
+		if(! defined $modifygroup2){
+			smog_quit("When modifying contacts, one must also give a value with the -modgrp2 flag.");
+		}
+	}elsif($modifytype eq "dihedrals"){
+		if(defined $modifygroup2){
+			smog_quit("When modifying dihedrals, one can not specify a value with the -modgrp2 flag.");
+		}
+	}else{
+		smog_quit("-modtype must be \"contacts\" or \"dihedrals\".  Found \"$modifytype\"\n");
+	}
 }
 
 ### read in the list of atoms that we want to keep
@@ -115,8 +138,12 @@ if($gitver ne ""){
 		
 my $comment="; This is an XML file generated with smog_modifyXML (version $VERSION), using the command:\n; smog_modifyXML $inputArguments\n$date$gitmess";
 
-OpenSMOGscaleXML($xmldata,$Ngrps,$grpnms,$groupnames,$atomgroup,$outputXML,$comment);
-
+if (defined $modifytype){
+	# must have used the command line
+	OpenSMOGscaleXMLcl($xmldata, $atomgroup, $outputXML, $comment, $modifytype, $modifyset, $modifygroup1, $modifygroup2, $modifyparameter,$modifyparameterby);
+}else{
+	OpenSMOGscaleXML($xmldata,$Ngrps,$grpnms,$groupnames,$atomgroup,$outputXML,$comment);
+}
 warnsummary();
 
 print "\n\tDone modifying OpenSMOG parameters.\n\n";
@@ -128,6 +155,13 @@ sub usage
 {
   print <<EOT;
 
+There are two ways to use this tool.  
+	- You may just give the input XML file, along with an index file, and then 
+		follow the interactive prompts. This approach will let you modify
+		multiple parameters and interaction groups at once.
+	- You can give the interaction type on the command line. In this approach,
+		you can only change one parameter for one interaction group at a time.
+
 usage: smog_modifyXML  .. options ..
 
    Options 
@@ -135,6 +169,14 @@ usage: smog_modifyXML  .. options ..
                                           if the -OpenSMOG option was used.
 	-OpenSMOGout [OpenSMOG.out.xml] : output file name for processed OpenSMOG xml file
 	-n [smog.ndx]		        : index file to define groups for rescaling
+
+   Command-line invocation flags:
+        -modtype <string>               : type of interactions to modify (contacts, or dihedrals)
+        -modset <string>                : which set of interactions should be modified (as named in XML file)
+        -modgrp1 <string>               : name of first group of atoms (as named in .ndx file)
+        -modgrp2 <string>               : name of second group of atoms (only for use with contacts)
+        -modparam <string>              : which parameter should be modified
+        -modby  <string>                : expression for modifying parameter. Format: [+-*/]<number>
 	-warn [0]		        : convert the first N errors into warnings
 	-help			        : show options
 EOT

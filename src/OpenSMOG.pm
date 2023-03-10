@@ -33,7 +33,7 @@ use Exporter;
 use XML::Simple qw(:strict);
 use XML::LibXML;
 our @ISA = 'Exporter';
-our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddInteractionOShash AddDihedralOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML OpenSMOGscaleXML newOpenSMOGfunction OpenSMOGAddNBsettoXML %fTypes %fTypesArgNum %OSrestrict);
+our @EXPORT = qw(OShashAddFunction OShashAddConstants OShashAddNBFunction OpenSMOGfunctionExists checkOpenSMOGparam AddInteractionOShash AddDihedralOShash AddNonbondOShash AddSettingsOShash readOpenSMOGxml OpenSMOGwriteXML OpenSMOGextractXML OpenSMOGscaleXML OpenSMOGscaleXMLcl newOpenSMOGfunction OpenSMOGAddNBsettoXML %fTypes %fTypesArgNum %OSrestrict);
 our %fTypes;
 our %fTypesArgNum;
 our $OpenSMOG;
@@ -422,6 +422,61 @@ sub OpenSMOGscaleXML{
 	}
 	OpenSMOGwriteXML($OSref,$outputXML,$header,);
 }
+
+sub OpenSMOGscaleXMLcl{
+	my ($OSref, $atomgroup, $outputXML, $header, $modifytype, $modifyset, $modifygroup1, $modifygroup2, $modifyparameter,$modifyparameterby)=@_;
+        # Same as OpenSMOGscaleXML, but for command-line invocation
+        # $outputXML is the output file name
+	my $lhandle;
+	if (! defined $OSref->{$modifytype}->{"$modifytype\_type"}->{$modifyset}){
+		smog_quit("Can not find \"$modifytype\" set called \"$modifyset\" in the XML file.");
+	}else{
+		$lhandle=$OSref->{$modifytype}->{"$modifytype\_type"}->{$modifyset};
+	}
+
+	my $found=0;
+	foreach my $param(@{$lhandle->{"parameter"}}){
+		if($param eq $modifyparameter){
+			$found++;
+		}
+	}
+	if($found == 0){
+		smog_quit("Parameter \"$modifyparameter\" not found in \"$modifytype\" set called \"$modifyset\" in the XML file.")
+	}
+
+
+	my $cont=checkXMLfactor($modifyparameterby);
+	if($cont==1){
+	        smog_quit("\"$modifyparameterby\" does not appear to comply with the required format:[+-*/]<number>\nTry again\n");
+	}elsif($cont==2){
+	        smog_quit("Incorrect format of \"$modifyparameterby\".  Must begin with a +, -, / or *.\n");
+	}
+
+
+	# prepare chghash
+	my %chghash;
+	$chghash{$modifyparameter}=$modifyparameterby;
+
+	print "Will adjust the following parameters:\n";
+	print "type: $modifytype\n";
+	print "set: $modifyset\n";
+	if($modifytype eq "contacts"){
+		print "atom groups: $modifygroup1 and $modifygroup2\n";
+	}else{
+		print "atom groups: $modifygroup1\n";
+	}
+	print "parameter, modification factor:\n";
+	print "	$modifyparameter, $modifyparameterby\n";
+
+	if($modifytype eq "contacts"){
+		modifyXMLcontacts($lhandle,$atomgroup,$modifygroup1,$modifygroup2,\%chghash);
+	}elsif($modifytype eq "dihedrals"){
+		modifyXMLdihedrals($lhandle,$atomgroup,$modifygroup1,\%chghash);
+	}
+	OpenSMOGwriteXML($OSref,$outputXML,$header,);
+
+}
+
 
 sub getreply{
 	my $rep=<STDIN>;
