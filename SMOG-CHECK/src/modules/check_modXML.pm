@@ -17,6 +17,7 @@ sub check_modXML
  my $FAILSUM=0;
  my $tool="modifyXML";
  my $printbuffer="";
+ my $testnum=0;
  my @FAILLIST = ('NON-ZERO EXIT','XML TREE','CONSTANTS','CONSTANTS EXIST','CONTACTS EXIST','DIHEDRALS EXIST','PARAM LISTS','EXPRESSION','INTERACTION COUNT: CONTACTS','INTERACTION VALUES: CONTACTS','INTERACTION COUNT: DIHEDRALS','INTERACTION VALUES: DIHEDRALS','NONBOND EXIST','EXPRESSION: NONBOND','NONBOND PARAM VALUES');
  my %TESTED;
  my $TESTED=\%TESTED;
@@ -27,8 +28,8 @@ sub check_modXML
  }else{
   clearfiles("output.smog");
  }
-
- print "\tChecking smog_modifyXML: test 1\n";
+ $testnum++;
+ print "\tChecking interactive call: test $testnum\n";
  my $tmpbuffer="";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
@@ -48,7 +49,7 @@ sub check_modXML
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `cp $file tmp`;
   }
-  savefailed(1,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  savefailed($testnum,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
   print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `mv tmp/$file .`;
@@ -57,8 +58,9 @@ sub check_modXML
  }else{
   clearfiles(("output.$tool","AA.tmp.out.xml"));
  }
-
- print "\tChecking smog_modifyXML: test 2\n";
+ 
+ $testnum++;
+ print "\tChecking interactive call: test $testnum\n";
  my $tmpbuffer="";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
@@ -77,7 +79,7 @@ sub check_modXML
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `cp $file tmp`;
   }
-  savefailed(2,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  savefailed($testnum,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
   print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `mv tmp/$file .`;
@@ -87,7 +89,8 @@ sub check_modXML
   clearfiles(("output.$tool","AA.tmp.out.xml","AA.tmp.contacts","AA.tmp.gro","AA.tmp.ndx","AA.tmp.top","AA.tmp.xml"));
  }
 
- print "\tChecking smog_modifyXML: test 3\n";
+ $testnum++;
+ print "\tChecking interactive call: test $testnum\n";
 # generate an AA model protein 
  `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/AA_ions_Wang22.v1 -dname AA.tmp -OpenSMOG > output.smog`;
  unless($? == 0){
@@ -114,7 +117,7 @@ sub check_modXML
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `cp $file tmp`;
   }
-  savefailed(3,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  savefailed($testnum,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
   print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `mv tmp/$file .`;
@@ -124,7 +127,8 @@ sub check_modXML
   clearfiles(("output.$tool","AA.tmp.out.xml","AA.tmp.contacts","AA.tmp.gro","AA.tmp.ndx","AA.tmp.top","AA.tmp.xml"));
  }
 
- print "\tChecking smog_modifyXML: test 4\n";
+ $testnum++;
+ print "\tChecking interactive call: test $testnum\n";
 # generate an AA model protein 
  `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/AA_ions_Wang22.v1 -dname AA.tmp -OpenSMOG > output.smog`;
  unless($? == 0){
@@ -152,7 +156,7 @@ sub check_modXML
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `cp $file tmp`;
   }
-  savefailed(4,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  savefailed($testnum,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
   print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
   foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
    `mv tmp/$file .`;
@@ -161,6 +165,46 @@ sub check_modXML
  }else{
   clearfiles(("output.$tool","AA.tmp.out.xml","AA.tmp.contacts","AA.tmp.gro","AA.tmp.ndx","AA.tmp.top","AA.tmp.xml"));
  }
+
+ $testnum++;
+ print "\tChecking command-line call - contacts: test $testnum\n";
+# generate an AA model protein 
+ `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/AA_ions_Wang22.v1 -dname AA.tmp -OpenSMOG > output.smog`;
+ unless($? == 0){
+  internal_error("SMOG 2 crashed.  Fix SMOG 2 before testing smog_modifyXML.");
+ }else{
+  clearfiles("output.smog");
+ }
+
+ my $tmpbuffer="";
+ my $indexfile="share/PDB.files/xml.test.ndx";
+ &testsperformed($TESTED,\%FAIL);
+ %FAIL=resettests(\%FAIL,\@FAILLIST);
+ my $settings="share/PDB.files/xmlsettings.4.in";
+ my ($settings,$conhash,$dihhash)=processsettingscl($settings);
+ `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
+ $FAIL{"NON-ZERO EXIT"}=$?;
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+
+ &testsperformed($TESTED,\%FAIL);
+
+ ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+ $FAILSUM += $FAILED;
+ if($FAILED !=0){
+  `mkdir tmp`;
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `cp $file tmp`;
+  }
+  savefailed($testnum,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `mv tmp/$file .`;
+  }
+  `rmdir tmp`;
+ }else{
+  clearfiles(("output.$tool","AA.tmp.out.xml","AA.tmp.contacts","AA.tmp.gro","AA.tmp.ndx","AA.tmp.top","AA.tmp.xml"));
+ }
+
 
 
 
@@ -225,6 +269,63 @@ sub processsettings{
  $settings .= "N\n";
  return ($settings,\%conhash,\%dihhash);
 }
+
+sub processsettingscl{
+ my ($settings)=@_;
+ # define some changes we want to introduce. This will be moved to a file for reading, later
+ my %conhash;
+ my %dihhash;
+ open(INSET,"$settings") or smog_quit("can not open $settings");
+ $settings ="";
+ while(<INSET>){
+  my %parhash;
+  my @grparr;
+  my $LINE=$_;
+  chomp($LINE);
+  $LINE =~ s/^\s+//g;
+  $LINE =~ s/\s+$//g;
+  my @A=split(/\s+/,$LINE);
+  my $last="";
+  my $name="";
+  my $type="";
+  my $grpnum=1;
+  for(my $I=0;$I<$#A;$I++){
+   if($A[$I] eq "contacts" || $A[$I] eq "dihedrals"){
+    $last=$A[$I];
+    $type=$A[$I];
+    $settings .= "-modtype $A[$I] ";
+    $I++;
+    $settings .= "-modset $A[$I] ";
+    $name=$A[$I];
+   }elsif($A[$I] eq "grp"){
+    $last=$A[$I];
+    $I++;
+    $settings .= "-modgrp$grpnum $A[$I] ";
+    $grpnum++;
+    $I++;
+    push(@grparr,$A[$I]);
+   }elsif($A[$I] eq "param"){
+    $last=$A[$I];
+    $I++;
+    $settings .= "-modparam $A[$I] ";
+    $I++;
+    $settings .= "-modby \"$A[$I]\" ";
+    $parhash{$A[$I-1]}=$A[$I];
+   }
+  }
+  $settings .= "\n";
+  if($type eq "contacts"){
+   $conhash{$name}->{"parms"}=\%parhash;
+   $conhash{$name}->{"groups"}=\@grparr;
+  }elsif($type eq "dihedrals"){ 
+   $dihhash{$name}->{"parms"}=\%parhash;
+   $dihhash{$name}->{"groups"}=\@grparr;
+  }
+ }
+ return ($settings,\%conhash,\%dihhash);
+}
+
+
 
 sub compareXMLsmodify
 {

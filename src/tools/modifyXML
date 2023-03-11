@@ -177,6 +177,8 @@ usage: smog_modifyXML  .. options ..
         -modgrp2 <string>               : name of second group of atoms (only for use with contacts)
         -modparam <string>              : which parameter should be modified
         -modby  <string>                : expression for modifying parameter. Format: [+-*/]<number>
+                                            Note: to avoid shell issues, you may want to put the 
+                                            expression in double quotes, or escape the first character
 	-warn [0]		        : convert the first N errors into warnings
 	-help			        : show options
 EOT
