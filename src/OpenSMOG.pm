@@ -503,12 +503,12 @@ sub rescaleXML{
 	# groupnms and groupnames...
 	my $cont=0;
 	until($cont == 1){
-		print "Select which $type group you would like to modify parameters.\n";
+		print "Select which $type group you would like to modify parameters.\n    name : functional form\n";
 		my %index;
 		my $c=0;
 		my $lhandle=$OSref->{$type}->{"$type\_type"};
 		foreach my $types(sort keys %{$lhandle}){
-			print "    $types\n";
+			print "    $types  : $lhandle->{$types}->{'expression'}->{'expr'} \n";
 		}
 		my $grp="";
 		my $tmp=0;
