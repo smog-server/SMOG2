@@ -205,8 +205,44 @@ sub check_modXML
   clearfiles(("output.$tool","AA.tmp.out.xml","AA.tmp.contacts","AA.tmp.gro","AA.tmp.ndx","AA.tmp.top","AA.tmp.xml"));
  }
 
+ $testnum++;
+ print "\tChecking command-line call - dihedrals: test $testnum\n";
+# generate an AA model protein 
+ `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/AA_ions_Wang22.v1 -dname AA.tmp -OpenSMOG > output.smog`;
+ unless($? == 0){
+  internal_error("SMOG 2 crashed.  Fix SMOG 2 before testing smog_modifyXML.");
+ }else{
+  clearfiles("output.smog");
+ }
 
+ my $tmpbuffer="";
+ my $indexfile="share/PDB.files/xml.test.ndx";
+ &testsperformed($TESTED,\%FAIL);
+ %FAIL=resettests(\%FAIL,\@FAILLIST);
+ my $settings="share/PDB.files/xmlsettings.5.in";
+ my ($settings,$conhash,$dihhash)=processsettingscl($settings);
+ `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
+ $FAIL{"NON-ZERO EXIT"}=$?;
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
 
+ &testsperformed($TESTED,\%FAIL);
+
+ ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+ $FAILSUM += $FAILED;
+ if($FAILED !=0){
+  `mkdir tmp`;
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `cp $file tmp`;
+  }
+  savefailed($testnum,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `mv tmp/$file .`;
+  }
+  `rmdir tmp`;
+ }else{
+  clearfiles(("output.$tool","AA.tmp.out.xml","AA.tmp.contacts","AA.tmp.gro","AA.tmp.ndx","AA.tmp.top","AA.tmp.xml"));
+ }
 
  $FAILSUM+=checkalltested(\@FAILLIST,$TESTED);
 
