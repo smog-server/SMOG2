@@ -92,7 +92,7 @@ sub check_modXML
  $testnum++;
  print "\tChecking interactive call: test $testnum\n";
 # generate an AA model protein 
- `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/AA_ions_Wang22.v1 -dname AA.tmp -OpenSMOG > output.smog`;
+ `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/Ion-test -dname AA.tmp -OpenSMOG > output.smog`;
  unless($? == 0){
   internal_error("SMOG 2 crashed.  Fix SMOG 2 before testing smog_modifyXML.");
  }else{
@@ -130,7 +130,7 @@ sub check_modXML
  $testnum++;
  print "\tChecking interactive call: test $testnum\n";
 # generate an AA model protein 
- `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/AA_ions_Wang22.v1 -dname AA.tmp -OpenSMOG > output.smog`;
+ `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/Ion-test -dname AA.tmp -OpenSMOG > output.smog`;
  unless($? == 0){
   internal_error("SMOG 2 crashed.  Fix SMOG 2 before testing smog_modifyXML.");
  }else{
@@ -169,7 +169,7 @@ sub check_modXML
  $testnum++;
  print "\tChecking command-line call - contacts: test $testnum\n";
 # generate an AA model protein 
- `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/AA_ions_Wang22.v1 -dname AA.tmp -OpenSMOG > output.smog`;
+ `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/Ion-test -dname AA.tmp -OpenSMOG > output.smog`;
  unless($? == 0){
   internal_error("SMOG 2 crashed.  Fix SMOG 2 before testing smog_modifyXML.");
  }else{
@@ -208,7 +208,7 @@ sub check_modXML
  $testnum++;
  print "\tChecking command-line call - dihedrals: test $testnum\n";
 # generate an AA model protein 
- `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/AA_ions_Wang22.v1 -dname AA.tmp -OpenSMOG > output.smog`;
+ `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/Ion-test -dname AA.tmp -OpenSMOG > output.smog`;
  unless($? == 0){
   internal_error("SMOG 2 crashed.  Fix SMOG 2 before testing smog_modifyXML.");
  }else{
