@@ -1646,8 +1646,8 @@ sub preparesettings
  # prepare the settings and possibly specialized templates
 
  # make a log of the settings being used for this test
- my $templateAA="AA-whitford09";
- my $templateCA="CA-clementi00";
+ my $templateAA="AA-test";
+ my $templateCA="CA-test";
 my $string = <<"EOT";
 Here were the settings used for this test
 $PDB.pdb
