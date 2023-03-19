@@ -179,6 +179,8 @@ sub OpenSMOGwriteXML{
 				$xmlout .= OpenSMOGwriteXMLconstants($handle0,$type,$space);
 			}elsif($type eq "nonbond"){
                                 $xmlout .= OpenSMOGwriteXMLnonbond($handle0,$type,$space,$ionnm);
+			}elsif($type eq "OpenSMOGversion"){
+				next;
 			}else{
 				smog_quit("Internal Error: When writing OpenSMOG XML file, type $type not supported.");
 			}
