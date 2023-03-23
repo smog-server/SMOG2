@@ -18,7 +18,7 @@ sub check_modXML
  my $tool="modifyXML";
  my $printbuffer="";
  my $testnum=0;
- my @FAILLIST = ('NON-ZERO EXIT','XML TREE','CONSTANTS','CONSTANTS EXIST','CONTACTS EXIST','DIHEDRALS EXIST','PARAM LISTS','EXPRESSION','INTERACTION COUNT: CONTACTS','INTERACTION VALUES: CONTACTS','INTERACTION COUNT: DIHEDRALS','INTERACTION VALUES: DIHEDRALS','NONBOND EXIST','EXPRESSION: NONBOND','NONBOND PARAM VALUES');
+ my @FAILLIST = ('NON-ZERO EXIT','XML TREE','CONSTANTS','CONSTANTS EXIST','CONTACTS EXIST','DIHEDRALS EXIST','PARAM LISTS','EXPRESSION','INTERACTION COUNT: CONTACTS','INTERACTION VALUES: CONTACTS','INTERACTION COUNT: DIHEDRALS','INTERACTION VALUES: DIHEDRALS','NONBOND EXIST','EXPRESSION: NONBOND','NONBOND PARAM VALUES','XML OpenSMOGversion');
  my %TESTED;
  my $TESTED=\%TESTED;
 # generate an AA model RNA 
@@ -763,6 +763,12 @@ sub checkheadparams{
   $chead++;
   if(defined ${$xmlnew}{$I}){
    $mhead++;
+  }
+  if($I eq "OpenSMOGversion"){
+   if($xmlnew->{$I} eq $xmlold->{$I}){
+    ${$fail}{'XML OpenSMOGversion'}=0;
+   }
+   next;
   }
   foreach my $J(sort keys %{$xmlold->{$I}}){
    $chead++;
