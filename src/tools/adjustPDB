@@ -643,6 +643,15 @@ sub checkaltloc {
 sub readmap {
 	## CACHE MAP ##
 	#Note: Map files has to be in format <residue> <head_name> <tail_name>
+	if(-d $mapOption){
+		smog_quit("\"$mapOption\" is a directory.  Must be a file.")
+	}
+	if(! -e $mapOption){
+		smog_quit("\"$mapOption\" is not a valid file name.")
+	}
+	if(! -s $mapOption){
+		smog_quit("\"$mapOption\" is an empty file, so there is nothing to do.")
+	}
 	open(MAP,$mapOption) || smog_quit("Cannot open map file $mapOption\n");
 	print "Mapping file \"$mapOption\" will be read.\n\n";
 	
