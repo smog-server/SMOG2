@@ -3,22 +3,22 @@ CMD ["bash"]
 ENV PATH=/opt/smog2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ENV TZ=Europe/Kiev
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone # buildkit
-RUN apt-get update
-RUN apt-get upgrade -y # buildkit
-RUN apt-get install -y --no-install-recommends cpanminus vim git-all patch make cmake pdl default-jre libxml-simple-perl nano emacs # buildkit
-RUN cpanm String::Util Exporter XML::Validator::Schema # buildkit
-RUN rm -rf /root/.cpanm # buildkit
-RUN rm -rf /var/lib/apt/lists/* # buildkit
-RUN mkdir /opt/smog2 # buildkit
-RUN git clone https://github.com/smog-server/SMOG2.git /opt/smog2 --depth 1
-RUN ls /opt/smog2
-RUN cd /opt/smog2 && git show --format="%H" --no-patch > .gitcommit
-RUN rm -rf /opt/smog2/.git
-RUN mkdir /workdir # buildkit
-RUN useradd -rm -d /home/smoguser -s /bin/bash -g root -G sudo -u 1001 smoguser -p "$(openssl passwd -1 smoguser)" # buildkit
-RUN chown -R smoguser /opt/* # buildkit
+RUN apt-get update && \
+	apt-get upgrade -y  && \
+	apt-get install -y --no-install-recommends cpanminus vim git-all patch make cmake pdl default-jre libxml-simple-perl nano emacs && \ 
+	cpanm String::Util Exporter XML::Validator::Schema && \ 
+	rm -rf /root/.cpanm && \
+	rm -rf /var/lib/apt/lists/* && \ 
+	mkdir /opt/smog2  && \
+	git clone https://github.com/smog-server/SMOG2.git /opt/smog2 --depth 1 && \
+	ls /opt/smog2 && \
+	cd /opt/smog2 && git show --format="%H" --no-patch > .gitcommit && \
+	rm -rf /opt/smog2/.git && \
+	mkdir /workdir && \
+	useradd -rm -d /home/smoguser -s /bin/bash -g root -G sudo -u 1001 smoguser -p "$(openssl passwd -1 smoguser)" && \
+	chown -R smoguser /opt/*   
 USER smoguser
-WORKDIR /home/smoguser
+WORKDIR /workdir
 RUN bash /opt/smog2/configure.smog2
 RUN echo "alias smoginfo=\"more /opt/smog2/docker/README.docker\"" >> ~/.bashrc
 RUN echo "echo \"\n                   Welcome to the SMOG2 Docker Container\"" >> ~/.bashrc
