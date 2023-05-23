@@ -24,7 +24,7 @@ Below is one example for how to use the container, once you have pulled it
 
 > docker run -it --rm -v $(pwd):/workdir smogserver/smog2:stable 
 
-In this case, the directory that the docker is called from ($pwd) i.e. present working directory, is mounted as /workdir in the container. As long as all the files you need are available in $pwd and its subdirectories, then they will be available to the container in /workdir and its subdirectories. The container will be unable to interact with any directories above $pwd. To belabor the point: any files edited or created in /workdir will appear or be edited on your actual disk in $pwd. LINUX NOTE: There can occasionally be issues with user IDs when using Docker on Linux.  If you are obtaining Permission Denied errors, see TROUBLESHOOTING. 
+In this case, the directory that the docker is called from ($pwd) i.e. present working directory, is mounted as /workdir in the container. By default, when you launch the container, you will be placed in /workdir. As long as all the files you need are available in $pwd and its subdirectories, then they will be available to the container in /workdir and its subdirectories. The container will be unable to interact with any directories above $pwd. To belabor the point: any files edited or created in /workdir will appear or be edited on your actual disk in $pwd. LINUX NOTE: There can occasionally be issues with user IDs when using Docker on Linux.  If you are obtaining Permission Denied errors, see TROUBLESHOOTING. 
 
 For more options on how to use the Docker container, consult the smog-server or Docker pages.
 
@@ -76,7 +76,7 @@ Here is some discussion on permission issues with Docker, which may be helpful:
 
 5. MORE INFORMATION
 
-For detailed information and SMOG models, see smog-server.org
+For detailed information and SMOG models, see http://smog-server.org
 
 If you have any questions, feel free to contact us at info@smog-server.org
 or sign up for the smog-user listserv https://mailman.rice.edu/mailman/listinfo/smog-users

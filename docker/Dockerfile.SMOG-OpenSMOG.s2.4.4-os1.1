@@ -35,5 +35,5 @@ RUN mkdir /opt/smog2 && \
 RUN useradd -rm -d /home/smoguser -s /bin/bash -g root -G sudo -u 1001 smoguser -p "$(openssl passwd -1 smoguser)" # buildkit
 RUN chown -R smoguser /opt/smog2 # buildkit
 USER smoguser
-WORKDIR /home/smoguser
+WORKDIR /workdir
 RUN cd /opt/smog2 && sed -i '5,6d' configure.smog2 && perl4smog=/usr/bin/perl smog2dir=/opt/smog2 bash /opt/smog2/configure.smog2

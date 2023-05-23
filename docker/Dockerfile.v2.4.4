@@ -2,24 +2,29 @@ FROM --platform=$BUILDPLATFORM ubuntu:22.04
 CMD ["bash"]
 ENV PATH=/opt/smog2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ENV TZ=Europe/Kiev
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone # buildkit
-RUN apt-get update
-RUN apt-get upgrade -y # buildkit
-RUN apt-get install -y --no-install-recommends cpanminus vim git-all patch make cmake pdl default-jre libxml-simple-perl nano emacs # buildkit
-RUN cpanm String::Util Exporter XML::Validator::Schema # buildkit
-RUN rm -rf /root/.cpanm # buildkit
-RUN rm -rf /var/lib/apt/lists/* # buildkit
-RUN mkdir /opt/smog2 # buildkit
-RUN git clone -n https://github.com/smog-server/SMOG2.git /opt/smog2
-RUN cd /opt/smog2 && git checkout tags/v2.4.4
-RUN rm -rf /opt/smog2/.git
-RUN mkdir /opt/smog2/SMOG-CHECK
-RUN git clone -n https://github.com/smog-server/SMOG-CHECK.git /opt/smog2/SMOG-CHECK
-RUN cd /opt/smog2/SMOG-CHECK && git checkout tags/v2.4.4
-RUN rm -rf /opt/smog2/SMOG-CHECK/.git
-RUN mkdir /workdir # buildkit
-RUN useradd -rm -d /home/smoguser -s /bin/bash -g root -G sudo -u 1001 smoguser -p "$(openssl passwd -1 smoguser)" # buildkit
-RUN chown -R smoguser /opt/* # buildkit
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone 
+RUN apt-get update && \
+	apt-get upgrade -y && \ 
+	apt-get install -y --no-install-recommends cpanminus vim git-all patch make cmake pdl default-jre libxml-simple-perl nano emacs && \
+	cpanm String::Util Exporter XML::Validator::Schema && \
+	rm -rf /root/.cpanm && \
+	rm -rf /var/lib/apt/lists/* && \
+	mkdir /opt/smog2 && \
+	git clone -n https://github.com/smog-server/SMOG2.git /opt/smog2 && \
+	cd /opt/smog2 && git checkout tags/v2.4.4 && \
+	rm -rf /opt/smog2/.git && \
+	mkdir /opt/smog2/SMOG-CHECK && \
+	git clone -n https://github.com/smog-server/SMOG-CHECK.git /opt/smog2/SMOG-CHECK && \
+	cd /opt/smog2/SMOG-CHECK && git checkout tags/v2.4.4 && \
+	rm -rf /opt/smog2/SMOG-CHECK/.git && \
+	mkdir /workdir && \
+	useradd -rm -d /home/smoguser -s /bin/bash -g root -G sudo -u 1001 smoguser -p "$(openssl passwd -1 smoguser)" && \
+	chown -R smoguser /opt/* 
 USER smoguser
 WORKDIR /home/smoguser
 RUN cd /opt/smog2 && sed -i '5,6d' configure.smog2 && perl4smog=/usr/bin/perl smog2dir=/opt/smog2 bash /opt/smog2/configure.smog2
+RUN echo "alias smoginfo=\"more /opt/smog2/docker/README.docker\"" >> ~/.bashrc
+RUN echo "echo \"\n                   Welcome to the SMOG2 Docker Container\"" >> ~/.bashrc
+RUN echo "echo \"You may find more information about the container with the command: smoginfo\"" >> ~/.bashrc
+RUN echo "echo \" Please send any questions to the smog-server team at info@smog-server.org\"" >> ~/.bashrc
+RUN echo "echo \"        This container was built on: `date`\n\"" >> ~/.bashrc
