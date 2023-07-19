@@ -984,7 +984,7 @@ sub legacymatching
 		if(defined $removeH && $aName =~ m/^H/){
 			$removestring .= "$resName$resInd-$aName ";
 		}else{
-			$printthis.=sprintf("ATOM  %5d %4s %-4s%s%4d    %s\n",$ind,$aName,$resName,$chainName,$resInd,$x);
+			$printthis.=sprintf("ATOM  %5d %-4s %-4s%s%4d    %s\n",$ind,$aName,$resName,$chainName,$resInd,$x);
 		}
 	}
 	return($printthis,$removestring);
@@ -1067,7 +1067,7 @@ sub exactmatching
 		if(defined $removeH && $aName =~ m/^H/){
 			$removestring .= "$resName$resInd-$aName ";
 		}else{
-		    	$printthis.=sprintf("ATOM  %5s %4s %-4s%s%4s    %s\n",$ind,$aName,$nres,$chainName,$resInd,$x);
+		    	$printthis.=sprintf("ATOM  %5s %-4s %-4s%s%4s    %s\n",$ind,$aName,$nres,$chainName,$resInd,$x);
 		}
 	}
 	return($printthis,$removestring,$renamedstring);
