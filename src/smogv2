@@ -972,7 +972,7 @@ sub checkExtras {
 				$forward = "$forward " .  $list[$I];
 				$backward = $list[$I] . " $backward";
 			}
-			if(exists ${$foundtypes{$directive}}->{$forward}){
+			if(exists ${$foundtypes{$directive}}->{$forward} && $directive ne "dihedraltypes"){
 				smog_quit("Found duplicate $directive definition in the extras file.\n\tDuplicate set of atom types:$forward");
 			}
 			${$foundtypes{$directive}}->{$forward}=1;
