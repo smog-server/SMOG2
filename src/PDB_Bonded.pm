@@ -803,7 +803,7 @@ sub GenerateBondedGeometry {
 		if($missed==0 && $connected == $chainlength){
 			print "\tAll $connected atoms connected via covalent bonds \n"; 
 		}else{
-			smog_quit("We appear to have connected $connected of $chainlength atoms in chain $chid.  There is an issue connecting atoms to the rest of the chain using covalent bond definitions.\nThere may be a missing bond definition in the .bif file, or missing atoms in the PDB.\nCheck for earlier warning messages. Last line read: $lastread ")
+			smog_quit("We appear to have connected $connected of $chainlength atoms in chain $chid.  There is an issue connecting atoms to the rest of the chain using covalent bond definitions.\nThere is probably a missing bond definition in the .bif file.\nCheck for earlier warning messages. Last line read: $lastread ")
 		}
 	}elsif($chainlength == 1){
 		print "Only 1 atom in chain $chid.  Will not perform connectivity checks.\n";
