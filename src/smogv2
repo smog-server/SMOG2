@@ -1131,7 +1131,7 @@ sub bondOutput
 			}
         		if($values < $interactionThreshold->{"bonds"}->{"shortBond"}
         		|| $values > $interactionThreshold->{"bonds"}->{"longBond"}){
-				my $DIST=int($values*100)/100.0;
+				my $DIST=int($values*10000)/10000.0;
 				if(!exists ${$indexhandle}{$i} || !exists ${$indexhandle}{$j}){
 					smog_quit("Internal error 3.  Please inform smog team");
 				}
@@ -1151,15 +1151,15 @@ sub bondOutput
 				if(abs($paramArr[0]-$values)/$paramArr[0] > 0.1){
 					my $i1=$indexhandle->{$i};
 					my $j1=$indexhandle->{$j};
-					my $DIST=int($values*100)/100.0;
-					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates ($values). This may mean there is something strange with your structure.");
+					my $DIST=int($values*10000)/10000.0;
+					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates ($paramArr[0]). This may mean there is something strange with your structure.");
 				}
 			}
         		## Check bonds threshold ##
         		if($values < $interactionThreshold->{"bonds"}->{"shortBond"}
         		|| $values > $interactionThreshold->{"bonds"}->{"longBond"} && $dosub==0){
 				#note, only reset the distance and/or check it, if the templates don't define a specific value (i.e. $dosub==0)
-				my $DIST=int($values*100)/100.0;
+				my $DIST=int($values*10000)/10000.0;
 				if($setBondtoLimit){
 					if(!exists ${$indexhandle}{$i} || !exists ${$indexhandle}{$j}){
 						smog_quit("Internal error 2.  Please inform smog team");
