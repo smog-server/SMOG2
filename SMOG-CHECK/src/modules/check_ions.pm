@@ -362,29 +362,38 @@ sub checktopions
   $ln2++;
   $NN++; 
  } 
-
- # check the molecultype info
- if ($diffblock[0] eq "$ionnm 1"){
-  $error--;
+ if($NN > 4){
+  print "Error: Too many news lines added to top.  Should only have 4 additional lines. Instead, found the following:\n";
+  foreach my $V(@diffblock){
+   print "$V\n";
+  }
  }else{
-  print "Wrong ion molecule type name.  Expected $ionnm 1: found $diffblock[0]\n";
- }
- if($diffblock[1] == "[ atoms ]"){
-  $error--;
- }else{
-  print "[atoms] line has an issue: Found $diffblock[1]\n";
- }
-
- if ($diffblock[2] eq "1 $ionnm 1 $ionnm $ionnm 1"){
-  $error--;
- }else{
-  print "Wrong atoms information.  Expected 1 $ionnm 1 $ionnm $ionnm 1: found $diffblock[2]\n";
- }
-
- if ($diffblock[3] eq "[ moleculetype ]"){
-  $error--;
- }else{
-  print "Too many extra lines in the new top file\n";
+  # skipping check of each line, since we know the wrong number has been detected
+  my $difflinei=0;
+  # check the molecultype info
+  if ($diffblock[$difflinei] eq "[ moleculetype ]"){
+   $error--;
+  }else{
+   print "Wrong value or directive. Expected \"[ moleculetype ]\": found $diffblock[$difflinei]\n";
+  }
+  $difflinei++;
+  if ($diffblock[$difflinei] eq "$ionnm 1"){
+   $error--;
+  }else{
+   print "Wrong ion molecule type name.  Expected $ionnm 1: found $diffblock[$difflinei]\n";
+  }
+  $difflinei++;
+  if($diffblock[$difflinei] == "[ atoms ]"){
+   $error--;
+  }else{
+   print "[atoms] line has an issue: Found $diffblock[$difflinei]\n";
+  }
+  $difflinei++;
+  if ($diffblock[$difflinei] eq "1 $ionnm 1 $ionnm $ionnm 1"){
+   $error--;
+  }else{
+   print "Wrong atoms information.  Expected 1 $ionnm 1 $ionnm $ionnm 1: found $diffblock[$difflinei]\n";
+  }
  }
 
  # the final diff should be the last line.
