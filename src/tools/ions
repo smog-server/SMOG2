@@ -496,8 +496,7 @@ while (<FILE>){
 		print TOPOUT "$comment\n"; 
 		next;
 	}
-	my @TMP=split(/ /,$data);
-	if($TMP[0] eq "[" and $TMP[1] eq "atomtypes"){
+	if( $data =~ /[\s+]?\[[\s+]?atomtypes/){
 		print TOPOUT "$data\n"; 
 	
 		$LINE = <FILE>;
@@ -585,11 +584,8 @@ while (<FILE>){
 		}
 		print TOPOUT "\n";
 	}
-	if(!defined $TMP[0]){
-		$TMP[0]="";
-	}
 
-	if($TMP[0] eq "[" and $TMP[1] eq "nonbond_params"){
+	if( $data =~ /[\s+]?\[[\s+]?nonbond_params/){
 		if(defined $AddCustomParmsToXML){
 			smog_quit("Can not use nonbond_params in the top file and non-bonded parameters in the XML file (OpenSMOG) simultaneously.");
 		}
@@ -617,7 +613,7 @@ while (<FILE>){
 		print TOPOUT "$NBbuffer";
 	}
 
-	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
+	if( $data =~ /[\s+]?\[[\s+]?moleculetype/){
 		# add it to XML
 		if(defined $OpenSMOG){
 			my $date=printhostdate();
@@ -645,9 +641,7 @@ while (<FILE>){
 			# since we just added it, don't add again
 			$alreadypresent++;
 		}
-	}
 
-	if($TMP[0] eq "[" and $TMP[1] eq "moleculetype"){
 		print TOPOUT "$LINEORIG"; 
 
 		$LINEORIG = <FILE>;
@@ -668,7 +662,7 @@ while (<FILE>){
 		$seenmoltype{$tmp2[0]}=0;
 	}
 
-	if($TMP[0] eq "[" and $TMP[1] eq "molecules"){
+	if( $data =~ /[\s+]?\[[\s+]?molecules/){
 		print TOPOUT "$LINEORIG"; 
 	
 		$LINE = <FILE>;
