@@ -550,7 +550,7 @@ while (<FILE>){
 		if($alreadypresent==1){
 			# since we have already defined the atomtype, we will not check for anything from extras
 			if(defined $template && $extrasexists >0){
-				print "\nNote: Since $addname was defined in the original top file, we will not try to read $extrafile.\n";
+				print "\nNote: Since atomtype $addname was defined in the original top file, we will not try to read $extrafile.\n";
 			}
 		}else{
 			# if -t is used and there is an extras file, read it
@@ -631,17 +631,6 @@ while (<FILE>){
 			print TOPOUT "[ nonbond_params ]\n$NBbuffer\n\n";
 		}
 
-		# add a new molecule type
-		if($alreadypresent == 0){
-			print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
-			if(exists $seenmoltype{$addname}){
-				smog_quit("moleculetype $addname would be defined more than once in new top file.");
- 			}
-			$seenmoltype{$addname}=0;
-			# since we just added it, don't add again
-			$alreadypresent++;
-		}
-
 		print TOPOUT "$LINEORIG"; 
 
 		$LINEORIG = <FILE>;
@@ -661,6 +650,18 @@ while (<FILE>){
 		my @tmp2=split(/\s+/,$LINE);
 		$seenmoltype{$tmp2[0]}=0;
 	}
+
+	if( $data =~ /[\s+]?\[[\s+]?system/){
+		# add a new molecule type
+		if(! defined $seenmoltype{$addname}){
+			print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
+			if(exists $seenmoltype{$addname}){
+				smog_quit("moleculetype $addname would be defined more than once in new top file.");
+ 			}
+			$seenmoltype{$addname}=0;
+		}
+	}
+
 
 	if( $data =~ /[\s+]?\[[\s+]?molecules/){
 		print TOPOUT "$LINEORIG"; 
