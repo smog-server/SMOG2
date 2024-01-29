@@ -2416,7 +2416,7 @@ sub convertPDBToGroNdx
          	               	$z = trim(substr($line, 46, 8));
          	       	}
 	 	       	if(! looks_like_number($x) or ! looks_like_number($y) or ! looks_like_number($z)){
-	 	       		smog_quit("Unable to interpret coordinate in PDB file.  Perhaps you need to use -freecoor option. Problematic line:$line");
+	 	       		smog_quit("Unable to interpret coordinate in PDB file. Perhaps the file doesn't strictly follow PDB fixed-column formatting. Or, perhaps you need to use the -freecoor option. Problematic line:$line");
 	 	       	}
 	
 	 	       	$x*=0.10;

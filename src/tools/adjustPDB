@@ -101,7 +101,27 @@ my $template_dir;
 my $deletewater;
 my $noautorename;
 my $treatAltLocs;
-usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 'o=s' => \$outputPDB, 'i=s' => \$inputPDB, 'map=s' => \$mapFile, 'warn=i' => \$maxwarn ,'legacy' => \$legacymatch, 'renumber' => \$renumber, 'PDBresnum' => \$PDBresnum,'insertTER' => \$insertTER, 'subALA' => \$subALA,  'removeH' => \$removeH, 'noautorename' => \$noautorename, 'large' => \$large, 'sort' => \$sort,  'altLocs' => \$treatAltLocs, 'removewater' => \$deletewater, 'gen_map=s' => \$makemap, 't=s' => \$template_dir,  '<>' => \&usage) or defined $help); 
+my $freecoor;
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 
+	'o=s' => \$outputPDB, 
+	'i=s' => \$inputPDB, 
+	'map=s' => \$mapFile, 
+	'warn=i' => \$maxwarn,
+	'legacy' => \$legacymatch,
+	'renumber' => \$renumber,
+	'PDBresnum' => \$PDBresnum,
+	'insertTER' => \$insertTER,
+	'subALA' => \$subALA,
+	'removeH' => \$removeH,
+	'noautorename' => \$noautorename,
+	'large' => \$large,
+	'sort' => \$sort,
+	'altLocs' => \$treatAltLocs,
+	'removewater' => \$deletewater,
+	'gen_map=s' => \$makemap,
+	't=s' => \$template_dir,
+	'freecoor' => \$freecoor, 
+	'<>' => \&usage) or defined $help); 
 
 warninfo();
 
@@ -199,7 +219,7 @@ open(NEWPDB,">$outputPDB.adjustPDB.partial") or smog_quit("Can't open the output
 print "New file will be written: $outputPDB\n\n";
 
 readmap();	
-adjustInputFile($subALA);
+adjustInputFile($subALA,$freecoor);
 warnsummary();
 # since we completed without an error, save the final file.
 `mv $outputPDB.adjustPDB.partial $outputPDB`;
@@ -289,7 +309,7 @@ sub removesummary {
 }
 
 sub adjustInputFile{
-	my ($subALA)=@_;	
+	my ($subALA,$freecoor)=@_;	
 	my %ignoretags;
 	
 	# make hashes that list stuff that can be in a PDB
@@ -404,6 +424,10 @@ sub adjustInputFile{
 	# endfound keeps track of whether we found and END line.  
         my $endfound=1;
 	my $removedaltloc="";
+	my $tmpx;
+	my $tmpy;
+	my $tmpz;
+
 	while($k<$rows){
 		my $line=$pArr[$k];
 		
@@ -534,7 +558,8 @@ sub adjustInputFile{
 					}	
 					$residue[$loopInd]->{"atomName"} = $atomName;
 					$residue[$loopInd]->{"atomIndex"} = $atomCountBaseN;
-					$residue[$loopInd]->{"coords"} = substr($pArr[$k],30);   
+					$residue[$loopInd]->{"coords"} = substr($pArr[$k],30);  
+					($tmpx,$tmpy,$tmpz)=getXYZfromLine($pArr[$k],$freecoor); 
 					$resIDorig = substr($pArr[$k],22,5);
 					$resIDorig =~ s/\s+//g;  
 				if($save==1){
