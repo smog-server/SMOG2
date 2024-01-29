@@ -351,7 +351,12 @@ sub checkPDB
 					$x=$coor[0];
 					$y=$coor[1];
 					$z=$coor[2];
+					if(whatAmI($x) > 2 || whatAmI($y) > 2 || whatAmI($z) > 2){
+						smog_quit("Coordinate read, but does not appear to be a number. Since you are using free-formatted coordinates (with the -freecoor flag), perhaps you are missing a delimiter. Issue found at line:\n$record");
+					}
+
 				}else{
+print "OK";
 					if(substr($record,34,1) !~  m/\./ ) {
 						smog_quit("X coordinate in PDB file is not properly formatted.  The decimal should be column 35. Problematic line:\n$record");
  					}
@@ -403,7 +408,7 @@ sub checkPDB
 			$residueIndex++;
 				
 		}else{
-			smog_quit("Expected ATOM or HETATM line at line $lineNumber.");
+			smog_quit("Expected ATOM or HETATM line at line:\n$record\nThis error is typically encountered if smog_adjustPDB was not used, or if the PDB file was manually edited.");
 		}
 		$lastrecord=$record;
 		$record = "";
