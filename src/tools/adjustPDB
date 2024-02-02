@@ -427,7 +427,7 @@ sub adjustInputFile{
 	my $tmpx;
 	my $tmpy;
 	my $tmpz;
-
+	my $lastchainID;
 	while($k<$rows){
 		my $line=$pArr[$k];
 		
@@ -465,7 +465,7 @@ sub adjustInputFile{
 		## If atom line: ##
 			completeline($pArr[$k],$k);
 			my $resNum = substr($pArr[$k],22,5);
-			my $chainID = substr($pArr[$k],21,5);
+			my $chainID = substr($pArr[$k],21,1);
 			$resName = trim(substr($pArr[$k],17,4));
 			if(defined $deletewater && ($resName =~ m/^HOH$/ || $resName =~ m/^WAT$/)){
 				$removestring .= "$resName$resNum ";
@@ -487,6 +487,18 @@ sub adjustInputFile{
 
 							print "Non-sequential residue numbering detected.  -insertTER used with \"All\".  TER will be inserted before:$line\n";
 							print NEWPDB "TER\n";
+							if($lastchainID ne $chainID){
+								print "Chain ID also changed. Will restart atom and residue numbering for new chain.\n";
+								$atomCount=0;
+								$isFirst = 1;
+								$resInd = 1;
+								renamesummary($renamedstring,$chainindex);
+								removesummary($removestring,$chainindex);
+								$renamedstring="";
+								$removestring="";
+								$chainindex++;
+							}
+
 						}else{
 							print "Non-sequential residue numbering detected at\n$pArr[$k-1]\n$pArr[$k]\n";
 							print "Would you like to insert a TER line? [yes/no/all]\n";
@@ -499,6 +511,18 @@ sub adjustInputFile{
 							}
 							if( $response =~ m/^y(e(s)?)?$|^a(l(l)?)?$/i){
                                                         	print NEWPDB "TER\n";
+								if($lastchainID ne $chainID){
+									print "Chain ID also changed. Will restart atom and residue numbering for new chain.\n";
+									$atomCount=0;
+									$isFirst = 1;
+									$resInd = 1;
+									renamesummary($renamedstring,$chainindex);
+									removesummary($removestring,$chainindex);
+									$renamedstring="";
+									$removestring="";
+									$chainindex++;
+								}
+
 								if($response =~ m/^a(l(l)?)?$/i){
 									$insertTERall=0;
 								}
@@ -580,7 +604,7 @@ sub adjustInputFile{
 					$firstresidue=0;
 				}else{
 					$newResNum  = substr($pArr[$k],22,5);	# get next residue index
-					$newchainID = substr($pArr[$k],21,5);   # get chain ID
+					$newchainID = substr($pArr[$k],21,1);   # get chain ID
 					if ($newResNum eq $resNum && $chainID eq $newchainID){
 						$loopInd++;
 					}
@@ -623,13 +647,14 @@ sub adjustInputFile{
 			}
 			print NEWPDB $printresidue;
 
+			$lastchainID=$chainID; 
 			#LEAVE CURRENT RESIDUE AND UPDATE FLAGS#
 			$isFirst = 0;
 			$isLast = 0;
 
 			$resInd++;
 			$prevResTypeRNA = isRNA($resName);
-			undef @residue; 
+			undef @residue;
 		}
 	}
 
