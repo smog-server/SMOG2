@@ -797,6 +797,8 @@ usage: smog_extract  .. options ..
 	-of [extracted.top]	     : output SMOG force field file for extracted system
 	-og [extracted.gro]	     : output SMOG configuration file for extracted system
 	-om [atomindex.map]	     : output file with old-to-new atom index mapping
+	-distfrom <int> 	     : optional: also include atoms within a distance of this atom index
+	-distval <float>             : optional: distance used from atom specified with -distfrom
 	-orm [restrained.map]	     : output file with old-to-new atom index mapping for restrained atoms
 	-restraints <float>	     : generate restraints with a specific strength for atoms 
                                        that have interactions removed during extraction
