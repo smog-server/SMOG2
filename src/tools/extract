@@ -73,7 +73,9 @@ my $help;
 my $nogro;
 my $ndxorder;
 my $OpenSMOG;
-my $OpenSMOGout;
+my $OpenSMOGout="extracted.xml";
+my $distadd;
+my $distaddindex;
 my $gen_restraints="null";
 # in supported_directives, a value of 1 means is it required, 0 is not supported. >1 means optional
 our %supported_directives = ( 'defaults' => '1',
@@ -97,10 +99,24 @@ our %supported_directives = ( 'defaults' => '1',
 quit_init();
 note_init();
 checkForModules();
-usage() if (!GetOptions('help|?' => \$help, 'f=s' => \$inputTOP, 'g=s' => \$inputGRO, 'n=s' => \$indexFile, 
-        'of=s' => \$outputtop, 'og=s' => \$outputgro, 'om=s' => \$outputmap, 'orm=s' => \$restrainedmap, 'restraints=s' => \$gen_restraints, 'ndxorder' => \$ndxorder, 'OpenSMOG=s' => \$OpenSMOG, 'OpenSMOGout=s' => \$OpenSMOGout,  'warn=i' => \$maxwarn, 
-        '<>' => \&usage, 'nogro' => \$nogro)
-        or defined $help); 
+usage() if (!GetOptions('help|?' => \$help, 
+		'f=s' => \$inputTOP, 
+		'g=s' => \$inputGRO, 
+		'n=s' => \$indexFile, 
+		'of=s' => \$outputtop, 
+		'og=s' => \$outputgro, 
+		'om=s' => \$outputmap, 
+		'orm=s' => \$restrainedmap, 
+		'distval=f' => \$distadd, 
+		'distfrom=i' => \$distaddindex, 
+		'restraints=s' => \$gen_restraints, 
+		'ndxorder' => \$ndxorder, 
+		'OpenSMOG=s' => \$OpenSMOG, 
+		'OpenSMOGout=s' => \$OpenSMOGout,  
+		'warn=i' => \$maxwarn, 
+		'<>' => \&usage, 
+		'nogro' => \$nogro)
+			or defined $help); 
 
 warninfo();
 
@@ -120,8 +136,24 @@ if(defined $OpenSMOG && !defined $OpenSMOGout){
 	smog_quit("When using -OpenSMOG, you must specify an output file name with -OpenSMOGout"); 
 }
 
+if((defined $distadd && !defined $distaddindex) or (!defined $distadd && defined $distaddindex)){
+	smog_quit("-distval and -distfrom must be used together."); 
+}
+
+if((defined $distadd || defined $distaddindex) and defined $ndxorder){
+	smog_quit("-distval and -distfrom can not be used with -ndxorder."); 
+}
+
+if((defined $distadd || defined $distaddindex) and defined $nogro){
+	smog_quit("-distval and -distfrom can not be used with -nogro."); 
+}
+
+if(defined $distaddindex and $distaddindex < 1){
+	smog_quit("-distfrom index ($distaddindex) must be greater than 0."); 
+}
+
 if(!defined $OpenSMOG && defined $OpenSMOGout){
-	smog_quit("Can not use -OpenSMOGout setting if -OpenSMOG is not also used."); 
+	smog_quit("-OpenSMOGout has no effect if -OpenSMOG is not also used."); 
 }
 
 if($gen_restraints ne "null" && $gen_restraints <=0){
@@ -139,7 +171,7 @@ $outputtop=checksuffix($outputtop,".top");
 $outputmap=checksuffix($outputmap,".map");
 $restrainedmap=checksuffix($restrainedmap,".map");
 $indexFile=checksuffix($indexFile,".ndx");
-if(defined $OpenSMOGout){
+if(defined $OpenSMOG){
 	$OpenSMOGout=checksuffix($OpenSMOGout,".xml");
 	checkalreadyexists($OpenSMOGout);
 }
@@ -184,11 +216,82 @@ if($Ngrps==0){
 	$extgrp=$grpnms[0];	
 }
 
-
+# read in gro, in case we need to add atoms to the selection
+my $NATOMS;
+my @GRODATA;
 my @A;
+my $grodim;
+my $groheader;
+if(defined $nogro){
+	print "Note: -nogro give. Will not extract a gro file.\n";
+
+}else{
+	open(GROFILE,"$inputGRO") or smog_quit("Can\'t open GRO file $inputGRO");
+	$groheader=<GROFILE>;
+	chomp($groheader);
+	
+	my $TMP=<GROFILE>;
+	chomp($TMP);
+	$TMP =~ s/\t/ /g; 
+	$TMP = trim($TMP);
+	$TMP =~ s/ +/ /g;
+	@A=split(/\s+/,$TMP);
+	$NATOMS=$A[0];
+	unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
+	my $inputXML="";
+	if(defined $OpenSMOG){
+		$inputXML="$OpenSMOG, ";
+	}	
+	print "\n\nUsing $inputTOP, $inputXML$inputGRO and $indexFile to generate extracted system...\n\n";
+	
+	print "Processing gro file\n";
+	for(my $I=0;$I<$NATOMS;$I++){
+		# store gro data
+		my $LINE=<GROFILE>;
+		chomp($LINE);
+		$GRODATA[$I+1]=$LINE;
+	}
+	$grodim=<GROFILE>;
+	chomp($grodim);
+	close(GROFILE);
+
+}
+
+# find the additional atoms to include based on a distance check
+
+my %addhash;
+if (defined $distaddindex){
+	if($distaddindex > $NATOMS){
+		smog_quit("Reference atom index given wit -distfrom ($distaddindex) is larger than the number of atoms in the gro file ($NATOMS)");
+	}
+	my $d2max=$distadd*$distadd;
+	my $tmp=$GRODATA[$distaddindex];
+	my $xc=substr($tmp,20,8);
+	my $yc=substr($tmp,20,8);
+	my $zc=substr($tmp,20,8);
+	for(my $I=1;$I<=$NATOMS;$I++){
+		my $tmp=$GRODATA[$I];
+		my $xt=substr($tmp,20,8);
+		my $yt=substr($tmp,28,8);
+		my $zt=substr($tmp,36,8);
+		if(($xt-$xc)**2+($yt-$yc)**2+($zt-$zc)**2 < $d2max){
+			$addhash{$I}=-1;
+		}
+	}
+}
+
+# find the mapping between old atom numbers and the new atoms that we are keeping
+
 my $tkeep;
 my %maphash;
 my %tmphash=%{$atomgroup{$extgrp}};
+
+if (defined $distaddindex){
+# if needed, add the new atoms and keep the unique entries
+	for my $key (keys %addhash) {
+		$tmphash{$key}=-1;
+	}
+}
 for my $atom ( sort {$a<=>$b} keys %tmphash ) {
 	$KEEPN++;
 	if(defined $ndxorder){
@@ -209,40 +312,8 @@ if(defined $ndxorder){
 	print "Note: New files will order atoms exactly as listed in .ndx file.\n";
 }
 ### extract the atoms and make a new gro file 
-if(defined $nogro){
-	print "Note: -nogro give. Will not extract a gro file.\n";
 
-}else{
-	open(GROFILE,"$inputGRO") or smog_quit("Can\'t open GRO file $inputGRO");
-	my $groheader=<GROFILE>;
-	chomp($groheader);
-	
-	my $TMP=<GROFILE>;
-	chomp($TMP);
-	$TMP =~ s/\t/ /g; 
-	$TMP = trim($TMP);
-	$TMP =~ s/ +/ /g;
-	@A=split(/\s+/,$TMP);
-	my $NATOMS=$A[0];
-	my @GRODATA;
-	unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
-	my $inputXML="";
-	if(defined $OpenSMOG){
-		$inputXML="$OpenSMOG, ";
-	}	
-	print "\n\nUsing $inputTOP, $inputXML$inputGRO and $indexFile to generate extracted system...\n\n";
-	
-	print "Processing gro file\n";
-	for(my $I=0;$I<$NATOMS;$I++){
-		# store gro data
-		my $LINE=<GROFILE>;
-		chomp($LINE);
-		$GRODATA[$I+1]=$LINE;
-	}
-	my $grodim=<GROFILE>;
-	chomp($grodim);
-	close(GROFILE);
-	
+if(!defined $nogro){
 	open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
 	print GROFILE "$groheader. Note: This file was processed by smog_extract (version $VERSION)\n";
 	print GROFILE "$KEEPN\n";
@@ -720,20 +791,20 @@ sub usage
 usage: smog_extract  .. options ..
 
    Options 
-	-f [smog.top]		: input SMOG force field file
-	-g [smog.gro]		: input SMOG configuration file
-	-n [smog.ndx]		: index file to define extracted group
-	-of [extracted.top]	: output SMOG force field file for extracted system
-	-og [extracted.gro]	: output SMOG configuration file for extracted system
-	-om [atomindex.map]	: output file with old-to-new atom index mapping
-	-orm [restrained.map]	: output file with old-to-new atom index mapping for restrained atoms
-	-restraints <float>	: generate restraints with a specific strength for atoms 
-                                  that have interactions removed during extraction
-	-ndxorder		: order the top and gro atoms in the order provided in the ndx file. 
+	-f [smog.top]		     : input SMOG force field file
+	-g [smog.gro]		     : input SMOG configuration file
+	-n [smog.ndx]		     : index file to define extracted group
+	-of [extracted.top]	     : output SMOG force field file for extracted system
+	-og [extracted.gro]	     : output SMOG configuration file for extracted system
+	-om [atomindex.map]	     : output file with old-to-new atom index mapping
+	-orm [restrained.map]	     : output file with old-to-new atom index mapping for restrained atoms
+	-restraints <float>	     : generate restraints with a specific strength for atoms 
+                                       that have interactions removed during extraction
+	-ndxorder		     : order the top and gro atoms in the order provided in the ndx file. 
 				  Default is to preserve the original ordering. 
-	-OpenSMOG <xml file>    : also process an OpenSMOG xml file. This file is generated by smog2
-                                  if the -OpenSMOG option was used.
-	-OpenSMOGout <xml file> : output file name for processed OpenSMOG xml file
+	-OpenSMOG <xml file>         : also process an OpenSMOG xml file. This file is generated by smog2
+                                       if the -OpenSMOG option was used.
+	-OpenSMOGout [extracted.xml] : output file name for processed OpenSMOG xml file
 	-warn [0]		: convert the first N errors into warnings
 	-nogro			: do not extract a gro file. Only extract a .top
 	-help			: show options
