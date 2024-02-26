@@ -267,8 +267,8 @@ if (defined $distaddindex){
 	my $d2max=$distadd*$distadd;
 	my $tmp=$GRODATA[$distaddindex];
 	my $xc=substr($tmp,20,8);
-	my $yc=substr($tmp,20,8);
-	my $zc=substr($tmp,20,8);
+	my $yc=substr($tmp,28,8);
+	my $zc=substr($tmp,36,8);
 	for(my $I=1;$I<=$NATOMS;$I++){
 		my $tmp=$GRODATA[$I];
 		my $xt=substr($tmp,20,8);

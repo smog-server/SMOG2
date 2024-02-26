@@ -1137,7 +1137,7 @@ sub bondOutput
 				}
 				my $i1=$indexhandle->{$i};
 				my $j1=$indexhandle->{$j};
-				smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file) is outside of the bond threshold range. Since the parameters for this interaction will be read from bondtypes, energy minimization will fix the structure.  However, it is possible that there is a problem with the input PDB (e.g. residue numbering error).");
+				smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file) is outside of the bond threshold range. Since the parameters for this interaction will be read from bondtypes, energy minimization may fix the structure.  However, it is possible that there is a problem with the input PDB (e.g. residue numbering error), in which case the contact map may also have errors.");
 			}
 		}else{
 			# by default, assume we will replace and evaluate the distance.
@@ -1154,10 +1154,9 @@ sub bondOutput
 					my $DIST=int($values*10000)/10000.0;
 					smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates ($paramArr[0]). This may mean there is something strange with your structure.");
 				}
-			}
+			}elsif($values < $interactionThreshold->{"bonds"}->{"shortBond"}
+                        || $values > $interactionThreshold->{"bonds"}->{"longBond"}){
         		## Check bonds threshold ##
-        		if($values < $interactionThreshold->{"bonds"}->{"shortBond"}
-        		|| $values > $interactionThreshold->{"bonds"}->{"longBond"} && $dosub==0){
 				#note, only reset the distance and/or check it, if the templates don't define a specific value (i.e. $dosub==0)
 				my $DIST=int($values*10000)/10000.0;
 				if($setBondtoLimit){
@@ -1376,7 +1375,7 @@ sub angleOutput
  ## If $input contains a + ##
 	my @funcs = split(/\+/,$inputFunc);
 	my $outputString="";
-	my $value="";my $kd="";
+	my $kd="";
 	my $fType="";my @paramArr;
 	my $formattedString="";
 	foreach my $fun(@funcs)
@@ -1403,35 +1402,43 @@ sub angleOutput
 				smog_note("Angle formed by atoms $i $j $k (PDB lines $i1 $j1 $k1) outside of the range set by smallAngles and largeAngles (see .sif): theta=$THETA degrees\n\tWhile the interaction parameters will be defined by angletypes, this warning means there may be something strange about your input configuration.");
 			}
 	 		
-		}else{
-
-			if($fType != 0){
-				$paramArr[0]=evalsub($paramArr[0],$values);
-				## non-native option used
-		
-				## Check angles threshold ##
-		 		if($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
-					my $THETA=int($paramArr[0]*100)/100.0;
-					my $i1=$indexhandle->{$i};
-					my $j1=$indexhandle->{$j};
-					my $k1=$indexhandle->{$k};
-					smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilities.",1);
-				}
-		 		if($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
-					my $THETA=int($paramArr[0]*100)/100.0;
-					my $i1=$indexhandle->{$i};
-					my $j1=$indexhandle->{$j};
-					my $k1=$indexhandle->{$k};
-					smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
-				}
-	 		## Format output <i j k function p1 p2 ... pn>
-				my $paramFormat=formatvalues($#paramArr);
-				$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
-				$outputString = "$outputString$formattedString";
-			}else{
-				$freeangles{"$i-$j-$k"}=1;
-				$freeangles{"$k-$j-$i"}=1;
+		}elsif($fType != 0){
+			my $dosub=0;
+			if($paramArr[0] !~ m/\?/){
+				# nothing to sub.  Just use the value given in the .b file
+				$dosub=1;
 			}
+			$paramArr[0]=evalsub($paramArr[0],$values);
+			if($dosub==1){
+			        ## non-native option used
+				if(abs($paramArr[0]-$values)/$paramArr[0] > 0.1){
+					my $i1=$indexhandle->{$i};
+					my $j1=$indexhandle->{$j};
+					my $k1=$indexhandle->{$k};
+					my $ANGLE=int($values*10000)/10000.0;
+					smog_note("Angle of $ANGLE calculated for atom set $i $j $k (gro indices.  Or, lines $i1, $j1 and $k1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates ($paramArr[0]). This may mean there is something strange with your structure.");
+				}
+	 		}elsif($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
+			## Check angles threshold ##
+				my $THETA=int($paramArr[0]*100)/100.0;
+				my $i1=$indexhandle->{$i};
+				my $j1=$indexhandle->{$j};
+				my $k1=$indexhandle->{$k};
+				smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilities.",1);
+			}elsif($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
+				my $THETA=int($paramArr[0]*100)/100.0;
+				my $i1=$indexhandle->{$i};
+				my $j1=$indexhandle->{$j};
+				my $k1=$indexhandle->{$k};
+				smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
+			}
+		## Format output <i j k function p1 p2 ... pn>
+			my $paramFormat=formatvalues($#paramArr);
+			$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
+			$outputString = "$outputString$formattedString";
+		}else{
+			$freeangles{"$i-$j-$k"}=1;
+			$freeangles{"$k-$j-$i"}=1;
 		}
 	}
 	return $outputString; 
