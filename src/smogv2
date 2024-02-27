@@ -887,8 +887,9 @@ sub addExtras {
 				}	
 				# since they are both defined, we will keep a record of them.
 
-				$foundAtype{"$tarray[0]-$tarray[1]-$tarray[2]"}=1;
-				$foundAtype{"$tarray[2]-$tarray[1]-$tarray[0]"}=1;
+				my @taa=@tarray[3..5];
+				$foundAtype{"$tarray[0]-$tarray[1]-$tarray[2]"}=\@taa;
+				$foundAtype{"$tarray[2]-$tarray[1]-$tarray[0]"}=\@taa;
 			}
 			if($directive eq "dihedraltypes"){
 		    		my @ltokens = split('<',$A);
@@ -1136,7 +1137,7 @@ sub bondOutput
 				my $i1=$indexhandle->{$i};
 				my $j1=$indexhandle->{$j};
 				my $DIST=int($values*10000)/10000.0;
-				smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates ($tmtype[1]). This may mean there is something strange with your structure.");
+				smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates/extras ($tmtype[1]). This may mean there is something strange with your structure.");
 			}
       
  		}else{
@@ -1384,7 +1385,9 @@ sub angleOutput
 
 		if($fType ==-1){
 			 ## don't write angle and constant. Make gromacs use angletype
-			my $type=checkangletype($i,$j,$k,$allatoms); 
+			my $tmtype=checkangletype($i,$j,$k,$allatoms); 
+			my @tmtype=@{$tmtype};
+			my $type=$tmtype[0];
 			$formattedString = sprintf("%d\t%d\t%d",$i,$j,$k);
 			$outputString .= $formattedString;
                         if(defined $OpenSMOG && $type > 0){
@@ -1394,12 +1397,12 @@ sub angleOutput
                                 $outputString .= "\n";
                         }
 
-	 		if($values < $interactionThreshold->{"angles"}->{"smallAngles"} || $values > $interactionThreshold->{"angles"}->{"largeAngles"}){ 
+			if(abs($tmtype[1]-$values)/$tmtype[1] > 0.1){
 				my $THETA=int($values*100)/100.0;
 				my $i1=$indexhandle->{$i};
 				my $j1=$indexhandle->{$j};
 				my $k1=$indexhandle->{$k};
-				smog_note("Angle formed by atoms $i $j $k (PDB lines $i1 $j1 $k1) outside of the range set by smallAngles and largeAngles (see .sif): theta=$THETA degrees\n\tWhile the interaction parameters will be defined by angletypes, this warning means there may be something strange about your input configuration.");
+				smog_note("Angle of $THETA degrees calculated for atom pair $i $j $k (gro indices.  Or, lines $i1 $j1 $k1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates/extras ($tmtype[1]). This may mean there is something strange with your structure.");
 			}
 	 		
 		}elsif($fType != 0){
