@@ -860,8 +860,9 @@ sub addExtras {
 				}	
 				# since they are both defined, we will keep a record of them.
 				# save the type hash
-				$foundBtype{"$tarray[0]-$tarray[1]"}=$tarray[2];
-				$foundBtype{"$tarray[1]-$tarray[0]"}=$tarray[2];
+				my @taa=@tarray[2..4];
+				$foundBtype{"$tarray[0]-$tarray[1]"}=\@taa;
+				$foundBtype{"$tarray[1]-$tarray[0]"}=\@taa;
 			}
 			if($directive eq "angletypes"){
 		    		my @ltokens = split('<',$A);
@@ -1120,7 +1121,9 @@ sub bondOutput
 			# this mean bond_bytype was used
 			# don't write distances or strengths. Make gromacs use bondtype
 			# since we are not writing a distance, let's check and make sure this pair has a bondtype provided
-			my $type=checkbondtype($i,$j,$allatoms); 
+			my $tmtype=checkbondtype($i,$j,$allatoms);
+			my @tmtype=@{$tmtype};
+			my $type=$tmtype[0];
 			$formattedString = sprintf("%d\t%d",$i,$j);
 			$outputString .= $formattedString;
 			if(defined $OpenSMOG && $type > 0){
@@ -1129,17 +1132,14 @@ sub bondOutput
 			}else{
 				$outputString .= "\n";
 			}
-        		if($values < $interactionThreshold->{"bonds"}->{"shortBond"}
-        		|| $values > $interactionThreshold->{"bonds"}->{"longBond"}){
-				my $DIST=int($values*10000)/10000.0;
-				if(!exists ${$indexhandle}{$i} || !exists ${$indexhandle}{$j}){
-					smog_quit("Internal error 3.  Please inform smog team");
-				}
+			if(abs($tmtype[1]-$values)/$tmtype[1] > 0.1){
 				my $i1=$indexhandle->{$i};
 				my $j1=$indexhandle->{$j};
-				smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file) is outside of the bond threshold range. Since the parameters for this interaction will be read from bondtypes, energy minimization may fix the structure.  However, it is possible that there is a problem with the input PDB (e.g. residue numbering error), in which case the contact map may also have errors.");
+				my $DIST=int($values*10000)/10000.0;
+				smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates ($tmtype[1]). This may mean there is something strange with your structure.");
 			}
-		}else{
+      
+ 		}else{
 			# by default, assume we will replace and evaluate the distance.
 			my $dosub=0;
 			if($paramArr[0] !~ m/\?/){
