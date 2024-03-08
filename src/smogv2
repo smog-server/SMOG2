@@ -2245,7 +2245,7 @@ sub saveAtomTypes
 			$mass = $interactions->{"nonbonds"}->{$tmptype}->{"mass"};
 			$charge = $interactions->{"nonbonds"}->{$tmptype}->{"charge"};
 			
-			$formattedString = sprintf(" %-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c1,$c2);
+			$formattedString = sprintf("%-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c1,$c2);
 		addToTop("atomtypes",$formattedString."\n");
 	}
 }
