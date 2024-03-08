@@ -41,7 +41,7 @@ The SMOG 2 container has smog2 and all smog tools already in the path. You shoul
 
 It is possible to think of the container as a wrapper for SMOG2. That is, you can "call" the container and launch a single SMOG2 command within it.  For example:
 
->singularity run smog2_stable.sif smog2 -AA -i 2ci2.pdb
+>singularity exec smog2_stable.sif smog2 -AA -i 2ci2.pdb
 
 or an alternate format would be 
 
@@ -54,7 +54,7 @@ In this example, the container would be launched, and "smog2 -AA -i 2ci2.pdb" wo
 
 Similar to how you run a single command, it is possible to run a script inside  the container.  For example, if you have the script myscript.sh in your current directory, then make sure you have execute privileges and use the followin command:
 
->singularity run smog2_stable.sif ./myscript.sh
+>singularity exec smog2_stable.sif ./myscript.sh
 
 or an alternate format would be 
 
