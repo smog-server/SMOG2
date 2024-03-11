@@ -80,6 +80,7 @@ my $CGstage = 0;
 my $nocheck = "no";
 my $keep4SCM;
 my $extrasfile="";
+my $iondeffile="";
 my $anyfree;
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
@@ -402,7 +403,7 @@ sub parse_args {
 	
 	warninfo();
 	if(defined $tempcheckoff){
-		smog_note("-nocheck was issued. Will not cross check the templates for consistency in energetics declarations. Use this option at your own risk...");
+		smog_note("-nocheck was issued. Will not cross-check the templates for consistency in energetics declarations. Use this option at your own risk...");
 		$nocheck="yes";
 	}
 
@@ -2544,6 +2545,7 @@ sub parseInputFolder
 	my $nbexists=0;
 	my $bexists=0;
 	my $extrasexists=0;
+	my $iondefexists=0;
 	while(my $file = readdir($folder)){
                 if($file =~ /^\./){
                         # skipping hidden files. They can sometimes creep in due to OSX/LINUX incompatibilities
@@ -2575,11 +2577,17 @@ sub parseInputFolder
 			$extrasfile = "$folderName/$file";
 			print "Found extras file $extrasfile\n";
 			next;
+		}elsif($file =~ m/\.ions.def$/ || $file =~ m/^ions.def$/) {
+			$iondefexists++;
+			$iondeffile = "$folderName/$file";
+			print "Found ions.def file $iondeffile\n";
+			next;
 		}elsif($file !~ m/^[Rr][Ee][Aa][Dd][Mm][Ee]$/ && $file !~ m/^\./) {
 			# note that READMEs are ignored
 			smog_note("Found unused file \"$file\" in the template directory");	
 		}
 	}
+        print "\n";
 	$bifForSCM = $bif;
 
 	if($bifexists >1){
@@ -2618,7 +2626,7 @@ sub parseInputFolder
 		print "Checking format of $extrasfile\n";
 		checkExtras($extrasfile);
 	}
-	setInputFileName($bif,$sif,$b,$nb);
+	setInputFileName($bif,$sif,$b,$nb,$iondeffile);
 	
 }
 
@@ -2691,7 +2699,7 @@ usage: smog2 .. options ..
        -CAgaussian             : use default Calpha protein model with gaussian contacts
        -t [templateFolder]     : folder containing templates of molecular and interaction definitions. required when defaults are not used
        -tCG [templateFolder]   : folder containing templates used for coarse graining. indicates that the program should coarse grain
-       -nocheck                : turn off template cross-validation checks. may sometimes be useful
+       -nocheck                : turn off template cross-checks. may sometimes be useful
                                    when using old templates with new versions of SMOG
 
      Coordinate Processing Options
@@ -2870,6 +2878,10 @@ sub parseTemplatesAndPDB
 	parseBonds();
 	## parse .bif File ##
 	parseBif();
+
+	## if present, read in ions.def file ##
+	parseIons($iondeffile);
+
 	print "\nDone parsing templates.\n";
 
 	unless($nocheck eq "yes"){ 
@@ -2883,6 +2895,7 @@ sub parseTemplatesAndPDB
 		$checkmessage.=checkCONNenergygroups();
 		$checkmessage.=checkRESimpropers();
 		$checkmessage.=checkFunctions();
+		$checkmessage.=checkIons();
 		if($checkmessage ne ""){
 			smog_quit("Validation of templates failed. See messages below:\n\n$checkmessage");
 		}

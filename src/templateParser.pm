@@ -44,7 +44,7 @@ use SMOGglobals;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList %dihedralAdjListeG adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESenergygroups checkCONNenergygroups checkRESimpropers round checkFunctions splitFunction);
+qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList %dihedralAdjListeG adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds parseIons getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkIons checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESenergygroups checkCONNenergygroups checkRESimpropers round checkFunctions splitFunction);
 
 our $OpenSMOG;
 our $OpenSMOGpothash;
@@ -80,6 +80,7 @@ our $energyGroups;
 my $settings; our $termRatios;
 our $interactions;
 our %excludebonded;
+our %iondefs;
 our %funcTable;our %funcTableRev;
 our %eGTable;our %eGRevTable;
 our @topFileBuffer;our @linesInDirectives;
@@ -101,6 +102,7 @@ our $bifxml = "bif.xml";
 our $sifxml = "sif.xml";
 our $bondxml = "b.xml";
 our $nbondxml = "nb.xml";
+our $iondefs = "";
 
 our %Btypespresent;
 our %NBtypespresent;
@@ -137,6 +139,37 @@ sub parseSif {
 	sifFunctions($data);
 	sifSettings($data);
 	CustomNonBondedCheckAdjust($data,$OSref);
+}
+
+sub parseIons {
+	if($iondefs eq ""){
+		return
+	}
+
+	open(IONF,"$iondefs");
+	while(my $line = <IONF>){
+		my ($A,$B)=checkcomment($line);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+		my @vals=split(/\s+/,$A);
+		if($#vals != 4){
+			smog_quit("Wrong number of values found in $iondefs. Expected 5, found:\n$line\n");	
+		}
+		if(! looks_like_number($vals[1])){
+			smog_quit("Mass provided (column 2) of ions.def file must be a number. Found:\n$line\n");	
+		}
+		my $type=whatAmI($vals[2]);
+		if($type != 1){
+			smog_quit("Charge provided (column 3) of ions.def file must be an integer. Found:\n$line\n");	
+		}
+		if(! looks_like_number($vals[3])){
+			smog_quit("C12 parameter (column 4) of ions.def file must be a number. Found:\n$line\n");	
+		}
+		if(! looks_like_number($vals[4])){
+			smog_quit("C12 parameter (column 5) of ions.def file must be a number. Found:\n$line\n");	
+		}
+		my @tmparr=@vals[1..4];
+                $iondefs{$vals[0]}=\@tmparr;
+	}	
 }
 
 sub parseBonds {
@@ -189,17 +222,19 @@ sub clearBifMemory {
         undef %PAIRtypespresent;
 	undef %pairtypesused;
 	undef %bondtypesused;
+	undef %iondefs;
 }
 
 ########################
 ## SET INPUTFILE NAME ##
 ########################
 sub setInputFileName {
-	my ($a,$b,$c,$d) = @_;
+	my ($a,$b,$c,$d,$e) = @_;
 	$bifxml = $a;
 	$sifxml = $b;
 	$bondxml = $c;
 	$nbondxml = $d;
+	$iondefs = $e;
 }
 
 sub round
@@ -800,6 +835,33 @@ sub checkNONBONDnames
 
 	return $string;
 }
+
+sub checkIons
+{
+	my $string="";
+	foreach my $ionname(keys %iondefs){
+		if(defined ${$interactions->{"nonbonds"}}{$ionname}){
+			my $nbty=${$interactions->{"nonbonds"}}{$ionname};
+			my @vals=@{$iondefs{$ionname}};
+			# check consistency
+			if($interactions->{"nonbonds"}->{$ionname}->{"mass"} != $vals[0]){
+				$string .= "Inconsistent values for the mass of \"$ionname\" are given in the .nb and .ions.def file.\n";
+			}
+			if($interactions->{"nonbonds"}->{$ionname}->{"charge"} != $vals[1]){
+				$string .= "Inconsistent values for the charge of \"$ionname\" are given in the .nb and .ions.def file.\n";
+			}
+			if($interactions->{"nonbonds"}->{$ionname}->{"c12"} != $vals[2]){
+				$string .= "Inconsistent values for c12 of \"$ionname\" are given in the .nb and .ions.def file.\n";
+			}
+			if($interactions->{"nonbonds"}->{$ionname}->{"c6"} != $vals[3]){
+				$string .= "Inconsistent values for c6 of \"$ionname\" are given in the .nb and .ions.def file.\n";
+			}
+		}
+	}
+
+	return $string;
+}
+
 
 sub checkPAIRnames
 {
