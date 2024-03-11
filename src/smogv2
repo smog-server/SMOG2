@@ -653,7 +653,7 @@ sub initializeDirectives {
         my $gitver=getgitver;
         if($gitver ne ""){
                 addToTop("comments","THIS VERSION OF SMOG IS FROM A GIT REPO. COMMIT NUMBER\n");
-		addToTop("comments","$gitver");
+		addToTop("comments","$gitver\n");
         }
 	addToTop("defaults", "\n[ defaults ]\n");
 	addToTop("bonds","\n[ bonds ]\n");
@@ -2322,8 +2322,9 @@ sub readAtoms
 		}
 	}
 
+        addToTop("comments","After running SMOG2, the total charge of the system is $systemcharge\n\n");
 	if(abs($systemcharge-round($systemcharge)) > 0.001){
-		smog_quit("Non-integer system charge ($systemcharge). This typically means something is wrong with the .bif file.");
+		smog_quit("Non-integer system charge ($systemcharge). This usually means something is wrong with the .bif, .nb, .extras of .ions.def file.");
 	}else{
 		printf("\nTotal charge of system: %8.3f\n\n",$systemcharge);
 	}
