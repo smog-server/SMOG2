@@ -257,7 +257,7 @@ sub readindexfile
 	my %groupnames;
 	my $Ngrps=0;
 	my %atomgroup;
-	my $groupindex;
+	my $groupindex=-1;
 	open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
 	print "Reading index file $indexFile\n";
 	while(<ATOMLIST>){
@@ -277,6 +277,10 @@ sub readindexfile
 		}
 		if($A[0] eq "[" and $A[2] eq "]"){
 			# must be a new group
+
+			if($groupindex == 0){
+				smog_quit("Index file has an empty group ($groupname). This is probably a mistake.");
+			}
 			$groupindex=0;
 			$groupname=$A[1];
 			$grpnms[$Ngrps]=$groupname;
