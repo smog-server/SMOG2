@@ -114,7 +114,8 @@ our %bondtypesused;
 our %fTypes;
 our %usedFunctions;
 our %fTypesArgNum;
-
+our %atomnamehash;
+our %atomnamehashinres;
 my %bondHandle;
 my @improperHandle;
 my %dihedralHandle;
@@ -840,21 +841,58 @@ sub checkIons
 {
 	my $string="";
 	foreach my $ionname(keys %iondefs){
-		if(defined ${$interactions->{"nonbonds"}}{$ionname}){
-			my $nbty=${$interactions->{"nonbonds"}}{$ionname};
-			my @vals=@{$iondefs{$ionname}};
-			# check consistency
-			if($interactions->{"nonbonds"}->{$ionname}->{"mass"} != $vals[0]){
-				$string .= "Inconsistent values for the mass of \"$ionname\" are given in the .nb and .ions.def file.\n";
-			}
-			if($interactions->{"nonbonds"}->{$ionname}->{"charge"} != $vals[1]){
-				$string .= "Inconsistent values for the charge of \"$ionname\" are given in the .nb and .ions.def file.\n";
-			}
-			if($interactions->{"nonbonds"}->{$ionname}->{"c12"} != $vals[2]){
-				$string .= "Inconsistent values for c12 of \"$ionname\" are given in the .nb and .ions.def file.\n";
-			}
-			if($interactions->{"nonbonds"}->{$ionname}->{"c6"} != $vals[3]){
-				$string .= "Inconsistent values for c6 of \"$ionname\" are given in the .nb and .ions.def file.\n";
+#		if(defined $NBtypespresent{$ionname}){
+			# defined in .bif, so let's figure out if it has the correct values 
+			# if the values are in the bif, compare them
+			# if they are in the nb, compare those.
+		if(defined $atomnamehash{$ionname}){
+			# an atom with the same name as an ion is defined somewhere in the .bif.  So, let's figure out what parameters were given for charge, c6, c16 and mass
+			my @atlist=@{$atomnamehash{$ionname}};
+			my @atlistresnames=@{$atomnamehashinres{$ionname}};
+			for(my $I=0;$I<=$#atlist;$I++){
+				my $athash=$atlist[$I];
+				my $resname=$atlistresnames[$I];
+				my $nbtype;
+				if (defined $interactions->{"nonbonds"}->{$athash->{"nbType"}}){
+					$nbtype=$interactions->{"nonbonds"}->{$athash->{"nbType"}};
+				}else{
+					$nbtype=$interactions->{"nonbonds"}->{"*"};
+				}
+				my $charge;
+				my $mass;
+				# always use nbType to determine c6 and c12
+				my $c6=$nbtype->{"c6"};
+				my $c12=$nbtype->{"c12"};
+				# use nbType, only if charge or mass is not defined for this atom, in this residue
+				my $chargedef="bif";
+				if(defined $athash->{"charge"}){
+					$charge=$athash->{"charge"};
+				}else{
+					$charge=$nbtype->{"charge"};
+					$chargedef="nb";
+				}
+				my $massdef="bif";
+				if(defined $athash->{"mass"}){
+					$mass=$athash->{"mass"};
+				}else{
+					$mass=$nbtype->{"mass"};
+					$massdef="nb";
+				}
+
+				my @vals=@{$iondefs{$ionname}};
+				# check consistency
+				if($mass != $vals[0]){
+					$string .= "Inconsistent value for the mass of atom \"$ionname\" in residue \"$resname\" (value: $mass, defined in $massdef file) with the entry given in the .ions.def file (value: $vals[0]).\n";
+				}
+				if($charge != $vals[1]){
+					$string .= "Inconsistent value for the charge of atom \"$ionname\" in residue \"$resname\" (value: $charge, defined in $chargedef file) with the entry given in the .ions.def file (value: $vals[1]).\n";
+				}
+				if($c12 != $vals[2]){
+					$string .= "Inconsistent value for c12 of atom \"$ionname\" in residue \"$resname\" (value: $c12) with the definition in the .ions.def file (value: $vals[2]).\n";
+				}
+				if($c6 != $vals[3]){
+					$string .= "Inconsistent value for c6 of atom \"$ionname\" in residue \"$resname\" (value: $c6) with the definition in the .ions.def file (value: $vals[3]).\n";
+				}
 			}
 		}
 	}
@@ -1683,6 +1721,16 @@ sub bifResidues{
 		foreach my $atom(@atomHandle)
 		{
 			my $AT= $atom->{"content"};
+			if(! defined $atomnamehash{$AT}){
+				# create an array that we can store information about all atoms with this name
+				my @tmparray;
+				$atomnamehash{$AT}=\@tmparray;
+				my @tmparray2;
+				$atomnamehashinres{$AT}=\@tmparray2;
+			}
+			# save the address for the hash that stores information about all atoms of this type
+			push(@{$atomnamehash{$AT}},$atom);
+			push(@{$atomnamehashinres{$AT}},$res);
 			if(exists $seen{"$AT"}){smog_quit("Error in .bif. Duplicate declaration of atom $AT in residue $res.")};
 			$seen{"$AT"}=1;
 		
