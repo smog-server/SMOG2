@@ -305,7 +305,7 @@ sub adjustInputFile{
 		$notallowed{$J}=0;
 	}
 	my %allowed;
-	foreach my $I ("REMARK","ATOM","TER","HETATM","END","COMMEN","HEADER","TITLE") {
+	foreach my $I ("REMARK","ATOM","TER","HETATM","END","HEADER","TITLE") {
 		my $J = $I;
 		$J =~ s/\s+//g;
 		$allowed {$J}=0;
@@ -348,6 +348,8 @@ sub adjustInputFile{
 
 		}elsif( $tag eq "BOND"){
 			smog_quit("Issue at line $ln: BOND lines can not be used with adjust_PDB. This is not allowed since adjustPDB usually changes chain and atom indexes, which will make the current BOND values inappropriate. You should first run smog_adjustPDB without BOND lines and then add them back to the adjusted PDB, in order to ensure the correct bond is added.");
+		}elsif($tag eq "COMMEN"){
+			smog_quit("The use of \"COMMENT\" lines is no longer supported.  Use \"REMARK\" instead. Issue on line $ln: \"$tag\".");
 		}elsif(!exists $allowed{$tag}){
 			smog_quit("Unrecognized PDB record on line $ln: \"$tag\".");
 		}
