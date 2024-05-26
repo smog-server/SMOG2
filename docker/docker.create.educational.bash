@@ -1,6 +1,7 @@
 #!/bin/bash
-# this script will build a new docker container from the current smog2 repo
+# this script will build a new docker container from the current smog2 and OpenSMOG repos. It also installed openmmtools
 # multiple tags can be added by adding more -t flags at build time
+# Note: This container will not build properly on M1/M2 chips. Perhaps we'll update it later. 
 tag=$1
 option=$2
 docker_username="smogserver"

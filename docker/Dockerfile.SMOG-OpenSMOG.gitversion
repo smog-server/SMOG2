@@ -13,18 +13,23 @@ RUN apt-get update && \
 	rm -rf /var/lib/apt/lists/* 
 # Install miniconda
 ENV CONDA_DIR /opt/conda
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
-     /bin/bash ~/miniconda.sh -b -p /opt/conda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh 
+RUN  /bin/bash ~/miniconda.sh -b -p /opt/conda
 
 # Put conda in path so we can use conda activate
 ENV PATH=$CONDA_DIR/bin:$PATH
-RUN conda install -c conda-forge -y OpenSMOG && \
+
+RUN conda config --add channels omnia --add channels conda-forge 
+RUN conda install  -y OpenSMOG && \
 	conda remove --force cudatoolkit  && \
+	conda install -y openmmtools && \
 	conda clean --all 
 RUN git clone https://github.com/smog-server/OpenSMOG.git /opt/opensmog && \
 	cd /opt/opensmog && \
-	rsync -av OpenSMOG/ /opt/conda/lib/python3.10/site-packages/OpenSMOG/ && \
+	rsync -av OpenSMOG/ /opt/conda/lib/python3.12/site-packages/OpenSMOG/ && \
 	rm -rf /opt/opensmog
+
+
 RUN mkdir /opt/smog2 && \
 	git clone https://github.com/smog-server/SMOG2.git /opt/smog2 && \
 	cd /opt/smog2 && \
