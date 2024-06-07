@@ -190,7 +190,12 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
 
 my $comments=printTop($topFile);
-my $OpenSMOGwritten=OpenSMOGwriteXML($OSref,$OpenSMOGxml,$comments);
+
+my $OpenSMOGwritten="";
+if (defined $OpenSMOG){
+	$OpenSMOGwritten=OpenSMOGwriteXML($OSref,$OpenSMOGxml,$comments);
+}
+
 my $cfile;
 if($groFile ne ""){
 	$cfile=$groFile;
