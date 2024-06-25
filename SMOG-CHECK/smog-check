@@ -42,6 +42,7 @@ export BIFSIF_AA_CR2=`pwd`/share/templates/SBM_cr2
 export BIFSIF_AA_BOND=`pwd`/share/templates/SBM_AA_BOND
 export BIFSIF_AA_DIHE=`pwd`/share/templates/SBM_AA_DIHE
 export BIFSIF_AA_DIHE4=`pwd`/share/templates/SBM_AA_DIHE4
+export BIFSIF_AA_CC1=`pwd`/share/templates/SBM_AA+customContacts
 export TOLERANCE=0.001
 export PRECISION=10000
 

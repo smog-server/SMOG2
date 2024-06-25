@@ -67,11 +67,12 @@ our $TEMPLATE_DIR_AA_CR2=$ENV{'BIFSIF_AA_CR2'};
 our $TEMPLATE_DIR_AA_BOND=$ENV{'BIFSIF_AA_BOND'};
 our $TEMPLATE_DIR_AA_DIHE=$ENV{'BIFSIF_AA_DIHE'};
 our $TEMPLATE_DIR_AA_DIHE4=$ENV{'BIFSIF_AA_DIHE4'};
+our $TEMPLATE_DIR_AA_CC1=$ENV{'BIFSIF_AA_CC1'};
 quit_init();
 
 # FAILLIST is a list of all the tests.
 # If you are developing and testing your own forcefield, which may not need to conform to certain checks, then you may want to disable some tests by  removing the test name from this list. However, do so at your own risk.
-our @FAILLIST = ('NAME','DEFAULTS, num entries','DEFAULTS, nbfunc','DEFAULTS, comb-rule','DEFAULTS, gen-pairs','DEFAULTS, fudgeLJ','DEFAULTS, fudgeQQ','1 MOLECULE','ATOMTYPES UNIQUE','ALPHANUMERIC ATOMTYPES','TOP FIELDS FOUND','TOP FIELDS RECOGNIZED','MASS', 'CHARGE','moleculetype=Macromolecule','nrexcl=3', 'PARTICLE', 'C6 VALUES', 'C12 VALUES','ATOMTYPES, SIGMA','ATOMTYPES, EPSILON', 'SUPPORTED BOND TYPES', 'OPEN GRO','GRO-TOP CONSISTENCY', 'BOND STRENGTHS', 'BOND LENGTHS','ANGLE TYPES', 'ANGLE WEIGHTS', 'ANGLE VALUES','DUPLICATE BONDS', 'DUPLICATE ANGLES', 'GENERATED ANGLE COUNT','GENERATED ANGLE IN TOP','ANGLES IN TOP GENERATED', 'IMPROPER WEIGHTS', 'CA IMPROPERS EXIST','OMEGA IMPROPERS EXIST','SIDECHAIN IMPROPERS EXIST','MATCH DIH WEIGHTS','DIHEDRAL ANGLES','ALL POSSIBLE MATCHED DIHEDRALS PRESENT','CA DIHEDRAL WEIGHTS', 'DUPLICATE TYPE 1 DIHEDRALS','DUPLICATE TYPE 2 DIHEDRALS','DUPLICATE TYPE 3 DIHEDRALS','1-3 DIHEDRAL PAIRS','3-1 DIHEDRAL PAIRS','1-3 ORDERING OF DIHEDRALS','1-3 DIHEDRAL RELATIVE WEIGHTS','STRENGTHS OF RIGID DIHEDRALS','STRENGTHS OF OMEGA DIHEDRALS','STRENGTHS OF PROTEIN BB DIHEDRALS','STRENGTHS OF PROTEIN SC DIHEDRALS','STRENGTHS OF NUCLEIC BB DIHEDRALS','STRENGTHS OF NUCLEIC SC DIHEDRALS','STRENGTHS OF LIGAND DIHEDRALS','STACK-NONSTACK RATIO','PROTEIN BB/SC RATIO','NUCLEIC SC/BB RATIO','AMINO/NUCLEIC DIHEDRAL RATIO','AMINO/LIGAND DIHEDRAL RATIO','NUCLEIC/LIGAND DIHEDRAL RATIO','NONZERO DIHEDRAL ENERGY','CONTACT/DIHEDRAL RATIO','1-3 DIHEDRAL ANGLE VALUES','DIHEDRAL IN TOP GENERATED','GENERATED DIHEDRAL IN TOP','STACKING CONTACT WEIGHTS','NON-STACKING CONTACT WEIGHTS','NON-STACKING 2CG CONTACT WEIGHTS','NON-STACKING CG RATIO','LONG CONTACTS', 'CA CONTACT WEIGHTS', 'CONTACT DISTANCES','GAUSSIAN CONTACT WIDTHS','GAUSSIAN CONTACT EXCLUDED VOLUME','CONTACTS NUCLEIC i-j=1','CONTACTS PROTEIN i-j=4','CONTACTS PROTEIN i-j!>4','SCM CONTACT COMPARISON','STATIC CONTACT COMPARISON','NUMBER OF EXCLUSIONS', 'BOX DIMENSIONS','GENERATION OF ANGLES/DIHEDRALS','OPEN CONTACT FILE','NCONTACTS','TOTAL ENERGY','TYPE6 ATOMS','CLASSIFYING DIHEDRALS','NON-ZERO EXIT','ATOM FIELDS','ATOM CHARGES','FREE PAIRS APPEAR IN CONTACTS','EXTRAS: ATOMTYPES','EXTRAS: BONDTYPES','EXTRAS: ANGLETYPES','EXTRAS: DIHEDRALTYPES','EXTRAS: NB_PARAMS','NONZERO LIGAND DIHEDRAL VALUE','BONDS: EXPECTED FOUND','BONDS: FOUND EXPECTED','GMX COMPATIBLE','DIHEDRAL COUNTING: OFF','DIHEDRAL COUNTING: ON','OPENSMOG: EXPRESSION','OPENSMOG: PARAMETERS','OPENSMOG: INTERACTIONS','OPENSMOG: XML EXISTS','USER-DEFINED BONDS PRESENT');
+our @FAILLIST = ('NAME','DEFAULTS, num entries','DEFAULTS, nbfunc','DEFAULTS, comb-rule','DEFAULTS, gen-pairs','DEFAULTS, fudgeLJ','DEFAULTS, fudgeQQ','1 MOLECULE','ATOMTYPES UNIQUE','ALPHANUMERIC ATOMTYPES','TOP FIELDS FOUND','TOP FIELDS RECOGNIZED','MASS', 'CHARGE','moleculetype=Macromolecule','nrexcl=3', 'PARTICLE', 'C6 VALUES', 'C12 VALUES','ATOMTYPES, SIGMA','ATOMTYPES, EPSILON', 'SUPPORTED BOND TYPES', 'OPEN GRO','GRO-TOP CONSISTENCY', 'BOND STRENGTHS', 'BOND LENGTHS','ANGLE TYPES', 'ANGLE WEIGHTS', 'ANGLE VALUES','DUPLICATE BONDS', 'DUPLICATE ANGLES', 'GENERATED ANGLE COUNT','GENERATED ANGLE IN TOP','ANGLES IN TOP GENERATED', 'IMPROPER WEIGHTS', 'CA IMPROPERS EXIST','OMEGA IMPROPERS EXIST','SIDECHAIN IMPROPERS EXIST','MATCH DIH WEIGHTS','DIHEDRAL ANGLES','ALL POSSIBLE MATCHED DIHEDRALS PRESENT','CA DIHEDRAL WEIGHTS', 'DUPLICATE TYPE 1 DIHEDRALS','DUPLICATE TYPE 2 DIHEDRALS','DUPLICATE TYPE 3 DIHEDRALS','1-3 DIHEDRAL PAIRS','3-1 DIHEDRAL PAIRS','1-3 ORDERING OF DIHEDRALS','1-3 DIHEDRAL RELATIVE WEIGHTS','STRENGTHS OF RIGID DIHEDRALS','STRENGTHS OF OMEGA DIHEDRALS','STRENGTHS OF PROTEIN BB DIHEDRALS','STRENGTHS OF PROTEIN SC DIHEDRALS','STRENGTHS OF NUCLEIC BB DIHEDRALS','STRENGTHS OF NUCLEIC SC DIHEDRALS','STRENGTHS OF LIGAND DIHEDRALS','STACK-NONSTACK RATIO','PROTEIN BB/SC RATIO','NUCLEIC SC/BB RATIO','AMINO/NUCLEIC DIHEDRAL RATIO','AMINO/LIGAND DIHEDRAL RATIO','NUCLEIC/LIGAND DIHEDRAL RATIO','NONZERO DIHEDRAL ENERGY','CONTACT/DIHEDRAL RATIO','1-3 DIHEDRAL ANGLE VALUES','DIHEDRAL IN TOP GENERATED','GENERATED DIHEDRAL IN TOP','STACKING CONTACT WEIGHTS','NON-STACKING CONTACT WEIGHTS','NON-STACKING 2CG CONTACT WEIGHTS','NON-STACKING CG RATIO','LONG CONTACTS', 'CA CONTACT WEIGHTS', 'CONTACT DISTANCES','GAUSSIAN CONTACT WIDTHS','GAUSSIAN CONTACT EXCLUDED VOLUME','CONTACTS NUCLEIC i-j=1','CONTACTS PROTEIN i-j=4','CONTACTS PROTEIN i-j!>4','SCM CONTACT COMPARISON','STATIC CONTACT COMPARISON','NUMBER OF EXCLUSIONS', 'BOX DIMENSIONS','GENERATION OF ANGLES/DIHEDRALS','OPEN CONTACT FILE','NCONTACTS','TOTAL ENERGY','TYPE6 ATOMS','CLASSIFYING DIHEDRALS','NON-ZERO EXIT','ATOM FIELDS','ATOM CHARGES','FREE PAIRS APPEAR IN CONTACTS','EXTRAS: ATOMTYPES','EXTRAS: BONDTYPES','EXTRAS: ANGLETYPES','EXTRAS: DIHEDRALTYPES','EXTRAS: NB_PARAMS','NONZERO LIGAND DIHEDRAL VALUE','BONDS: EXPECTED FOUND','BONDS: FOUND EXPECTED','GMX COMPATIBLE','DIHEDRAL COUNTING: OFF','DIHEDRAL COUNTING: ON','OPENSMOG: EXPRESSION','OPENSMOG: PARAMETERS','OPENSMOG: INTERACTIONS','OPENSMOG: XML EXISTS','OPENSMOG: CUSTOM CONTACT PARAMETER VALUES','USER-DEFINED BONDS PRESENT',);
 #removed tests: 'OPEN G96','G96 FIELDS',
 # default location of test PDBs
 our $PDB_DIR="share/PDB.files";
@@ -333,6 +334,12 @@ sub addOpenSMOG
     }else{
      internal_error("OpenSMOG: contact_1-10-12 checking not implemented for model $model with gaussian=$gaussian");
     }
+   }elsif($funcs eq "contact_custom1"){
+    $directive="pairs";
+    $ftype=1;
+    $expectedfunction="weight*((sigma1/r)^16+0.5* (tanh(B*(r-sigma2))-1))";
+    @expectedparams=("weight","B","sigma1","sigma2");
+    @expectedattributes=("i","j","weight","B","sigma1","sigma2");
    }elsif($funcs eq "contact_gaussian"){
     $directive="pairs";
     $ftype=6;
@@ -497,7 +504,7 @@ sub collectinteractions
         $exp2=~ s/$namet/$valt/g;
        }
       }
-      # convert to gromacs angles
+      # convert to gromacs-like values (i.e. Exactly Gromacs values for standard interactions.  
       $val=eval($exp2);
      }
      $string .="$val ";
@@ -955,6 +962,9 @@ sub runsmog
    $ARGS .= " -t $TEMPLATE_DIR_AA_2CG ";
   }elsif($model eq "AA-nb-cr2"){
    $ARGS .= " -t $TEMPLATE_DIR_AA_CR2 ";
+  }elsif($model eq "AA-CC1"){
+   # custom contacts #1
+   $ARGS .= " -t $TEMPLATE_DIR_AA_CC1 ";
   }elsif($model eq "AA-BOND"){
    $ARGS .= " -t $TEMPLATE_DIR_AA_BOND ";
   }elsif($model eq "AA-DIHE"){
@@ -1068,6 +1078,8 @@ sub setmodelflags{
    $checkBOND=0;
   }elsif($model =~ m/^AA-DIHE$/){
    print "Testing all dihedrals functions in AA model\n";
+  }elsif($model =~ m/^AA-CC1$/){
+   print "Testing OpenSMOG Custom Contacts in AA model\n";
   }elsif($model =~ m/^AA-DIHE4$/){
    print "Testing all type-4 dihedrals functions in AA model\n";
    $DihDefType=4;
@@ -1098,7 +1110,7 @@ sub setmodelflags{
   $epsilonCAC=1.0;
   $epsilonCAD=1.0;
   $sigmaCA=4.0;
-  if($model eq "AA" || $model eq "CA"){
+  if($model eq "AA" || $model eq "CA" || $model eq "AA-CC1"){
    $fudgeLJ=1.0;
    $fudgeQQ=1.0;
   }
@@ -1347,6 +1359,14 @@ sub smogchecker
   $FAIL{'OPENSMOG: PARAMETERS'}=-1;
   $FAIL{'OPENSMOG: INTERACTIONS'}=-1;
   $FAIL{'OPENSMOG: XML EXISTS'}=-1;
+ }
+
+ if($model eq "AA-CC1"){
+  # if custom contact check 1, turn off distance check, since that is not relevant 
+  $FAIL{'CONTACT DISTANCES'}=-1;
+ }else{
+  # if not custom contact check 1, turn off check for CC1
+  $FAIL{'OPENSMOG: CUSTOM CONTACT PARAMETER VALUES'}=-1;
  }
 
  if($PDB =~ m/^FES$/){
@@ -2249,7 +2269,7 @@ sub checktop
   $FAIL{'NON-STACKING CG RATIO'}=-1;
  }
 
- if($model eq "AA" || $model eq "AA-match" || $model eq "AA-2cg"  ){
+ if($model eq "AA" || $model eq "AA-match" || $model eq "AA-2cg" || $model eq "AA-CC1" ){
   if($NonstackingE !=0 && $stackingE !=0){
    my $CR=$NonstackingE/$stackingE;
    my $contactratio;
@@ -3667,7 +3687,7 @@ sub checkdihedrals
   $FAIL{'1-3 DIHEDRAL ANGLE VALUES'}=0
  }
  # check that all impropers are assigned about all CA atoms
- if($model eq "AA" && $AMINO_PRESENT){
+ if(($model eq "AA" || $model eq "AA-CC1") && $AMINO_PRESENT){
   my $impCAfound=0;
   my $impCApossible=0;
   my $impOMEfound=0;
@@ -3910,6 +3930,24 @@ sub checkpairs
    }else{
     $fail_log .= failed_message("A contact appears to be the wrong distance.  From the .gro (or .contact) file, we found r=$CALCD, and from the .top r=$Cdist.\n\t$LINE");
    }
+  }elsif($model eq "AA-CC1"){
+   $W=$A[3];
+   $CALCD=getpairdist(\*CMAP,$A[0],$A[1]);
+   if($A[4] == 10){
+    $ContactDist++;
+   }
+   $Cdist=$A[5]/0.9;
+   if(checkdist($Cdist,$CALCD)){
+    $ContactDist++;
+   }else{
+    $fail_log .= failed_message("A contact appears to be the wrong distance.  From the .gro (or .contact) file, we found r=$CALCD, and from the .xml, calculated based on sigma1, r=$Cdist.\n\t$LINE");
+   }
+   $Cdist=$A[6]/1.1;
+   if(checkdist($Cdist,$CALCD)){
+    $ContactDist++;
+   }else{
+    $fail_log .= failed_message("A contact appears to be the wrong distance.  From the .gro (or .contact) file, we found r=$CALCD, and from the .xml, calculated based on sigma2, r=$Cdist.\n\t$LINE");
+   }
   }elsif((checkAAlist($model) || $model eq "AA-match") && $model ne "AA-nb-cr2"){
    $W=($A[3]*$A[3])/(4*$A[4]);
    $Cdist=(2.0*$A[4]/($A[3]))**(1.0/6.0);
@@ -4007,6 +4045,11 @@ sub checkpairs
  }
  if($ContactDist == $NCONTACTS){
   $FAIL{'CONTACT DISTANCES'}=0;
+ }
+ if ($model eq "AA-CC1"){
+  if($ContactDist == $NCONTACTS*3){
+   $FAIL{'OPENSMOG: CUSTOM CONTACT PARAMETER VALUES'}=0;
+  }
  }
  if($gaussian eq "yes"){
   if($GaussianContactWidth == $NCONTACTS){
@@ -4246,7 +4289,7 @@ sub finalchecks
  }
  my $E_TOTAL=$DENERGY+$CONTENERGY;
  my $CTHRESH=$NUMATOMS*10.0/$PRECISION;
- if($model eq "AA" && $free eq "no"){ 
+ if(($model eq "AA" || $model eq "AA-CC1") && $free eq "no"){ 
   if(abs($NUMATOMS_LIGAND-$E_TOTAL) < $CTHRESH){
    $FAIL{'TOTAL ENERGY'}=0;
   }else{
@@ -4528,7 +4571,7 @@ EOT
 sub checkAAlist
 {
  my ($model)=@_;
- my @AAlist=("AA","AA-2cg","AA-nb-cr2","AA-BOND","AA-DIHE","AA-DIHE4");
+ my @AAlist=("AA","AA-2cg","AA-nb-cr2","AA-BOND","AA-DIHE","AA-DIHE4","AA-CC1");
  foreach my $i (@AAlist){
   if($i eq $model){
    return 1;
