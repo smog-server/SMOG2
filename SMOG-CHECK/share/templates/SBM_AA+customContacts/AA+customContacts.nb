@@ -7,7 +7,7 @@
     <nbType>*</nbType>
   </nonbond>
   <!-- CONTACTS -->
-  <contact func="contact_custom1(energynorm,10,?*0.9,?*1.1)" contactGroup="c">
+  <contact func="contact_custom1(energynorm,10,?*0.9,?*1.1*sin(?/2.2))" contactGroup="c">
     <pairType>*</pairType>
     <pairType>*</pairType>
   </contact>

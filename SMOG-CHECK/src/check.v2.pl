@@ -3942,7 +3942,7 @@ sub checkpairs
    }else{
     $fail_log .= failed_message("A contact appears to be the wrong distance.  From the .gro (or .contact) file, we found r=$CALCD, and from the .xml, calculated based on sigma1, r=$Cdist.\n\t$LINE");
    }
-   $Cdist=$A[6]/1.1;
+   $Cdist=$A[6]/1.1/sin($CALCD/2.2);
    if(checkdist($Cdist,$CALCD)){
     $ContactDist++;
    }else{
