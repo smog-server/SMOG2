@@ -3427,6 +3427,8 @@ sub checkdihedrals
    # this is the "multiplicity" value
    if (abs($A[7] - sin(($A[5]-180)*$PI/180)) < 0.0001){
     $customdihedralscorrect++;
+   }else{
+    $fail_log .= failed_message("Multiplicity in custom dihedral check is not correct\n\t$LINE");
    }
   }elsif($A[4] == $DihDefType){
    if(exists $A[7]){
