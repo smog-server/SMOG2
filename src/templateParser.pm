@@ -355,6 +355,12 @@ sub checkDihedralFunctionDef
 		        smog_quit ("Sums of dihedrals of different types is not supported.");
 		}
 		if($fType == -2){
+			if( exists $OpenSMOGpothash->{$funcname}->{weight}){
+				if ($vars[$OpenSMOGpothash->{$funcname}->{weight}] =~ m/\?/){
+					smog_quit("$funcname dihedral type (defined in .sif) can not have \"?\" given for the \"weight\" parameter. Problematic declaration in energy group $eG (in .b file): $funcString")
+				}
+			}
+
 			# energynorm can't be used for the weight if normalization is turned off.
 			if($normalize){
 				if( !exists $OpenSMOGpothash->{$funcname}->{weight}){

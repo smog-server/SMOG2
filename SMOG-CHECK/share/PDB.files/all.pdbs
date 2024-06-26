@@ -134,7 +134,9 @@ terminaltest.BOND OpenSMOG AA-CC1 default ;102
 
 ; ADD CUSTOM CONTACT TEST with 2 types
 
-; ADD CUSTOM DIHEDRAL TEST
+; ADD CUSTOM CONTACTS AND DIHEDRAL TEST
+
+1F4N_v2 OpenSMOG AA-CCD default ;104
 
 ; free-format PDB coordinate checks
 ; NOTE: There is no specific test for this.  We just run files with the format changed and make sure the correct model is produced.
