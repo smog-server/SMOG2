@@ -1021,7 +1021,7 @@ sub setmodelflags{
  # bondrescale and anglerescale are only non-1 value if testing free.  We bundled the eval test in here.
  $bondrescale=1;
  $anglerescale=1;
- # default multiplicity of second dihedral is 3.  For the free test, we use 4, just to mix things up.
+ # default multiplicity of second dihedral is 3.  For the free test, we use 6, just to mix things up.
  $MULTDIHE=3;
 
  if($contactmodel =~ m/^default$/){
@@ -3345,7 +3345,7 @@ sub checkdihedrals
  my @theta_gen=@{$theta_gen};
  my %theta_gen_as=%{$theta_gen_as};
  my @topdata=@{$N1};
- my (%dihedral_array1,%dihedral_array2,%dihedral_array3,%dihedral_array1_W,%dihedral_array3_W,%dihedral_array1_A,%dihedral_array3_A,%seendihedrals);
+ my (%dihedral_array1,%dihedral_array2,%dihedral_array3,%dihedral_arrayOS,%dihedral_array1_W,%dihedral_array3_W,%dihedral_array1_A,%dihedral_array3_A,%seendihedrals);
  my $CORIMP=0;
  if($model ne "CA" ){
   $FAIL{'CA DIHEDRAL WEIGHTS'}=-1;
@@ -3365,6 +3365,7 @@ sub checkdihedrals
  my $LAST_N=0;
  my $DIHSW=0;
  my $accounted=0;
+ my $correcttype=0;
  my $accounted1=0;
  my $CORRECTDIHEDRALANGLES=0;
  my $CORRECTDIHEDRALWEIGHTS=0;
@@ -3386,40 +3387,61 @@ sub checkdihedrals
   $Nphi++;
 
   # #check if dihedral has been seen already...
-
-    # check duplicate type 3 (or $MULTDIHE, to allow for other multiplicities to be checked) 
-    if(!exists $dihedral_array3{$string} and exists $A[7] and $A[7] == $MULTDIHE){
-     $dihedral_array3{$string}=1;
-     $dihedral_array3_W{$string}=$A[6];
-     $dihedral_array3_A{$string}=$A[5];
-     $accounted++;
-     if(!exists $dihedral_array3{$string}){
+  if($model eq "AA-CCD"){
+   # see if we are using a custom dihedral potential for OpenSMOG
+   if(exists $dihedral_arrayOS{$string}){
+    $doubledih2++;
+    $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
+   }else{
+    $dihedral_arrayOS{$string}=1;
+    $accounted++;
+   }
+  }elsif($A[4] == $DihDefType){
+   if(exists $A[7]){
+    if($A[7] == $MULTDIHE){
+     if(exists $dihedral_array3{$string}){
+      $doubledih3++; 
+      $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
+     }else{
+      # check duplicate type 3 (or $MULTDIHE, to allow for other multiplicities to be checked) 
+      $dihedral_array3{$string}=1;
+      $dihedral_array3_W{$string}=$A[6];
+      $dihedral_array3_A{$string}=$A[5];
+      $accounted++;
+     }
+     if(!exists $dihedral_array1{$string}){
       $solitary3++;
       $fail_log .= failed_message("Multiplicity-$MULTDIHE dihedral appeared w/o a mult-1...\n\t$LINE");
      }
-    }elsif(exists $dihedral_array3{$string} and exists $A[7] and $A[7] == $MULTDIHE){
-     $doubledih3++; 
-     $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
-    }elsif(!exists $dihedral_array1{$string} and exists $A[7] and $A[7] == 1){
-     #check duplicate type 1 and 2
-     ## dihedral was not assigned.
-     $dihedral_array1{$string}=1;
-     $dihedral_array1_W{$string}=$A[6];
-     $dihedral_array1_A{$string}=$A[5];
-     $accounted++;
-     $accounted1++;
-    }elsif(exists $dihedral_array1{$string} and exists $A[7] and $A[7] == 1){
-     $doubledih1++;
-     $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
-    }elsif(!exists $dihedral_array2{$string} and $A[4] == 2){
-     $dihedral_array2{$string}=1;
-     $accounted++;
-    }elsif(exists $dihedral_array2{$string} and $A[4] == 2){
-     $doubledih2++;
-     $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
-    }else{
-     internal_error('DUPLICATE DIHEDRAL CHECKING')
+    }elsif($A[7] == 1){
+     #check duplicate type 1
+     if(exists $dihedral_array1{$string}){
+      $doubledih1++;
+      $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
+     }else{
+      ## dihedral was not assigned.
+      $dihedral_array1{$string}=1;
+      $dihedral_array1_W{$string}=$A[6];
+      $dihedral_array1_A{$string}=$A[5];
+      $accounted++;
+      $accounted1++;
+     }
     }
+   }else{
+    $fail_log .= failed_message("Dihedral of type $A[4] is missing a multiplicity factor. See line:\n\t$LINE");
+   }
+  }elsif($A[4] == 2){
+   # field 7 not present, position 4
+   if(exists $dihedral_array2{$string}){
+    $doubledih2++;
+    $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
+   }else{
+    $dihedral_array2{$string}=1;
+    $accounted++;
+   }
+  }else{
+   internal_error('DUPLICATE DIHEDRAL CHECKING')
+  }
 
   ##if dihedral is type 1, then save the information, so we can make sure the next is n=3
   if(exists $A[7]){
