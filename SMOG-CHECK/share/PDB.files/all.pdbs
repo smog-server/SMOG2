@@ -140,18 +140,18 @@ terminaltest.BOND OpenSMOG AA-CC1 default ;102
 
 ; free-format PDB coordinate checks
 ; NOTE: There is no specific test for this.  We just run files with the format changed and make sure the correct model is produced.
-2ci2_v2.freecoor freecoor AA default ; 100
-2ci2_v2.freecoor OpenSMOG freecoor AA default ; 101
-2ci2_v2.freecoor  freecoor CA default ;102
+2ci2_v2.freecoor freecoor AA default ; 105
+2ci2_v2.freecoor OpenSMOG freecoor AA default ; 106
+2ci2_v2.freecoor  freecoor CA default ;107
 
 ; check BOND with CA model
-1AKEapo_v3.BOND CA default ;103
+1AKEapo_v3.BOND CA default ;108
 
 ; check complicated AA model with BONDs
-glycans.BOND AA-BOND default; 104
+glycans.BOND AA-BOND default; 109
 
 ; check all dihedral function types in gromacs and opensmog
-RNA+protein AA-DIHE default; 105
-RNA+protein OpenSMOG AA-DIHE default; 106
-RNA+protein AA-DIHE4 default; 107
-RNA+protein OpenSMOG AA-DIHE4 default; 108
+RNA+protein AA-DIHE default; 110
+RNA+protein OpenSMOG AA-DIHE default; 111
+RNA+protein AA-DIHE4 default; 112
+RNA+protein OpenSMOG AA-DIHE4 default; 113

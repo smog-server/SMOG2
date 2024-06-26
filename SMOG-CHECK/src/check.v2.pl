@@ -304,8 +304,8 @@ sub addOpenSMOG
   foreach my $funcs(keys %{$xmlhandle}){
    my $directive;
    my %convertvalue;
-   # determine what is expected in this contact term
-   # expected function is the OpenMM custom potential form
+   # determine what is expected in this OS term
+   # expectedfunction is the OpenMM custom potential form
    # expectedparams is the list of parameters that should be found in the xml
    # expectedattributes is the order in which to write values to the internal "top" data
    # convertvalue gives an expression for converting angles to gromacs conventions
@@ -361,10 +361,21 @@ sub addOpenSMOG
    }elsif($funcs eq "dihedral_custom1"){
     $directive="dihedrals";
     $ftype=-1;
-    $expectedfunction="weight*(0.5*min(dtheta, 2*pi-dtheta)^2); dtheta = abs(theta-theta0); pi = 3.1415926535";
-    @expectedparams=("theta0","weight");
+    $expectedfunction="weight*(1-(cos(multiplicity*(theta-theta0))^2))";
+    @expectedparams=("theta0","weight","multiplicity");
     @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
-    $convertvalue{theta0}="180/$PI*(theta0)"
+    # The +180 is due to how we internally add values to the top file.
+    # Since gromacs defined cis as 0 and OpenMM defines trans as 0, there
+    # is a 180 degree difference in their definitions. In smog-check,
+    # we internally convert all xml (OpenSMOG/OpenMM conventions) to an
+    # internal top-like format (only in memory) and then process it.
+    # This allows for a single set of angle checks to be performed,
+    # rather than having a top version and a xml version. The downside
+    # is that smog-check is more clumsy, but we can live with that.
+    # In addition to the 180, this convertvalue expression has a *1.05
+    # and a -0.2, since the function called in the sample .b file as:
+    #  dihedral_custom1((?+0.2)/1.05,1,sin(?))   
+    $convertvalue{theta0}="180/$PI*(theta0*1.05-0.2)+180"
    }elsif($funcs eq "dihedral_cosine"){
     $directive="dihedrals";
     $ftype=1;
@@ -1378,8 +1389,12 @@ sub smogchecker
   # if custom contact check 1 or custom contacts and dihedrals check, turn off distance check, since that is not relevant 
   $FAIL{'CONTACT DISTANCES'}=-1;
  }else{
-  # if not custom contact check 1, turn off check for CC1 or CCD
+  # if not custom contact check 1 or custom dihedral check (which also uses custom contacts), turn off check for CC1 
   $FAIL{'OPENSMOG: CUSTOM CONTACT PARAMETER VALUES'}=-1;
+ }
+
+ if($model ne "AA-CCD"){
+  # if not custom dihedral check, turn off
   $FAIL{'OPENSMOG: CUSTOM DIHEDRAL PARAMETER VALUES'}=-1;
  }
 
@@ -3370,6 +3385,9 @@ sub checkdihedrals
  my $CORRECTDIHEDRALANGLES=0;
  my $CORRECTDIHEDRALWEIGHTS=0;
  my $numberofdihedrals=0;
+ my $customdihedralcount=0;
+ my $customdihedralscorrect=0;
+ 
  $#ED_T = -1;
  $#ED_Tc = -1;
  $#EDrig_T = -1;
@@ -3387,7 +3405,11 @@ sub checkdihedrals
   $Nphi++;
 
   # #check if dihedral has been seen already...
-  if($model eq "AA-CCD"){
+  if($model eq "AA-CCD" and $A[4] == -1){
+   $customdihedralcount++;
+   # the check for -1 is an internal method for indicating which dihedrals are custom OS dihedrals
+   # the top file does not actually have -1 as the type, we just add to an internal record when 
+   # converting xml data to top-formatted data
    # see if we are using a custom dihedral potential for OpenSMOG
    if(exists $dihedral_arrayOS{$string}){
     $doubledih2++;
@@ -3395,6 +3417,16 @@ sub checkdihedrals
    }else{
     $dihedral_arrayOS{$string}=1;
     $accounted++;
+   }
+   if($MOLTYPE[$A[0]] ne "LIGAND" ){
+    $DENERGY+=$A[6];
+   }
+   # this is the theta0 value, for this test
+   # convertvalue was used to return this to theta0, gromacs convention
+   #$A[7]
+   # this is the "multiplicity" value
+   if (abs($A[7] - sin(($A[5]-180)*$PI/180)) < 0.0001){
+    $customdihedralscorrect++;
    }
   }elsif($A[4] == $DihDefType){
    if(exists $A[7]){
@@ -3441,6 +3473,11 @@ sub checkdihedrals
    }
   }else{
    internal_error('DUPLICATE DIHEDRAL CHECKING')
+  }
+  if ($customdihedralcount > 0){
+   if($customdihedralscorrect== $customdihedralcount){
+    $FAIL{'OPENSMOG: CUSTOM DIHEDRAL PARAMETER VALUES'}=0;
+   }
   }
 
   ##if dihedral is type 1, then save the information, so we can make sure the next is n=3
@@ -3600,7 +3637,7 @@ sub checkdihedrals
  my $gen_match=0;
  # check to see if all the generated dihedrals (from this script) are present in the top file
  for(my $i=0;$i<$phi_gen_N;$i++){
-  if(exists $dihedral_array1{$phi_gen[$i]}  or exists $dihedral_array2{$phi_gen[$i]} ){
+  if(exists $dihedral_array1{$phi_gen[$i]}  or exists $dihedral_array2{$phi_gen[$i]} or exists $dihedral_arrayOS{$phi_gen[$i]} ){
    $gen_match++;
   }else{
    $fail_log .= failed_message("Generated dihedral $phi_gen[$i] is not in the list of included dihedrals...");

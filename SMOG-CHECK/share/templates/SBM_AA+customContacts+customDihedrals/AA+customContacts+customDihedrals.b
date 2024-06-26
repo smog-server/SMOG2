@@ -43,7 +43,7 @@
       <bType>*</bType>
       <bType>*</bType>
     </dihedral>
-    <dihedral func="dihedral_custom1(?,0.2,?*?)" energyGroup="sc_a">
+    <dihedral func="dihedral_custom1((?+0.2)/1.05,1,sin(?))" energyGroup="sc_a">
       <bType>*</bType>
       <bType>*</bType>
       <bType>*</bType>
