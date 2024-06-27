@@ -1092,7 +1092,7 @@ sub getContactFunctionals
 				}else{
 					#already matched typeA, and now typeB.  If the interactions are identical, there is no ambiguity.  If they are different function types, or groups, then give an error.
 					if($cG ne $cGB || $funct ne $functB){
-						smog_quit("Can\'t unambiguously assign a contact interaction between atoms of type $typeA and $typeB. Matched the following definitions equally well:\n\nfunc contactGroup\n$funct $cG\n$functB $cGB\n\nSee .nb for contact group definitions.\n");
+						smog_quit("Can\'t unambiguously assign a contact interaction between atoms of type $typeA and $typeB. Matched the following definitions equally well:\n\nfunc, contactGroup, pairType 1, pairtype 2\n$funct, $cG, $typeA, *\n$functB, $cGB, $typeB, *\n\nThis may be resolved by adding a new contact definition that explicitly defines interactions between pairTypes $typeA and $typeB.\n");
 					}
 				}
 			}
