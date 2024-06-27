@@ -2082,7 +2082,7 @@ sub checktop
 
  &checkdihedrals($topdata{'dihedrals'},\%revData,\@theta_gen,\%theta_gen_as,\%phi_gen_as,\@phi_gen,\%improper_gen_as,\@improper_gen,$finalres);
 
- &checkpairs($topdata{'pairs'},\@resindex,\@PAIRS,$stackingE,$NonstackingE,$NonstackingE2);
+ &checkpairs($topdata{'pairs'},\@resindex,\@PAIRS,\$stackingE,\$NonstackingE,\$NonstackingE2);
  
  &checkexclusions($topdata{'exclusions'},\@PAIRS);
 
@@ -4027,29 +4027,29 @@ sub checkpairs
    if($MOLTYPE[$A[0]] eq "NUCLEIC" and $MOLTYPE[$A[1]] eq "NUCLEIC" and $ATOMTYPE[$A[0]] ne "BACKBONE" and  $ATOMTYPE[$A[1]] ne "BACKBONE" and $ATOMNAME[$A[0]] ne "C1\*" and $ATOMNAME[$A[1]] ne "C1\*" and abs($RESNUM[$A[0]]-$RESNUM[$A[1]]) == 1 and $CID[$A[0]] == $CID[$A[1]]){
     # if we haven't assigned a value to stacking interactions, then let's save it
     # if we have saved it, check to see that this value is the same as the previous ones.
-    if($stackingE == 0 ){
-     $stackingE=$W;
-    }elsif(abs($stackingE - $W) > 10.0/($PRECISION*1.0) ){
+    if($$stackingE == 0 ){
+     $$stackingE=$W;
+    }elsif(abs($$stackingE - $W) > 10.0/($PRECISION*1.0) ){
      $FAIL_STACK++;
-     $fail_log .= failed_message("stacking energies: $stackingE  $W $A[0] $A[1]\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
+     $fail_log .= failed_message("stacking energies: $$stackingE  $W $A[0] $A[1]\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
      }
    }else{
    # it is not a stacking contact.  Do the same checks for non-stacking interactions
 
     if($model eq "AA-2cg"){
      if($pronuc ==1){
-      if($NonstackingE == 0 ){
-       $NonstackingE=$W;
-      }elsif(abs($NonstackingE - $W) > 10.0/($PRECISION*1.0) ){
+      if($$NonstackingE == 0 ){
+       $$NonstackingE=$W;
+      }elsif(abs($$NonstackingE - $W) > 10.0/($PRECISION*1.0) ){
        $FAIL_NONSTACK++;
-       $fail_log .= failed_message("non-stacking contacts: $NonstackingE $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
+       $fail_log .= failed_message("non-stacking contacts: $$NonstackingE $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
       }
      }elsif($pronuc ==2){
-      if($NonstackingE2 == 0 ){
-       $NonstackingE2=$W;
-      }elsif(abs($NonstackingE2 - $W) > 10.0/($PRECISION*1.0) ){
+      if($$NonstackingE2 == 0 ){
+       $$NonstackingE2=$W;
+      }elsif(abs($$NonstackingE2 - $W) > 10.0/($PRECISION*1.0) ){
        $FAIL_NONSTACK_CG2++;
-       $fail_log .= failed_message("non-stacking contacts 2cg: $NonstackingE2 $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
+       $fail_log .= failed_message("non-stacking contacts 2cg: $$NonstackingE2 $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
       }
      }else{
       internal_error("AA-2cg assignment error");
@@ -4057,11 +4057,11 @@ sub checkpairs
 
     }else{ 
 
-     if($NonstackingE == 0 ){
-      $NonstackingE=$W;
-     }elsif(abs($NonstackingE - $W) > 10.0/($PRECISION*1.0) ){
+     if($$NonstackingE == 0 ){
+      $$NonstackingE=$W;
+     }elsif(abs($$NonstackingE - $W) > 10.0/($PRECISION*1.0) ){
       $FAIL_NONSTACK++;
-      $fail_log .= failed_message("non-stacking contacts: $NonstackingE $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
+      $fail_log .= failed_message("non-stacking contacts: $$NonstackingE $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
      }
     }
    }
@@ -4102,20 +4102,20 @@ sub checkpairs
    $FAIL{'LONG CONTACTS'}=0;
   }
   if($NUCLEIC_PRESENT){
-   if($FAIL_NONSTACK == 0 and $NonstackingE != 0){
+   if($FAIL_NONSTACK == 0 and $$NonstackingE != 0){
     $FAIL{'NON-STACKING CONTACT WEIGHTS'}=0;	
    }
    if($AMINO_PRESENT){
-    if($FAIL_NONSTACK == 0 and $NonstackingE2 != 0){
+    if($FAIL_NONSTACK == 0 and $$NonstackingE2 != 0){
      $FAIL{'NON-STACKING 2CG CONTACT WEIGHTS'}=0;	
     }
    }
-   if($FAIL_STACK == 0 and $stackingE != 0 ){
+   if($FAIL_STACK == 0 and $$stackingE != 0 ){
     $FAIL{'STACKING CONTACT WEIGHTS'}=0;	
    }
   }else{
    $FAIL{'STACKING CONTACT WEIGHTS'}=-1;	
-   if($FAIL_NONSTACK == 0 and $NonstackingE != 0 ){
+   if($FAIL_NONSTACK == 0 and $$NonstackingE != 0 ){
     $FAIL{'NON-STACKING CONTACT WEIGHTS'}=0;	
    }
   } 
