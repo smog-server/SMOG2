@@ -44,7 +44,7 @@ our %reverthash;
 our $BaseN;
 our %OSrestrict;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub  validateXML checkPotentialFunction GetCustomParms getgitver selectgroup listgroups $VERSION );
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub  validateXML checkPotentialFunction GetCustomParms getgitver selectgroup listgroups getXYZfromLine $VERSION );
 our %supported_directives;
 #####################
 # Error routiness   #
@@ -163,6 +163,45 @@ sub hascontent
 	}else{
 		return 1;
 	}
+}
+
+sub getXYZfromLine
+{
+	my ($line,$freecoor)=@_;
+	my $x;
+	my $y;
+	my $z;
+	if(defined $freecoor){
+		# Read the PDB coordinates as free-format.
+		my $string=trim(substr($line, 30));
+		my @coor=split(/\s+/,$string);
+		$x=$coor[0];
+		$y=$coor[1];
+		$z=$coor[2];
+		if(whatAmI($x) > 2 || whatAmI($y) > 2 || whatAmI($z) > 2){
+			smog_quit("Coordinate read, but does not appear to be a number. Since you are using free-formatted coordinates (with the -freecoor flag), perhaps you are missing a delimiter. Issue found at line:\n$line");
+		}
+	
+	}else{
+		# this is also done in adjustPDB. It is also here, in case someone skips that step and makes a mistake
+		if(substr($line,34,1) !~  m/\./ ) {
+			smog_quit("X coordinate in PDB file is not properly formatted.  The decimal should be column 35. Problematic line:\n$line");
+		}
+		if(substr($line,42,1) !~  m/\./ ) {
+			smog_quit("Y coordinate in PDB file is not properly formatted.  The decimal should be column 43. Problematic line:\n$line");
+		}
+		if(substr($line,50,1) !~  m/\./ ) {
+			smog_quit("Z coordinate in PDB file is not properly formatted.  The decimal should be column 51. Problematic line:\n$line");
+		}
+		$x = trim(substr($line, 30, 8));
+		$y = trim(substr($line, 38, 8));
+		$z = trim(substr($line, 46, 8));
+		if(whatAmI($x) > 2 || whatAmI($y) > 2 || whatAmI($z) > 2){
+			smog_quit("Coordinate read, but does not appear to be a number. Perhaps you are using free-formatted coordinates and should employ the -freecoor flag. Issue found at line:\n$line");
+		}
+	}
+
+	return ($x,$y,$z);
 }
 
 ## reading routines

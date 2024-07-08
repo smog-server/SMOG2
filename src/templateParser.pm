@@ -391,6 +391,12 @@ sub checkDihedralFunctionDef
 		        smog_quit ("Sums of dihedrals of different types is not supported.");
 		}
 		if($fType == -2){
+			if( exists $OpenSMOGpothash->{$funcname}->{weight}){
+				if ($vars[$OpenSMOGpothash->{$funcname}->{weight}] =~ m/\?/){
+					smog_quit("$funcname dihedral type (defined in .sif) can not have \"?\" given for the \"weight\" parameter. Problematic declaration in energy group $eG (in .b file): $funcString")
+				}
+			}
+
 			# energynorm can't be used for the weight if normalization is turned off.
 			if($normalize){
 				if( !exists $OpenSMOGpothash->{$funcname}->{weight}){
@@ -1186,7 +1192,7 @@ sub getContactFunctionals
 				}else{
 					#already matched typeA, and now typeB.  If the interactions are identical, there is no ambiguity.  If they are different function types, or groups, then give an error.
 					if($cG ne $cGB || $funct ne $functB){
-						smog_quit("Can\'t unambiguously assign a contact interaction between atoms of type $typeA and $typeB. Matched the following definitions equally well:\n\nfunc contactGroup\n$funct $cG\n$functB $cGB\n\nSee .nb for contact group definitions.\n");
+						smog_quit("Can\'t unambiguously assign a contact interaction between atoms of type $typeA and $typeB. Matched the following definitions equally well:\n\nfunc, contactGroup, pairType 1, pairtype 2\n$funct, $cG, $typeA, *\n$functB, $cGB, $typeB, *\n\nThis may be resolved by adding a new contact definition that explicitly defines interactions between pairTypes $typeA and $typeB.\n");
 					}
 				}
 			}

@@ -344,30 +344,8 @@ sub checkPDB
 				}
 				
 				$atomsmatch++;
-                                if(defined $freecoor){
-					# Read the PDB coordinates as free-format.
-					my $string=trim(substr($record, 30));
-					my @coor=split(/\s+/,$string);
-					$x=$coor[0];
-					$y=$coor[1];
-					$z=$coor[2];
-				}else{
-					if(substr($record,34,1) !~  m/\./ ) {
-						smog_quit("X coordinate in PDB file is not properly formatted.  The decimal should be column 35. Problematic line:\n$record");
- 					}
-					if(substr($record,42,1) !~  m/\./ ) {
-						smog_quit("Y coordinate in PDB file is not properly formatted.  The decimal should be column 43. Problematic line:\n$record");
- 					}
-					if(substr($record,50,1) !~  m/\./ ) {
-						smog_quit("Z coordinate in PDB file is not properly formatted.  The decimal should be column 51. Problematic line:\n$record");
- 					}
-					$x = trim(substr($record, 30, 8));
-					$y = trim(substr($record, 38, 8));
-					$z = trim(substr($record, 46, 8));
-					if(whatAmI($x) > 2 || whatAmI($y) > 2 || whatAmI($z) > 2){
-						smog_quit("Coordinate read, but does not appear to be a number. Perhaps you are using free-formatted coordinates and should employ the -freecoor flag. Issue found at line:\n$record");
-					}
-				}
+				($x,$y,$z)=getXYZfromLine($record,$freecoor);
+
 				$atomCounter++;
 				$atomSerial=$atomCounter;
 
@@ -403,7 +381,7 @@ sub checkPDB
 			$residueIndex++;
 				
 		}else{
-			smog_quit("Expected ATOM or HETATM line at line $lineNumber.");
+			smog_quit("Expected ATOM or HETATM line at line:\n$record\nThis error is typically encountered if smog_adjustPDB was not used, or if the PDB file was manually edited.");
 		}
 		$lastrecord=$record;
 		$record = "";
