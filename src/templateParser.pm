@@ -166,7 +166,7 @@ sub parseIons {
 			smog_quit("C12 parameter (column 4) of ions.def file must be a number. Found:\n$line\n");	
 		}
 		if(! looks_like_number($vals[4])){
-			smog_quit("C12 parameter (column 5) of ions.def file must be a number. Found:\n$line\n");	
+			smog_quit("C6 parameter (column 5) of ions.def file must be a number. Found:\n$line\n");	
 		}
 		my @tmparr=@vals[1..4];
                 $iondefs{$vals[0]}=\@tmparr;
