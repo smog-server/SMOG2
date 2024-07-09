@@ -1,5 +1,5 @@
-COMMENT File generated with: smog_adjustPDB -i 2FP4-GDP.pdb -default -large -o 2FP4-GDP.largeformat.pdb
-COMMENT Generated on Wed May 20 12:14:46 EDT 2020. Hostname: Pauls-MBP-2.fios-router.home
+REMARK  File generated with: smog_adjustPDB -i 2FP4-GDP.pdb -default -large -o 2FP4-GDP.largeformat.pdb
+REMARK  Generated on Wed May 20 12:14:46 EDT 2020. Hostname: Pauls-MBP-2.fios-router.home
 LARGE - Use large base for res/atom numbering (don't delete, or smog2 will crash)
 ATOM  00001    N SER A0001      80.367  89.733 -13.876
 ATOM  00002   CA SER A0001      79.793  88.838 -14.945
