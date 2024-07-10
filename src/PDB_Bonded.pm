@@ -246,6 +246,7 @@ sub checkPDB
 		## CHECK IF ATOM/HETATM ##
 		if($record =~ m/^ATOM/ || $record =~ m/^HETATM/)
 		{
+		
 	        	$lineNumber--;
 		 	## OBTAIN RESIDUE NAME ##
 			$residue = trim(substr($record,17,4));
@@ -428,6 +429,7 @@ sub parsePDBATOMS
 	my %bondlists;
 	my %bondlistsEG;
 	my $BONDNUM = 0;
+	my @atomPDBlinenumbers;
 	print "Organizing PDB data\n";
 	if($CGstage == 1){
 		$atominhash=\%residueBackup;
@@ -571,7 +573,7 @@ sub parsePDBATOMS
 			$chainNumber++; ## INCREMENT CHAIN NUMBER ##
 			## CREATE INTERACTION ##
 			print "Building covalent geometry for chain $chainNumber\n";
-        		my ($bl,$blEG)=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength,$lastrecord);
+        		my ($bl,$blEG)=GenerateBondedGeometry(\@consecResidues,$counter,$chainNumber,$chainlength,$lastrecord,\@atomPDBlinenumbers,\@PDBDATA);
 			# keeping track of the bondlists, so that we can use them with the user-defined BOND routines
 			foreach my $I(keys %{$bl}){
 				my @tmparr=();
@@ -612,6 +614,8 @@ sub parsePDBATOMS
 			$residueSerial++;
 			for($i=0;$i<$atomsInRes;$i++)
 			{
+				# atom/hetatm is found on line $K. 
+				push(@atomPDBlinenumbers,$K);
 				$record = $PDBDATA[$K];
 				$K++;
 	 			$lineNumber++;
@@ -728,7 +732,7 @@ sub connectivityCheck
 {
 # this routine will see if the atom listed in $unionref are all connected via bonds.
 # This will help catch mistakes in .bif files, where a bond may be omitted.
-	my ($unionref,$chid)=@_;
+	my ($unionref,$chid,$chainlength,$lastatom)=@_;
 	my %union=%{$unionref};
         my %visitedList;
 	my @nextround;
@@ -751,19 +755,20 @@ sub connectivityCheck
 	my $found=0;
 	$found+= scalar keys %visitedList;
 
-	my $missing=0;
-	foreach my $atom(sort {$a <=> $b} keys %union){
-		if(!exists $visitedList{$atom}){
-			$missing++;
-			print "\n!!!Unable to connect the atom at position $atom of chain $chid to the rest of the chain!!!\n";
+	my @missing;
+	# check the last $chainlength atoms that were added to atomPDBlinenumbers, since those are the atoms in this chain
+	my $firstatom=$lastatom-$chainlength; 
+	for(my $I=0;$I<$chainlength;$I++){
+		if(!exists $visitedList{$I}){
+			push (@missing,$I+$firstatom);
 		}
 	}
-	return($found,$missing);
+	return($found,\@missing);
 }
 
 sub GenerateBondedGeometry {
 
-	my ($connect,$counter,$chid,$chainlength,$lastread) = @_;
+	my ($connect,$counter,$chid,$chainlength,$lastread,$atomPDBlinenumbers,$PDBDATA) = @_;
 	## $connect is a list of connected residues ##
    	my($bH,$angH,$diheH,$map,$bondMapHashRev,$union,$union2,$unionEG) = GenAnglesDihedrals($connect,$chainlength,$chid);
 	my %union=%{$union};
@@ -772,16 +777,23 @@ sub GenerateBondedGeometry {
 		return($union2,$unionEG);
 	}elsif($chainlength != 1){
 		print "Attempting to connect all atoms in chain $chid to the first atom...\n";
-		my ($connected,$missed)=connectivityCheck(\%union,$chid);
+		my ($connected,$missed)=connectivityCheck($union2,$chid,$chainlength,scalar @{$atomPDBlinenumbers});
 		if($connected == -1){
 			print "\tChain $chid has no bonds. No connections possible. May be a listing of ions.\n\n";
 			# this chain has no bonds, so no need to try and connect things
 			return($union2,$unionEG);
 		}
-		if($missed==0 && $connected == $chainlength){
+		if(scalar @{$missed} ==0 && $connected == $chainlength){
 			print "\tAll $connected atoms connected via covalent bonds \n"; 
 		}else{
-			smog_quit("We appear to have connected $connected of $chainlength atoms in chain $chid.  There is an issue connecting atoms to the rest of the chain using covalent bond definitions.\nThere is probably a missing bond definition in the .bif file.\nCheck for earlier warning messages. Last line read: $lastread ")
+
+			my @PDBDATA=@{$PDBDATA};
+			my $missingatoms="";
+			foreach my $I(@{$missed}){
+				$missingatoms .= "$PDBDATA[${$atomPDBlinenumbers}[$I]]";
+			}
+
+			smog_quit("We appear to have connected $connected of $chainlength atoms in chain $chid.  There is an issue connecting the following atoms (PDB lines below):\n$missingatoms\n");
 		}
 	}elsif($chainlength == 1){
 		print "Only 1 atom in chain $chid.  Will not perform connectivity checks.\n";
@@ -1456,7 +1468,7 @@ sub GenAnglesDihedrals
 		{
 			$bondMapHashRev{"$atom-$i"}=$mapCounter;
 			$bondMapHash{$mapCounter}=[$atom,$i,$prevSize];
-			$mapCounter++;  
+			$mapCounter++; 
 		}
 		foreach my $atom(keys %{$resABonds})
     		{
