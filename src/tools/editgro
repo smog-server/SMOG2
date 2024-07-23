@@ -141,9 +141,9 @@ for(my $I=0;$I<$NATOMS;$I++){
 	chomp($LINE);
 	$GRODATA[$I+1]=$LINE;
 
-	$X[$I+1]=substr($GRODATA[$I],20,8);
-	$Y[$I+1]=substr($GRODATA[$I],28,8);
-	$Z[$I+1]=substr($GRODATA[$I],36,8);
+	$X[$I+1]=substr($GRODATA[$I+1],20,8);
+	$Y[$I+1]=substr($GRODATA[$I+1],28,8);
+	$Z[$I+1]=substr($GRODATA[$I+1],36,8);
 
 }
 # variable that holds the contents of the last line
@@ -187,6 +187,9 @@ if (! defined $boxtype){
 # if box is not given, then use orthorhombic
 # if -d is not given, then use 0nm
 # check that -d is not used without -boxtype
+	if($boxtype !~ m/rectangular/i && $boxtype !~ m/dodecahedron/i && $boxtype !~ m/octahedron/i && $boxtype !~ m/cubic/i){
+		smog_quit("boxtype value \"$boxtype\" is not supported.")
+	}
 
 	my @unitvectors;
 	my $U=getunitvectors($boxtype);
@@ -194,13 +197,13 @@ if (! defined $boxtype){
 
 
 	my @lengths;
-	my $L=getlengths(\@unitvectors,\@X,\@Y,\@Z);
+	my $L=getlengths($NATOMS,$U,\@X,\@Y,\@Z);
 	@lengths=@{$L};
 
 	$lengths[0]+=2*$dist;
 	$lengths[1]+=2*$dist;
 	$lengths[2]+=2*$dist;
-	unless($boxtype =~  m/^orthorhombic$/i){
+	unless($boxtype =~  m/^rectangular$/i){
 		my $mm=0;	
 		for(my $I=0;$I<3;$I++){
 			if($lengths[$I]>$mm){
@@ -214,9 +217,16 @@ if (! defined $boxtype){
 
 	for(my $I=0;$I<3;$I++){
 		$grobox[$I]   =$unitvectors[0][$I]*$lengths[0];
+
+# only do these couple lines if they are not cubic nor rectangular/orthorhombic
 		$grobox[$I+3] =$unitvectors[1][$I]*$lengths[1];
 		$grobox[$I+6] =$unitvectors[2][$I]*$lengths[2];
 	}
+	$grodim ="";
+	foreach my $I(0,4,8,1,2,3,5,6,7){
+		$grodim = $grodim ." $grobox[$I]";
+	}
+
 }
 
 # do the centering, if -c is turned on
@@ -249,9 +259,6 @@ $LENGTH2=sqrt($UNIT2[0]*$UNIT2[0]+$UNIT2[1]*$UNIT2[1]+$UNIT2[2]*$UNIT2[2]);
 @UNIT0=($UNIT0[0]/$LENGTH0,$UNIT0[1]/$LENGTH0,$UNIT0[2]/$LENGTH0);
 @UNIT1=($UNIT1[0]/$LENGTH1,$UNIT1[1]/$LENGTH1,$UNIT1[2]/$LENGTH1);
 @UNIT2=($UNIT2[0]/$LENGTH2,$UNIT2[1]/$LENGTH2,$UNIT2[2]/$LENGTH2);
-
-
-
 
 
 # impose PBC on the system
@@ -393,7 +400,7 @@ sub getunitvectors
 
 sub getlengths{
 
-	my ($unitvectors,$X,$Y,$Z);
+	my ($NATOMS,$unitvectors,$X,$Y,$Z)=@_;
 	my @unitvectors=@{$unitvectors};
 	my @X=@{$X};
 	my @Y=@{$Y};
@@ -402,9 +409,9 @@ sub getlengths{
 	my @minp=(10**10,10**10,10**10);
 	my @maxp=(-10**10,-10**10,-10**10);
 
-	for (my $I=1;$I<scalar(@X)+1;$I++){
+	for (my $I=1;$I<$NATOMS+1;$I++){
 		for(my $J=0;$J<3;$J++){
-			my $proj=$X[$I]*$unitvectors[$J][0]+$Y[$I]*$unitvectors[$J][1]+$Z[$I]*$unitvectors[$J][2];
+			my $proj=$X[$I]*${$unitvectors[$J]}[0]+$Y[$I]*${$unitvectors[$J]}[1]+$Z[$I]*${$unitvectors[$J]}[2];
 			if ($proj < $minp[$J]){
 				$minp[$J]=$proj;
 			}
