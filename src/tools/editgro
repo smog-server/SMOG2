@@ -1,0 +1,546 @@
+#########################################################################################
+#                          Structure-based Model (SMOG) software
+#    This package is the product of contributions from a number of people, including:
+#            Jeffrey Noel, Mariana Levi, Antonio Oliveira, Vinícius Contessoto,
+#             Mohit Raghunathan, Joyce Yang, Prasad Bandarkar, Udayan Mohanty,
+#                          Ailun Wang, Heiko Lammert, Ryan Hayes,
+#                               Jose Onuchic & Paul Whitford
+#
+#          Copyright (c) 2015,2016,2018,2021,2022 The SMOG development team at
+#                      The Center for Theoretical Biological Physics
+#                       Rice University and Northeastern University
+#
+#          SMOG 2, Shadow and OpenSMOG are available at http://smog-server.org
+#
+#          You can direct questions to info@smog-server.org, or the smog-users forum,
+#          which you can find at https://mailman.rice.edu/mailman/listinfo/smog-users
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#########################################################################################
+
+###########################
+# editgro is used for smog_editgro
+###########################
+
+use strict;
+use warnings FATAL => 'all';
+use Getopt::Long;
+use smog_common;
+use OpenSMOG;
+use XML::Simple qw(:strict);
+use Scalar::Util qw(looks_like_number);
+our @ISA = 'Exporter';
+our @EXPORT = qw(%supported_directives);
+my $inputArguments=join(' ',@ARGV);
+my $xml = new XML::Simple;
+my $gitver=getgitver;
+if($gitver ne ""){
+        $gitver="\nTHIS VERSION IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
+}
+my $tmpstring = <<EOT;
+
+                                      smog_editgro
+$gitver
+      	smog_editgro is part of the SMOG 2 distribution, available at smog-server.org
+
+        This tool uses a SMOG .gro file, along command line arguments to make changes
+        to the gro file. For example, one may translate the coordinates, center the
+        system and create a box (for use with periodic boundary conditions).
+        Note, this does not change the underlying model, only changes the simulated
+        box and/or initial coordinates.
+
+        For usage information, issue flag -help, or see the SMOG manual.
+
+        For questions regarding this script, contact info\@smog-server.org
+
+EOT
+my $wide=88;
+printdashed($wide);
+printcenter($wide,$tmpstring);
+printdashed($wide);
+
+
+# in supported_directives, a value of 1 means is it required, 0 is not supported. >1 means optional
+our %supported_directives = ( 'defaults' => '1',
+        'atomtypes' => '1',
+        'moleculetype' => '1',
+        'nonbond_params' => '2',
+        'atoms' => '1',
+        'bonds' => '1',
+        'angles' => '1',
+        'dihedrals' => '1',
+        'pairs' => '1',
+        'exclusions' => '1',
+        'system' => '1',
+        'molecules' => '1',
+        'position_restraints' => '0'
+        );
+
+my $inputGRO="smog.gro";
+my $outputgro="smog.box.gro";
+my $help;
+my @grobox;
+my $boxtype;
+my $dist;
+my $center;
+my $dimension;
+quit_init();
+note_init();
+checkForModules();
+
+usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help,  'g=s' => \$inputGRO,  
+         'og=s' => \$outputgro, 'boxtype=s' => \$boxtype, 'd=f' => \$dist, 'c' => \$center, 'dim=f' => \$dimension,  'warn=i' => \$maxwarn, 
+        '<>' => \&usage)
+        or defined $help); 
+
+if($inputGRO eq $outputgro){
+	smog_quit("Input and output gro files can not have the same name: $outputgro");
+}
+
+
+foreach my $filen($outputgro){
+	checkalreadyexists($filen);
+}
+
+warninfo();
+
+#check and add file name extensions, if missing
+$outputgro=checksuffix($outputgro,".gro");
+
+# add messages about what we are doing.
+
+print "Will write the new configuration to $outputgro\n\n"; 
+
+
+### make a new gro file 
+
+open(GROFILE,"$inputGRO") or smog_quit("Can\'t open GRO file $inputGRO");
+my $groheader=<GROFILE>;
+chomp($groheader);
+
+my $TMP=<GROFILE>;
+chomp($TMP);
+$TMP =~ s/\t/ /g; 
+$TMP = trim($TMP);
+$TMP =~ s/ +/ /g;
+my @A=split(/\s+/,$TMP);
+my $NATOMS=$A[0];
+my @GRODATA;
+my @X;
+my @Y;
+my @Z;
+
+unless($NATOMS =~ m/^\d+/){smog_quit("Number of atoms on line 2 of gro file ($NATOMS), is not an integer.")}
+
+for(my $I=0;$I<$NATOMS;$I++){
+	# store gro data
+	my $LINE=<GROFILE>;
+	chomp($LINE);
+	$GRODATA[$I+1]=$LINE;
+
+	$X[$I+1]=substr($GRODATA[$I],20,8);
+	$Y[$I+1]=substr($GRODATA[$I],28,8);
+	$Z[$I+1]=substr($GRODATA[$I],36,8);
+
+}
+# variable that holds the contents of the last line
+my $grodim;
+if (! defined $boxtype){
+	# if box is not given, then check the format of the current box
+	$grodim=<GROFILE>;
+	chomp($grodim);
+	$grodim =~ s/^\s+//g; 
+	my @tmpbox = split(/\s+/,$grodim);
+	
+	if($#tmpbox == 2){
+		print "Rectangular box detected\n";
+	}elsif($#tmpbox == 8){
+		print "Triclinic  box detected\n";
+	}else{
+		smog_quit("Wrong number of box vectors provided: unrecognized dimensions");
+	}
+	
+	for(my $I=0;$I<9;$I++){
+		if(!defined $tmpbox[$I]){
+			$tmpbox[$I]=0;
+		}
+	}
+	$grobox[0] =$tmpbox[0];
+	$grobox[4] =$tmpbox[1];
+	$grobox[8] =$tmpbox[2];
+	$grobox[1] =$tmpbox[3];
+	$grobox[2] =$tmpbox[4];
+	$grobox[3] =$tmpbox[5];
+	$grobox[5] =$tmpbox[6];
+	$grobox[6] =$tmpbox[7];
+	$grobox[7] =$tmpbox[8];
+
+# add checks that the box vectors adhere to gromacs requirements
+
+
+}else{
+
+# if box defined, then generate the new vectors
+# if box is not given, then use orthorhombic
+# if -d is not given, then use 0nm
+# check that -d is not used without -boxtype
+
+	my @unitvectors;
+	my $U=getunitvectors($boxtype);
+	@unitvectors=@{$U};
+
+
+	my @lengths;
+	my $L=getlengths(\@unitvectors,\@X,\@Y,\@Z);
+	@lengths=@{$L};
+
+	$lengths[0]+=2*$dist;
+	$lengths[1]+=2*$dist;
+	$lengths[2]+=2*$dist;
+	unless($boxtype =~  m/^orthorhombic$/i){
+		my $mm=0;	
+		for(my $I=0;$I<3;$I++){
+			if($lengths[$I]>$mm){
+				$mm=$lengths[$I];
+			}
+		}
+		$lengths[0]=$mm;
+		$lengths[1]=$mm;
+		$lengths[2]=$mm;
+	}
+
+	for(my $I=0;$I<3;$I++){
+		$grobox[$I]   =$unitvectors[0][$I]*$lengths[0];
+		$grobox[$I+3] =$unitvectors[1][$I]*$lengths[1];
+		$grobox[$I+6] =$unitvectors[2][$I]*$lengths[2];
+	}
+}
+
+# do the centering, if -c is turned on
+
+
+
+# if box is not given, just use the 
+# reorder the indices to be more logical
+print "box vectors:\n";
+for (my $I=0;$I<9;$I++){
+	print "\t$grobox[$I]";
+	if(($I+1) % 3 ==0){
+		print "\n";
+	}
+}
+print "\n";
+
+close(GROFILE);
+
+my @UNIT0=($grobox[0],$grobox[1],$grobox[2]);
+my @UNIT1=($grobox[3],$grobox[4],$grobox[5]);
+my @UNIT2=($grobox[6],$grobox[7],$grobox[8]);
+my $LENGTH0;
+my $LENGTH1;
+my $LENGTH2;
+$LENGTH0=sqrt($UNIT0[0]*$UNIT0[0]+$UNIT0[1]*$UNIT0[1]+$UNIT0[2]*$UNIT0[2]);
+$LENGTH1=sqrt($UNIT1[0]*$UNIT1[0]+$UNIT1[1]*$UNIT1[1]+$UNIT1[2]*$UNIT1[2]);
+$LENGTH2=sqrt($UNIT2[0]*$UNIT2[0]+$UNIT2[1]*$UNIT2[1]+$UNIT2[2]*$UNIT2[2]);
+
+@UNIT0=($UNIT0[0]/$LENGTH0,$UNIT0[1]/$LENGTH0,$UNIT0[2]/$LENGTH0);
+@UNIT1=($UNIT1[0]/$LENGTH1,$UNIT1[1]/$LENGTH1,$UNIT1[2]/$LENGTH1);
+@UNIT2=($UNIT2[0]/$LENGTH2,$UNIT2[1]/$LENGTH2,$UNIT2[2]/$LENGTH2);
+
+
+
+
+
+# impose PBC on the system
+
+if(-e $outputgro){smog_quit("$outputgro already exists.")};
+open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
+print GROFILE "$groheader. Note: modified with smog_editgro (version $VERSION)\n";
+print GROFILE "$NATOMS\n";
+for(my $I=1;$I<=$NATOMS;$I++){
+
+	my $XT=$X[$I];
+	my $YT=$Y[$I];
+	my $ZT=$Z[$I];
+
+	while($ZT > $LENGTH2*$UNIT2[2]){
+                $XT-=$grobox[6];
+                $YT-=$grobox[7];
+                $ZT-=$grobox[8];
+	}
+
+	while($ZT < 0 ){
+                $XT+=$grobox[6];
+                $YT+=$grobox[7];
+                $ZT+=$grobox[8];
+	}
+#
+	my $proj2=$ZT/$UNIT2[2];
+	# substract projection along vector 2, in order to calculate PBC along vector 0 and 1
+	my $Xmp=$XT-$proj2*$UNIT2[0];
+	my $Ymp=$YT-$proj2*$UNIT2[1];
+	# note: Zmp should be zero at this point
+	my $Zmp=$ZT-$proj2*$UNIT2[2];
+
+	while($Ymp > $LENGTH1){
+                $XT-=$grobox[3];
+                $YT-=$grobox[4];
+                $ZT-=$grobox[5];
+                $Xmp-=$grobox[3];
+                $Ymp-=$grobox[4];
+                $Zmp-=$grobox[5];
+	}
+
+	while($Ymp < 0 ){
+                $XT+=$grobox[3];
+                $YT+=$grobox[4];
+                $ZT+=$grobox[5];
+                $Xmp+=$grobox[3];
+                $Ymp+=$grobox[4];
+                $Zmp+=$grobox[5];
+	}
+
+	my $proj1=$Ymp/$UNIT1[1];
+#	# substract projection along vector 1, in order to calculate PBC along vector 0
+	$Xmp-=$proj1*$UNIT1[0];
+	# note: Ymp and Zmp should now be 0
+	$Ymp-=$proj1*$UNIT1[1];
+	$Zmp-=$proj1*$UNIT1[2];
+
+	while($Xmp > $LENGTH0){
+                $XT-=$grobox[0];
+                $YT-=$grobox[1];
+                $ZT-=$grobox[2];
+                $Xmp-=$grobox[0];
+                $Ymp-=$grobox[1];
+                $Zmp-=$grobox[2];
+	}
+
+	while($Xmp < 0 ){
+                $XT+=$grobox[0];
+                $YT+=$grobox[1];
+                $ZT+=$grobox[2];
+                $Xmp+=$grobox[0];
+                $Ymp+=$grobox[1];
+                $Zmp+=$grobox[2];
+	}
+
+	$X[$I]=$XT;
+	$Y[$I]=$YT;
+	$Z[$I]=$ZT;
+}
+
+for(my $I=1;$I<=$NATOMS;$I++){
+	substr($GRODATA[$I],20,8)=sprintf("%8.3f", $X[$I]);
+	substr($GRODATA[$I],28,8)=sprintf("%8.3f", $Y[$I]);
+	substr($GRODATA[$I],36,8)=sprintf("%8.3f", $Z[$I]);
+	print GROFILE "$GRODATA[$I]\n";
+}
+
+print GROFILE "$grodim\n";
+
+warnsummary();
+print "\n\tSUCCESS: Gro updated.\n\n";
+exit(0);
+
+
+###########SUBROUTINES##############
+sub getunitvectors
+{
+	my ($boxtype)=@_;
+	my @unitvectors;
+	if($boxtype =~ m/^cubic$/i || $boxtype =~ m/^orthorhombic$/i){
+		$unitvectors[0][0]=1;
+		$unitvectors[0][1]=0;
+		$unitvectors[0][2]=0;
+		$unitvectors[1][0]=0;
+		$unitvectors[1][1]=1;
+		$unitvectors[1][2]=0;
+		$unitvectors[2][0]=0;
+		$unitvectors[2][1]=0;
+		$unitvectors[2][2]=1;
+	}
+
+	if($boxtype =~ m/^octahedron$/i){
+		$unitvectors[0][0]=1;
+		$unitvectors[0][1]=0;
+		$unitvectors[0][2]=0;
+		$unitvectors[1][0]=1.0/3.0;
+		$unitvectors[1][1]=2.0/3.0*sqrt(2);
+		$unitvectors[1][2]=0;
+		$unitvectors[2][0]=-1.0/3.0;
+		$unitvectors[2][1]=1.0/3.0*sqrt(2);
+		$unitvectors[2][2]=1.0/3.0*sqrt(6);
+	}
+
+	if($boxtype =~ m/^dodecahedron$/i){
+		$unitvectors[0][0]=1;
+		$unitvectors[0][1]=0;
+		$unitvectors[0][2]=0;
+		$unitvectors[1][0]=0;
+		$unitvectors[1][1]=1;
+		$unitvectors[1][2]=0;
+		$unitvectors[2][0]=0.5;
+		$unitvectors[2][1]=0.5;
+		$unitvectors[2][2]=0.2*sqrt(2);
+	}
+	return \@unitvectors;
+
+}
+
+sub getlengths{
+
+	my ($unitvectors,$X,$Y,$Z);
+	my @unitvectors=@{$unitvectors};
+	my @X=@{$X};
+	my @Y=@{$Y};
+	my @Z=@{$Z};
+
+	my @minp=(10**10,10**10,10**10);
+	my @maxp=(-10**10,-10**10,-10**10);
+
+	for (my $I=1;$I<scalar(@X)+1;$I++){
+		for(my $J=0;$J<3;$J++){
+			my $proj=$X[$I]*$unitvectors[$J][0]+$Y[$I]*$unitvectors[$J][1]+$Z[$I]*$unitvectors[$J][2];
+			if ($proj < $minp[$J]){
+				$minp[$J]=$proj;
+			}
+			if ($proj > $maxp[$J]){
+				$maxp[$J]=$proj;
+			}
+		}
+	}
+	my @length;
+	for(my $J=0;$J<3;$J++){
+		$length[$J]=$maxp[$J]-$minp[$J];
+	}
+	return \@length;
+	
+}
+
+sub getcell
+{
+	my ($UNIT0,$UNIT1,$UNIT2,$width0,$width1,$width2,$Xt,$Yt,$Zt)=@_;
+	my @UNIT0=@{$UNIT0};
+	my @UNIT1=@{$UNIT1};
+	my @UNIT2=@{$UNIT2};
+	# calculate and subtract projection along c vector
+	my $proj=$Zt/$UNIT2[2];
+	my $C2=int($proj/$width2);
+	$Xt-=$UNIT2[0]*$proj;
+	$Yt-=$UNIT2[1]*$proj;
+	$Zt-=$UNIT2[2]*$proj;
+	$proj=$Yt/$UNIT1[1];
+	my $C1=int($proj/$width1);
+	$Xt-=$UNIT1[0]*$proj;
+	$Yt-=$UNIT1[1]*$proj;
+	$Zt-=$UNIT1[2]*$proj;
+	$proj=$Xt/$UNIT0[0];
+	my $C0=int($proj/$width0);
+
+	return ($C0,$C1,$C2);
+
+}
+
+sub getcellcenter
+{
+	my ($UNIT0,$UNIT1,$UNIT2,$width0,$width1,$width2,$N0,$N1,$N2)=@_;
+	my @UNIT0=@{$UNIT0};
+	my @UNIT1=@{$UNIT1};
+	my @UNIT2=@{$UNIT2};
+	my $Xcenter=0;
+	my $Ycenter=0;
+	my $Zcenter=0;
+	$Xcenter+=$UNIT0[0]*($N0+0.5)*$width0;
+	$Ycenter+=$UNIT0[1]*($N0+0.5)*$width0;
+	$Zcenter+=$UNIT0[2]*($N0+0.5)*$width0;
+	$Xcenter+=$UNIT1[0]*($N1+0.5)*$width1;
+	$Ycenter+=$UNIT1[1]*($N1+0.5)*$width1;
+	$Zcenter+=$UNIT1[2]*($N1+0.5)*$width1;
+	$Xcenter+=$UNIT2[0]*($N2+0.5)*$width2;
+	$Ycenter+=$UNIT2[1]*($N2+0.5)*$width2;
+	$Zcenter+=$UNIT2[2]*($N2+0.5)*$width2;
+
+	return ($Xcenter,$Ycenter,$Zcenter);
+
+}
+
+sub finddefs
+{
+	my ($folderName)=@_;
+	my $defsexists=0;
+	my $defsfile;
+        opendir(my $folder,$folderName);
+	while(my $file = readdir($folder)){
+		if($file =~ m/\.ions\.def$/ || $file =~ m/^ions\.def$/) {
+			$defsexists++;
+			$defsfile = "$folderName/$file";
+			next;
+		}
+	}
+	if($defsexists ==0){
+		smog_quit ("No ion definition file found in directory $folderName");
+	}
+	if($defsexists >1){
+		smog_quit ("Found multiple ion definition files in directory $folderName");
+	}
+	return $defsfile;
+
+}
+
+sub findsif
+{
+	my ($folderName)=@_;
+	my $sifexists=0;
+	my $siffile;
+        opendir(my $folder,$folderName);
+	while(my $file = readdir($folder)){
+		if($file =~ m/\.sif$/) {
+			$sifexists++;
+			$siffile = "$folderName/$file";
+			next;
+		}
+	}
+	if($sifexists ==0){
+		smog_quit ("No sif file found in directory $folderName");
+	}
+	if($sifexists >1){
+		smog_quit ("Found multiple sif files in directory $folderName");
+	}
+	return $siffile;
+
+}
+
+
+
+sub usage
+{
+  print <<EOT;
+
+usage: smog_editgro ... options
+
+   I/O options
+	-g [smog.gro]           : input SMOG configuration file
+	-og [smog.box.gro]      : output SMOG configuration file 
+
+   Optional settings 
+	-center                 : 
+        -dim                    :
+        -boxtype                :
+	-dist [0]               : the minimium distance between system and box sides
+	-warn [0]	        : convert first N errors into warnings
+	-help 		        : show options 
+EOT
+  if ( @_ ){
+   smog_quit("Command-line argument \"@_\" not recognized.");
+  }else{
+   exit(1);
+  }
+}
+
+
+
+
