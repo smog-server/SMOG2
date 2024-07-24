@@ -6,7 +6,7 @@
 #                          Ailun Wang, Heiko Lammert, Ryan Hayes,
 #                               Jose Onuchic & Paul Whitford
 #
-#        Copyright (c) 2015,2016,2018,2021,2022,2023 The SMOG development team at
+#      Copyright (c) 2015,2016,2018,2021,2022,2023,2024 The SMOG development team at
 #                      The Center for Theoretical Biological Physics
 #                       Rice University and Northeastern University
 #

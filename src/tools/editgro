@@ -6,7 +6,7 @@
 #                          Ailun Wang, Heiko Lammert, Ryan Hayes,
 #                               Jose Onuchic & Paul Whitford
 #
-#          Copyright (c) 2015,2016,2018,2021,2022 The SMOG development team at
+#        Copyright (c) 2015,2016,2018,2021,2022,2024 The SMOG development team at
 #                      The Center for Theoretical Biological Physics
 #                       Rice University and Northeastern University
 #
@@ -178,15 +178,21 @@ if (! defined $boxtype){
 	$grobox[6] =$tmpbox[7];
 	$grobox[7] =$tmpbox[8];
 
+	my @unitvectors;
+	for (my $I=0;$I<3;$I++){
+		for (my $J=0;$J<3;$J++){
+			$unitvector[$I][$J]=$grobox[$I*3+$J];
+		}
+	}
+	$U=\@unitvectors;
+
 # add checks that the box vectors adhere to gromacs requirements
 
-	# remember to add an array that lists the unit vectors and save address to $U
-	# later, rather than use UNIT, use this new convention. It will simplify things
 
 }else{
 
 # if box defined, then generate the new vectors
-# if box is not given, then use orthorhombic
+# if box is not given, then use rectangular
 # if -d is not given, then use 0nm
 # check that -d is not used without -boxtype
 	if($boxtype !~ m/rectangular/i && $boxtype !~ m/dodecahedron/i && $boxtype !~ m/octahedron/i && $boxtype !~ m/cubic/i){
@@ -197,6 +203,7 @@ if (! defined $boxtype){
 	$U=genunitvectors($boxtype);
 	@unitvectors=@{$U};
 
+	# add Dim option here
 
 	my @lengths;
 	my $L=getlengths($NATOMS,$U,\@X,\@Y,\@Z);
@@ -220,15 +227,33 @@ if (! defined $boxtype){
 	for(my $I=0;$I<3;$I++){
 		$grobox[$I]   =$unitvectors[0][$I]*$lengths[0];
 
-# only do these couple lines if they are not cubic nor rectangular/orthorhombic
+# only do these couple lines if they are not cubic nor rectangular/rectangular
 		$grobox[$I+3] =$unitvectors[1][$I]*$lengths[1];
 		$grobox[$I+6] =$unitvectors[2][$I]*$lengths[2];
 	}
 	$grodim ="";
-	foreach my $I(0,4,8,1,2,3,5,6,7){
+	foreach my $I(0,4,8){
 		$grodim = $grodim ." $grobox[$I]";
 	}
-
+	if($boxtype !~ m/rectangular/i && $boxtype !~ m/cubic/i){
+		foreach my $I(1,2,3,5,6,7){
+			$grodim = $grodim ." $grobox[$I]";
+		}
+	}else{
+		foreach my $I(1,2,3,5,6,7){
+			if($grobox[$I] != 0){
+				smog_quit("Internal Error: Orthorhombic (rectangular, cubic) box has non-zero off diagonal elements.  Please report to SMOG developers.");
+			}
+		}
+	}
+	print "New box vectors:\n";
+	for (my $I=0;$I<9;$I++){
+		print "\t$grobox[$I]";
+		if(($I+1) % 3 ==0){
+			print "\n";
+		}
+	}
+	print "\n";
 }
 
 # do the centering, if -c is turned on
@@ -242,17 +267,6 @@ if(defined $center){
 	centerinbox($NATOMS,$U,\@X,\@Y,\@Z,\@center);
 }
 
-
-# if box is not given, just use the 
-# reorder the indices to be more logical
-print "box vectors:\n";
-for (my $I=0;$I<9;$I++){
-	print "\t$grobox[$I]";
-	if(($I+1) % 3 ==0){
-		print "\n";
-	}
-}
-print "\n";
 
 close(GROFILE);
 
@@ -369,7 +383,7 @@ sub genunitvectors
 {
 	my ($boxtype)=@_;
 	my @unitvectors;
-	if($boxtype =~ m/^cubic$/i || $boxtype =~ m/^orthorhombic$/i){
+	if($boxtype =~ m/^cubic$/i || $boxtype =~ m/^rectangular$/i){
 		$unitvectors[0][0]=1;
 		$unitvectors[0][1]=0;
 		$unitvectors[0][2]=0;
@@ -549,7 +563,7 @@ usage: smog_editgro ... options
    Optional settings 
 	-c                      : center system in the box
         -boxtype                : cubic, rectangular, dodecahedron, octahedron, 
-	-dist [0]               : the minimium distance between system and box sides
+	-d [0]                  : the minimium distance between system and box sides
 	-warn [0]	        : convert first N errors into warnings
 	-help 		        : show options 
 EOT
