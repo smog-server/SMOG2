@@ -86,12 +86,13 @@ my @grobox;
 my $boxtype;
 my $dist;
 my $center;
+my $pbc;
 quit_init();
 note_init();
 checkForModules();
 
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help,  'g=s' => \$inputGRO,  
-         'og=s' => \$outputgro, 'boxtype=s' => \$boxtype, 'd=f' => \$dist, 'c' => \$center, 'warn=i' => \$maxwarn, 
+         'og=s' => \$outputgro, 'boxtype=s' => \$boxtype, 'd=f' => \$dist, 'c' => \$center, 'pbc' => \$pbc,'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -102,6 +103,11 @@ if($inputGRO eq $outputgro){
 
 foreach my $filen($outputgro){
 	checkalreadyexists($filen);
+}
+
+if(defined $dist && ! defined $boxtype){
+	smog_quit("Distance with -d may only be given with a box type (-boxtype).");
+
 }
 
 warninfo();
@@ -158,7 +164,7 @@ if (! defined $boxtype){
 	if($#tmpbox == 2){
 		print "Rectangular box detected\n";
 	}elsif($#tmpbox == 8){
-		print "Triclinic  box detected\n";
+		print "Triclinic box detected\n";
 	}else{
 		smog_quit("Wrong number of box vectors provided: unrecognized dimensions");
 	}
@@ -180,11 +186,25 @@ if (! defined $boxtype){
 
 	my @unitvectors;
 	for (my $I=0;$I<3;$I++){
+		my $mag=0;
 		for (my $J=0;$J<3;$J++){
-			$unitvector[$I][$J]=$grobox[$I*3+$J];
+			$unitvectors[$I][$J]=$grobox[$I*3+$J];
+			$mag+=$unitvectors[$I][$J]**2;
+		}
+		$mag=sqrt($mag);
+		for (my $J=0;$J<3;$J++){
+			$unitvectors[$I][$J]/= $mag;
 		}
 	}
 	$U=\@unitvectors;
+	print "Box vectors read from gro file:\n";
+	for (my $I=0;$I<9;$I++){
+		print "\t$grobox[$I]";
+		if(($I+1) % 3 ==0){
+			print "\n";
+		}
+	}
+	print "\n";
 
 # add checks that the box vectors adhere to gromacs requirements
 
@@ -258,6 +278,7 @@ if (! defined $boxtype){
 
 # do the centering, if -c is turned on
 if(defined $center){
+	print "Will center system in the box\n";
 	my @center=(0,0,0);
 	for(my $I=0;$I<3;$I++){
 		for(my $J=0;$J<3;$J++){
@@ -291,77 +312,79 @@ if(-e $outputgro){smog_quit("$outputgro already exists.")};
 open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
 print GROFILE "$groheader. Note: modified with smog_editgro (version $VERSION)\n";
 print GROFILE "$NATOMS\n";
-for(my $I=1;$I<=$NATOMS;$I++){
-
-	my $XT=$X[$I];
-	my $YT=$Y[$I];
-	my $ZT=$Z[$I];
-
-	while($ZT > $LENGTH2*$UNIT2[2]){
-                $XT-=$grobox[6];
-                $YT-=$grobox[7];
-                $ZT-=$grobox[8];
+if(defined $pbc){
+	for(my $I=1;$I<=$NATOMS;$I++){
+	
+		my $XT=$X[$I];
+		my $YT=$Y[$I];
+		my $ZT=$Z[$I];
+	
+		while($ZT > $LENGTH2*$UNIT2[2]){
+	                $XT-=$grobox[6];
+	                $YT-=$grobox[7];
+	                $ZT-=$grobox[8];
+		}
+	
+		while($ZT < 0 ){
+	                $XT+=$grobox[6];
+	                $YT+=$grobox[7];
+	                $ZT+=$grobox[8];
+		}
+	#
+		my $proj2=$ZT/$UNIT2[2];
+		# substract projection along vector 2, in order to calculate PBC along vector 0 and 1
+		my $Xmp=$XT-$proj2*$UNIT2[0];
+		my $Ymp=$YT-$proj2*$UNIT2[1];
+		# note: Zmp should be zero at this point
+		my $Zmp=$ZT-$proj2*$UNIT2[2];
+	
+		while($Ymp > $LENGTH1){
+	                $XT-=$grobox[3];
+	                $YT-=$grobox[4];
+	                $ZT-=$grobox[5];
+	                $Xmp-=$grobox[3];
+	                $Ymp-=$grobox[4];
+	                $Zmp-=$grobox[5];
+		}
+	
+		while($Ymp < 0 ){
+	                $XT+=$grobox[3];
+	                $YT+=$grobox[4];
+	                $ZT+=$grobox[5];
+	                $Xmp+=$grobox[3];
+	                $Ymp+=$grobox[4];
+	                $Zmp+=$grobox[5];
+		}
+	
+		my $proj1=$Ymp/$UNIT1[1];
+	#	# substract projection along vector 1, in order to calculate PBC along vector 0
+		$Xmp-=$proj1*$UNIT1[0];
+		# note: Ymp and Zmp should now be 0
+		$Ymp-=$proj1*$UNIT1[1];
+		$Zmp-=$proj1*$UNIT1[2];
+	
+		while($Xmp > $LENGTH0){
+	                $XT-=$grobox[0];
+	                $YT-=$grobox[1];
+	                $ZT-=$grobox[2];
+	                $Xmp-=$grobox[0];
+	                $Ymp-=$grobox[1];
+	                $Zmp-=$grobox[2];
+		}
+	
+		while($Xmp < 0 ){
+	                $XT+=$grobox[0];
+	                $YT+=$grobox[1];
+	                $ZT+=$grobox[2];
+	                $Xmp+=$grobox[0];
+	                $Ymp+=$grobox[1];
+	                $Zmp+=$grobox[2];
+		}
+	
+		$X[$I]=$XT;
+		$Y[$I]=$YT;
+		$Z[$I]=$ZT;
 	}
-
-	while($ZT < 0 ){
-                $XT+=$grobox[6];
-                $YT+=$grobox[7];
-                $ZT+=$grobox[8];
-	}
-#
-	my $proj2=$ZT/$UNIT2[2];
-	# substract projection along vector 2, in order to calculate PBC along vector 0 and 1
-	my $Xmp=$XT-$proj2*$UNIT2[0];
-	my $Ymp=$YT-$proj2*$UNIT2[1];
-	# note: Zmp should be zero at this point
-	my $Zmp=$ZT-$proj2*$UNIT2[2];
-
-	while($Ymp > $LENGTH1){
-                $XT-=$grobox[3];
-                $YT-=$grobox[4];
-                $ZT-=$grobox[5];
-                $Xmp-=$grobox[3];
-                $Ymp-=$grobox[4];
-                $Zmp-=$grobox[5];
-	}
-
-	while($Ymp < 0 ){
-                $XT+=$grobox[3];
-                $YT+=$grobox[4];
-                $ZT+=$grobox[5];
-                $Xmp+=$grobox[3];
-                $Ymp+=$grobox[4];
-                $Zmp+=$grobox[5];
-	}
-
-	my $proj1=$Ymp/$UNIT1[1];
-#	# substract projection along vector 1, in order to calculate PBC along vector 0
-	$Xmp-=$proj1*$UNIT1[0];
-	# note: Ymp and Zmp should now be 0
-	$Ymp-=$proj1*$UNIT1[1];
-	$Zmp-=$proj1*$UNIT1[2];
-
-	while($Xmp > $LENGTH0){
-                $XT-=$grobox[0];
-                $YT-=$grobox[1];
-                $ZT-=$grobox[2];
-                $Xmp-=$grobox[0];
-                $Ymp-=$grobox[1];
-                $Zmp-=$grobox[2];
-	}
-
-	while($Xmp < 0 ){
-                $XT+=$grobox[0];
-                $YT+=$grobox[1];
-                $ZT+=$grobox[2];
-                $Xmp+=$grobox[0];
-                $Ymp+=$grobox[1];
-                $Zmp+=$grobox[2];
-	}
-
-	$X[$I]=$XT;
-	$Y[$I]=$YT;
-	$Z[$I]=$ZT;
 }
 
 for(my $I=1;$I<=$NATOMS;$I++){
@@ -564,6 +587,7 @@ usage: smog_editgro ... options
 	-c                      : center system in the box
         -boxtype                : cubic, rectangular, dodecahedron, octahedron, 
 	-d [0]                  : the minimium distance between system and box sides
+	-pbc                    : correct coordinates to impose periodicity of coordinates
 	-warn [0]	        : convert first N errors into warnings
 	-help 		        : show options 
 EOT
