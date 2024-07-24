@@ -47,9 +47,9 @@ $gitver
       	smog_editgro is part of the SMOG 2 distribution, available at smog-server.org
 
         This tool uses a SMOG .gro file, along command line arguments to make changes
-        to the gro file. For example, one may translate the coordinates, center the
-        system and create a box (for use with periodic boundary conditions).
-        Note, this does not change the underlying model, only changes the simulated
+        to the gro file. For example, one may generate a box and center the
+        system (for use with periodic boundary conditions).
+        This does not change the underlying model, it only changes the simulated
         box and/or initial coordinates.
 
         For usage information, issue flag -help, or see the SMOG manual.
@@ -180,6 +180,8 @@ if (! defined $boxtype){
 
 # add checks that the box vectors adhere to gromacs requirements
 
+	# remember to add an array that lists the unit vectors and save address to $U
+	# later, rather than use UNIT, use this new convention. It will simplify things
 
 }else{
 
@@ -192,7 +194,7 @@ if (! defined $boxtype){
 	}
 
 	my @unitvectors;
-	$U=getunitvectors($boxtype);
+	$U=genunitvectors($boxtype);
 	@unitvectors=@{$U};
 
 
@@ -237,9 +239,7 @@ if(defined $center){
 			$center[$J]+=$grobox[$J+$I*3]/2.0;
 		}
 	}
-	print "A $X[1] $Y[1] $Z[1]\n ";
 	centerinbox($NATOMS,$U,\@X,\@Y,\@Z,\@center);
-	print "A $X[1] $Y[1] $Z[1]\n ";
 }
 
 
@@ -365,7 +365,7 @@ exit(0);
 
 
 ###########SUBROUTINES##############
-sub getunitvectors
+sub genunitvectors
 {
 	my ($boxtype)=@_;
 	my @unitvectors;
@@ -402,7 +402,7 @@ sub getunitvectors
 		$unitvectors[1][2]=0;
 		$unitvectors[2][0]=0.5;
 		$unitvectors[2][1]=0.5;
-		$unitvectors[2][2]=0.2*sqrt(2);
+		$unitvectors[2][2]=0.5*sqrt(2);
 	}
 	return \@unitvectors;
 
@@ -526,7 +526,6 @@ sub centerinbox{
 		}
 	}
 	for(my $J=0;$J<3;$J++){
-		print "$center[$J] $centerpoint[$J]\n";
 		$center[$J]-=$centerpoint[$J];
 	}
 	for (my $I=1;$I<$NATOMS+1;$I++){
@@ -549,7 +548,7 @@ usage: smog_editgro ... options
 
    Optional settings 
 	-c                      : center system in the box
-        -boxtype                : cubic, rectangular, dodecahedron (not tested), octahedron, 
+        -boxtype                : cubic, rectangular, dodecahedron, octahedron, 
 	-dist [0]               : the minimium distance between system and box sides
 	-warn [0]	        : convert first N errors into warnings
 	-help 		        : show options 
