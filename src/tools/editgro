@@ -86,13 +86,12 @@ my @grobox;
 my $boxtype;
 my $dist;
 my $center;
-my $dimension;
 quit_init();
 note_init();
 checkForModules();
 
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help,  'g=s' => \$inputGRO,  
-         'og=s' => \$outputgro, 'boxtype=s' => \$boxtype, 'd=f' => \$dist, 'c' => \$center, 'dim=f' => \$dimension,  'warn=i' => \$maxwarn, 
+         'og=s' => \$outputgro, 'boxtype=s' => \$boxtype, 'd=f' => \$dist, 'c' => \$center, 'warn=i' => \$maxwarn, 
         '<>' => \&usage)
         or defined $help); 
 
@@ -148,6 +147,7 @@ for(my $I=0;$I<$NATOMS;$I++){
 }
 # variable that holds the contents of the last line
 my $grodim;
+my $U;
 if (! defined $boxtype){
 	# if box is not given, then check the format of the current box
 	$grodim=<GROFILE>;
@@ -192,7 +192,7 @@ if (! defined $boxtype){
 	}
 
 	my @unitvectors;
-	my $U=getunitvectors($boxtype);
+	$U=getunitvectors($boxtype);
 	@unitvectors=@{$U};
 
 
@@ -230,7 +230,17 @@ if (! defined $boxtype){
 }
 
 # do the centering, if -c is turned on
-
+if(defined $center){
+	my @center=(0,0,0);
+	for(my $I=0;$I<3;$I++){
+		for(my $J=0;$J<3;$J++){
+			$center[$J]+=$grobox[$J+$I*3]/2.0;
+		}
+	}
+	print "A $X[1] $Y[1] $Z[1]\n ";
+	centerinbox($NATOMS,$U,\@X,\@Y,\@Z,\@center);
+	print "A $X[1] $Y[1] $Z[1]\n ";
+}
 
 
 # if box is not given, just use the 
@@ -428,99 +438,103 @@ sub getlengths{
 	
 }
 
-sub getcell
-{
-	my ($UNIT0,$UNIT1,$UNIT2,$width0,$width1,$width2,$Xt,$Yt,$Zt)=@_;
-	my @UNIT0=@{$UNIT0};
-	my @UNIT1=@{$UNIT1};
-	my @UNIT2=@{$UNIT2};
-	# calculate and subtract projection along c vector
-	my $proj=$Zt/$UNIT2[2];
-	my $C2=int($proj/$width2);
-	$Xt-=$UNIT2[0]*$proj;
-	$Yt-=$UNIT2[1]*$proj;
-	$Zt-=$UNIT2[2]*$proj;
-	$proj=$Yt/$UNIT1[1];
-	my $C1=int($proj/$width1);
-	$Xt-=$UNIT1[0]*$proj;
-	$Yt-=$UNIT1[1]*$proj;
-	$Zt-=$UNIT1[2]*$proj;
-	$proj=$Xt/$UNIT0[0];
-	my $C0=int($proj/$width0);
+sub centerinbox{
+	# this initial part is identical to the routines used for finding box lengths.
+	# but, we don't need them if the box was given in the gro, so we need to calculate
+	# them here, just in case
 
-	return ($C0,$C1,$C2);
+	my ($NATOMS,$unitvectors,$X,$Y,$Z,$center)=@_;
+	my @center=@{$center};
+	my @unitvectors=@{$unitvectors};
+	my @X=@{$X};
+	my @Y=@{$Y};
+	my @Z=@{$Z};
 
-}
+	my @minp=(10**10,10**10,10**10);
+	my @maxp=(-10**10,-10**10,-10**10);
 
-sub getcellcenter
-{
-	my ($UNIT0,$UNIT1,$UNIT2,$width0,$width1,$width2,$N0,$N1,$N2)=@_;
-	my @UNIT0=@{$UNIT0};
-	my @UNIT1=@{$UNIT1};
-	my @UNIT2=@{$UNIT2};
-	my $Xcenter=0;
-	my $Ycenter=0;
-	my $Zcenter=0;
-	$Xcenter+=$UNIT0[0]*($N0+0.5)*$width0;
-	$Ycenter+=$UNIT0[1]*($N0+0.5)*$width0;
-	$Zcenter+=$UNIT0[2]*($N0+0.5)*$width0;
-	$Xcenter+=$UNIT1[0]*($N1+0.5)*$width1;
-	$Ycenter+=$UNIT1[1]*($N1+0.5)*$width1;
-	$Zcenter+=$UNIT1[2]*($N1+0.5)*$width1;
-	$Xcenter+=$UNIT2[0]*($N2+0.5)*$width2;
-	$Ycenter+=$UNIT2[1]*($N2+0.5)*$width2;
-	$Zcenter+=$UNIT2[2]*($N2+0.5)*$width2;
-
-	return ($Xcenter,$Ycenter,$Zcenter);
-
-}
-
-sub finddefs
-{
-	my ($folderName)=@_;
-	my $defsexists=0;
-	my $defsfile;
-        opendir(my $folder,$folderName);
-	while(my $file = readdir($folder)){
-		if($file =~ m/\.ions\.def$/ || $file =~ m/^ions\.def$/) {
-			$defsexists++;
-			$defsfile = "$folderName/$file";
-			next;
+	# find atoms that have min and max projection along basis vectors 
+	for (my $I=1;$I<$NATOMS+1;$I++){
+		for(my $J=0;$J<3;$J++){
+			my $proj=$X[$I]*${$unitvectors[$J]}[0]+$Y[$I]*${$unitvectors[$J]}[1]+$Z[$I]*${$unitvectors[$J]}[2];
+			if ($proj < $minp[$J]){
+				$minp[$J]=$proj;
+			}
+			if ($proj > $maxp[$J]){
+				$maxp[$J]=$proj;
+			}
 		}
 	}
-	if($defsexists ==0){
-		smog_quit ("No ion definition file found in directory $folderName");
+	my @midproj;
+	for(my $J=0;$J<3;$J++){
+		$midproj[$J]=($maxp[$J]+$minp[$J])/2.0;
 	}
-	if($defsexists >1){
-		smog_quit ("Found multiple ion definition files in directory $folderName");
+
+	my @pntonplane;
+	for(my $J=0;$J<3;$J++){
+		$pntonplane[$J][0]=$midproj[$J]*${$unitvectors[$J]}[0];
+		$pntonplane[$J][1]=$midproj[$J]*${$unitvectors[$J]}[1];
+		$pntonplane[$J][2]=$midproj[$J]*${$unitvectors[$J]}[2];
 	}
-	return $defsfile;
 
-}
 
-sub findsif
-{
-	my ($folderName)=@_;
-	my $sifexists=0;
-	my $siffile;
-        opendir(my $folder,$folderName);
-	while(my $file = readdir($folder)){
-		if($file =~ m/\.sif$/) {
-			$sifexists++;
-			$siffile = "$folderName/$file";
-			next;
+	my @leftvec=(0,0,0);
+	for(my $J=0;$J<3;$J++){
+		for(my $I=0;$I<3;$I++){
+			$leftvec[$J]+=$pntonplane[$J][$I]*${$unitvectors[$J]}[$I];
 		}
 	}
-	if($sifexists ==0){
-		smog_quit ("No sif file found in directory $folderName");
-	}
-	if($sifexists >1){
-		smog_quit ("Found multiple sif files in directory $folderName");
-	}
-	return $siffile;
+	
+	my @adjoint;
+	for(my $J=0;$J<3;$J++){
+		for(my $I=0;$I<3;$I++){
+			my $I1=0;
+			my @sub;
+			for(my $K=0;$K<3;$K++){
+				my $I2=0;
+				if($K != $J){
+					for(my $L=0;$L<3;$L++){
+						if($L != $I){
+							$sub[$I1][$I2]=${$unitvectors[$K]}[$L];
+							$I2++;
+						}
+					}
+				$I1++;
+				}
+			}
 
+			my $det=$sub[0][0]*$sub[1][1]-$sub[1][0]*$sub[0][1];
+			$det *= (-1.0)**($J+$I);
+			$adjoint[$J][$I]=$det;
+			
+		}
+	}	
+
+	# find determinant of unit vector matrix
+	my $det=${$unitvectors[0]}[0]*(${$unitvectors[1]}[1]*${$unitvectors[2]}[2]- ${$unitvectors[2]}[1]*${$unitvectors[1]}[2]);
+	$det -= ${$unitvectors[0]}[1]*(${$unitvectors[1]}[0]*${$unitvectors[2]}[2]- ${$unitvectors[1]}[2]*${$unitvectors[2]}[0]);
+	$det += ${$unitvectors[0]}[2]*(${$unitvectors[1]}[0]*${$unitvectors[2]}[1]- ${$unitvectors[1]}[1]*${$unitvectors[2]}[0]);
+	for(my $J=0;$J<3;$J++){
+		for(my $I=0;$I<3;$I++){
+			$adjoint[$J][$I] /= $det;
+		}
+	}
+	my @centerpoint=(0,0,0);
+	for(my $J=0;$J<3;$J++){
+		for(my $I=0;$I<3;$I++){
+			$centerpoint[$J] += $leftvec[$I]*$adjoint[$I][$J];
+		}
+	}
+	for(my $J=0;$J<3;$J++){
+		print "$center[$J] $centerpoint[$J]\n";
+		$center[$J]-=$centerpoint[$J];
+	}
+	for (my $I=1;$I<$NATOMS+1;$I++){
+		$X->[$I]+=$center[0];
+		$Y->[$I]+=$center[1];
+		$Z->[$I]+=$center[2];
+	}	
 }
-
 
 
 sub usage
@@ -534,9 +548,8 @@ usage: smog_editgro ... options
 	-og [smog.box.gro]      : output SMOG configuration file 
 
    Optional settings 
-	-center                 : 
-        -dim                    :
-        -boxtype                :
+	-c                      : center system in the box
+        -boxtype                : cubic, rectangular, dodecahedron (not tested), octahedron, 
 	-dist [0]               : the minimium distance between system and box sides
 	-warn [0]	        : convert first N errors into warnings
 	-help 		        : show options 
