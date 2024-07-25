@@ -49,8 +49,13 @@ $gitver
         This tool uses a SMOG .gro file, along command line arguments to make changes
         to the gro file. For example, one may generate a box and center the
         system (for use with periodic boundary conditions).
+
         This does not change the underlying model, it only changes the simulated
-        box and/or initial coordinates.
+        box and/or initial coordinates. 
+
+        If you are using Gromacs, then the editconf tool could be used instead. If
+        you are using OpenSMOG, then this script may be easier than customizing
+        other python libraries.
 
         For usage information, issue flag -help, or see the SMOG manual.
 
@@ -106,8 +111,11 @@ foreach my $filen($outputgro){
 }
 
 if(defined $dist && ! defined $boxtype){
-	smog_quit("Distance with -d may only be given with a box type (-boxtype).");
+	smog_quit("The flag -d may only be used with -boxtype.");
+}
 
+if(! defined $dist &&  defined $boxtype){
+	$dist=0;
 }
 
 warninfo();
@@ -151,7 +159,6 @@ for(my $I=0;$I<$NATOMS;$I++){
 	$Z[$I+1]=substr($GRODATA[$I+1],36,8);
 
 }
-# variable that holds the contents of the last line
 my $grodim;
 my $U;
 if (! defined $boxtype){
@@ -206,14 +213,10 @@ if (! defined $boxtype){
 	}
 	print "\n";
 
-# add checks that the box vectors adhere to gromacs requirements
-
 
 }else{
 
 # if box defined, then generate the new vectors
-# if box is not given, then use rectangular
-# if -d is not given, then use 0nm
 # check that -d is not used without -boxtype
 	if($boxtype !~ m/rectangular/i && $boxtype !~ m/dodecahedron/i && $boxtype !~ m/octahedron/i && $boxtype !~ m/cubic/i){
 		smog_quit("boxtype value \"$boxtype\" is not supported.")
@@ -330,12 +333,10 @@ if(defined $pbc){
 	                $YT+=$grobox[7];
 	                $ZT+=$grobox[8];
 		}
-	#
 		my $proj2=$ZT/$UNIT2[2];
 		# substract projection along vector 2, in order to calculate PBC along vector 0 and 1
 		my $Xmp=$XT-$proj2*$UNIT2[0];
 		my $Ymp=$YT-$proj2*$UNIT2[1];
-		# note: Zmp should be zero at this point
 		my $Zmp=$ZT-$proj2*$UNIT2[2];
 	
 		while($Ymp > $LENGTH1){
@@ -359,7 +360,6 @@ if(defined $pbc){
 		my $proj1=$Ymp/$UNIT1[1];
 	#	# substract projection along vector 1, in order to calculate PBC along vector 0
 		$Xmp-=$proj1*$UNIT1[0];
-		# note: Ymp and Zmp should now be 0
 		$Ymp-=$proj1*$UNIT1[1];
 		$Zmp-=$proj1*$UNIT1[2];
 	
@@ -476,9 +476,6 @@ sub getlengths{
 }
 
 sub centerinbox{
-	# this initial part is identical to the routines used for finding box lengths.
-	# but, we don't need them if the box was given in the gro, so we need to calculate
-	# them here, just in case
 
 	my ($NATOMS,$unitvectors,$X,$Y,$Z,$center)=@_;
 	my @center=@{$center};
@@ -521,7 +518,9 @@ sub centerinbox{
 			$leftvec[$J]+=$pntonplane[$J][$I]*${$unitvectors[$J]}[$I];
 		}
 	}
-	
+
+	# to avoid requiring a linalg library be loaded just for this one step
+	# we programmed our own (slow) diagonalization routine for a 3x3 matrix.	
 	my @adjoint;
 	for(my $J=0;$J<3;$J++){
 		for(my $I=0;$I<3;$I++){
@@ -584,10 +583,16 @@ usage: smog_editgro ... options
 	-og [smog.box.gro]      : output SMOG configuration file 
 
    Optional settings 
-	-c                      : center system in the box
-        -boxtype                : cubic, rectangular, dodecahedron, octahedron, 
+        -boxtype <type>         : cubic, rectangular, dodecahedron, octahedron, 
 	-d [0]                  : the minimium distance between system and box sides
-	-pbc                    : correct coordinates to impose periodicity of coordinates
+	-c                      : center system in the box
+                                  Note: If used with -pbc, the system will be centered
+                                  before the image is corrected.
+	-pbc                    : impose periodicity of coordinates and show image that is inside of box
+                                  Note: This does not have any impact on the model, or simulation 
+                                  parameters. This only positions the coordinates in the gro file. If you
+                                  want periodic boundary conditions in a simulation, that must be
+                                  specified at runtime.
 	-warn [0]	        : convert first N errors into warnings
 	-help 		        : show options 
 EOT
