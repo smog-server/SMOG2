@@ -1075,14 +1075,30 @@ sub exactmatching
 	}
 	my $nres;
 	if(!exists $ignorename{$resName}) {
-		if ($isFirst == 1 && exists $map{"$str first"}) {
-			$nres=$map{"$str first"};
-		} elsif ($isLast == 1 && exists $map{"$str last"}) {
-			$nres=$map{"$str last"};
+		my $firstlast="";
+		if ($isFirst == 1) {
+			$firstlast = " first";
+		} elsif ($isLast == 1 ) {
+			$firstlast = " last";
+		}	
+		if (exists $map{"$str$firstlast"}) {
+			$nres=$map{"$str$firstlast"};
 		} elsif (exists $map{$str}) {
 			$nres=$map{$str};
 		} else {
-			smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]\n Found the following atoms and conditions in the PDB for this residue:\n\t $str");
+			my $errormess="Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]\n Found the following atoms in the PDB for this residue:\n\t $str";
+			if($firstlast ne ""){
+				$errormess .= " Note: This appears to be the$firstlast residue in the chain."; 
+			}else{
+				foreach my $fl ( " first", " last") {
+					if (exists $map{"$str$fl"}) {
+						$nres=$map{"$str$fl"};
+						$errormess .= " Note: The residue named $nres is defined in the map file that has the same atoms, but the mapping file indicates that it must be the$fl residue in a chain."; 
+					}
+					
+				} 
+			}
+			smog_quit("$errormess");
 		} 
 
 		if ($resName ne $nres) {
