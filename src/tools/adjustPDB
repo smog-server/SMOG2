@@ -1103,6 +1103,12 @@ sub exactmatching
 
 		if ($resName ne $nres) {
 			$renamedstring .="$resName-$resIDorig->$nres-$resInd "; 
+			if($resName ne "ALA" and $nres eq "ALA"){
+				smog_note("Residue $resName-$resIDorig is being renamed \"ALA\". This often happens when the PDB file is missing atoms in a non-ALA residue.  You may want to check your structure and make sure this renaming is desired.");
+			}
+			if($resName ne "GLY" and $nres eq "GLY"){
+				smog_note("Residue $resName-$resIDorig is being renamed \"GLY\". This often happens when the PDB file is missing the side chain for non-GLY residue.  You may want to check your structure and make sure this renaming is desired.");
+			}
 		}
 
 	} else {
