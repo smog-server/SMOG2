@@ -24,6 +24,10 @@ Below is one example for how to use the container, once you have pulled it
 
 > docker run -it --rm -v $(pwd):/workdir smogserver/smog2:stable 
 
+Note: When using PowerShell in Windows, it may be necessary to use following the syntax:
+> docker run -it --rm -v ${pwd}:/workdir smogserver/smog2:stable 
+
+
 In this case, the directory that the docker is called from ($pwd) i.e. present working directory, is mounted as /workdir in the container. By default, when you launch the container, you will be placed in /workdir. As long as all the files you need are available in $pwd and its subdirectories, then they will be available to the container in /workdir and its subdirectories. The container will be unable to interact with any directories above $pwd. To belabor the point: any files edited or created in /workdir will appear or be edited on your actual disk in $pwd. LINUX NOTE: There can occasionally be issues with user IDs when using Docker on Linux.  If you are obtaining Permission Denied errors, see TROUBLESHOOTING. 
 
 For more options on how to use the Docker container, consult the smog-server or Docker pages.

@@ -6,7 +6,7 @@
 #                          Ailun Wang, Heiko Lammert, Ryan Hayes,
 #                               Jose Onuchic & Paul Whitford
 #
-#          Copyright (c) 2015,2016,2018,2021,2022 The SMOG development team at
+#        Copyright (c) 2015,2016,2018,2021,2022,2024 The SMOG development team at
 #                      The Center for Theoretical Biological Physics
 #                       Rice University and Northeastern University
 #
@@ -266,7 +266,7 @@ usage: smog_adjustPDB .. options ..
                                      entry for each atom
 	-gen_map <map name>     : read a template and write a mapping file
 	-t <template dir>       : template directory (only for use with -gen_map)
-	-large                  : use base-N (N>10) for indexing atom and residues
+	-large                  : use base-N (N>10) for indexing atoms and residues
                                      Necessary if a single chain has more than 
                                      9999 residues or 99999 atoms.
 	-sort                   : reorder atoms in each residue by name
@@ -325,7 +325,7 @@ sub adjustInputFile{
 		$notallowed{$J}=0;
 	}
 	my %allowed;
-	foreach my $I ("REMARK","ATOM","TER","HETATM","END","COMMEN","HEADER","TITLE") {
+	foreach my $I ("REMARK","ATOM","TER","HETATM","END","HEADER","TITLE") {
 		my $J = $I;
 		$J =~ s/\s+//g;
 		$allowed {$J}=0;
@@ -368,6 +368,8 @@ sub adjustInputFile{
 
 		}elsif( $tag eq "BOND"){
 			smog_quit("Issue at line $ln: BOND lines can not be used with adjust_PDB. This is not allowed since adjustPDB usually changes chain and atom indexes, which will make the current BOND values inappropriate. You should first run smog_adjustPDB without BOND lines and then add them back to the adjusted PDB, in order to ensure the correct bond is added.");
+		}elsif($tag eq "COMMEN"){
+			smog_quit("The use of \"COMMENT\" lines is no longer supported.  Use \"REMARK\" instead. Issue on line $ln: \"$tag\".");
 		}elsif(!exists $allowed{$tag}){
 			smog_quit("Unrecognized PDB record on line $ln: \"$tag\".");
 		}
@@ -1073,18 +1075,40 @@ sub exactmatching
 	}
 	my $nres;
 	if(!exists $ignorename{$resName}) {
-		if ($isFirst == 1 && exists $map{"$str first"}) {
-			$nres=$map{"$str first"};
-		} elsif ($isLast == 1 && exists $map{"$str last"}) {
-			$nres=$map{"$str last"};
+		my $firstlast="";
+		if ($isFirst == 1) {
+			$firstlast = " first";
+		} elsif ($isLast == 1 ) {
+			$firstlast = " last";
+		}	
+		if (exists $map{"$str$firstlast"}) {
+			$nres=$map{"$str$firstlast"};
 		} elsif (exists $map{$str}) {
 			$nres=$map{$str};
 		} else {
-			smog_quit("Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]\n Found the following atoms and conditions in the PDB for this residue:\n\t $str");
+			my $errormess="Unable to find a match for residue beginning with:\n$pArr[$k-$loopInd-1]\n Found the following atoms in the PDB for this residue:\n\t $str";
+			if($firstlast ne ""){
+				$errormess .= " Note: This appears to be the$firstlast residue in the chain."; 
+			}else{
+				foreach my $fl ( " first", " last") {
+					if (exists $map{"$str$fl"}) {
+						$nres=$map{"$str$fl"};
+						$errormess .= " Note: The residue named $nres is defined in the map file that has the same atoms, but the mapping file indicates that it must be the$fl residue in a chain."; 
+					}
+					
+				} 
+			}
+			smog_quit("$errormess");
 		} 
 
 		if ($resName ne $nres) {
 			$renamedstring .="$resName-$resIDorig->$nres-$resInd "; 
+			if($resName ne "ALA" and $nres eq "ALA"){
+				smog_note("Residue $resName-$resIDorig is being renamed \"ALA\". This often happens when the PDB file is missing atoms in a non-ALA residue.  You may want to check your structure and make sure this renaming is desired.");
+			}
+			if($resName ne "GLY" and $nres eq "GLY"){
+				smog_note("Residue $resName-$resIDorig is being renamed \"GLY\". This often happens when the PDB file is missing the side chain for non-GLY residue.  You may want to check your structure and make sure this renaming is desired.");
+			}
 		}
 
 	} else {

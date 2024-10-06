@@ -6,7 +6,7 @@
 #                          Ailun Wang, Heiko Lammert, Ryan Hayes,
 #                               Jose Onuchic & Paul Whitford
 #
-#          Copyright (c) 2015,2016,2018,2021,2022 The SMOG development team at
+#        Copyright (c) 2015,2016,2018,2021,2022,2024 The SMOG development team at
 #                      The Center for Theoretical Biological Physics
 #                       Rice University and Northeastern University
 #
@@ -327,65 +327,11 @@ print "\n";
 
 close(GROFILE);
 
-if(-e $outputgro){smog_quit("$outputgro already exists.")};
-open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
-print GROFILE "$groheader. Note: ions added with smog_ions (version $VERSION)\n";
-$NATOMS+=$addnum;
-print GROFILE "$NATOMS\n";
-for(my $I=1;$I<=$NATOMS-$addnum;$I++){
 
-	my $XT=substr($GRODATA[$I],20,8);
-	my $YT=substr($GRODATA[$I],28,8);
-	my $ZT=substr($GRODATA[$I],36,8);
-
-	while($ZT > $grobox[8]){
-                $XT-=$grobox[6];
-                $YT-=$grobox[7];
-                $ZT-=$grobox[8];
-	}
-	while($ZT <= 0){
-                $XT+=$grobox[6];
-                $YT+=$grobox[7];
-                $ZT+=$grobox[8];
-	}
-	while($YT > $grobox[4]){
-                $XT-=$grobox[3];
-                $YT-=$grobox[4];
-                $ZT-=$grobox[5];
-	}
-	while($YT <= 0){
-                $XT+=$grobox[3];
-                $YT+=$grobox[4];
-                $ZT+=$grobox[5];
-	}
-	while($XT > $grobox[0]){
-                $XT-=$grobox[0];
-                $YT-=$grobox[1];
-                $ZT-=$grobox[2];
-	}
-	while($XT <= 0){
-                $XT+=$grobox[0];
-                $YT+=$grobox[1];
-                $ZT+=$grobox[2];
-	}
-
-	substr($GRODATA[$I],20,8)=sprintf("%8.3f", $XT);
-	substr($GRODATA[$I],28,8)=sprintf("%8.3f", $YT);
-	substr($GRODATA[$I],36,8)=sprintf("%8.3f", $ZT);
-
-	print GROFILE "$GRODATA[$I]\n";
-	$X[$I]=$XT;
-	$Y[$I]=$YT;
-	$Z[$I]=$ZT;
-}
-print "preparing to add ions to gro file...\n";
-my $XTT;
-my $YTT;
-my $ZTT;
 my $XT;
 my $YT;
 my $ZT;
-my $added=1;
+
 # set up grid parameters for the system.
 my %GRIDATOMS;
 my @UNIT0=($grobox[0],$grobox[1],$grobox[2]);
@@ -414,6 +360,97 @@ if($NATOMS > 0.5*($N0+1)*($N1+1)*($N2+1)){
 @UNIT0=($UNIT0[0]/$LENGTH0,$UNIT0[1]/$LENGTH0,$UNIT0[2]/$LENGTH0);
 @UNIT1=($UNIT1[0]/$LENGTH1,$UNIT1[1]/$LENGTH1,$UNIT1[2]/$LENGTH1);
 @UNIT2=($UNIT2[0]/$LENGTH2,$UNIT2[1]/$LENGTH2,$UNIT2[2]/$LENGTH2);
+
+
+# impose PBC on the solute
+
+if(-e $outputgro){smog_quit("$outputgro already exists.")};
+open(GROFILE,">$outputgro") or smog_quit("Can\'t open output GRO file $outputgro");
+print GROFILE "$groheader. Note: ions added with smog_ions (version $VERSION)\n";
+$NATOMS+=$addnum;
+print GROFILE "$NATOMS\n";
+for(my $I=1;$I<=$NATOMS-$addnum;$I++){
+
+	$XT=substr($GRODATA[$I],20,8);
+	$YT=substr($GRODATA[$I],28,8);
+	$ZT=substr($GRODATA[$I],36,8);
+
+	while($ZT > $LENGTH2*$UNIT2[2]){
+                $XT-=$grobox[6];
+                $YT-=$grobox[7];
+                $ZT-=$grobox[8];
+	}
+
+	while($ZT < 0 ){
+                $XT+=$grobox[6];
+                $YT+=$grobox[7];
+                $ZT+=$grobox[8];
+	}
+#
+	my $proj2=$ZT/$UNIT2[2];
+	# substract projection along vector 2, in order to calculate PBC along vector 0 and 1
+	my $Xmp=$XT-$proj2*$UNIT2[0];
+	my $Ymp=$YT-$proj2*$UNIT2[1];
+	# note: Zmp should be zero at this point
+	my $Zmp=$ZT-$proj2*$UNIT2[2];
+
+	while($Ymp > $LENGTH1){
+                $XT-=$grobox[3];
+                $YT-=$grobox[4];
+                $ZT-=$grobox[5];
+                $Xmp-=$grobox[3];
+                $Ymp-=$grobox[4];
+                $Zmp-=$grobox[5];
+	}
+
+	while($Ymp < 0 ){
+                $XT+=$grobox[3];
+                $YT+=$grobox[4];
+                $ZT+=$grobox[5];
+                $Xmp+=$grobox[3];
+                $Ymp+=$grobox[4];
+                $Zmp+=$grobox[5];
+	}
+
+	my $proj1=$Ymp/$UNIT1[1];
+#	# substract projection along vector 1, in order to calculate PBC along vector 0
+	$Xmp-=$proj1*$UNIT1[0];
+	# note: Ymp and Zmp should now be 0
+	$Ymp-=$proj1*$UNIT1[1];
+	$Zmp-=$proj1*$UNIT1[2];
+
+	while($Xmp > $LENGTH0){
+                $XT-=$grobox[0];
+                $YT-=$grobox[1];
+                $ZT-=$grobox[2];
+                $Xmp-=$grobox[0];
+                $Ymp-=$grobox[1];
+                $Zmp-=$grobox[2];
+	}
+
+	while($Xmp < 0 ){
+                $XT+=$grobox[0];
+                $YT+=$grobox[1];
+                $ZT+=$grobox[2];
+                $Xmp+=$grobox[0];
+                $Ymp+=$grobox[1];
+                $Zmp+=$grobox[2];
+	}
+
+	substr($GRODATA[$I],20,8)=sprintf("%8.3f", $XT);
+	substr($GRODATA[$I],28,8)=sprintf("%8.3f", $YT);
+	substr($GRODATA[$I],36,8)=sprintf("%8.3f", $ZT);
+
+	print GROFILE "$GRODATA[$I]\n";
+	$X[$I]=$XT;
+	$Y[$I]=$YT;
+	$Z[$I]=$ZT;
+}
+print "preparing to add ions to gro file...\n";
+my $XTT;
+my $YTT;
+my $ZTT;
+my $added=1;
 
 # grid the current atoms
 for(my $I=1;$I<=$NATOMS-$addnum;$I++){
@@ -550,7 +587,7 @@ while (<FILE>){
 		if($alreadypresent==1){
 			# since we have already defined the atomtype, we will not check for anything from extras
 			if(defined $template && $extrasexists >0){
-				print "\nNote: Since $addname was defined in the original top file, we will not try to read $extrafile.\n";
+				print "\nNote: Since atomtype $addname was defined in the original top file, we will not try to read $extrafile.\n";
 			}
 		}else{
 			# if -t is used and there is an extras file, read it
@@ -631,17 +668,6 @@ while (<FILE>){
 			print TOPOUT "[ nonbond_params ]\n$NBbuffer\n\n";
 		}
 
-		# add a new molecule type
-		if($alreadypresent == 0){
-			print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
-			if(exists $seenmoltype{$addname}){
-				smog_quit("moleculetype $addname would be defined more than once in new top file.");
- 			}
-			$seenmoltype{$addname}=0;
-			# since we just added it, don't add again
-			$alreadypresent++;
-		}
-
 		print TOPOUT "$LINEORIG"; 
 
 		$LINEORIG = <FILE>;
@@ -661,6 +687,18 @@ while (<FILE>){
 		my @tmp2=split(/\s+/,$LINE);
 		$seenmoltype{$tmp2[0]}=0;
 	}
+
+	if( $data =~ /[\s+]?\[[\s+]?system/){
+		# add a new molecule type
+		if(! defined $seenmoltype{$addname}){
+			print TOPOUT "[ moleculetype ]\n$addname 1\n\n[ atoms ]\n1 $addname 1 $addname $addname 1\n\n";
+			if(exists $seenmoltype{$addname}){
+				smog_quit("moleculetype $addname would be defined more than once in new top file.");
+ 			}
+			$seenmoltype{$addname}=0;
+		}
+	}
+
 
 	if( $data =~ /[\s+]?\[[\s+]?molecules/){
 		print TOPOUT "$LINEORIG"; 
@@ -701,17 +739,17 @@ sub getcell
 	my @UNIT1=@{$UNIT1};
 	my @UNIT2=@{$UNIT2};
 	# calculate and subtract projection along c vector
-	my $proj=$UNIT2[0]*$Xt+$UNIT2[1]*$Yt+$UNIT2[2]*$Zt;
+	my $proj=$Zt/$UNIT2[2];
 	my $C2=int($proj/$width2);
 	$Xt-=$UNIT2[0]*$proj;
 	$Yt-=$UNIT2[1]*$proj;
 	$Zt-=$UNIT2[2]*$proj;
-	$proj=$UNIT1[0]*$Xt+$UNIT1[1]*$Yt+$UNIT1[2]*$Zt;
+	$proj=$Yt/$UNIT1[1];
 	my $C1=int($proj/$width1);
 	$Xt-=$UNIT1[0]*$proj;
 	$Yt-=$UNIT1[1]*$proj;
 	$Zt-=$UNIT1[2]*$proj;
-	$proj=$UNIT0[0]*$Xt+$UNIT0[1]*$Yt+$UNIT0[2]*$Zt;
+	$proj=$Xt/$UNIT0[0];
 	my $C0=int($proj/$width0);
 
 	return ($C0,$C1,$C2);

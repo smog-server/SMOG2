@@ -6,7 +6,7 @@
 #                          Ailun Wang, Heiko Lammert, Ryan Hayes,
 #                               Jose Onuchic & Paul Whitford
 #
-#          Copyright (c) 2015,2016,2018,2021,2022 The SMOG development team at
+#        Copyright (c) 2015,2016,2018,2021,2022,2024 The SMOG development team at
 #                      The Center for Theoretical Biological Physics
 #                       Rice University and Northeastern University
 #
@@ -295,8 +295,8 @@ sub readindexfile
 	my @grpnms;
 	my %groupnames;
 	my $Ngrps=0;
-	my %atomgroup=();
-	my $groupindex;
+	my %atomgroup;
+	my $groupindex=-1;
 	open(ATOMLIST,"$indexFile") or smog_quit("Can\'t open $indexFile.");
 	print "Reading index file $indexFile\n";
 	while(<ATOMLIST>){
@@ -316,6 +316,10 @@ sub readindexfile
 		}
 		if($A[0] eq "[" and $A[2] eq "]"){
 			# must be a new group
+
+			if($groupindex == 0){
+				smog_quit("Index file has an empty group ($groupname). This is probably a mistake.");
+			}
 			$groupindex=0;
 			$groupname=$A[1];
 			$grpnms[$Ngrps]=$groupname;

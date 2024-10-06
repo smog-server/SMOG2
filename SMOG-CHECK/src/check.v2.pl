@@ -67,11 +67,13 @@ our $TEMPLATE_DIR_AA_CR2=$ENV{'BIFSIF_AA_CR2'};
 our $TEMPLATE_DIR_AA_BOND=$ENV{'BIFSIF_AA_BOND'};
 our $TEMPLATE_DIR_AA_DIHE=$ENV{'BIFSIF_AA_DIHE'};
 our $TEMPLATE_DIR_AA_DIHE4=$ENV{'BIFSIF_AA_DIHE4'};
+our $TEMPLATE_DIR_AA_CC1=$ENV{'BIFSIF_AA_CC1'};
+our $TEMPLATE_DIR_AA_CCD=$ENV{'BIFSIF_AA_CCD'};
 quit_init();
 
 # FAILLIST is a list of all the tests.
 # If you are developing and testing your own forcefield, which may not need to conform to certain checks, then you may want to disable some tests by  removing the test name from this list. However, do so at your own risk.
-our @FAILLIST = ('NAME','DEFAULTS, num entries','DEFAULTS, nbfunc','DEFAULTS, comb-rule','DEFAULTS, gen-pairs','DEFAULTS, fudgeLJ','DEFAULTS, fudgeQQ','1 MOLECULE','ATOMTYPES UNIQUE','ALPHANUMERIC ATOMTYPES','TOP FIELDS FOUND','TOP FIELDS RECOGNIZED','MASS', 'CHARGE','moleculetype=Macromolecule','nrexcl=3', 'PARTICLE', 'C6 VALUES', 'C12 VALUES','ATOMTYPES, SIGMA','ATOMTYPES, EPSILON', 'SUPPORTED BOND TYPES', 'OPEN GRO','GRO-TOP CONSISTENCY', 'BOND STRENGTHS', 'BOND LENGTHS','ANGLE TYPES', 'ANGLE WEIGHTS', 'ANGLE VALUES','DUPLICATE BONDS', 'DUPLICATE ANGLES', 'GENERATED ANGLE COUNT','GENERATED ANGLE IN TOP','ANGLES IN TOP GENERATED', 'IMPROPER WEIGHTS', 'CA IMPROPERS EXIST','OMEGA IMPROPERS EXIST','SIDECHAIN IMPROPERS EXIST','MATCH DIH WEIGHTS','DIHEDRAL ANGLES','ALL POSSIBLE MATCHED DIHEDRALS PRESENT','CA DIHEDRAL WEIGHTS', 'DUPLICATE TYPE 1 DIHEDRALS','DUPLICATE TYPE 2 DIHEDRALS','DUPLICATE TYPE 3 DIHEDRALS','1-3 DIHEDRAL PAIRS','3-1 DIHEDRAL PAIRS','1-3 ORDERING OF DIHEDRALS','1-3 DIHEDRAL RELATIVE WEIGHTS','STRENGTHS OF RIGID DIHEDRALS','STRENGTHS OF OMEGA DIHEDRALS','STRENGTHS OF PROTEIN BB DIHEDRALS','STRENGTHS OF PROTEIN SC DIHEDRALS','STRENGTHS OF NUCLEIC BB DIHEDRALS','STRENGTHS OF NUCLEIC SC DIHEDRALS','STRENGTHS OF LIGAND DIHEDRALS','STACK-NONSTACK RATIO','PROTEIN BB/SC RATIO','NUCLEIC SC/BB RATIO','AMINO/NUCLEIC DIHEDRAL RATIO','AMINO/LIGAND DIHEDRAL RATIO','NUCLEIC/LIGAND DIHEDRAL RATIO','NONZERO DIHEDRAL ENERGY','CONTACT/DIHEDRAL RATIO','1-3 DIHEDRAL ANGLE VALUES','DIHEDRAL IN TOP GENERATED','GENERATED DIHEDRAL IN TOP','STACKING CONTACT WEIGHTS','NON-STACKING CONTACT WEIGHTS','NON-STACKING 2CG CONTACT WEIGHTS','NON-STACKING CG RATIO','LONG CONTACTS', 'CA CONTACT WEIGHTS', 'CONTACT DISTANCES','GAUSSIAN CONTACT WIDTHS','GAUSSIAN CONTACT EXCLUDED VOLUME','CONTACTS NUCLEIC i-j=1','CONTACTS PROTEIN i-j=4','CONTACTS PROTEIN i-j!>4','SCM CONTACT COMPARISON','STATIC CONTACT COMPARISON','NUMBER OF EXCLUSIONS', 'BOX DIMENSIONS','GENERATION OF ANGLES/DIHEDRALS','OPEN CONTACT FILE','NCONTACTS','TOTAL ENERGY','TYPE6 ATOMS','CLASSIFYING DIHEDRALS','NON-ZERO EXIT','ATOM FIELDS','ATOM CHARGES','FREE PAIRS APPEAR IN CONTACTS','EXTRAS: ATOMTYPES','EXTRAS: BONDTYPES','EXTRAS: ANGLETYPES','EXTRAS: DIHEDRALTYPES','EXTRAS: NB_PARAMS','NONZERO LIGAND DIHEDRAL VALUE','BONDS: EXPECTED FOUND','BONDS: FOUND EXPECTED','GMX COMPATIBLE','DIHEDRAL COUNTING: OFF','DIHEDRAL COUNTING: ON','OPENSMOG: EXPRESSION','OPENSMOG: PARAMETERS','OPENSMOG: INTERACTIONS','OPENSMOG: XML EXISTS','USER-DEFINED BONDS PRESENT');
+our @FAILLIST = ('NAME','DEFAULTS, num entries','DEFAULTS, nbfunc','DEFAULTS, comb-rule','DEFAULTS, gen-pairs','DEFAULTS, fudgeLJ','DEFAULTS, fudgeQQ','1 MOLECULE','ATOMTYPES UNIQUE','ALPHANUMERIC ATOMTYPES','TOP FIELDS FOUND','TOP FIELDS RECOGNIZED','MASS', 'CHARGE','moleculetype=Macromolecule','nrexcl=3', 'PARTICLE', 'C6 VALUES', 'C12 VALUES','ATOMTYPES, SIGMA','ATOMTYPES, EPSILON', 'SUPPORTED BOND TYPES', 'OPEN GRO','GRO-TOP CONSISTENCY', 'BOND STRENGTHS', 'BOND LENGTHS','ANGLE TYPES', 'ANGLE WEIGHTS', 'ANGLE VALUES','DUPLICATE BONDS', 'DUPLICATE ANGLES', 'GENERATED ANGLE COUNT','GENERATED ANGLE IN TOP','ANGLES IN TOP GENERATED', 'IMPROPER WEIGHTS', 'CA IMPROPERS EXIST','OMEGA IMPROPERS EXIST','SIDECHAIN IMPROPERS EXIST','MATCH DIH WEIGHTS','DIHEDRAL ANGLES','ALL POSSIBLE MATCHED DIHEDRALS PRESENT','CA DIHEDRAL WEIGHTS', 'DUPLICATE TYPE 1 DIHEDRALS','DUPLICATE TYPE 2 DIHEDRALS','DUPLICATE TYPE 3 DIHEDRALS','1-3 DIHEDRAL PAIRS','3-1 DIHEDRAL PAIRS','1-3 ORDERING OF DIHEDRALS','1-3 DIHEDRAL RELATIVE WEIGHTS','STRENGTHS OF RIGID DIHEDRALS','STRENGTHS OF OMEGA DIHEDRALS','STRENGTHS OF PROTEIN BB DIHEDRALS','STRENGTHS OF PROTEIN SC DIHEDRALS','STRENGTHS OF NUCLEIC BB DIHEDRALS','STRENGTHS OF NUCLEIC SC DIHEDRALS','STRENGTHS OF LIGAND DIHEDRALS','STACK-NONSTACK RATIO','PROTEIN BB/SC RATIO','NUCLEIC SC/BB RATIO','AMINO/NUCLEIC DIHEDRAL RATIO','AMINO/LIGAND DIHEDRAL RATIO','NUCLEIC/LIGAND DIHEDRAL RATIO','NONZERO DIHEDRAL ENERGY','CONTACT/DIHEDRAL RATIO','1-3 DIHEDRAL ANGLE VALUES','DIHEDRAL IN TOP GENERATED','GENERATED DIHEDRAL IN TOP','STACKING CONTACT WEIGHTS','NON-STACKING CONTACT WEIGHTS','NON-STACKING 2CG CONTACT WEIGHTS','NON-STACKING CG RATIO','LONG CONTACTS', 'CA CONTACT WEIGHTS', 'CONTACT DISTANCES','GAUSSIAN CONTACT WIDTHS','GAUSSIAN CONTACT EXCLUDED VOLUME','CONTACTS NUCLEIC i-j=1','CONTACTS PROTEIN i-j=4','CONTACTS PROTEIN i-j!>4','SCM CONTACT COMPARISON','STATIC CONTACT COMPARISON','NUMBER OF EXCLUSIONS', 'BOX DIMENSIONS','GENERATION OF ANGLES/DIHEDRALS','OPEN CONTACT FILE','NCONTACTS','TOTAL ENERGY','TYPE6 ATOMS','CLASSIFYING DIHEDRALS','NON-ZERO EXIT','ATOM FIELDS','ATOM CHARGES','FREE PAIRS APPEAR IN CONTACTS','EXTRAS: ATOMTYPES','EXTRAS: BONDTYPES','EXTRAS: ANGLETYPES','EXTRAS: DIHEDRALTYPES','EXTRAS: NB_PARAMS','NONZERO LIGAND DIHEDRAL VALUE','BONDS: EXPECTED FOUND','BONDS: FOUND EXPECTED','GMX COMPATIBLE','DIHEDRAL COUNTING: OFF','DIHEDRAL COUNTING: ON','OPENSMOG: EXPRESSION','OPENSMOG: PARAMETERS','OPENSMOG: INTERACTIONS','OPENSMOG: XML EXISTS','OPENSMOG: CUSTOM CONTACT PARAMETER VALUES','OPENSMOG: CUSTOM DIHEDRAL PARAMETER VALUES','USER-DEFINED BONDS PRESENT',);
 #removed tests: 'OPEN G96','G96 FIELDS',
 # default location of test PDBs
 our $PDB_DIR="share/PDB.files";
@@ -302,8 +304,8 @@ sub addOpenSMOG
   foreach my $funcs(keys %{$xmlhandle}){
    my $directive;
    my %convertvalue;
-   # determine what is expected in this contact term
-   # expected function is the OpenMM custom potential form
+   # determine what is expected in this OS term
+   # expectedfunction is the OpenMM custom potential form
    # expectedparams is the list of parameters that should be found in the xml
    # expectedattributes is the order in which to write values to the internal "top" data
    # convertvalue gives an expression for converting angles to gromacs conventions
@@ -333,6 +335,12 @@ sub addOpenSMOG
     }else{
      internal_error("OpenSMOG: contact_1-10-12 checking not implemented for model $model with gaussian=$gaussian");
     }
+   }elsif($funcs eq "contact_custom1"){
+    $directive="pairs";
+    $ftype=1;
+    $expectedfunction="weight*((sigma1/r)^16+0.5* (tanh(B*(r-sigma2))-1))";
+    @expectedparams=("weight","B","sigma1","sigma2");
+    @expectedattributes=("i","j","weight","B","sigma1","sigma2");
    }elsif($funcs eq "contact_gaussian"){
     $directive="pairs";
     $ftype=6;
@@ -350,6 +358,24 @@ sub addOpenSMOG
     @expectedparams=("theta0","weight");
     @expectedattributes=("i","j","k","l","theta0","weight");
     $convertvalue{theta0}="180/$PI*(theta0)"
+   }elsif($funcs eq "dihedral_custom1"){
+    $directive="dihedrals";
+    $ftype=-1;
+    $expectedfunction="weight*(1-(cos(multiplicity*(theta-theta0))^2))";
+    @expectedparams=("theta0","weight","multiplicity");
+    @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
+    # The +180 is due to how we internally add values to the top file.
+    # Since gromacs defined cis as 0 and OpenMM defines trans as 0, there
+    # is a 180 degree difference in their definitions. In smog-check,
+    # we internally convert all xml (OpenSMOG/OpenMM conventions) to an
+    # internal top-like format (only in memory) and then process it.
+    # This allows for a single set of angle checks to be performed,
+    # rather than having a top version and a xml version. The downside
+    # is that smog-check is more clumsy, but we can live with that.
+    # In addition to the 180, this convertvalue expression has a *1.05
+    # and a -0.2, since the function called in the sample .b file as:
+    #  dihedral_custom1((?+0.2)/1.05,1,sin(?))   
+    $convertvalue{theta0}="180/$PI*(theta0*1.05-0.2)+180"
    }elsif($funcs eq "dihedral_cosine"){
     $directive="dihedrals";
     $ftype=1;
@@ -497,7 +523,7 @@ sub collectinteractions
         $exp2=~ s/$namet/$valt/g;
        }
       }
-      # convert to gromacs angles
+      # convert to gromacs-like values (i.e. Exactly Gromacs values for standard interactions).  
       $val=eval($exp2);
      }
      $string .="$val ";
@@ -955,6 +981,12 @@ sub runsmog
    $ARGS .= " -t $TEMPLATE_DIR_AA_2CG ";
   }elsif($model eq "AA-nb-cr2"){
    $ARGS .= " -t $TEMPLATE_DIR_AA_CR2 ";
+  }elsif($model eq "AA-CC1"){
+   # custom contacts #1
+   $ARGS .= " -t $TEMPLATE_DIR_AA_CC1 ";
+  }elsif($model eq "AA-CCD"){
+   # custom contacts and dihedrals
+   $ARGS .= " -t $TEMPLATE_DIR_AA_CCD ";
   }elsif($model eq "AA-BOND"){
    $ARGS .= " -t $TEMPLATE_DIR_AA_BOND ";
   }elsif($model eq "AA-DIHE"){
@@ -1000,7 +1032,7 @@ sub setmodelflags{
  # bondrescale and anglerescale are only non-1 value if testing free.  We bundled the eval test in here.
  $bondrescale=1;
  $anglerescale=1;
- # default multiplicity of second dihedral is 3.  For the free test, we use 4, just to mix things up.
+ # default multiplicity of second dihedral is 3.  For the free test, we use 6, just to mix things up.
  $MULTDIHE=3;
 
  if($contactmodel =~ m/^default$/){
@@ -1068,6 +1100,10 @@ sub setmodelflags{
    $checkBOND=0;
   }elsif($model =~ m/^AA-DIHE$/){
    print "Testing all dihedrals functions in AA model\n";
+  }elsif($model =~ m/^AA-CC1$/){
+   print "Testing OpenSMOG Custom Contacts in AA model\n";
+  }elsif($model =~ m/^AA-CCD$/){
+   print "Testing OpenSMOG Custom Contacts and Custom Dihedrals in AA model\n";
   }elsif($model =~ m/^AA-DIHE4$/){
    print "Testing all type-4 dihedrals functions in AA model\n";
    $DihDefType=4;
@@ -1098,7 +1134,7 @@ sub setmodelflags{
   $epsilonCAC=1.0;
   $epsilonCAD=1.0;
   $sigmaCA=4.0;
-  if($model eq "AA" || $model eq "CA"){
+  if($model eq "AA" || $model eq "CA" || $model eq "AA-CC1" || $model eq "AA-CCD"){
    $fudgeLJ=1.0;
    $fudgeQQ=1.0;
   }
@@ -1347,6 +1383,19 @@ sub smogchecker
   $FAIL{'OPENSMOG: PARAMETERS'}=-1;
   $FAIL{'OPENSMOG: INTERACTIONS'}=-1;
   $FAIL{'OPENSMOG: XML EXISTS'}=-1;
+ }
+
+ if($model eq "AA-CC1" || $model eq "AA-CCD"){
+  # if custom contact check 1 or custom contacts and dihedrals check, turn off distance check, since that is not relevant 
+  $FAIL{'CONTACT DISTANCES'}=-1;
+ }else{
+  # if not custom contact check 1 or custom dihedral check (which also uses custom contacts), turn off check for CC1 
+  $FAIL{'OPENSMOG: CUSTOM CONTACT PARAMETER VALUES'}=-1;
+ }
+
+ if($model ne "AA-CCD"){
+  # if not custom dihedral check, turn off
+  $FAIL{'OPENSMOG: CUSTOM DIHEDRAL PARAMETER VALUES'}=-1;
  }
 
  if($PDB =~ m/^FES$/){
@@ -2005,19 +2054,13 @@ sub checktop
  }
 
  # check contents by directive
- checkdefaults($topdata{'defaults'});
+ &checkdefaults($topdata{'defaults'});
 
- my $seen;
- $seen=checkatomtypes($topdata{'atomtypes'},\%seen);
- %seen=%{$seen};
+ &checkatomtypes($topdata{'atomtypes'},\%seen);
 
  &checkmoleculetype($topdata{'moleculetype'},\%seen);
- {
-  my ($r1,$r2);
-  ($finalres,$r1,$r2)=checkatoms($topdata{'atoms'},\%seen,\%revData,\@resindex);
-  %revData=%{$r1};
-  @resindex=@{$r2};
- }
+
+ $finalres=checkatoms($topdata{'atoms'},\%seen,\%revData,\@resindex);
 
  my $test;
  if(exists $topdata{'bondtypes'}){
@@ -2033,35 +2076,13 @@ sub checktop
   $FAIL{'EXTRAS: NB_PARAMS'}=checktypes($topdata{'nonbond_params'},\%seen,2,"nonbond_params");
  }
 
- {
-  my ($r1,$r2)=checkbonds($topdata{'bonds'},\@theta_gen,\%theta_gen_as);
-  @theta_gen=@{$r1};
-  %theta_gen_as=%{$r2};
- }
+ &checkbonds($topdata{'bonds'},\@theta_gen,\%theta_gen_as);
 
- { 
-  my ($r3,$r4,$r5,$r6)=checkangles($topdata{'angles'},\@theta_gen,\%theta_gen_as,\%phi_gen_as,\@phi_gen,\%improper_gen_as,\@improper_gen);
-  %phi_gen_as=%{$r3};
-  @phi_gen=@{$r4};
-  %improper_gen_as=%{$r5};
-  @improper_gen=@{$r6};
- }
- 
- {
-  my ($r0,$r1,$r2,$r3,$r4,$r5,$r6);
-  ($r0,$r1,$r2,$r3,$r4)=checkdihedrals($topdata{'dihedrals'},\%revData,\@theta_gen,\%theta_gen_as,\%phi_gen_as,\@phi_gen,\%improper_gen_as,\@improper_gen,$finalres);
-  %revData=%{$r0};
-  %phi_gen_as=%{$r1};
-  @phi_gen=@{$r2};
-  %improper_gen_as=%{$r3};
-  @improper_gen=@{$r4};
- }
+ &checkangles($topdata{'angles'},\@theta_gen,\%theta_gen_as,\%phi_gen_as,\@phi_gen,\%improper_gen_as,\@improper_gen);
 
- {
-  my $r1;
-  ($r1,$stackingE,$NonstackingE,$NonstackingE2)=checkpairs($topdata{'pairs'},\@resindex,\@PAIRS,$stackingE,$NonstackingE,$NonstackingE2);
-  @PAIRS=@{$r1};
- }
+ &checkdihedrals($topdata{'dihedrals'},\%revData,\@theta_gen,\%theta_gen_as,\%phi_gen_as,\@phi_gen,\%improper_gen_as,\@improper_gen,$finalres);
+
+ &checkpairs($topdata{'pairs'},\@resindex,\@PAIRS,\$stackingE,\$NonstackingE,\$NonstackingE2);
  
  &checkexclusions($topdata{'exclusions'},\@PAIRS);
 
@@ -2249,7 +2270,7 @@ sub checktop
   $FAIL{'NON-STACKING CG RATIO'}=-1;
  }
 
- if($model eq "AA" || $model eq "AA-match" || $model eq "AA-2cg"  ){
+ if($model eq "AA" || $model eq "AA-match" || $model eq "AA-2cg" || $model eq "AA-CC1" || $model eq "AA-CCD"  ){
   if($NonstackingE !=0 && $stackingE !=0){
    my $CR=$NonstackingE/$stackingE;
    my $contactratio;
@@ -2466,10 +2487,9 @@ sub checkdefaults
 
 sub checkatomtypes
 {
- my ($N1,$N2)=@_; 
+ my ($N1,$seen)=@_; 
  my $LN=1;
  my @topdata = @{$N1};
- my %seen=%{$N2};
  my $numtypes=0;
  my $mass1=0;
  my $typesunique=0;
@@ -2483,8 +2503,8 @@ sub checkatomtypes
  for (my $LN=1;$LN<=$#{$N1}; $LN++){
   my @A=split(/ /,$topdata[$LN]);
   $numtypes++;
-  if(!exists $seen{$A[0]}){
-   $seen{$A[0]}=1;
+  if(!exists $$seen{$A[0]}){
+   $$seen{$A[0]}=1;
    $typesunique++;
   }else{
    smogcheck_error("atomtype name $A[0] appears more than once.");
@@ -2564,13 +2584,12 @@ sub checkatomtypes
   $FAIL{'ALPHANUMERIC ATOMTYPES'}=0;
  }
  if($model eq "AA" && $default ne "yes"){
-  if(exists $seen{"extratype"}){
+  if(exists $$seen{"extratype"}){
    $FAIL{'EXTRAS: ATOMTYPES'}=0;
   }
  }else{
   $FAIL{'EXTRAS: ATOMTYPES'}=-1;
  }
- return (\%seen);
 }
 
 
@@ -2599,8 +2618,6 @@ sub checkatoms
  my ($N1,$N2,$revData,$resindex)=@_;
  my @topdata=@{$N1};
  my %seen=%{$N2};
- my %revData=%{$revData};
- my @resindex=@{$resindex};
  my $FAIL_GROTOP=0;
  $NUMATOMS=0;
  my $finalres;
@@ -2702,10 +2719,10 @@ sub checkatoms
    $fail_log .= failed_message("mismatched resnames.  Top: $A[3] and Gro: $GRODATA[$NUMATOMS][1]: Top line :$LINE");
    $FAIL_GROTOP++;
   }
-  $resindex[$A[0]]=$A[2];
+  $$resindex[$A[0]]=$A[2];
   $finalres=$A[2];
   my $label=sprintf("%i-%s", $A[2], $A[4]);
-  $revData{$label}=$A[0];
+  $$revData{$label}=$A[0];
  # nucleic acid, protein, ligand
   if(defined $TYPE{$A[3]}){
    $MOLTYPE[$A[0]]=$TYPE{$A[3]};
@@ -2743,7 +2760,7 @@ sub checkatoms
  foreach my $rest(keys %MOLTYPEBYRES){
   $restypecount{$MOLTYPEBYRES{$rest}}++;
  }
- return ($finalres,\%revData,\@resindex);
+ return $finalres;
 }
 
 sub addtoexpected
@@ -2839,8 +2856,6 @@ sub checktypes
 sub checkbonds
 {
  my ($N1,$theta_gen,$theta_gen_as)=@_;
- my @theta_gen=@{$theta_gen};
- my %theta_gen_as=%{$theta_gen_as};
  my @topdata=@{$N1};
  my @bonds;
  $#bonds = -1;
@@ -2985,9 +3000,7 @@ sub checkbonds
 
  # generate the angles
  # generate all possible bond angles based on bonds
- undef %theta_gen_as;
  $theta_gen_N=0;
- $#theta_gen=-1;
  for(my $i=1;$i<=$NUMATOMS;$i++){
  # go through the atoms.  For each atom, check all of the bonds it is involved in, and see if we can make a bond angle out of it.
   for(my $j=0;$j<$NbondWatom[$i];$j++){
@@ -3031,8 +3044,8 @@ sub checkbonds
        next;
       }
      }
-     $theta_gen_as{$string} = 1;
-     $theta_gen[$theta_gen_N]="$string";
+     $$theta_gen_as{$string} = 1;
+     $$theta_gen[$theta_gen_N]="$string";
      $theta_gen_N++;
     }
    }
@@ -3049,7 +3062,6 @@ sub checkbonds
   $FAIL{'USER-DEFINED BONDS PRESENT'}=-1;
  }
 
- return (\@theta_gen,\%theta_gen_as);
 }
 
 sub checkBONDs
@@ -3109,11 +3121,11 @@ sub checkbondgen
 sub checkangles
 {
  my ($N1,$theta_gen,$theta_gen_as,$phi_gen_as,$phi_gen,$improper_gen_as,$improper_gen)=@_;
- my %phi_gen_as=%{$phi_gen_as};
- my @phi_gen=@{$phi_gen};
+# my %phi_gen_as=%{$phi_gen_as};
+# my @phi_gen=@{$phi_gen};
  my $LN=1;
- my %improper_gen_as=%{$improper_gen_as};
- my @improper_gen=@{$improper_gen};
+# my %improper_gen_as=%{$improper_gen_as};
+# my @improper_gen=@{$improper_gen};
  my @theta_gen=@{$theta_gen};
  my %theta_gen_as=%{$theta_gen_as};
  my @topdata=@{$N1};
@@ -3258,12 +3270,12 @@ sub checkangles
  }
 
  # generate all possible dihedral angles based on bond angles
- undef %phi_gen_as;
+ #undef %phi_gen_as;
  $phi_gen_N=0;
- $#phi_gen=-1;
- undef %improper_gen_as;
+ #$#phi_gen=-1;
+ #undef %improper_gen_as;
  $improper_gen_N=0;
- $#improper_gen=-1;
+ #$#improper_gen=-1;
  my ($formed,$phi1,$phi2,$phi3,$phi4,$AIJ,$AIK,$A1,$A2,$A3,$B1,$B2,$B3);
  for(my $i=1;$i<=$NUMATOMS;$i++){
  # go through the atoms.  For each atom, check all of the angles it is involved in, and see if we can make an angle out of it.
@@ -3295,8 +3307,8 @@ sub checkangles
         next;
        }
       }
-      $phi_gen_as{$string} = 1;
-      $phi_gen[$phi_gen_N]="$string";
+      $$phi_gen_as{$string} = 1;
+      $$phi_gen[$phi_gen_N]="$string";
       $phi_gen_N++;
      }elsif($formed eq "improper"){
       my @phit;
@@ -3320,8 +3332,8 @@ sub checkangles
              }else{
               $string=sprintf("%i-%i-%i-%i", $phi4, $phi3, $phi2, $phi1);
              }
-             $improper_gen_as{$string} = 1;
-             $improper_gen[$phi_gen_N]="$string";
+             $$improper_gen_as{$string} = 1;
+             $$improper_gen[$phi_gen_N]="$string";
              $improper_gen_N++;
             }
            }
@@ -3335,7 +3347,6 @@ sub checkangles
    }
   }
  }
- return (\%phi_gen_as,\@phi_gen,\%improper_gen_as,\@improper_gen);
 }
 
 sub checkdihedrals
@@ -3349,7 +3360,7 @@ sub checkdihedrals
  my @theta_gen=@{$theta_gen};
  my %theta_gen_as=%{$theta_gen_as};
  my @topdata=@{$N1};
- my (%dihedral_array1,%dihedral_array2,%dihedral_array3,%dihedral_array1_W,%dihedral_array3_W,%dihedral_array1_A,%dihedral_array3_A,%seendihedrals);
+ my (%dihedral_array1,%dihedral_array2,%dihedral_array3,%dihedral_arrayOS,%dihedral_array1_W,%dihedral_array3_W,%dihedral_array1_A,%dihedral_array3_A,%seendihedrals);
  my $CORIMP=0;
  if($model ne "CA" ){
   $FAIL{'CA DIHEDRAL WEIGHTS'}=-1;
@@ -3369,10 +3380,14 @@ sub checkdihedrals
  my $LAST_N=0;
  my $DIHSW=0;
  my $accounted=0;
+ my $correcttype=0;
  my $accounted1=0;
  my $CORRECTDIHEDRALANGLES=0;
  my $CORRECTDIHEDRALWEIGHTS=0;
  my $numberofdihedrals=0;
+ my $customdihedralcount=0;
+ my $customdihedralscorrect=0;
+ 
  $#ED_T = -1;
  $#ED_Tc = -1;
  $#EDrig_T = -1;
@@ -3390,40 +3405,82 @@ sub checkdihedrals
   $Nphi++;
 
   # #check if dihedral has been seen already...
-
-    # check duplicate type 3 (or $MULTDIHE, to allow for other multiplicities to be checked) 
-    if(!exists $dihedral_array3{$string} and exists $A[7] and $A[7] == $MULTDIHE){
-     $dihedral_array3{$string}=1;
-     $dihedral_array3_W{$string}=$A[6];
-     $dihedral_array3_A{$string}=$A[5];
-     $accounted++;
-     if(!exists $dihedral_array3{$string}){
+  if($model eq "AA-CCD" and $A[4] == -1){
+   $customdihedralcount++;
+   # the check for -1 is an internal method for indicating which dihedrals are custom OS dihedrals
+   # the top file does not actually have -1 as the type, we just add to an internal record when 
+   # converting xml data to top-formatted data
+   # see if we are using a custom dihedral potential for OpenSMOG
+   if(exists $dihedral_arrayOS{$string}){
+    $doubledih2++;
+    $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
+   }else{
+    $dihedral_arrayOS{$string}=1;
+    $accounted++;
+   }
+   if($MOLTYPE[$A[0]] ne "LIGAND" ){
+    $DENERGY+=$A[6];
+   }
+   # this is the theta0 value, for this test
+   # convertvalue was used to return this to theta0, gromacs convention
+   #$A[7]
+   # this is the "multiplicity" value
+   if (abs($A[7] - sin(($A[5]-180)*$PI/180)) < 0.0001){
+    $customdihedralscorrect++;
+   }else{
+    $fail_log .= failed_message("Multiplicity in custom dihedral check is not correct\n\t$LINE");
+   }
+  }elsif($A[4] == $DihDefType){
+   if(exists $A[7]){
+    if($A[7] == $MULTDIHE){
+     if(exists $dihedral_array3{$string}){
+      $doubledih3++; 
+      $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
+     }else{
+      # check duplicate type 3 (or $MULTDIHE, to allow for other multiplicities to be checked) 
+      $dihedral_array3{$string}=1;
+      $dihedral_array3_W{$string}=$A[6];
+      $dihedral_array3_A{$string}=$A[5];
+      $accounted++;
+     }
+     if(!exists $dihedral_array1{$string}){
       $solitary3++;
       $fail_log .= failed_message("Multiplicity-$MULTDIHE dihedral appeared w/o a mult-1...\n\t$LINE");
      }
-    }elsif(exists $dihedral_array3{$string} and exists $A[7] and $A[7] == $MULTDIHE){
-     $doubledih3++; 
-     $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
-    }elsif(!exists $dihedral_array1{$string} and exists $A[7] and $A[7] == 1){
-     #check duplicate type 1 and 2
-     ## dihedral was not assigned.
-     $dihedral_array1{$string}=1;
-     $dihedral_array1_W{$string}=$A[6];
-     $dihedral_array1_A{$string}=$A[5];
-     $accounted++;
-     $accounted1++;
-    }elsif(exists $dihedral_array1{$string} and exists $A[7] and $A[7] == 1){
-     $doubledih1++;
-     $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
-    }elsif(!exists $dihedral_array2{$string} and $A[4] == 2){
-     $dihedral_array2{$string}=1;
-     $accounted++;
-    }elsif(exists $dihedral_array2{$string} and $A[4] == 2){
-     $doubledih2++;
-     $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
-    }else{
-     internal_error('DUPLICATE DIHEDRAL CHECKING')
+    }elsif($A[7] == 1){
+     #check duplicate type 1
+     if(exists $dihedral_array1{$string}){
+      $doubledih1++;
+      $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
+     }else{
+      ## dihedral was not assigned.
+      $dihedral_array1{$string}=1;
+      $dihedral_array1_W{$string}=$A[6];
+      $dihedral_array1_A{$string}=$A[5];
+      $accounted++;
+      $accounted1++;
+     }
     }
+   }else{
+    $fail_log .= failed_message("Dihedral of type $A[4] is missing a multiplicity factor. See line:\n\t$LINE");
+   }
+  }elsif($A[4] == 2){
+   # field 7 not present, position 4
+   if(exists $dihedral_array2{$string}){
+    $doubledih2++;
+    $fail_log .= failed_message("Duplicate dihedral\n\t$LINE");
+   }else{
+    $dihedral_array2{$string}=1;
+    $accounted++;
+   }
+  }else{
+   internal_error('DUPLICATE DIHEDRAL CHECKING')
+  }
+  if ($customdihedralcount > 0){
+   if($customdihedralscorrect== $customdihedralcount){
+    $FAIL{'OPENSMOG: CUSTOM DIHEDRAL PARAMETER VALUES'}=0;
+   }
+  }
 
   ##if dihedral is type 1, then save the information, so we can make sure the next is n=3
   if(exists $A[7]){
@@ -3582,7 +3639,7 @@ sub checkdihedrals
  my $gen_match=0;
  # check to see if all the generated dihedrals (from this script) are present in the top file
  for(my $i=0;$i<$phi_gen_N;$i++){
-  if(exists $dihedral_array1{$phi_gen[$i]}  or exists $dihedral_array2{$phi_gen[$i]} ){
+  if(exists $dihedral_array1{$phi_gen[$i]}  or exists $dihedral_array2{$phi_gen[$i]} or exists $dihedral_arrayOS{$phi_gen[$i]} ){
    $gen_match++;
   }else{
    $fail_log .= failed_message("Generated dihedral $phi_gen[$i] is not in the list of included dihedrals...");
@@ -3667,7 +3724,7 @@ sub checkdihedrals
   $FAIL{'1-3 DIHEDRAL ANGLE VALUES'}=0
  }
  # check that all impropers are assigned about all CA atoms
- if($model eq "AA" && $AMINO_PRESENT){
+ if(($model eq "AA" || $model eq "AA-CC1" || $model eq "AA-CCD" ) && $AMINO_PRESENT){
   my $impCAfound=0;
   my $impCApossible=0;
   my $impOMEfound=0;
@@ -3800,7 +3857,6 @@ sub checkdihedrals
  }else{
    $FAIL{'ALL POSSIBLE MATCHED DIHEDRALS PRESENT'}=-1;
  }
- return (\%revData,\%phi_gen_as,\@phi_gen,\%improper_gen_as,\@improper_gen);
 }
 
 sub dihdelta
@@ -3818,10 +3874,9 @@ sub dihdelta
 
 sub checkpairs
 {
- my ($N1,$N2,$N3,$stackingE,$NonstackingE,$NonstackingE2)=@_;
+ my ($N1,$N2,$PAIRS,$stackingE,$NonstackingE,$NonstackingE2)=@_;
  my @topdata=@{$N1};
  my @resindex=@{$N2};
- my @PAIRS=@{$N3};
  $CONTENERGY=0;
  my $FAIL_STACK=0;
  my $FAIL_NONSTACK=0;
@@ -3843,8 +3898,8 @@ sub checkpairs
  for (my $LN=1;$LN<=$#topdata;$LN++){
   my $LINE=$topdata[$LN];
   my @A=split(/ /,$LINE);
-  $PAIRS[$NCONTACTS][0]=$A[0];
-  $PAIRS[$NCONTACTS][1]=$A[1];
+  $$PAIRS[$NCONTACTS][0]=$A[0];
+  $$PAIRS[$NCONTACTS][1]=$A[1];
   $NCONTACTS++;
   my $R0=$GRODATA[$A[0]-1][1];
   my $R1=$GRODATA[$A[1]-1][1];
@@ -3910,6 +3965,24 @@ sub checkpairs
    }else{
     $fail_log .= failed_message("A contact appears to be the wrong distance.  From the .gro (or .contact) file, we found r=$CALCD, and from the .top r=$Cdist.\n\t$LINE");
    }
+  }elsif($model eq "AA-CC1" || $model eq "AA-CCD" ){
+   $W=$A[3];
+   $CALCD=getpairdist(\*CMAP,$A[0],$A[1]);
+   if($A[4] == 10){
+    $ContactDist++;
+   }
+   $Cdist=$A[5]/0.9;
+   if(checkdist($Cdist,$CALCD)){
+    $ContactDist++;
+   }else{
+    $fail_log .= failed_message("A contact appears to be the wrong distance.  From the .gro (or .contact) file, we found r=$CALCD, and from the .xml, calculated based on sigma1, r=$Cdist.\n\t$LINE");
+   }
+   $Cdist=$A[6]/1.1/sin($CALCD/2.2);
+   if(checkdist($Cdist,$CALCD)){
+    $ContactDist++;
+   }else{
+    $fail_log .= failed_message("A contact appears to be the wrong distance.  From the .gro (or .contact) file, we found r=$CALCD, and from the .xml, calculated based on sigma2, r=$Cdist.\n\t$LINE");
+   }
   }elsif((checkAAlist($model) || $model eq "AA-match") && $model ne "AA-nb-cr2"){
    $W=($A[3]*$A[3])/(4*$A[4]);
    $Cdist=(2.0*$A[4]/($A[3]))**(1.0/6.0);
@@ -3954,29 +4027,29 @@ sub checkpairs
    if($MOLTYPE[$A[0]] eq "NUCLEIC" and $MOLTYPE[$A[1]] eq "NUCLEIC" and $ATOMTYPE[$A[0]] ne "BACKBONE" and  $ATOMTYPE[$A[1]] ne "BACKBONE" and $ATOMNAME[$A[0]] ne "C1\*" and $ATOMNAME[$A[1]] ne "C1\*" and abs($RESNUM[$A[0]]-$RESNUM[$A[1]]) == 1 and $CID[$A[0]] == $CID[$A[1]]){
     # if we haven't assigned a value to stacking interactions, then let's save it
     # if we have saved it, check to see that this value is the same as the previous ones.
-    if($stackingE == 0 ){
-     $stackingE=$W;
-    }elsif(abs($stackingE - $W) > 10.0/($PRECISION*1.0) ){
+    if($$stackingE == 0 ){
+     $$stackingE=$W;
+    }elsif(abs($$stackingE - $W) > 10.0/($PRECISION*1.0) ){
      $FAIL_STACK++;
-     $fail_log .= failed_message("stacking energies: $stackingE  $W $A[0] $A[1]\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
+     $fail_log .= failed_message("stacking energies: $$stackingE  $W $A[0] $A[1]\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
      }
    }else{
    # it is not a stacking contact.  Do the same checks for non-stacking interactions
 
     if($model eq "AA-2cg"){
      if($pronuc ==1){
-      if($NonstackingE == 0 ){
-       $NonstackingE=$W;
-      }elsif(abs($NonstackingE - $W) > 10.0/($PRECISION*1.0) ){
+      if($$NonstackingE == 0 ){
+       $$NonstackingE=$W;
+      }elsif(abs($$NonstackingE - $W) > 10.0/($PRECISION*1.0) ){
        $FAIL_NONSTACK++;
-       $fail_log .= failed_message("non-stacking contacts: $NonstackingE $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
+       $fail_log .= failed_message("non-stacking contacts: $$NonstackingE $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
       }
      }elsif($pronuc ==2){
-      if($NonstackingE2 == 0 ){
-       $NonstackingE2=$W;
-      }elsif(abs($NonstackingE2 - $W) > 10.0/($PRECISION*1.0) ){
+      if($$NonstackingE2 == 0 ){
+       $$NonstackingE2=$W;
+      }elsif(abs($$NonstackingE2 - $W) > 10.0/($PRECISION*1.0) ){
        $FAIL_NONSTACK_CG2++;
-       $fail_log .= failed_message("non-stacking contacts 2cg: $NonstackingE2 $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
+       $fail_log .= failed_message("non-stacking contacts 2cg: $$NonstackingE2 $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
       }
      }else{
       internal_error("AA-2cg assignment error");
@@ -3984,11 +4057,11 @@ sub checkpairs
 
     }else{ 
 
-     if($NonstackingE == 0 ){
-      $NonstackingE=$W;
-     }elsif(abs($NonstackingE - $W) > 10.0/($PRECISION*1.0) ){
+     if($$NonstackingE == 0 ){
+      $$NonstackingE=$W;
+     }elsif(abs($$NonstackingE - $W) > 10.0/($PRECISION*1.0) ){
       $FAIL_NONSTACK++;
-      $fail_log .= failed_message("non-stacking contacts: $NonstackingE $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
+      $fail_log .= failed_message("non-stacking contacts: $$NonstackingE $W\n\tline:\n\t$LINE\n MOLTYPE0 $MOLTYPE[$A[0]]\n MOLTYPE1 $MOLTYPE[$A[1]]\n ATOMTYPE0 $ATOMTYPE[$A[0]]\n ATOMTYPE1 $ATOMTYPE[$A[1]]\n ATOMNAME0 $ATOMNAME[$A[0]]\n ATOMNAME1 $ATOMNAME[$A[1]]\n RESNUM0 $RESNUM[$A[0]]\n RESNUM1 $RESNUM[$A[1]]\n CHAINID0 $CID[$A[0]]\n CHAINID1 $CID[$A[1]]");
      }
     }
    }
@@ -4008,6 +4081,11 @@ sub checkpairs
  if($ContactDist == $NCONTACTS){
   $FAIL{'CONTACT DISTANCES'}=0;
  }
+ if ($model eq "AA-CC1" || $model eq "AA-CCD"){
+  if($ContactDist == $NCONTACTS*3){
+   $FAIL{'OPENSMOG: CUSTOM CONTACT PARAMETER VALUES'}=0;
+  }
+ }
  if($gaussian eq "yes"){
   if($GaussianContactWidth == $NCONTACTS){
    $FAIL{'GAUSSIAN CONTACT WIDTHS'}=0;
@@ -4024,20 +4102,20 @@ sub checkpairs
    $FAIL{'LONG CONTACTS'}=0;
   }
   if($NUCLEIC_PRESENT){
-   if($FAIL_NONSTACK == 0 and $NonstackingE != 0){
+   if($FAIL_NONSTACK == 0 and $$NonstackingE != 0){
     $FAIL{'NON-STACKING CONTACT WEIGHTS'}=0;	
    }
    if($AMINO_PRESENT){
-    if($FAIL_NONSTACK == 0 and $NonstackingE2 != 0){
+    if($FAIL_NONSTACK == 0 and $$NonstackingE2 != 0){
      $FAIL{'NON-STACKING 2CG CONTACT WEIGHTS'}=0;	
     }
    }
-   if($FAIL_STACK == 0 and $stackingE != 0 ){
+   if($FAIL_STACK == 0 and $$stackingE != 0 ){
     $FAIL{'STACKING CONTACT WEIGHTS'}=0;	
    }
   }else{
    $FAIL{'STACKING CONTACT WEIGHTS'}=-1;	
-   if($FAIL_NONSTACK == 0 and $NonstackingE != 0 ){
+   if($FAIL_NONSTACK == 0 and $$NonstackingE != 0 ){
     $FAIL{'NON-STACKING CONTACT WEIGHTS'}=0;	
    }
   } 
@@ -4057,7 +4135,6 @@ sub checkpairs
  }else{
   $FAIL{'FREE PAIRS APPEAR IN CONTACTS'}=1;	
  }
- return (\@PAIRS,$stackingE,$NonstackingE,$NonstackingE2);
 }
 
 sub checkdist
@@ -4246,7 +4323,7 @@ sub finalchecks
  }
  my $E_TOTAL=$DENERGY+$CONTENERGY;
  my $CTHRESH=$NUMATOMS*10.0/$PRECISION;
- if($model eq "AA" && $free eq "no"){ 
+ if(($model eq "AA" || $model eq "AA-CC1" || $model eq "AA-CCD") && $free eq "no"){ 
   if(abs($NUMATOMS_LIGAND-$E_TOTAL) < $CTHRESH){
    $FAIL{'TOTAL ENERGY'}=0;
   }else{
@@ -4528,7 +4605,7 @@ EOT
 sub checkAAlist
 {
  my ($model)=@_;
- my @AAlist=("AA","AA-2cg","AA-nb-cr2","AA-BOND","AA-DIHE","AA-DIHE4");
+ my @AAlist=("AA","AA-2cg","AA-nb-cr2","AA-BOND","AA-DIHE","AA-DIHE4","AA-CC1","AA-CCD");
  foreach my $i (@AAlist){
   if($i eq $model){
    return 1;

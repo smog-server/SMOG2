@@ -14,6 +14,15 @@ echo "Starting to configure SMOG 2"
 if [ ! -z ${smog_install_dir+x} ]
 then
 	echo Install directory set. Will try to install in $smog_install_dir
+	if [[  $smog_install_dir =~ " " ]]
+	then
+		echo "
+
+smog_install_dir can not contain spaces. If you really need to use spaces in your path, then we suggest you try using a Docker container of SMOG2 (available at smog-server.org)
+
+"
+		smog_error
+	fi
 	if [[ ! "$smog_install_dir" =~ ^\/ ]]
 	then
 		echo Must provide absolute path for install directory.
@@ -43,7 +52,17 @@ if [ -z ${smog2dir+x} ]
 then
 	# smog2dir was not set, so assume configure.smog2 is in the main smog2 directory
 	smog2dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+	echo smog2dir was not set by user. Will install in the directory \"$smog2dir\"
 
+fi
+if [[  $smog2dir =~ " " ]]
+then
+	echo "
+
+SMOG2 can not be installed to a directory that has spaces in the name, or path. If you really need to use spaces, then we suggest you try using a Docker container of SMOG2 (available at smog-server.org)
+
+"
+	smog_error
 fi
 
 
@@ -92,7 +111,19 @@ then
 	else
 		perl4smog=$perlf
 	fi
+
 fi
+
+if [[  $perl4smog =~ " " ]]
+then
+	echo "
+
+The path to perl can not have spaces. If you really need to use spaces in your path, then we suggest you try using a Docker container of SMOG2 (available at smog-server.org)
+
+"
+	smog_error
+fi
+
 
 $perl4smog -v &> /dev/null
 if [ $? != 0 ]
@@ -152,7 +183,7 @@ then
 	echo $smog_exec \"\$\@\" >> $smog2dir/bin/smog2
 	chmod 755 $smog2dir/bin/smog2
 
-	for tool in adjustPDB tablegen optim extract scale-energies ions modifyXML 
+	for tool in adjustPDB tablegen optim extract scale-energies ions modifyXML editgro 
 	do
 		echo Creating wrapper $smog2dir/bin/smog_$tool
 		cat $smog2dir/header > $smog2dir/bin/smog_$tool 
@@ -174,7 +205,7 @@ else
 		echo $smog_exec \"\$\@\" >> $smog2dir/bin/smog2
 		chmod 755 $smog2dir/bin/smog2
 	fi
-	for tool in adjustPDB tablegen optim extract scale-energies ions modifyXML
+	for tool in adjustPDB tablegen optim extract scale-energies ions modifyXML editgro
 	do
 		if [ -e $smog2dir/bin/smog_$tool ]
 		then
@@ -215,7 +246,7 @@ then
 	echo "
 Configuration successful!!
 
-For the current session, will pre-pend $smog2dir/bin to your PATH.  If you plan to use SMOG 2 regularly, it is recommended you add the following line to the .bashrc or .zshrc file:
+For the current session, will prepend $smog2dir/bin to your PATH.  If you plan to use SMOG 2 regularly, it is recommended you add the following line to the .bashrc or .zshrc file:
 	
 PATH=$smog2dir/bin:\$PATH
 

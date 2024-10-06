@@ -8,7 +8,7 @@
 #                       Udayan Mohanty, Ailun Wang, Heiko Lammert, Ryan Hayes, 
 #                               Jose Onuchic & Paul Whitford
 #
-#           Copyright (c) 2015,2016,2018,2021,2022 The SMOG development team at
+#         Copyright (c) 2015,2016,2018,2021,2022,2024 The SMOG development team at
 #                    The Center for Theoretical Biological Physics
 #                     Rice University and Northeastern University
 #
@@ -80,6 +80,7 @@ my $CGstage = 0;
 my $nocheck = "no";
 my $keep4SCM;
 my $extrasfile="";
+my $iondeffile="";
 my $anyfree;
 our %freeangles;
 our $CGenabled=0; ## enable coarse-graining
@@ -190,7 +191,12 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 appendContacts($shadowFile,$ContactFile,$userProvidedMap,$saveSCMorig);
 
 my $comments=printTop($topFile);
-my $OpenSMOGwritten=OpenSMOGwriteXML($OSref,$OpenSMOGxml,$comments);
+
+my $OpenSMOGwritten="";
+if (defined $OpenSMOG){
+	$OpenSMOGwritten=OpenSMOGwriteXML($OSref,$OpenSMOGxml,$comments);
+}
+
 my $cfile;
 if($groFile ne ""){
 	$cfile=$groFile;
@@ -402,7 +408,7 @@ sub parse_args {
 	
 	warninfo();
 	if(defined $tempcheckoff){
-		smog_note("-nocheck was issued. Will not cross check the templates for consistency in energetics declarations. Use this option at your own risk...");
+		smog_note("-nocheck was issued. Will not cross-check the templates for consistency in energetics declarations. Use this option at your own risk...");
 		$nocheck="yes";
 	}
 
@@ -653,7 +659,7 @@ sub initializeDirectives {
         my $gitver=getgitver;
         if($gitver ne ""){
                 addToTop("comments","THIS VERSION OF SMOG IS FROM A GIT REPO. COMMIT NUMBER\n");
-		addToTop("comments","$gitver");
+		addToTop("comments","$gitver\n");
         }
 	addToTop("defaults", "\n[ defaults ]\n");
 	addToTop("bonds","\n[ bonds ]\n");
@@ -860,8 +866,9 @@ sub addExtras {
 				}	
 				# since they are both defined, we will keep a record of them.
 				# save the type hash
-				$foundBtype{"$tarray[0]-$tarray[1]"}=$tarray[2];
-				$foundBtype{"$tarray[1]-$tarray[0]"}=$tarray[2];
+				my @taa=@tarray[2..4];
+				$foundBtype{"$tarray[0]-$tarray[1]"}=\@taa;
+				$foundBtype{"$tarray[1]-$tarray[0]"}=\@taa;
 			}
 			if($directive eq "angletypes"){
 		    		my @ltokens = split('<',$A);
@@ -886,8 +893,9 @@ sub addExtras {
 				}	
 				# since they are both defined, we will keep a record of them.
 
-				$foundAtype{"$tarray[0]-$tarray[1]-$tarray[2]"}=1;
-				$foundAtype{"$tarray[2]-$tarray[1]-$tarray[0]"}=1;
+				my @taa=@tarray[3..5];
+				$foundAtype{"$tarray[0]-$tarray[1]-$tarray[2]"}=\@taa;
+				$foundAtype{"$tarray[2]-$tarray[1]-$tarray[0]"}=\@taa;
 			}
 			if($directive eq "dihedraltypes"){
 		    		my @ltokens = split('<',$A);
@@ -1120,7 +1128,9 @@ sub bondOutput
 			# this mean bond_bytype was used
 			# don't write distances or strengths. Make gromacs use bondtype
 			# since we are not writing a distance, let's check and make sure this pair has a bondtype provided
-			my $type=checkbondtype($i,$j,$allatoms); 
+			my $tmtype=checkbondtype($i,$j,$allatoms);
+			my @tmtype=@{$tmtype};
+			my $type=$tmtype[0];
 			$formattedString = sprintf("%d\t%d",$i,$j);
 			$outputString .= $formattedString;
 			if(defined $OpenSMOG && $type > 0){
@@ -1129,17 +1139,14 @@ sub bondOutput
 			}else{
 				$outputString .= "\n";
 			}
-        		if($values < $interactionThreshold->{"bonds"}->{"shortBond"}
-        		|| $values > $interactionThreshold->{"bonds"}->{"longBond"}){
-				my $DIST=int($values*10000)/10000.0;
-				if(!exists ${$indexhandle}{$i} || !exists ${$indexhandle}{$j}){
-					smog_quit("Internal error 3.  Please inform smog team");
-				}
+			if(abs($tmtype[1]-$values)/$tmtype[1] > 0.1){
 				my $i1=$indexhandle->{$i};
 				my $j1=$indexhandle->{$j};
-				smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file) is outside of the bond threshold range. Since the parameters for this interaction will be read from bondtypes, energy minimization may fix the structure.  However, it is possible that there is a problem with the input PDB (e.g. residue numbering error), in which case the contact map may also have errors.");
+				my $DIST=int($values*10000)/10000.0;
+				smog_note("Distance of $DIST nm calculated for atom pair $i $j (gro indices.  Or, lines $i1 and $j1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates/extras ($tmtype[1]). This may mean there is something strange with your structure.");
 			}
-		}else{
+      
+ 		}else{
 			# by default, assume we will replace and evaluate the distance.
 			my $dosub=0;
 			if($paramArr[0] !~ m/\?/){
@@ -1384,7 +1391,9 @@ sub angleOutput
 
 		if($fType ==-1){
 			 ## don't write angle and constant. Make gromacs use angletype
-			my $type=checkangletype($i,$j,$k,$allatoms); 
+			my $tmtype=checkangletype($i,$j,$k,$allatoms); 
+			my @tmtype=@{$tmtype};
+			my $type=$tmtype[0];
 			$formattedString = sprintf("%d\t%d\t%d",$i,$j,$k);
 			$outputString .= $formattedString;
                         if(defined $OpenSMOG && $type > 0){
@@ -1394,12 +1403,12 @@ sub angleOutput
                                 $outputString .= "\n";
                         }
 
-	 		if($values < $interactionThreshold->{"angles"}->{"smallAngles"} || $values > $interactionThreshold->{"angles"}->{"largeAngles"}){ 
+			if(abs($tmtype[1]-$values)/$tmtype[1] > 0.1){
 				my $THETA=int($values*100)/100.0;
 				my $i1=$indexhandle->{$i};
 				my $j1=$indexhandle->{$j};
 				my $k1=$indexhandle->{$k};
-				smog_note("Angle formed by atoms $i $j $k (PDB lines $i1 $j1 $k1) outside of the range set by smallAngles and largeAngles (see .sif): theta=$THETA degrees\n\tWhile the interaction parameters will be defined by angletypes, this warning means there may be something strange about your input configuration.");
+				smog_note("Angle of $THETA degrees calculated for atom pair $i $j $k (gro indices.  Or, lines $i1 $j1 $k1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates/extras ($tmtype[1]). This may mean there is something strange with your structure.");
 			}
 	 		
 		}elsif($fType != 0){
@@ -2252,7 +2261,7 @@ sub saveAtomTypes
 			$mass = $interactions->{"nonbonds"}->{$tmptype}->{"mass"};
 			$charge = $interactions->{"nonbonds"}->{$tmptype}->{"charge"};
 			
-			$formattedString = sprintf(" %-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c1,$c2);
+			$formattedString = sprintf("%-4s %8.4f %10.6f  %1s     %-13.5e %-13.5e",$nbtype,$mass,$charge,$ptype,$c1,$c2);
 		addToTop("atomtypes",$formattedString."\n");
 	}
 }
@@ -2329,8 +2338,9 @@ sub readAtoms
 		}
 	}
 
+        addToTop("comments","After running SMOG2, the total charge of the system is $systemcharge\n\n");
 	if(abs($systemcharge-round($systemcharge)) > 0.001){
-		smog_quit("Non-integer system charge ($systemcharge). This typically means something is wrong with the .bif file.");
+		smog_quit("Non-integer system charge ($systemcharge). This usually means something is wrong with the .bif, .nb, .extras of .ions.def file.");
 	}else{
 		printf("\nTotal charge of system: %8.3f\n\n",$systemcharge);
 	}
@@ -2550,6 +2560,7 @@ sub parseInputFolder
 	my $nbexists=0;
 	my $bexists=0;
 	my $extrasexists=0;
+	my $iondefexists=0;
 	while(my $file = readdir($folder)){
                 if($file =~ /^\./){
                         # skipping hidden files. They can sometimes creep in due to OSX/LINUX incompatibilities
@@ -2581,11 +2592,17 @@ sub parseInputFolder
 			$extrasfile = "$folderName/$file";
 			print "Found extras file $extrasfile\n";
 			next;
+		}elsif($file =~ m/\.ions.def$/ || $file =~ m/^ions.def$/) {
+			$iondefexists++;
+			$iondeffile = "$folderName/$file";
+			print "Found ions.def file $iondeffile\n";
+			next;
 		}elsif($file !~ m/^[Rr][Ee][Aa][Dd][Mm][Ee]$/ && $file !~ m/^\./) {
 			# note that READMEs are ignored
 			smog_note("Found unused file \"$file\" in the template directory");	
 		}
 	}
+        print "\n";
 	$bifForSCM = $bif;
 
 	if($bifexists >1){
@@ -2624,7 +2641,7 @@ sub parseInputFolder
 		print "Checking format of $extrasfile\n";
 		checkExtras($extrasfile);
 	}
-	setInputFileName($bif,$sif,$b,$nb);
+	setInputFileName($bif,$sif,$b,$nb,$iondeffile);
 	
 }
 
@@ -2649,7 +2666,7 @@ Esteban Dodero-Rojas, Mohit Raghunathan, Joyce Yang, Prasad Bandarkar,
 Udayan Mohanty, Ailun Wang, Heiko Lammert, Ryan Hayes,
 Jose Onuchic & Paul Whitford         
 
-Copyright (c) 2015,2016,2018,2021,2022 The SMOG development team at
+Copyright (c) 2015,2016,2018,2021,2022,2024 The SMOG development team at
 The Center for Theoretical Biological Physics
 Rice University and Northeastern University
 
@@ -2697,7 +2714,7 @@ usage: smog2 .. options ..
        -CAgaussian             : use default Calpha protein model with gaussian contacts
        -t [templateFolder]     : folder containing templates of molecular and interaction definitions. required when defaults are not used
        -tCG [templateFolder]   : folder containing templates used for coarse graining. indicates that the program should coarse grain
-       -nocheck                : turn off template cross-validation checks. may sometimes be useful
+       -nocheck                : turn off template cross-checks. may sometimes be useful
                                    when using old templates with new versions of SMOG
 
      Coordinate Processing Options
@@ -2876,6 +2893,10 @@ sub parseTemplatesAndPDB
 	parseBonds();
 	## parse .bif File ##
 	parseBif();
+
+	## if present, read in ions.def file ##
+	parseIons($iondeffile);
+
 	print "\nDone parsing templates.\n";
 
 	unless($nocheck eq "yes"){ 
@@ -2889,6 +2910,7 @@ sub parseTemplatesAndPDB
 		$checkmessage.=checkCONNenergygroups();
 		$checkmessage.=checkRESimpropers();
 		$checkmessage.=checkFunctions();
+		$checkmessage.=checkIons();
 		if($checkmessage ne ""){
 			smog_quit("Validation of templates failed. See messages below:\n\n$checkmessage");
 		}

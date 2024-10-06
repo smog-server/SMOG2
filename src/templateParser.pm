@@ -6,7 +6,7 @@
 #                          Ailun Wang, Heiko Lammert, Ryan Hayes,
 #                               Jose Onuchic & Paul Whitford
 #
-#          Copyright (c) 2015,2016,2018,2021,2022 The SMOG development team at
+#        Copyright (c) 2015,2016,2018,2021,2022,2024 The SMOG development team at
 #                      The Center for Theoretical Biological Physics
 #                       Rice University and Northeastern University
 #
@@ -44,7 +44,7 @@ use SMOGglobals;
 ## DECLARATION TO SHARE DATA STRUCTURES ##
 our @ISA = 'Exporter';
 our @EXPORT = 
-qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList %dihedralAdjListeG adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESenergygroups checkCONNenergygroups checkRESimpropers round checkFunctions splitFunction);
+qw($OpenSMOG $OpenSMOGpothash $normalizevals getEnergyGroup $energyGroups $interactionThreshold $countDihedrals $termRatios %residueBackup %fTypes %usedFunctions %fTypesArgNum $functions %eGRevTable %eGTable intToFunc funcToInt %residues %bondFunctionals %angleFunctionals %connections %dihedralAdjList %dihedralAdjListeG adjListTraversal adjListTraversalHelper $interactions %excludebonded setInputFileName parseBif parseSif parseBonds createBondFunctionals createDihedralAngleFunctionals parseNonBonds parseIons getContactFunctionals $contactSettings clearBifMemory @topFileBuffer @linesInDirectives Btypespresent PAIRtypespresent EGinBif checkenergygroups bondtypesused pairtypesused checkIons checkBONDnames checkNONBONDnames checkPAIRnames checkREScharges checkRESenergygroups checkCONNenergygroups checkRESimpropers round checkFunctions splitFunction);
 
 our $OpenSMOG;
 our $OpenSMOGpothash;
@@ -80,6 +80,7 @@ our $energyGroups;
 my $settings; our $termRatios;
 our $interactions;
 our %excludebonded;
+our %iondefs;
 our %funcTable;our %funcTableRev;
 our %eGTable;our %eGRevTable;
 our @topFileBuffer;our @linesInDirectives;
@@ -101,6 +102,7 @@ our $bifxml = "bif.xml";
 our $sifxml = "sif.xml";
 our $bondxml = "b.xml";
 our $nbondxml = "nb.xml";
+our $iondefs = "";
 
 our %Btypespresent;
 our %NBtypespresent;
@@ -112,7 +114,8 @@ our %bondtypesused;
 our %fTypes;
 our %usedFunctions;
 our %fTypesArgNum;
-
+our %atomnamehash;
+our %atomnamehashinres;
 my %bondHandle;
 my @improperHandle;
 my %dihedralHandle;
@@ -137,6 +140,37 @@ sub parseSif {
 	sifFunctions($data);
 	sifSettings($data);
 	CustomNonBondedCheckAdjust($data,$OSref);
+}
+
+sub parseIons {
+	if($iondefs eq ""){
+		return
+	}
+
+	open(IONF,"$iondefs");
+	while(my $line = <IONF>){
+		my ($A,$B)=checkcomment($line);
+		if($A eq ""){next;}  # skip the line if it is only a comment
+		my @vals=split(/\s+/,$A);
+		if($#vals != 4){
+			smog_quit("Wrong number of values found in $iondefs. Expected 5, found:\n$line\n");	
+		}
+		if(! looks_like_number($vals[1])){
+			smog_quit("Mass provided (column 2) of ions.def file must be a number. Found:\n$line\n");	
+		}
+		my $type=whatAmI($vals[2]);
+		if($type != 1){
+			smog_quit("Charge provided (column 3) of ions.def file must be an integer. Found:\n$line\n");	
+		}
+		if(! looks_like_number($vals[3])){
+			smog_quit("C12 parameter (column 4) of ions.def file must be a number. Found:\n$line\n");	
+		}
+		if(! looks_like_number($vals[4])){
+			smog_quit("C6 parameter (column 5) of ions.def file must be a number. Found:\n$line\n");	
+		}
+		my @tmparr=@vals[1..4];
+                $iondefs{$vals[0]}=\@tmparr;
+	}	
 }
 
 sub parseBonds {
@@ -189,17 +223,19 @@ sub clearBifMemory {
         undef %PAIRtypespresent;
 	undef %pairtypesused;
 	undef %bondtypesused;
+	undef %iondefs;
 }
 
 ########################
 ## SET INPUTFILE NAME ##
 ########################
 sub setInputFileName {
-	my ($a,$b,$c,$d) = @_;
+	my ($a,$b,$c,$d,$e) = @_;
 	$bifxml = $a;
 	$sifxml = $b;
 	$bondxml = $c;
 	$nbondxml = $d;
+	$iondefs = $e;
 }
 
 sub round
@@ -355,6 +391,12 @@ sub checkDihedralFunctionDef
 		        smog_quit ("Sums of dihedrals of different types is not supported.");
 		}
 		if($fType == -2){
+			if( exists $OpenSMOGpothash->{$funcname}->{weight}){
+				if ($vars[$OpenSMOGpothash->{$funcname}->{weight}] =~ m/\?/){
+					smog_quit("$funcname dihedral type (defined in .sif) can not have \"?\" given for the \"weight\" parameter. Problematic declaration in energy group $eG (in .b file): $funcString")
+				}
+			}
+
 			# energynorm can't be used for the weight if normalization is turned off.
 			if($normalize){
 				if( !exists $OpenSMOGpothash->{$funcname}->{weight}){
@@ -801,6 +843,70 @@ sub checkNONBONDnames
 	return $string;
 }
 
+sub checkIons
+{
+	my $string="";
+	foreach my $ionname(keys %iondefs){
+#		if(defined $NBtypespresent{$ionname}){
+			# defined in .bif, so let's figure out if it has the correct values 
+			# if the values are in the bif, compare them
+			# if they are in the nb, compare those.
+		if(defined $atomnamehash{$ionname}){
+			# an atom with the same name as an ion is defined somewhere in the .bif.  So, let's figure out what parameters were given for charge, c6, c16 and mass
+			my @atlist=@{$atomnamehash{$ionname}};
+			my @atlistresnames=@{$atomnamehashinres{$ionname}};
+			for(my $I=0;$I<=$#atlist;$I++){
+				my $athash=$atlist[$I];
+				my $resname=$atlistresnames[$I];
+				my $nbtype;
+				if (defined $interactions->{"nonbonds"}->{$athash->{"nbType"}}){
+					$nbtype=$interactions->{"nonbonds"}->{$athash->{"nbType"}};
+				}else{
+					$nbtype=$interactions->{"nonbonds"}->{"*"};
+				}
+				my $charge;
+				my $mass;
+				# always use nbType to determine c6 and c12
+				my $c6=$nbtype->{"c6"};
+				my $c12=$nbtype->{"c12"};
+				# use nbType, only if charge or mass is not defined for this atom, in this residue
+				my $chargedef="bif";
+				if(defined $athash->{"charge"}){
+					$charge=$athash->{"charge"};
+				}else{
+					$charge=$nbtype->{"charge"};
+					$chargedef="nb";
+				}
+				my $massdef="bif";
+				if(defined $athash->{"mass"}){
+					$mass=$athash->{"mass"};
+				}else{
+					$mass=$nbtype->{"mass"};
+					$massdef="nb";
+				}
+
+				my @vals=@{$iondefs{$ionname}};
+				# check consistency
+				if($mass != $vals[0]){
+					$string .= "Inconsistent value for the mass of atom \"$ionname\" in residue \"$resname\" (value: $mass, defined in $massdef file) with the entry given in the .ions.def file (value: $vals[0]).\n";
+				}
+				if($charge != $vals[1]){
+					$string .= "Inconsistent value for the charge of atom \"$ionname\" in residue \"$resname\" (value: $charge, defined in $chargedef file) with the entry given in the .ions.def file (value: $vals[1]).\n";
+				}
+				if($c12 != $vals[2]){
+					$string .= "Inconsistent value for c12 of atom \"$ionname\" in residue \"$resname\" (value: $c12) with the definition in the .ions.def file (value: $vals[2]).\n";
+				}
+				if($c6 != $vals[3]){
+					$string .= "Inconsistent value for c6 of atom \"$ionname\" in residue \"$resname\" (value: $c6) with the definition in the .ions.def file (value: $vals[3]).\n";
+				}
+			}
+		}
+	}
+
+	return $string;
+}
+
+
 sub checkPAIRnames
 {
 	my $string="";
@@ -1086,7 +1192,7 @@ sub getContactFunctionals
 				}else{
 					#already matched typeA, and now typeB.  If the interactions are identical, there is no ambiguity.  If they are different function types, or groups, then give an error.
 					if($cG ne $cGB || $funct ne $functB){
-						smog_quit("Can\'t unambiguously assign a contact interaction between atoms of type $typeA and $typeB. Matched the following definitions equally well:\n\nfunc contactGroup\n$funct $cG\n$functB $cGB\n\nSee .nb for contact group definitions.\n");
+						smog_quit("Can\'t unambiguously assign a contact interaction between atoms of type $typeA and $typeB. Matched the following definitions equally well:\n\nfunc, contactGroup, pairType 1, pairtype 2\n$funct, $cG, $typeA, *\n$functB, $cGB, $typeB, *\n\nThis may be resolved by adding a new contact definition that explicitly defines interactions between pairTypes $typeA and $typeB.\n");
 					}
 				}
 			}
@@ -1621,6 +1727,16 @@ sub bifResidues{
 		foreach my $atom(@atomHandle)
 		{
 			my $AT= $atom->{"content"};
+			if(! defined $atomnamehash{$AT}){
+				# create an array that we can store information about all atoms with this name
+				my @tmparray;
+				$atomnamehash{$AT}=\@tmparray;
+				my @tmparray2;
+				$atomnamehashinres{$AT}=\@tmparray2;
+			}
+			# save the address for the hash that stores information about all atoms of this type
+			push(@{$atomnamehash{$AT}},$atom);
+			push(@{$atomnamehashinres{$AT}},$res);
 			if(exists $seen{"$AT"}){smog_quit("Error in .bif. Duplicate declaration of atom $AT in residue $res.")};
 			$seen{"$AT"}=1;
 		

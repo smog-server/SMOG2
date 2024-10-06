@@ -126,23 +126,32 @@ DNA.terminal.BMG OpenSMOG AA default ; 95
 ; free with OpenSMOG
 1AKEapo_v2 OpenSMOG AA shadow-free 5.0 1.4 1.2 1.0 2.0 1.0 1.0 1.0 2.5 0.01 1.0 1.4 5.0 0.2 -1 1E-6 3E-9 1.0 ;99
 
-;ADD CUSTOM FORCE TEST; 99
-;ADD CUSTOM FORCE TEST with 2 types; 100
+; ADD CUSTOM CONTACT FORCE TEST 
+2ci2_v2 OpenSMOG AA-CC1 default ;100
+tRNA OpenSMOG AA-CC1 default ;101
+terminaltest.BOND OpenSMOG AA-CC1 default ;102
+1F4N_v2 OpenSMOG AA-CC1 default ;103
+
+; ADD CUSTOM CONTACT TEST with 2 types
+
+; ADD CUSTOM CONTACTS AND DIHEDRAL TEST
+
+1F4N_v2 OpenSMOG AA-CCD default ;104
 
 ; free-format PDB coordinate checks
 ; NOTE: There is no specific test for this.  We just run files with the format changed and make sure the correct model is produced.
-2ci2_v2.freecoor freecoor AA default ; 100
-2ci2_v2.freecoor OpenSMOG freecoor AA default ; 101
-2ci2_v2.freecoor  freecoor CA default ;102
+2ci2_v2.freecoor freecoor AA default ; 105
+2ci2_v2.freecoor OpenSMOG freecoor AA default ; 106
+2ci2_v2.freecoor  freecoor CA default ;107
 
 ; check BOND with CA model
-1AKEapo_v3.BOND CA default ;103
+1AKEapo_v3.BOND CA default ;108
 
 ; check complicated AA model with BONDs
-glycans.BOND AA-BOND default; 104
+glycans.BOND AA-BOND default; 109
 
 ; check all dihedral function types in gromacs and opensmog
-RNA+protein AA-DIHE default; 105
-RNA+protein OpenSMOG AA-DIHE default; 106
-RNA+protein AA-DIHE4 default; 107
-RNA+protein OpenSMOG AA-DIHE4 default; 108
+RNA+protein AA-DIHE default; 110
+RNA+protein OpenSMOG AA-DIHE default; 111
+RNA+protein AA-DIHE4 default; 112
+RNA+protein OpenSMOG AA-DIHE4 default; 113
