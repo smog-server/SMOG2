@@ -455,7 +455,13 @@ my $added=1;
 # grid the current atoms
 for(my $I=1;$I<=$NATOMS-$addnum;$I++){
 	my ($C0,$C1,$C2)=getcell(\@UNIT0,\@UNIT1,\@UNIT2,$gridwidth0,$gridwidth1,$gridwidth2,$X[$I],$Y[$I],$Z[$I]);
-	$GRIDATOMS{"$C0-$C1-$C2"}=1;
+        for (my $J=$C0-1;$J<=$C0+1;$J++){
+         for (my $K=$C1-1;$K<=$C1+1;$K++){
+          for (my $L=$C2-1;$L<=$C2+1;$L++){
+	   $GRIDATOMS{"$C0-$C1-$C2"}=1;
+          }
+         }
+        }
 }
 print "adding ions to gro file...\n";
 for(my $I=$NATOMS-$addnum+1;$I<=$NATOMS;$I++){
