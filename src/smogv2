@@ -171,7 +171,7 @@ if($CGenabled == 1) { #Coarse graining, do everything over with new templates
 
 	undef %presentatomtypes;
 	$CGstage = 1;
-	print "\nParsing templates for coarse graining... ";
+	print "\nParsing templates for coarse graining...\n";
 	$inputFolder = $coarseFolder;
 	parseTemplatesAndPDB($coarseFolder,$inputPDB,$CGenabled,$CGstage);
 	printBondedTopOutput($inputPDB);
@@ -599,6 +599,25 @@ sub parse_args {
 		print "\n*****************************************************\n";
 		print   "**** COARSE-GRAINED SMOG MODEL WILL BE GENERATED ****";
 		print "\n*****************************************************\n";
+	        print <<EOT;
+
+When SMOG 2 performs coarse graining, the system is 
+first processed at the all-atom level. This is necessary 
+to determine which residue pairs should have native
+contacts included in the coarse-grained model. 
+Accordingly, you will see a sequence of messages that
+describe:
+- Processing of the all-atom model: This will include 
+    information about the all-atom SMOG template files
+    and possible warnings about the atomic structure.
+- Generation of the contact map
+- Generation of the coarse-grained model: This stage
+    will report information about the coarse-grained
+    template files and possible warnings/errors about
+    the structure, in terms of the coarse-grained
+    model parameters. 
+
+EOT
 	}
 }
 
