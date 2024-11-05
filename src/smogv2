@@ -47,6 +47,7 @@ our $VERSION;
 my $angToNano = 0.1;
 my $OUTPUT;
 my $help;
+my $info;
 our $gen_map;
 my $inputPDB="molecule.pdb"; 
 my $inputFolder=""; 
@@ -368,6 +369,7 @@ sub parse_args {
 	my $tempcheckoff;
 	my $g96on;
 	usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 
+		'info' => \$info,
 		'o=s' => \$topFile, 
 		't=s' => \$inputFolder, 
 		'i=s' => \$inputPDB, 
@@ -401,6 +403,11 @@ sub parse_args {
 	          or defined $help 
 	          or !defined $inputPDB 
 	          or (!defined $inputFolder  && !defined $coarseFolder));
+
+	if($info){
+		printinfo();
+		exit;
+	}
 	
 	if($printversion){
 		print "Version $VERSION\n";
@@ -665,6 +672,58 @@ describe:
 
 EOT
 	}
+}
+
+sub printinfo {
+print <<EOT;
+
+
+##############################################################################################
+
+                              UNITS IN SMOG MODELS                              
+
+SMOG2 uses reduced units (R.U.). Length is in nm. Energy and time are in reduced units and
+the units used for temperature depend on what software you are using to perform your
+simulation.
+
+
+Time: When using OpenSMOG with OpenMM, or Gromacs, time units can be misleading. While it is
+possible to estimate the effective timescales in these models, Gromacs and OpenMM reporters
+may label the timescales as "ns". Unless you have specifically calibrated the units in your
+model to have a specific meaning, then you should NOT consider this label to be meaningful.
+In terms of accounting, when using SMOG models, 1 "ns" (reported by Gromacs or 
+OpenSMOG/OpenMM) is equal to 1000 reduced time units. 
+
+For detailed discussions of units, one can consult any number of recent papers by the SMOG
+team, such as Yang et al. JCP 2019, 151, 085102, which estimated that one reduced unit
+corresponds roughly to 50-1000 ps. Important caveat: This estimated timescale depends on the
+specific model (default all-atom SMOG model) and simulated system.
+
+
+Temperature: Temperature units in OpenSMOG and Gromacs are different!! 
+
+When using OpenSMOG with OpenMM, the temperature is given in reduced units (so that the
+Boltzmann constant is set to 1), and typical protein will fold at around 1 reduced unit.
+Native-basin fluctuations have been found to be described well for many systems at around
+0.5-0.6 reduced temperature units. 
+
+When using Gromacs (or OpenMM without the use of OpenSMOG), there is a hard-coded value of
+the Boltzmann constant of 0.0083144621. Because this is written in the code, the software
+expects the energy unit to be kJ/mol and the temperature to be Kelvin. With this in mind,
+in order to simulate a system at one reduced temperature unit, you would need to specify a 
+temperature of 120.27236 "K". 
+
+For a detailed discussion of how to interpret temperature in SMOG models, see 
+Jackson et al. Int. J. Mol. Sci. 2015, 16, 6868-6889. 
+
+
+Energy: OpenSMOG, OpenMM w/o OpenSMOG and Gromacs will report energies in reduced units.
+However, the energies may still be labeled as units of kJ/mol. This label should be 
+ignored, unless you calibrated your SMOG model so that this is actually the intended
+energy scale in the model.
+
+EOT
+
 }
 
 sub printTop {
@@ -2762,6 +2821,10 @@ sub usage
 usage: smog2 .. options ..
 
    Options
+     Getting help
+       -help                   : show this message
+       -info                   : show information about time and energy units in SMOG models
+
      I/O flags  
        -i [molecule.pdb]       : input PDB to generate Hamiltonian
        -g [smog.gro]           : output .gro file name
@@ -2769,37 +2832,47 @@ usage: smog2 .. options ..
        -s [smog.contacts]      : output .contacts file name
        -n [smog.ndx]           : output .ndx file name
        -c <file name>          : input contact map file
-       -SCMorig                : directly save SCM contact map (i.e. not PDB numbering).  useful for debugging
+       -SCMorig                : directly save SCM contact map (i.e. not PDB numbering).  
+                                   useful for debugging
        -dname [smog]           : default name to use for all output files
        -OpenSMOGxml [smog.xml] : file name for OpenSMOG xml file (requires use of -OpenSMOG)
        -backup [yes]           : back up any pre-existing output files
-       -freecoor               : allow for free-format (space/tab/etc delimited) coordinate fields in PDB
+       -freecoor               : allow for free-format (space/tab/etc delimited) coordinate
+                                   fields in PDB
 
-     Force Field Designation - If none given, selection can be made interactively
+     Force Field Selection - If none are given, selection can be made interactively
        -AA                     : use default All-atom model
        -AAgaussian             : use default All-atom model with Gaussian contacts
        -CA                     : use default Calpha protein model
        -CAgaussian             : use default Calpha protein model with Gaussian contacts
-       -t [templateFolder]     : folder containing templates of molecular and interaction definitions. required when defaults are not used
-       -tCG [templateFolder]   : folder containing templates used for coarse graining. indicates that the program should coarse grain
+       -t [templateFolder]     : folder containing templates of molecular and interaction
+                                   definitions. required when defaults are not used
+       -tCG [templateFolder]   : folder containing templates used for coarse graining. 
+                                   indicates that the program should coarse grain
        -nocheck                : turn off template cross-checks. may sometimes be useful
                                    when using old templates with new versions of SMOG
 
      Coordinate Processing Options
        -center                 : center the system in a box
-       -boxbuffer  [1]         : set box size such that there is space between the molecule and the boundary (default: 1nm)
+       -boxbuffer  [1]         : set box size such that there is space between the molecule
+                                   and the boundary (default: 1nm)
 
      Force Field Modifications/exceptions
-       -limitbondlength            : if a bond length is outside of the allowable range, set it to limiting value
-       -limitcontactlength         : if a contact length is too short, set it to the minimal value
-       -deleteshortcontact         : if a contact length is too short, don't include it in the model
+       -limitbondlength            : if a bond length is outside of the allowable range,
+                                       set it to limiting value
+       -limitcontactlength         : if a contact length is too short, set it to the minimal
+                                       value
+       -deleteshortcontact         : if a contact length is too short, don't include it in
+                                       the model
 
      Misc. Options
-       -OpenSMOG                   : make files compatible with the OpenSMOG library for OpenMM  
-       -ignH                       : ignore any atoms with name starting with 'H' in the internal contact algorithm
+       -OpenSMOG                   : make files compatible with the OpenSMOG library for
+                                       OpenMM  
+       -ignH                       : ignore any atoms with name starting with 'H' in the
+                                       internal contact algorithm
        -warn [0]                   : convert the first N fatal errors to warnings  
-                                       Convert all if N=-1 (Caution: Consult manual before using this option)
-       -help                       : show options 
+                                       Convert all if N=-1 (Caution: Consult manual before
+                                       using this option)
 EOT
 	if ( @_ ){
 		smog_quit("Flag \"@_\" not recognized, or is missing arguments.");
