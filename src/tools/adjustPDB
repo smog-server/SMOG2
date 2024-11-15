@@ -1118,19 +1118,22 @@ sub exactmatching
 	}
 	my $printthis="";
 	my @order;
+        my $loopInd2;
 	if (defined $sort){
 		# use ordered list for atom sorting
-		for(my $i=0; $i<=$loopInd; $i++){
+		$loopInd2=$sortn-1;
+		for(my $i=0; $i<=$loopInd2; $i++){
 			$order[$i]=$sorted[$i];
 		}
 	}else{
 		# keep PDB ordering
-		for(my $i=0; $i<=$loopInd; $i++){
+		$loopInd2=$loopInd;
+		for(my $i=0; $i<=$loopInd2; $i++){
 			$order[$i]=$i;
 		}
 	}
 
-	for(my $j=0; $j<=$loopInd; $j++){
+	for(my $j=0; $j<=$loopInd2; $j++){
 		my $i=$order[$j];
 		my $ind = $residue[$i]->{"atomIndex"};
 		my $x = $residue[$i]->{"coords"};
