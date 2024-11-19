@@ -65,41 +65,47 @@ my $outputtop="scaled.top";
 my $help;
 my $inputXML="OpenSMOG.xml";
 my $outputXML="OpenSMOG.out.xml";
+my $modifyinteraction;
 my $modifytype;
-my $modifyset;
 my $modifygroup1;
 my $modifygroup2;
 my $modifyparameter;
 my $modifyparameterby;
+my $remove;
 
 quit_init();
 note_init();
 checkForModules();
-usage() if (!GetOptions('help|?' => \$help,  'n=s' => \$indexFile, 'OpenSMOG=s' => \$inputXML, 'OpenSMOGout=s' => \$outputXML,  'warn=i' => \$maxwarn, '<>' => \&usage,'modtype=s' => \$modifytype, 'modset=s' => \$modifyset,'modgrp1=s'=>\$modifygroup1,'modgrp2=s'=>\$modifygroup2,'modparam=s'=>\$modifyparameter,'modby=s'=>\$modifyparameterby)
+usage() if (!GetOptions('help|?' => \$help,  'n=s' => \$indexFile, 'OpenSMOG=s' => \$inputXML, 'OpenSMOGout=s' => \$outputXML,  'warn=i' => \$maxwarn, '<>' => \&usage,'inter=s' => \$modifyinteraction, 'type=s' => \$modifytype,'grp1=s'=>\$modifygroup1,'grp2=s'=>\$modifygroup2,'param=s'=>\$modifyparameter,'modby=s'=>\$modifyparameterby,'remove'=>\$remove)
         or defined $help); 
 
 #add a flag to indicate which atom group name to scale
 # add checks for consistent parameter assignment
 
-if(defined $modifytype || defined $modifyset || defined $modifygroup1 || defined $modifygroup2 ||  defined $modifyparameter || defined $modifyparameterby){
+if(defined $modifyinteraction || defined $modifytype || defined $modifygroup1 || defined $modifygroup2 ||  defined $modifyparameter || defined $modifyparameterby || defined $remove){
 
-	if (! defined $modifytype || ! defined $modifyset || ! defined $modifygroup1 || !defined $modifyparameter || !defined $modifyparameterby){
-		smog_quit("When specifying modifications from the command line, one must specify -modtype, -modset, -modgrp1, -modgrp2 (for modtype contacts, only), -modparam and -modby.")
+	if (! defined $modifyinteraction || ! defined $modifytype || ! defined $modifygroup1){
+		smog_quit("When specifying modifications from the command line, one must specify -modtype, -modset, -modgrp1, and -modgrp2 (for modtype contacts, only).")
+	}elsif(!defined $modifyparameterby && !defined $remove){
+		smog_quit("When specifying modifications from the command line, one must specify -modby or -remove.")
+	}elsif(defined $modifyparameterby && defined $remove){
+		smog_quit("When specifying modifications from the command line, one must specify either -modby or -remove.")
+	}elsif(defined $modifyparameter && defined $remove){
+		smog_quit("When specifying modifications from the command line, one must specify either -modparam or -remove.")
 	}
-
 }
 
-if (defined $modifytype ){
-	if ($modifytype eq "contacts"){
+if (defined $modifyinteraction ){
+	if ($modifyinteraction eq "contacts"){
 		if(! defined $modifygroup2){
 			smog_quit("When modifying contacts, one must also give a value with the -modgrp2 flag.");
 		}
-	}elsif($modifytype eq "dihedrals"){
+	}elsif($modifyinteraction eq "dihedrals"){
 		if(defined $modifygroup2){
 			smog_quit("When modifying dihedrals, one can not specify a value with the -modgrp2 flag.");
 		}
 	}else{
-		smog_quit("-modtype must be \"contacts\" or \"dihedrals\".  Found \"$modifytype\"\n");
+		smog_quit("-modtype must be \"contacts\" or \"dihedrals\".  Found \"$modifyinteraction\"\n");
 	}
 }
 
@@ -138,9 +144,9 @@ if($gitver ne ""){
 		
 my $comment="; This is an XML file generated with smog_modifyXML (version $VERSION), using the command:\n; smog_modifyXML $inputArguments\n$date$gitmess";
 
-if (defined $modifytype){
+if (defined $modifyinteraction){
 	# must have used the command line
-	OpenSMOGscaleXMLcl($xmldata, $atomgroup, $outputXML, $comment, $modifytype, $modifyset, $modifygroup1, $modifygroup2, $modifyparameter,$modifyparameterby);
+	OpenSMOGscaleXMLcl($xmldata, $atomgroup, $outputXML, $comment, $modifyinteraction, $modifytype, $modifygroup1, $modifygroup2, $modifyparameter,$modifyparameterby,$remove);
 }else{
 	OpenSMOGscaleXML($xmldata,$Ngrps,$grpnms,$groupnames,$atomgroup,$outputXML,$comment);
 }
@@ -171,14 +177,15 @@ usage: smog_modifyXML  .. options ..
 	-n [smog.ndx]		        : index file to define groups for rescaling
 
    Command-line invocation flags:
-        -modtype <string>               : type of interactions to modify (contacts, or dihedrals)
-        -modset <string>                : which set of interactions should be modified (as named in XML file)
-        -modgrp1 <string>               : name of first group of atoms (as named in .ndx file)
-        -modgrp2 <string>               : name of second group of atoms (only for use with contacts)
-        -modparam <string>              : which parameter should be modified
+        -inter <string>                 : kind of interactions to modify (contacts, dihedrals)
+        -type <string>                  : which group of interactions should be modified (name of type in XML file)
+        -grp1 <string>                  : name of first group of atoms (as named in .ndx file)
+        -grp2 <string>                  : name of second group of atoms (only for use with contacts)
+        -param <string>                 : parameter that should be modified
         -modby  <string>                : expression for modifying parameter. Format: [+-*/]<number>
                                             Note: to avoid shell issues, you may want to put the 
                                             expression in double quotes, or escape the first character
+        -remove                         : remove the matching interactions, instead of adjusting them
 	-warn [0]		        : convert the first N errors into warnings
 	-help			        : show options
 EOT

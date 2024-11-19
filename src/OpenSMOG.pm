@@ -430,7 +430,7 @@ sub OpenSMOGscaleXML{
 }
 
 sub OpenSMOGscaleXMLcl{
-	my ($OSref, $atomgroup, $outputXML, $header, $modifytype, $modifyset, $modifygroup1, $modifygroup2, $modifyparameter,$modifyparameterby)=@_;
+	my ($OSref, $atomgroup, $outputXML, $header, $modifytype, $modifyset, $modifygroup1, $modifygroup2, $modifyparameter,$modifyparameterby,$remove)=@_;
         # Same as OpenSMOGscaleXML, but for command-line invocation
         # $outputXML is the output file name
 	my $lhandle;
@@ -440,44 +440,48 @@ sub OpenSMOGscaleXMLcl{
 		$lhandle=$OSref->{$modifytype}->{"$modifytype\_type"}->{$modifyset};
 	}
 
-	my $found=0;
-	foreach my $param(@{$lhandle->{"parameter"}}){
-		if($param eq $modifyparameter){
-			$found++;
-		}
-	}
-	if($found == 0){
-		smog_quit("Parameter \"$modifyparameter\" not found in \"$modifytype\" set called \"$modifyset\" in the XML file.")
-	}
-
-
-	my $cont=checkXMLfactor($modifyparameterby);
-	if($cont==1){
-	        smog_quit("\"$modifyparameterby\" does not appear to comply with the required format:[+-*/]<number>\nTry again\n");
-	}elsif($cont==2){
-	        smog_quit("Incorrect format of \"$modifyparameterby\".  Must begin with a +, -, / or *.\n");
-	}
-
-
-	# prepare chghash
 	my %chghash;
-	$chghash{$modifyparameter}=$modifyparameterby;
+	if (!defined $remove){
+		my $found=0;
+		foreach my $param(@{$lhandle->{"parameter"}}){
+			if($param eq $modifyparameter){
+				$found++;
+			}
+		}
+		if($found == 0){
+			smog_quit("Parameter \"$modifyparameter\" not found in \"$modifytype\" set called \"$modifyset\" in the XML file.")
+		}
+
+
+		my $cont=checkXMLfactor($modifyparameterby);
+		if($cont==1){
+		        smog_quit("\"$modifyparameterby\" does not appear to comply with the required format:[+-*/]<number>\nTry again\n");
+		}elsif($cont==2){
+		        smog_quit("Incorrect format of \"$modifyparameterby\".  Must begin with a +, -, / or *.\n");
+		}
+
+
+		# prepare chghash
+		$chghash{$modifyparameter}=$modifyparameterby;
+	}
 
 	print "Will adjust the following parameters:\n";
-	print "type: $modifytype\n";
-	print "set: $modifyset\n";
+	print "interactions : $modifytype\n";
+	print "type         : $modifyset\n";
 	if($modifytype eq "contacts"){
-		print "atom groups: $modifygroup1 and $modifygroup2\n";
+		print "atom groups  : $modifygroup1 and $modifygroup2\n";
 	}else{
-		print "atom groups: $modifygroup1\n";
+		print "atom groups  : $modifygroup1\n";
 	}
-	print "parameter, modification factor:\n";
-	print "	$modifyparameter, $modifyparameterby\n";
+	if(!defined $remove){
+		print "parameter, modification factor:\n";
+		print "	$modifyparameter, $modifyparameterby\n";
+	}
 
 	if($modifytype eq "contacts"){
-		modifyXMLcontacts($lhandle,$atomgroup,$modifygroup1,$modifygroup2,\%chghash);
+		modifyXMLcontacts($lhandle,$atomgroup,$modifygroup1,$modifygroup2,\%chghash,$remove);
 	}elsif($modifytype eq "dihedrals"){
-		modifyXMLdihedrals($lhandle,$atomgroup,$modifygroup1,\%chghash);
+		modifyXMLdihedrals($lhandle,$atomgroup,$modifygroup1,\%chghash,$remove);
 	}
 	OpenSMOGwriteXML($OSref,$outputXML,$header,);
 
@@ -507,6 +511,7 @@ sub rescaleXML{
 	# Ngrps is the number of groups in the index file
 	# atomgroup is the hash of hash of atoms in each index group
 	# groupnms and groupnames...
+	my $remove;
 	my $cont=0;
 	until($cont == 1){
 		print "Select which $type group you would like to modify parameters.\n    name : functional form\n";
@@ -541,7 +546,7 @@ sub rescaleXML{
 			foreach my $param(sort keys %{$chghash}){
 				print "$param, $chghash->{$param}\n";
 			}
-			modifyXMLcontacts($lhandle->{$grp},$atomgroup,$groupC1,$groupC2,$chghash);
+			modifyXMLcontacts($lhandle->{$grp},$atomgroup,$groupC1,$groupC2,$chghash,$remove);
 			print "Contact modification completed\n\n";
 		}elsif($type eq "dihedrals"){
 			print "Will adjust the following parameters:\n";
@@ -553,7 +558,7 @@ sub rescaleXML{
 				print "$param, $chghash->{$param}\n";
 			}
 
-			modifyXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash);
+			modifyXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash,$remove);
 		}else{
 			internal_error("rescale XML selection issue.");
 		}
@@ -655,30 +660,32 @@ sub rescaleXMLsettings{
 }
 
 sub modifyXMLcontacts{
-	my($XMLhandle,$atomgroup,$groupC1,$groupC2,$chghash)=@_;
+	my($XMLhandle,$atomgroup,$groupC1,$groupC2,$chghash,$remove)=@_;
 	my %atomhash1=%{$atomgroup->{$groupC1}};
 	my %atomhash2=%{$atomgroup->{$groupC2}};
-
+	
+	my $elcount=0;
 	foreach my $interaction(@{$XMLhandle->{"interaction"}}){
 		my $i=$interaction->{"i"};
 		my $j=$interaction->{"j"};
-		if(defined $atomhash1{$i} && defined $atomhash2{$j}){
-			foreach my $param(sort keys %{$chghash}){
-				my $curval=$interaction->{$param};
-				$interaction->{$param}=eval("($curval)$chghash->{$param}");
-			}
-		}elsif(defined $atomhash2{$i} && defined $atomhash1{$j}){
-			foreach my $param(sort keys %{$chghash}){
-				my $curval=$interaction->{$param};
-				$interaction->{$param}=eval("($curval)$chghash->{$param}");
+		if((defined $atomhash1{$i} && defined $atomhash2{$j}) || (defined $atomhash2{$i} && defined $atomhash1{$j})){
+			if(defined $remove){
+				delete(@{$XMLhandle->{"interaction"}}[$elcount]);
+			}else{
+				foreach my $param(sort keys %{$chghash}){
+					my $curval=$interaction->{$param};
+					$interaction->{$param}=eval("($curval)$chghash->{$param}");
+				}
 			}
 		}
+		$elcount++;
 	}
 }
 
 sub modifyXMLdihedrals{
-	my($XMLhandle,$atomgroup,$groupD,$chghash)=@_;
+	my($XMLhandle,$atomgroup,$groupD,$chghash,$remove)=@_;
 	my %atomhash=%{$atomgroup->{$groupD}};
+	my $elcount=0;
 	foreach my $interaction(@{$XMLhandle->{"interaction"}}){
 		my $i=$interaction->{"i"};
 		if(defined $atomhash{$i}){
@@ -688,14 +695,19 @@ sub modifyXMLdihedrals{
 				if(defined $atomhash{$k}){
 					my $l=$interaction->{"l"};
 					if(defined $atomhash{$l}){
-						foreach my $param(keys %{$chghash}){
-							my $curval=$interaction->{$param};
-							$interaction->{$param}=eval("($curval)$chghash->{$param}");
+						if(defined $remove){
+							delete(@{$XMLhandle->{"interaction"}}[$elcount]);
+						}else{
+							foreach my $param(keys %{$chghash}){
+								my $curval=$interaction->{$param};
+								$interaction->{$param}=eval("($curval)$chghash->{$param}");
+							}
 						}
 					}
 				}
 			}
 		}
+		$elcount++;
 	}
 }
 
