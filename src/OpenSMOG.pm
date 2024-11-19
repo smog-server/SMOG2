@@ -514,7 +514,7 @@ sub rescaleXML{
 	my $remove;
 	my $cont=0;
 	until($cont == 1){
-		print "Select which $type group you would like to modify parameters.\n    name : functional form\n";
+		print "Select which $type group you would like to modify/remove parameters.\n    name : functional form\n";
 		my %index;
 		my $c=0;
 		my $lhandle=$OSref->{$type}->{"$type\_type"};
@@ -536,15 +536,19 @@ sub rescaleXML{
 		}
 		print "\n";
 		# get the list of parameters, groups and factors for rescaling
-		my ($groupD,$groupC1,$groupC2,$chghash)=rescaleXMLsettings($lhandle,$type,$grp,$Ngrps,$grpnms,$groupnames,$atomgroup);
+		my ($groupD,$groupC1,$groupC2,$chghash,$remove)=rescaleXMLsettings($lhandle,$type,$grp,$Ngrps,$grpnms,$groupnames,$atomgroup);
 		if($type eq "contacts"){
 			print "Will adjust the following parameters:\n";
-			print "type: $type\n";
-			print "set: $grp\n";
-			print "atom groups: $groupC1 and $groupC2\n";
-			print "parameter(s), modification factor(s):\n";
-			foreach my $param(sort keys %{$chghash}){
-				print "$param, $chghash->{$param}\n";
+			print "interactions : $type\n";
+			print "type         : $grp\n";
+			print "atom groups  : $groupC1 and $groupC2\n";
+			if(!defined $remove){
+				print "parameter(s), modification factor(s):\n";
+				foreach my $param(sort keys %{$chghash}){
+					print "$param, $chghash->{$param}\n";
+				}
+			}else{
+				print "change       : remove\n"
 			}
 			modifyXMLcontacts($lhandle->{$grp},$atomgroup,$groupC1,$groupC2,$chghash,$remove);
 			print "Contact modification completed\n\n";
@@ -553,17 +557,20 @@ sub rescaleXML{
 			print "type: $type\n";
 			print "set: $grp\n";
 			print "atom group: $groupD\n";
-			print "parameter(s), modification factor(s):\n";
-			foreach my $param(sort keys %{$chghash}){
-				print "$param, $chghash->{$param}\n";
+			if(!defined $remove){
+				print "parameter(s), modification factor(s):\n";
+				foreach my $param(sort keys %{$chghash}){
+					print "$param, $chghash->{$param}\n";
+				}
+			}else{
+				print "change       : remove\n"
 			}
-
 			modifyXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash,$remove);
 		}else{
 			internal_error("rescale XML selection issue.");
 		}
 
-		print "Modify additional $type parameters? (Y/N)\n";
+		print "Modify/remove additional $type parameters? (Y/N)\n";
 		$cont=getreply()		
 	}
 }
@@ -602,61 +609,76 @@ sub rescaleXMLsettings{
 	my @scalevals;
 	my %tmphash;
 	my %changehash;
-	# changehash will hold a parameter name as the key, and the change factor as the val
-	foreach my $param(@{$llhandle->{"parameter"}}){
-		$tmphash{$param}=1;
+	my $remove;
+	print "Do you want to modify or remove interactions? (M or R)\n";
+	my $rep=<STDIN>;
+	chomp($rep);
+	until($rep =~ /^[MRmr]$/){
+		print "Invalid reply.  Choose M or R.\n";
+		$rep=<STDIN>;
+		chomp($rep);
 	}
 
-	my $getsets=0;
-	until($getsets==1){
-		print "Which parameter would you like to rescale?\nAvailable parameters:\n";
-		foreach my $param(sort keys %tmphash){
-			print("$param\n");
+	if($rep =~ /^[mM]$/){
+		# changehash will hold a parameter name as the key, and the change factor as the val
+		foreach my $param(@{$llhandle->{"parameter"}}){
+			$tmphash{$param}=1;
 		}
-		print "selection:";
-		# list the parameters for this term
-		my $rescaleparam="";
-		my $cont=1;
-		until($cont==0){
-			$rescaleparam=<STDIN>;
-			chomp($rescaleparam);
-			$rescaleparam =~ s/^\s+//g;
-			$rescaleparam =~ s/\s+$//g;
-			if(exists $tmphash{$rescaleparam}){
-				$cont=0;
+
+		my $getsets=0;
+		until($getsets==1){
+			print "Which parameter would you like to modify?\nAvailable parameters:\n";
+			foreach my $param(sort keys %tmphash){
+				print("$param\n");
+			}
+			print "selection:";
+			# list the parameters for this term
+			my $rescaleparam="";
+			my $cont=1;
+			until($cont==0){
+				$rescaleparam=<STDIN>;
+				chomp($rescaleparam);
+				$rescaleparam =~ s/^\s+//g;
+				$rescaleparam =~ s/\s+$//g;
+				if(exists $tmphash{$rescaleparam}){
+					$cont=0;
+				}else{
+					print("\"$rescaleparam\" is not a valid parameter name. Please try again.\n");
+				}
+			}
+			print "\n";
+			# do the rescaling
+			delete $tmphash{$rescaleparam};
+			print "How would you like to change the value of $rescaleparam? (format: [+-*/]<number>)\n";
+			$cont=1;
+			my $rescaleby="";
+			until($cont==0){
+				# give the rescaling factor - make sure it is a number and begins with an operator
+				$rescaleby=<STDIN>;
+				chomp($rescaleby);
+				$rescaleby =~ s/^\s+//g;
+				$rescaleby =~ s/\s+$//g;
+				$cont=checkXMLfactor($rescaleby);
+				if($cont==1){
+					print("\"$rescaleby\" does not appear to comply with the required format:[+-*/]<number>\nTry again\n");
+				}elsif($cont==2){
+					print "Incorrect format of \"$rescaleby\".  Must begin with a +, -, / or *.\n";
+				}
+			}
+			print "\n";
+			$changehash{$rescaleparam}=$rescaleby;
+			if(scalar keys %tmphash > 0){
+				print ("Would you like to modify another parameter for set $grp of $type? (Y/N)\n");
+				$getsets=getreply();
 			}else{
-				print("\"$rescaleparam\" is not a valid parameter name. Please try again.\n");
+				$getsets=1;
 			}
 		}
-		print "\n";
-		# do the rescaling
-		delete $tmphash{$rescaleparam};
-		print "How would you like to change the value of $rescaleparam? (format: [+-*/]<number>)\n";
-		$cont=1;
-		my $rescaleby="";
-		until($cont==0){
-			# give the rescaling factor - make sure it is a number and begins with an operator
-			$rescaleby=<STDIN>;
-			chomp($rescaleby);
-			$rescaleby =~ s/^\s+//g;
-			$rescaleby =~ s/\s+$//g;
-			$cont=checkXMLfactor($rescaleby);
-			if($cont==1){
-				print("\"$rescaleby\" does not appear to comply with the required format:[+-*/]<number>\nTry again\n");
-			}elsif($cont==2){
-				print "Incorrect format of \"$rescaleby\".  Must begin with a +, -, / or *.\n";
-			}
-		}
-		print "\n";
-		$changehash{$rescaleparam}=$rescaleby;
-		if(scalar keys %tmphash > 0){
-			print ("Would you like to modify another parameter for set $grp of $type? (Y/N)\n");
-			$getsets=getreply();
-		}else{
-			$getsets=1;
-		}
+	}else{
+		$remove=0;
+		print "Will remove interactions\n";
 	}
-	return ($groupD, $groupC1, $groupC2,\%changehash);
+	return ($groupD, $groupC1, $groupC2,\%changehash,$remove);
 }
 
 sub modifyXMLcontacts{
