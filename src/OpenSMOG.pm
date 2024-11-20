@@ -697,6 +697,9 @@ sub modifyXMLcontacts{
 	
 	my $elcount=0;
 	foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+		if(!defined $interaction){
+			next;
+		}
 		my $i=$interaction->{"i"};
 		my $j=$interaction->{"j"};
 		if((defined $atomhash1{$i} && defined $atomhash2{$j}) || (defined $atomhash2{$i} && defined $atomhash1{$j})){
@@ -718,6 +721,9 @@ sub modifyXMLdihedrals{
 	my %atomhash=%{$atomgroup->{$groupD}};
 	my $elcount=0;
 	foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+		if(!defined $interaction){
+			next;
+		}
 		my $i=$interaction->{"i"};
 		if(defined $atomhash{$i}){
 			my $j=$interaction->{"j"};
