@@ -514,26 +514,35 @@ sub rescaleXML{
 	my $remove;
 	my $cont=0;
 	until($cont == 1){
-		print "Select which $type group you would like to modify/remove parameters.\n    name : functional form\n";
-		my %index;
-		my $c=0;
-		my $lhandle=$OSref->{$type}->{"$type\_type"};
-		foreach my $types(sort keys %{$lhandle}){
-			print "    $types  : $lhandle->{$types}->{'expression'}->{'expr'} \n";
-		}
 		my $grp="";
-		my $tmp=0;
-		until(defined ${$lhandle}{$grp}){
-			if($tmp>0){
-				print "\"$grp\" is not a valid $type set.\n";
+		my $lhandle=$OSref->{$type}->{"$type\_type"};
+		if(scalar keys %{$lhandle} > 1){
+			print "Select which $type group you would like to modify/remove parameters.\n    name : functional form\n";
+			my %index;
+			my $c=0;
+			foreach my $types(sort keys %{$lhandle}){
+				print "    $types  : $lhandle->{$types}->{'expression'}->{'expr'} \n";
 			}
-			print "selection:";
-			$grp=<STDIN>;
-			chomp($grp);
-			$grp =~ s/^\s+//g;
-			$grp =~ s/\s+$//g;
-			$tmp++;
+			my $tmp=0;
+			until(defined ${$lhandle}{$grp}){
+				if($tmp>0){
+					print "\"$grp\" is not a valid $type set.\n";
+				}
+				print "selection:";
+				$grp=<STDIN>;
+				chomp($grp);
+				$grp =~ s/^\s+//g;
+				$grp =~ s/\s+$//g;
+				$tmp++;
+			}
+		}else{
+			my @grp=keys %{$lhandle};
+			$grp=$grp[0];
+			print "$type\n";
+			print "Since only one $type group is in the XML file, it will be selected for modification.\n    name : functional form\n";
+			print "    $grp  : $lhandle->{$grp}->{'expression'}->{'expr'} \n";
 		}
+
 		print "\n";
 		# get the list of parameters, groups and factors for rescaling
 		my ($groupD,$groupC1,$groupC2,$chghash,$remove)=rescaleXMLsettings($lhandle,$type,$grp,$Ngrps,$grpnms,$groupnames,$atomgroup);
