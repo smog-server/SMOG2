@@ -622,10 +622,12 @@ sub rescaleXMLsettings{
 	print "Do you want to modify or remove interactions? (M or R)\n";
 	my $rep=<STDIN>;
 	chomp($rep);
+	$rep =~ s/\s+//g;
 	until($rep =~ /^[MRmr]$/){
 		print "Invalid reply.  Choose M or R.\n";
 		$rep=<STDIN>;
 		chomp($rep);
+		$rep =~ s/\s+//g;
 	}
 
 	if($rep =~ /^[mM]$/){

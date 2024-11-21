@@ -273,14 +273,22 @@ sub processsettings{
     $last=$A[$I];
     $type=$A[$I];
     $settings .= "Y\n";
-    $I++;
-    $settings .= "  $A[$I]  \n";
+    if($A[$I] eq "contacts"){
+     $I++;
+    }else{
+     $I++;
+     $settings .= "  $A[$I]  \n";
+    }
     $name=$A[$I];
    }elsif($A[$I] eq "grp"){
     $last=$A[$I];
     $I++;
     $settings .= "  $A[$I]  \n";
     push(@grparr,$A[$I]);
+   }elsif($A[$I] eq "modrep"){
+    $last=$A[$I];
+    $I++;
+    $settings .= "  $A[$I]  \n";
    }elsif($A[$I] eq "param"){
     if($last eq "param"){
      $settings .= "Y\n";
@@ -329,21 +337,21 @@ sub processsettingscl{
    if($A[$I] eq "contacts" || $A[$I] eq "dihedrals"){
     $last=$A[$I];
     $type=$A[$I];
-    $settings .= "-modtype $A[$I] ";
+    $settings .= "-inter $A[$I] ";
     $I++;
-    $settings .= "-modset $A[$I] ";
+    $settings .= "-type $A[$I] ";
     $name=$A[$I];
    }elsif($A[$I] eq "grp"){
     $last=$A[$I];
     $I++;
-    $settings .= "-modgrp$grpnum $A[$I] ";
+    $settings .= "-grp$grpnum $A[$I] ";
     $grpnum++;
     $I++;
     push(@grparr,$A[$I]);
    }elsif($A[$I] eq "param"){
     $last=$A[$I];
     $I++;
-    $settings .= "-modparam $A[$I] ";
+    $settings .= "-param $A[$I] ";
     $I++;
     $settings .= "-modby \"$A[$I]\" ";
     $parhash{$A[$I-1]}=$A[$I];
