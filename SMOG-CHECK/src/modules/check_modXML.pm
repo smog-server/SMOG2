@@ -167,6 +167,45 @@ sub check_modXML
  }
 
  $testnum++;
+ print "\tChecking interactive call: test $testnum\n";
+# generate an AA model protein 
+ `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/Ion-test -dname AA.tmp -OpenSMOG > output.smog`;
+ unless($? == 0){
+  internal_error("SMOG 2 crashed.  Fix SMOG 2 before testing smog_modifyXML.");
+ }else{
+  clearfiles("output.smog");
+ }
+
+ my $tmpbuffer="";
+ my $indexfile="share/PDB.files/xml.test.small.ndx";
+ &testsperformed($TESTED,\%FAIL);
+ %FAIL=resettests(\%FAIL,\@FAILLIST);
+ my $settings="share/PDB.files/xmlsettings.5.in";
+ my ($settings,$conhash,$dihhash)=processsettings($settings);
+ `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
+ $FAIL{"NON-ZERO EXIT"}=$?;
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+
+ &testsperformed($TESTED,\%FAIL);
+
+ ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+ $FAILSUM += $FAILED;
+ if($FAILED !=0){
+  `mkdir tmp`;
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `cp $file tmp`;
+  }
+  savefailed($testnum,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `mv tmp/$file .`;
+  }
+  `rmdir tmp`;
+ }else{
+  clearfiles(("output.$tool","AA.tmp.out.xml","AA.tmp.contacts","AA.tmp.gro","AA.tmp.ndx","AA.tmp.top","AA.tmp.xml"));
+ }
+
+ $testnum++;
  print "\tChecking command-line call - contacts: test $testnum\n";
 # generate an AA model protein 
  `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/Ion-test -dname AA.tmp -OpenSMOG > output.smog`;
@@ -180,7 +219,7 @@ sub check_modXML
  my $indexfile="share/PDB.files/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.5.in";
+ my $settings="share/PDB.files/xmlsettings.6.in";
  my ($settings,$conhash,$dihhash)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -219,7 +258,7 @@ sub check_modXML
  my $indexfile="share/PDB.files/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.6.in";
+ my $settings="share/PDB.files/xmlsettings.7.in";
  my ($settings,$conhash,$dihhash)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -351,6 +390,14 @@ sub processsettingscl{
     $grpnum++;
     $I++;
     push(@grparr,$A[$I]);
+   }elsif($A[$I] eq "modremove"){
+    $last=$A[$I];
+    $I++;
+    if($A[$I] =~ m/R/){
+     $conhash{$name}->{"modremove"}=0;
+     $settings .= " -remove ";
+    }
+
    }elsif($A[$I] eq "param"){
     $last=$A[$I];
     $I++;
@@ -504,23 +551,28 @@ sub checkdihedrals{
      my $k=$hash{"k"};
      my $l=$hash{"l"};
      my $mod=1;
-     if(defined $cg0{$i} && defined $cg0{$j} && defined $cg0{$k} && defined $cg0{$l}){
-      # change something about this dihedral 
-      foreach my $key(sort keys %hash){
-       my $value;
-       if (defined $params{$key}){
-        # this is parameter to update
-        $value=eval("$hash{$key}$params{$key}");
-        #$value=sprintf("%.2e", $value);
-        $value=truncaten($value);
-       }else{
-        $value=$hash{$key};
-        if($key !~ m/^[ijkl]$/){
+     if(defined $cg0{$j} && defined $cg0{$k}){
+      if(defined $dihhash->{$type}->{"modremove"}){
+       # since it should be removed, don't include it in %compold
+       next;
+      }else{
+       # change something about this dihedral 
+       foreach my $key(sort keys %hash){
+        my $value;
+        if (defined $params{$key}){
+         # this is parameter to update
+         $value=eval("$hash{$key}$params{$key}");
          #$value=sprintf("%.2e", $value);
          $value=truncaten($value);
+        }else{
+         $value=$hash{$key};
+         if($key !~ m/^[ijkl]$/){
+          #$value=sprintf("%.2e", $value);
+          $value=truncaten($value);
+         }
         }
+        $string .= "$key $value ";
        }
-       $string .= "$key $value ";
       }
      }else{
       # atoms not in groups, just save

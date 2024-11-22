@@ -168,6 +168,10 @@ There are two ways to use this tool.
 	- You can give the interaction type on the command line. In this approach,
 		you can only change one parameter for one interaction group at a time.
 
+Note on modification/removal of dihedral angles: If the middle two atoms of
+a dihedral (i.e. atoms j and k in the xml file) are in the indicated group,
+then the dihedral will be changed.
+
 usage: smog_modifyXML  .. options ..
 
    Options 

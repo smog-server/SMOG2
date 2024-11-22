@@ -726,22 +726,16 @@ sub modifyXMLdihedrals{
 		if(!defined $interaction){
 			next;
 		}
-		my $i=$interaction->{"i"};
-		if(defined $atomhash{$i}){
-			my $j=$interaction->{"j"};
-			if(defined $atomhash{$j}){
-				my $k=$interaction->{"k"};
-				if(defined $atomhash{$k}){
-					my $l=$interaction->{"l"};
-					if(defined $atomhash{$l}){
-						if(defined $remove){
-							delete(@{$XMLhandle->{"interaction"}}[$elcount]);
-						}else{
-							foreach my $param(keys %{$chghash}){
-								my $curval=$interaction->{$param};
-								$interaction->{$param}=eval("($curval)$chghash->{$param}");
-							}
-						}
+		my $j=$interaction->{"j"};
+		if(defined $atomhash{$j}){
+			my $k=$interaction->{"k"};
+			if(defined $atomhash{$k}){
+				if(defined $remove){
+					delete(@{$XMLhandle->{"interaction"}}[$elcount]);
+				}else{
+					foreach my $param(keys %{$chghash}){
+						my $curval=$interaction->{$param};
+						$interaction->{$param}=eval("($curval)$chghash->{$param}");
 					}
 				}
 			}
