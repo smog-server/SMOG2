@@ -1,2 +1,2 @@
-contacts contact_1-6-12 grp 2 grp 1 modrep M param A /1.2 param B +0.00001 
-dihedrals dihedral_ncos grp 1 modrep M param multiplicity *2 param theta0 +12
+contacts contact_1-6-12 grp 2 grp 1 modremove M param A /1.2 param B +0.00001 
+dihedrals dihedral_ncos grp 1 modremove M param multiplicity *2 param theta0 +12

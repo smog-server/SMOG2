@@ -141,7 +141,7 @@ sub check_modXML
  my $indexfile="share/PDB.files/xml.test.small.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.3.in";
+ my $settings="share/PDB.files/xmlsettings.4.in";
  my ($settings,$conhash,$dihhash)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -180,7 +180,7 @@ sub check_modXML
  my $indexfile="share/PDB.files/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.4.in";
+ my $settings="share/PDB.files/xmlsettings.5.in";
  my ($settings,$conhash,$dihhash)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -219,7 +219,7 @@ sub check_modXML
  my $indexfile="share/PDB.files/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.5.in";
+ my $settings="share/PDB.files/xmlsettings.6.in";
  my ($settings,$conhash,$dihhash)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -285,10 +285,13 @@ sub processsettings{
     $I++;
     $settings .= "  $A[$I]  \n";
     push(@grparr,$A[$I]);
-   }elsif($A[$I] eq "modrep"){
+   }elsif($A[$I] eq "modremove"){
     $last=$A[$I];
     $I++;
     $settings .= "  $A[$I]  \n";
+    if($A[$I] =~ m/R/){
+     $conhash{$name}->{"modremove"}=0;
+    }
    }elsif($A[$I] eq "param"){
     if($last eq "param"){
      $settings .= "Y\n";
@@ -395,7 +398,7 @@ sub compareXMLsmodify
 }
 
 sub checkconstants{ 
- # checks that the overall structure of the XML files is the same.
+ # checks that the constants are unchanged
  my ($fail,$xmlold,$xmlnew)=@_;
  my $printbuffer="";
  if((defined $xmlold->{'constants'} &&  defined $xmlnew->{'constants'}) || (! defined $xmlold->{'constants'} && ! defined $xmlnew->{'constants'})){
@@ -434,7 +437,7 @@ sub checkconstants{
 } 
 
 sub checkdihedrals{ 
- # checks that the overall structure of the XML files is the same.
+ # checks that the dihedrals were updated properly
  my ($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$dihhash)=@_;
  my $printbuffer="";
  if((defined $xmlold->{'dihedrals'} &&  defined $xmlnew->{'dihedrals'}) || (! defined $xmlold->{'dihedrals'} && ! defined $xmlnew->{'dihedrals'})){
@@ -502,7 +505,7 @@ sub checkdihedrals{
      my $l=$hash{"l"};
      my $mod=1;
      if(defined $cg0{$i} && defined $cg0{$j} && defined $cg0{$k} && defined $cg0{$l}){
-      # change something about this dihedralt 
+      # change something about this dihedral 
       foreach my $key(sort keys %hash){
        my $value;
        if (defined $params{$key}){
@@ -596,7 +599,7 @@ sub checkdihedrals{
 } 
 
 sub checkcontacts{ 
- # checks that the overall structure of the XML files is the same.
+ # checks that the contacts in XML files are updated correctly.
  my ($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$conhash)=@_;
  my $printbuffer="";
  if((defined $xmlold->{'contacts'} &&  defined $xmlnew->{'contacts'}) || (! defined $xmlold->{'contacts'} && ! defined $xmlnew->{'contacts'})){
@@ -664,29 +667,31 @@ sub checkcontacts{
      my $j=$hash{"j"};
      my $mod=1;
      if((defined $cg0{$i} && defined $cg1{$j} ) || ( defined $cg1{$i} && defined $cg0{$j})){
-      # change something about this contact
-      foreach my $key(sort keys %hash){
-       my $value;
-       if (defined $params{$key}){
-        # this is parameter to update
-        $value=eval("$hash{$key}$params{$key}");
-        #$value=sprintf("%.2e", $value);
-        $value=truncaten($value);
-       }else{
-        $value=$hash{$key};
-        if($key !~ m/^[ij]$/){
-         #$value=sprintf("%.2e", $value);
+      if(defined $conhash->{$type}->{"modremove"}){
+       # since it should be removed, don't include it in %compold
+       next;
+      }else{
+       # change something about this contact
+       foreach my $key(sort keys %hash){
+        my $value;
+        if (defined $params{$key}){
+         # this is parameter to update
+         $value=eval("$hash{$key}$params{$key}");
          $value=truncaten($value);
+        }else{
+         $value=$hash{$key};
+         if($key !~ m/^[ij]$/){
+          $value=truncaten($value);
+         }
         }
+        $string .= "$key $value ";
        }
-       $string .= "$key $value ";
       }
      }else{
       # atoms not in groups, just save
       foreach my $key(sort keys %hash){
        my $value;
        if($key !~ m/^[ij]$/){
-        #$value=sprintf("%.2e", $hash{$key});
         $value=truncaten($hash{$key});
        }else{
         $value=$hash{$key};
@@ -706,7 +711,6 @@ sub checkcontacts{
      foreach my $key(sort keys %hash){
       my $value;
       if($key !~ m/^[ij]$/){
-       #$value=sprintf("%.2e", $hash{$key});
        $value=truncaten($hash{$key});
       }else{
        $value=$hash{$key};
@@ -716,6 +720,7 @@ sub checkcontacts{
      $compold{$string}=0;
     }
    } 
+
    $intc++;
    if(scalar keys %compold == scalar keys %compnew){
     $intm++;
@@ -758,7 +763,7 @@ sub checkcontacts{
 } 
 
 sub checkheadparams{ 
- # checks that the overall structure of the XML files is the same.
+ # checks that the header is the same.
  my ($fail,$xmlold,$xmlnew)=@_;
  my $printmessage="";
  my $chead=0;

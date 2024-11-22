@@ -1,1 +1,2 @@
-contacts contact_1-6-12 grp group1 0 grp group2 1 modrep M param A *1.3 
+contacts contact_1-6-12 grp 2 grp 1 modremove R
+dihedrals dihedral_cosine grp 1 modremove M param multiplicity *2 param theta0 +12

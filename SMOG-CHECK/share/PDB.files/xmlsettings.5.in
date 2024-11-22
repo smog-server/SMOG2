@@ -1,1 +1,1 @@
-dihedrals dihedral_cosine grp group3 2  param theta0 -8
+contacts contact_1-6-12 grp group1 0 grp group2 1 modremove M param A *1.3 
