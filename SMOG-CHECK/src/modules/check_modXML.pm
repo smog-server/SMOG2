@@ -35,10 +35,10 @@ sub check_modXML
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $indexfile="share/PDB.files/xml.test.ndx";
  my $settings="share/PDB.files/xmlsettings.1.in";
- my ($settings,$conhash,$dihhash)=processsettings($settings);
+ my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
 
  &testsperformed($TESTED,\%FAIL);
 
@@ -65,10 +65,10 @@ sub check_modXML
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/PDB.files/xmlsettings.2.in";
- my ($settings,$conhash,$dihhash)=processsettings($settings);
+ my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
 
  &testsperformed($TESTED,\%FAIL);
 
@@ -103,10 +103,10 @@ sub check_modXML
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/PDB.files/xmlsettings.3.in";
- my ($settings,$conhash,$dihhash)=processsettings($settings);
+ my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
 
  &testsperformed($TESTED,\%FAIL);
 
@@ -142,10 +142,10 @@ sub check_modXML
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/PDB.files/xmlsettings.4.in";
- my ($settings,$conhash,$dihhash)=processsettings($settings);
+ my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
 
  &testsperformed($TESTED,\%FAIL);
 
@@ -181,10 +181,10 @@ sub check_modXML
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/PDB.files/xmlsettings.5.in";
- my ($settings,$conhash,$dihhash)=processsettings($settings);
+ my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
 
  &testsperformed($TESTED,\%FAIL);
 
@@ -220,10 +220,10 @@ sub check_modXML
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/PDB.files/xmlsettings.6.in";
- my ($settings,$conhash,$dihhash)=processsettingscl($settings);
+ my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
 
  &testsperformed($TESTED,\%FAIL);
 
@@ -259,10 +259,10 @@ sub check_modXML
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/PDB.files/xmlsettings.7.in";
- my ($settings,$conhash,$dihhash)=processsettingscl($settings);
+ my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
 
  &testsperformed($TESTED,\%FAIL);
 
@@ -298,10 +298,10 @@ sub check_modXML
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/PDB.files/xmlsettings.8.in";
- my ($settings,$conhash,$dihhash)=processsettingscl($settings);
+ my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
 
  &testsperformed($TESTED,\%FAIL);
 
@@ -337,10 +337,10 @@ sub check_modXML
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/PDB.files/xmlsettings.9.in";
- my ($settings,$conhash,$dihhash)=processsettingscl($settings);
+ my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash);
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
 
  &testsperformed($TESTED,\%FAIL);
 
@@ -376,6 +376,7 @@ sub processsettings{
  my %conhash;
  my %dihhash;
  open(INSET,"$settings") or smog_quit("can not open $settings");
+ my %tested;
  $settings ="";
  while(<INSET>){
   my %parhash;
@@ -390,6 +391,7 @@ sub processsettings{
   my $type="";
   for(my $I=0;$I<$#A;$I++){
    if($A[$I] eq "contacts" || $A[$I] eq "dihedrals"){
+    $tested{$A[$I]}=0;
     $last=$A[$I];
     $type=$A[$I];
     $settings .= "Y\n";
@@ -440,7 +442,7 @@ sub processsettings{
   }
  }
  $settings .= "N\n";
- return ($settings,\%conhash,\%dihhash);
+ return ($settings,\%conhash,\%dihhash,\%tested);
 }
 
 sub processsettingscl{
@@ -448,6 +450,7 @@ sub processsettingscl{
  # define some changes we want to introduce. This will be moved to a file for reading, later
  my %conhash;
  my %dihhash;
+ my %tested;
  open(INSET,"$settings") or smog_quit("can not open $settings");
  $settings ="";
  while(<INSET>){
@@ -464,6 +467,7 @@ sub processsettingscl{
   my $grpnum=1;
   for(my $I=0;$I<$#A;$I++){
    if($A[$I] eq "contacts" || $A[$I] eq "dihedrals"){
+    $tested{$A[$I]}=0;
     $last=$A[$I];
     $type=$A[$I];
     $settings .= "-inter $A[$I] ";
@@ -510,14 +514,14 @@ sub processsettingscl{
    $dihhash{$name}->{"groups"}=\@grparr;
   }
  }
- return ($settings,\%conhash,\%dihhash);
+ return ($settings,\%conhash,\%dihhash,\%tested);
 }
 
 
 
 sub compareXMLsmodify
 {
- my ($fail,$old,$new,$indexFile,$conhash,$dihhash)=@_;
+ my ($fail,$old,$new,$indexFile,$conhash,$dihhash,$tested)=@_;
  # read in original and new top files
  my $xmlold=readOpenSMOGxml($old);
  my $xmlnew=readOpenSMOGxml($new);
@@ -532,8 +536,8 @@ sub compareXMLsmodify
  $pbuffer .=checkconstants($fail,$xmlold,$xmlnew);
  $pbuffer .=checknonbonded($fail,$xmlold,$xmlnew);
 
- $pbuffer.=checkcontacts($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$conhash);
- $pbuffer.=checkdihedrals($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$dihhash);
+ $pbuffer.=checkcontacts($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$conhash,$tested);
+ $pbuffer.=checkdihedrals($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$dihhash,$tested);
 
  return $pbuffer;
 }
@@ -579,7 +583,7 @@ sub checkconstants{
 
 sub checkdihedrals{ 
  # checks that the dihedrals were updated properly
- my ($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$dihhash)=@_;
+ my ($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$dihhash,$tested)=@_;
  my $printbuffer="";
  if((defined $xmlold->{'dihedrals'} &&  defined $xmlnew->{'dihedrals'}) || (! defined $xmlold->{'dihedrals'} && ! defined $xmlnew->{'dihedrals'})){
   ${$fail}{'DIHEDRALS EXIST'}=0;
@@ -591,6 +595,13 @@ sub checkdihedrals{
  my $intm=0;
  my $inttc=0;
  my $inttm=0;
+ my $changedih;
+ if(defined $tested->{'dihedrals'}){
+  $changedih=0;
+ }else{
+  $changedih=1;
+ }
+
  if(defined $xmlold->{'dihedrals'} &&  defined $xmlnew->{'dihedrals'}){
   # set up the index groups and parameter changes
   #...
@@ -646,6 +657,7 @@ sub checkdihedrals{
      my $l=$hash{"l"};
      my $mod=1;
      if(defined $cg0{$j} && defined $cg0{$k}){
+      $changedih=1;
       if(defined $dihhash->{$type}->{"modremove"}){
        # since it should be removed, don't include it in %compold
        next;
@@ -741,12 +753,16 @@ sub checkdihedrals{
  }else{
   $printbuffer .= "Not all dihedral interactions matched.\n";
  }
+
+ if(!$changedih){
+  internal_error("No dihedrals were changed.  Something is wrong with the test.");
+ }
  return "$printbuffer";
 } 
 
 sub checkcontacts{ 
  # checks that the contacts in XML files are updated correctly.
- my ($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$conhash)=@_;
+ my ($fail,$xmlold,$xmlnew,$atomgroup,$grpnms,$conhash,$tested)=@_;
  my $printbuffer="";
  if((defined $xmlold->{'contacts'} &&  defined $xmlnew->{'contacts'}) || (! defined $xmlold->{'contacts'} && ! defined $xmlnew->{'contacts'})){
   ${$fail}{'CONTACTS EXIST'}=0;
@@ -758,6 +774,12 @@ sub checkcontacts{
  my $intm=0;
  my $inttc=0;
  my $inttm=0;
+ my $changecont;
+ if(defined $tested->{'contacts'}){
+  $changecont=0;
+ }else{
+  $changecont=1;
+ }
  if(defined $xmlold->{'contacts'} &&  defined $xmlnew->{'contacts'}){
   # set up the index groups and parameter changes
   #...
@@ -813,6 +835,7 @@ sub checkcontacts{
      my $j=$hash{"j"};
      my $mod=1;
      if((defined $cg0{$i} && defined $cg1{$j} ) || ( defined $cg1{$i} && defined $cg0{$j})){
+      $changecont=1;
       if(defined $conhash->{$type}->{"modremove"}){
        # since it should be removed, don't include it in %compold
        next;
@@ -904,6 +927,9 @@ sub checkcontacts{
   ${$fail}{'INTERACTION VALUES: CONTACTS'}=0;
  }else{
   $printbuffer .= "Not all contact interactions matched.\n";
+ }
+ if(!$changecont){
+  internal_error("No contacts were changed.  Something is wrong with the test.");
  }
  return "$printbuffer";
 } 
