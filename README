@@ -53,6 +53,12 @@ or Singularity container. Go to the SMOG 2 page for
 information on how to use use the SMOG 2 images for 
 Docker and Singularity.
 
+Note: Instructions for building your own container can be
+found in the /docker and /singualarity directories in
+this repo. This can be helpful if you are trying to add
+your own features to SMOG 2.
+
+
 OPTION 2 - Using apt-get (Ubuntu)
 Getting Perl configured for SMOG 2 on Ubuntu can be quite simple. 
 
@@ -63,7 +69,8 @@ and you will be ready to run SMOG 2 (See "FINAL STEPS...." below)
 
 >cpanm String::Util Exporter XML::Validator::Schema
 
-OPTION 3 - USING CONDA OR MINICONDA (Linux, only)
+
+OPTION 3 - USING CONDA OR MINICONDA (Only tested with Linux)
 This is a bit more involved than using a container, but
 it should be rather straightforward.
 
