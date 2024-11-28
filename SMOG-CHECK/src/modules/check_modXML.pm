@@ -34,7 +34,7 @@ sub check_modXML
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $indexfile="share/PDB.files/xml.test.ndx";
- my $settings="share/PDB.files/xmlsettings.1.in";
+ my $settings="share/settings/xmlsettings.1.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -64,7 +64,7 @@ sub check_modXML
  my $tmpbuffer="";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.2.in";
+ my $settings="share/settings/xmlsettings.2.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -102,46 +102,7 @@ sub check_modXML
  my $tmpbuffer="";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.3.in";
- my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
- `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
- $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
-
- &testsperformed($TESTED,\%FAIL);
-
- ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
- $FAILSUM += $FAILED;
- if($FAILED !=0){
-  `mkdir tmp`;
-  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
-   `cp $file tmp`;
-  }
-  savefailed($testnum,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
-  print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
-  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
-   `mv tmp/$file .`;
-  }
-  `rmdir tmp`;
- }else{
-  clearfiles(("output.$tool","AA.tmp.out.xml","AA.tmp.contacts","AA.tmp.gro","AA.tmp.ndx","AA.tmp.top","AA.tmp.xml"));
- }
-
- $testnum++;
- print "\tChecking interactive call: test $testnum\n";
-# generate an AA model protein 
- `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/Ion-test -dname AA.tmp -OpenSMOG > output.smog`;
- unless($? == 0){
-  internal_error("SMOG 2 crashed.  Fix SMOG 2 before testing smog_modifyXML.");
- }else{
-  clearfiles("output.smog");
- }
-
- my $tmpbuffer="";
- my $indexfile="share/PDB.files/xml.test.small.ndx";
- &testsperformed($TESTED,\%FAIL);
- %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.4.in";
+ my $settings="share/settings/xmlsettings.3.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -180,7 +141,46 @@ sub check_modXML
  my $indexfile="share/PDB.files/xml.test.small.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.5.in";
+ my $settings="share/settings/xmlsettings.4.in";
+ my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
+ `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
+ $FAIL{"NON-ZERO EXIT"}=$?;
+ $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
+
+ &testsperformed($TESTED,\%FAIL);
+
+ ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+ $FAILSUM += $FAILED;
+ if($FAILED !=0){
+  `mkdir tmp`;
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `cp $file tmp`;
+  }
+  savefailed($testnum,("output.$tool","AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top","AA.tmp.out.xml"));
+  print "$printbuffer\nAdditional Messages\n$tmpbuffer\n";
+  foreach my $file("AA.tmp.contacts" , "AA.tmp.gro","AA.tmp.ndx", "AA.tmp.top", "AA.tmp.xml"){
+   `mv tmp/$file .`;
+  }
+  `rmdir tmp`;
+ }else{
+  clearfiles(("output.$tool","AA.tmp.out.xml","AA.tmp.contacts","AA.tmp.gro","AA.tmp.ndx","AA.tmp.top","AA.tmp.xml"));
+ }
+
+ $testnum++;
+ print "\tChecking interactive call: test $testnum\n";
+# generate an AA model protein 
+ `smog2 -i $pdbdir/1AKEapo_v2.ion.pdb -t share/templates/Ion-test -dname AA.tmp -OpenSMOG > output.smog`;
+ unless($? == 0){
+  internal_error("SMOG 2 crashed.  Fix SMOG 2 before testing smog_modifyXML.");
+ }else{
+  clearfiles("output.smog");
+ }
+
+ my $tmpbuffer="";
+ my $indexfile="share/PDB.files/xml.test.small.ndx";
+ &testsperformed($TESTED,\%FAIL);
+ %FAIL=resettests(\%FAIL,\@FAILLIST);
+ my $settings="share/settings/xmlsettings.5.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -219,7 +219,7 @@ sub check_modXML
  my $indexfile="share/PDB.files/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.6.in";
+ my $settings="share/settings/xmlsettings.6.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -258,7 +258,7 @@ sub check_modXML
  my $indexfile="share/PDB.files/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.7.in";
+ my $settings="share/settings/xmlsettings.7.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -297,7 +297,7 @@ sub check_modXML
  my $indexfile="share/PDB.files/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.8.in";
+ my $settings="share/settings/xmlsettings.8.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -336,7 +336,7 @@ sub check_modXML
  my $indexfile="share/PDB.files/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $settings="share/PDB.files/xmlsettings.9.in";
+ my $settings="share/settings/xmlsettings.9.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;

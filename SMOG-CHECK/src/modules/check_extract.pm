@@ -79,7 +79,7 @@ sub check_extract
    &testsperformed($TESTED,\%FAIL);
    %FAIL=resettests(\%FAIL,\@FAILLIST);
    print "\tChecking with index group $group\n";
-   `echo $group | $exec -f $pdbdir/large.top -g $pdbdir/large.gro -n $pdbdir/large.ndx  &> output.$tool`;
+   `echo $group | $exec -f $pdbdir/large.top -g $pdbdir/large.gro -n $pdbdir/../settings/large.ndx  &> output.$tool`;
    $FAIL{"NON-ZERO EXIT"}=$?; 
    $FAIL{"GMX COMPATIBLE"}=runGMX("AA",$CHECKGMX,"no",$GMXEDITCONF,$GMXPATH,"",$GMXEXEC,$GMXMDP,$GMXMDPCA,"no","extracted","no","extracted","noG96","no");
    $FAIL{"EXTRA MAP FILE GENERATED"} = checkrestraintfile(1,"restrained.map");
@@ -102,7 +102,7 @@ sub check_extract
    &testsperformed($TESTED,\%FAIL);
    %FAIL=resettests(\%FAIL,\@FAILLIST);
    print "\tChecking with index group $group\n";
-   `echo $group | $exec -f $pdbdir/large.top -g $pdbdir/large.gro -n $pdbdir/large.ndx -ndxorder &> output.$tool`;
+   `echo $group | $exec -f $pdbdir/large.top -g $pdbdir/large.gro -n $pdbdir/../settings/large.ndx -ndxorder &> output.$tool`;
 
    $FAIL{"NON-ZERO EXIT"}=$?;
    $FAIL{"GMX COMPATIBLE"}=runGMX("AA",$CHECKGMX,"no",$GMXEDITCONF,$GMXPATH,"",$GMXEXEC,$GMXMDP,$GMXMDPCA,"no","extracted","no","extracted","noG96","yes");
@@ -126,7 +126,7 @@ sub check_extract
    &testsperformed($TESTED,\%FAIL);
    %FAIL=resettests(\%FAIL,\@FAILLIST);
    print "\tChecking with index group $group\n";
-   `echo $group | $exec -f $pdbdir/large.top -g $pdbdir/large.gro -n $pdbdir/large.ndx -restraints 100 &> output.$tool`;
+   `echo $group | $exec -f $pdbdir/large.top -g $pdbdir/large.gro -n $pdbdir/../settings/large.ndx -restraints 100 &> output.$tool`;
    $FAIL{"NON-ZERO EXIT"}=$?;
    $FAIL{"GMX COMPATIBLE"}=runGMX("AA",$CHECKGMX,"no",$GMXEDITCONF,$GMXPATH,"",$GMXEXEC,$GMXMDP,$GMXMDPCA,"no","extracted","no","extracted","noG96","yes");
    $FAIL{"EXTRA MAP FILE GENERATED"} = checkrestraintfile(0,"restrained.map");

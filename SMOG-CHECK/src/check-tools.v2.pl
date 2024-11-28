@@ -8,6 +8,7 @@ use check_ions;
 use check_scale;
 use check_extract;
 use check_modXML;
+use check_editgro;
 
 # This is the main script that runs SMOG2 tools and then checks to see if the generated files are correct.
 print <<EOT;
@@ -34,6 +35,7 @@ my $EXEC_MODXML=$ENV{'exec_modXML'};
 my $EXEC_EXTRACT=$ENV{'exec_extract'};
 my $EXEC_SCALE=$ENV{'exec_scale'};
 my $EXEC_TABLE=$ENV{'exec_table'};
+my $EXEC_EDITGRO=$ENV{'exec_editgro'};
 
 our $TOLERANCE=$ENV{'TOLERANCE'};
 our $MAXTHR=1.0+$TOLERANCE;
@@ -99,6 +101,12 @@ if(defined $checkthese{"scale-energies"} || @ARGV==0){
 if(defined $checkthese{"modifyXML"} || @ARGV==0){
  print "\nTesting smog_modifyXML\n";
  ($FAILED,$message)=check_modXML($EXEC_MODXML,$PDB_DIR,$CHECKGMX,$GMXVER,$GMXPATH,$GMXEXEC,$GMXEDITCONF,$GMXMDP,$GMXMDPCA);
+ if($FAILED >0){$FAILSUM++};
+ $tested++;
+}
+if(defined $checkthese{"editgro"} || @ARGV==0){
+ print "\nTesting smog_editgro\n";
+ ($FAILED,$message)=check_editgro($EXEC_EDITGRO,$PDB_DIR);
  if($FAILED >0){$FAILSUM++};
  $tested++;
 }

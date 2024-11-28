@@ -23,6 +23,7 @@ In this example, an image of the most recent stable release of SMOG 2 will be pu
 
 If you are interested in a specific version of SMOG 2, consult the SMOG-SERVER Sylabs page for additional versions that may be available.
 
+You can also convert Docker images to Singularity.  For information on how to do so, see https://smog-server.org/smog2/singularity/
 
 2. WORKING INTERACTIVELY INSIDE THE CONTAINER
 

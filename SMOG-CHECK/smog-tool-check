@@ -30,6 +30,7 @@ export exec_ions=`which smog_ions`
 export exec_scale=`which smog_scale-energies`
 export exec_table=`which smog_tablegen`
 export exec_modXML=`which smog_modifyXML`
+export exec_editgro=`which smog_editgro`
 `grep PERL $smog_exec`
 
 CURDIR=`pwd`
@@ -45,6 +46,7 @@ echo $exec_ions
 echo $exec_modXML
 echo $exec_scale
 echo $exec_table
+echo $exec_editgro
 
 export perl4smog=`tail -n 1 $smog_exec| awk '{print $1}'`
 
