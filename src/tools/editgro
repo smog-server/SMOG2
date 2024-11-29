@@ -191,6 +191,7 @@ if (! defined $boxtype){
 	$grobox[6] =$tmpbox[7];
 	$grobox[7] =$tmpbox[8];
 
+
 	my @unitvectors;
 	for (my $I=0;$I<3;$I++){
 		my $mag=0;
@@ -255,12 +256,18 @@ if (! defined $boxtype){
 		$grobox[$I+6] =$unitvectors[2][$I]*$lengths[2];
 	}
 	$grodim ="";
+
+	my $v=10**5;
+	for(my $I=0;$I<9;$I++){
+		$grobox[$I]=int($v*$grobox[$I])/$v;
+	}
+
 	foreach my $I(0,4,8){
-		$grodim = $grodim ." $grobox[$I]";
+		$grodim = $grodim ."$grobox[$I]  ";
 	}
 	if($boxtype !~ m/rectangular/i && $boxtype !~ m/cubic/i){
 		foreach my $I(1,2,3,5,6,7){
-			$grodim = $grodim ." $grobox[$I]";
+			$grodim = $grodim ."$grobox[$I]  ";
 		}
 	}else{
 		foreach my $I(1,2,3,5,6,7){
