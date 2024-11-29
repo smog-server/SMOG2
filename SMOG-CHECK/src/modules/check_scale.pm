@@ -35,19 +35,21 @@ sub check_scale
 
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $indexfile="share/PDB.files/sample.AA.ndx";
+ my $indexfile="share/ndxfiles/sample.AA.ndx";
  my $grpsel="$pdbdir/in.groups";
  my $RC=1.5;
  my $RD=1.2;
  `$exec -f AA.tmp.top -n $indexfile -rc $RC -rd $RD < $grpsel &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $FAIL{"GMX COMPATIBLE"}=runGMX("AA",$CHECKGMX,"no",$GMXEDITCONF,$GMXPATH,"",$GMXEXEC,$GMXMDP,$GMXMDPCA,"no","smog.rescaled","no","AA.tmp","noG96","no");
- my ($samedirs,$dihlength,$dihmatch,$conlength,$conmatch)=comparetopsrescale("AA.tmp.top","smog.rescaled.top",$indexfile,$grpsel,$RC,$RD);
- $FAIL{"UNCHANGED DIRECTIVES"}=$samedirs;
- $FAIL{"N DIHEDRALS"}=$dihlength;
- $FAIL{"N SCALED DIHEDRALS"}=$dihmatch;
- $FAIL{"N CONTACTS"}=$conlength;
- $FAIL{"N SCALED CONTACTS"}=$conmatch;
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $FAIL{"GMX COMPATIBLE"}=runGMX("AA",$CHECKGMX,"no",$GMXEDITCONF,$GMXPATH,"",$GMXEXEC,$GMXMDP,$GMXMDPCA,"no","smog.rescaled","no","AA.tmp","noG96","no");
+  my ($samedirs,$dihlength,$dihmatch,$conlength,$conmatch)=comparetopsrescale("AA.tmp.top","smog.rescaled.top",$indexfile,$grpsel,$RC,$RD);
+  $FAIL{"UNCHANGED DIRECTIVES"}=$samedirs;
+  $FAIL{"N DIHEDRALS"}=$dihlength;
+  $FAIL{"N SCALED DIHEDRALS"}=$dihmatch;
+  $FAIL{"N CONTACTS"}=$conlength;
+  $FAIL{"N SCALED CONTACTS"}=$conmatch;
+ }
 
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
@@ -70,20 +72,22 @@ sub check_scale
 
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $indexfile="share/PDB.files/sample.AA.ndx";
+ my $indexfile="share/ndxfiles/sample.AA.ndx";
  my $grpsel="$pdbdir/in.groups";
  my $outfile="test";
  my $RC=0;
  my $RD=0;
  `$exec -f AA.tmp.top -of "$outfile.top" -n $indexfile -rc $RC -rd $RD < $grpsel &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $FAIL{"GMX COMPATIBLE"}=runGMX("AA",$CHECKGMX,"no",$GMXEDITCONF,$GMXPATH,"",$GMXEXEC,$GMXMDP,$GMXMDPCA,"no","$outfile","no","AA.tmp","noG96","no");
- my ($samedirs,$dihlength,$dihmatch,$conlength,$conmatch)=comparetopsrescale("AA.tmp.top","$outfile.top",$indexfile,$grpsel,$RC,$RD);
- $FAIL{"UNCHANGED DIRECTIVES"}=$samedirs;
- $FAIL{"N DIHEDRALS"}=$dihlength;
- $FAIL{"N SCALED DIHEDRALS"}=$dihmatch;
- $FAIL{"N CONTACTS"}=$conlength;
- $FAIL{"N SCALED CONTACTS"}=$conmatch;
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $FAIL{"GMX COMPATIBLE"}=runGMX("AA",$CHECKGMX,"no",$GMXEDITCONF,$GMXPATH,"",$GMXEXEC,$GMXMDP,$GMXMDPCA,"no","$outfile","no","AA.tmp","noG96","no");
+  my ($samedirs,$dihlength,$dihmatch,$conlength,$conmatch)=comparetopsrescale("AA.tmp.top","$outfile.top",$indexfile,$grpsel,$RC,$RD);
+  $FAIL{"UNCHANGED DIRECTIVES"}=$samedirs;
+  $FAIL{"N DIHEDRALS"}=$dihlength;
+  $FAIL{"N SCALED DIHEDRALS"}=$dihmatch;
+  $FAIL{"N CONTACTS"}=$conlength;
+  $FAIL{"N SCALED CONTACTS"}=$conmatch;
+ }
  
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;

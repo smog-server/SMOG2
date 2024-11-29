@@ -70,7 +70,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts","smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
@@ -103,7 +102,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
@@ -137,7 +135,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
@@ -171,7 +168,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
@@ -206,7 +202,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
@@ -246,7 +241,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
@@ -284,7 +278,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
@@ -316,7 +309,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
@@ -348,7 +340,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
@@ -380,7 +371,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
@@ -412,7 +402,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
@@ -444,7 +433,6 @@ sub check_adjust
   savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  print "\n";
   clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 

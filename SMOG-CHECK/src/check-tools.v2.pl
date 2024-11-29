@@ -54,10 +54,6 @@ if($CHECKGMXGAUSSIAN eq "yes"){
 my $FAILED;
 my $message;
 my $FAILSUM=0;
-#things to check
-#extract: make sure the energetics are correct.  compare to original
-#	make sure the restraints are on the right atoms
-#	ensure no restraints when off
 
 my $tested=0;
 my %checkthese;
@@ -68,48 +64,55 @@ if(@ARGV>0){
   $checkthese{$name}=0;
  }
 }
-if(defined $checkthese{"ions"} || @ARGV==0){
- print "\nTesting smog_ions\n";
- ($FAILED,$message)=check_ions($EXEC_IONS,$PDB_DIR,$CHECKGMX,$GMXVER,$GMXPATH,$GMXEXEC,$GMXEDITCONF,$GMXMDP,$GMXMDPCA);
- if($FAILED >0){$FAILSUM++};
- $tested++;
-}
-if(defined $checkthese{"extract"} || @ARGV==0){
- print "\nTesting smog_extract\n";
- ($FAILED,$message)=check_extract($EXEC_EXTRACT,$PDB_DIR,$CHECKGMX,$GMXVER,$GMXPATH,$GMXEXEC,$GMXEDITCONF,$GMXMDP,$GMXMDPCA);
- if($FAILED >0){$FAILSUM++};
- $tested++;
-}
-if(defined $checkthese{"tablegen"} || @ARGV==0){
- print "\nTesting smog_tablegen\n";
- ($FAILED,$message)=check_table($EXEC_TABLE,$PDB_DIR);
- if($FAILED >0){$FAILSUM++};
- $tested++;
-}
 if(defined $checkthese{"adjustPDB"} || @ARGV==0){
  print "\nTesting smog_adjustPDB\n";
  ($FAILED,$message)=check_adjust($EXEC_ADJUST,$EXEC_SMOG,"share");
  if($FAILED >0){$FAILSUM++};
  $tested++;
 }
-if(defined $checkthese{"scale-energies"} || @ARGV==0){
- print "\nTesting smog_scale-energies\n";
- ($FAILED,$message)=check_scale($EXEC_SCALE,$PDB_DIR,$CHECKGMX,$GMXVER,$GMXPATH,$GMXEXEC,$GMXEDITCONF,$GMXMDP,$GMXMDPCA);
- if($FAILED >0){$FAILSUM++};
- $tested++;
-}
-if(defined $checkthese{"modifyXML"} || @ARGV==0){
- print "\nTesting smog_modifyXML\n";
- ($FAILED,$message)=check_modXML($EXEC_MODXML,$PDB_DIR,$CHECKGMX,$GMXVER,$GMXPATH,$GMXEXEC,$GMXEDITCONF,$GMXMDP,$GMXMDPCA);
- if($FAILED >0){$FAILSUM++};
- $tested++;
-}
+
 if(defined $checkthese{"editgro"} || @ARGV==0){
  print "\nTesting smog_editgro\n";
  ($FAILED,$message)=check_editgro($EXEC_EDITGRO,$PDB_DIR);
  if($FAILED >0){$FAILSUM++};
  $tested++;
 }
+
+if(defined $checkthese{"extract"} || @ARGV==0){
+ print "\nTesting smog_extract\n";
+ ($FAILED,$message)=check_extract($EXEC_EXTRACT,$PDB_DIR,$CHECKGMX,$GMXVER,$GMXPATH,$GMXEXEC,$GMXEDITCONF,$GMXMDP,$GMXMDPCA);
+ if($FAILED >0){$FAILSUM++};
+ $tested++;
+}
+
+if(defined $checkthese{"ions"} || @ARGV==0){
+ print "\nTesting smog_ions\n";
+ ($FAILED,$message)=check_ions($EXEC_IONS,$PDB_DIR,$CHECKGMX,$GMXVER,$GMXPATH,$GMXEXEC,$GMXEDITCONF,$GMXMDP,$GMXMDPCA);
+ if($FAILED >0){$FAILSUM++};
+ $tested++;
+}
+
+if(defined $checkthese{"modifyXML"} || @ARGV==0){
+ print "\nTesting smog_modifyXML\n";
+ ($FAILED,$message)=check_modXML($EXEC_MODXML,$PDB_DIR,$CHECKGMX,$GMXVER,$GMXPATH,$GMXEXEC,$GMXEDITCONF,$GMXMDP,$GMXMDPCA);
+ if($FAILED >0){$FAILSUM++};
+ $tested++;
+}
+
+if(defined $checkthese{"scale-energies"} || @ARGV==0){
+ print "\nTesting smog_scale-energies\n";
+ ($FAILED,$message)=check_scale($EXEC_SCALE,$PDB_DIR,$CHECKGMX,$GMXVER,$GMXPATH,$GMXEXEC,$GMXEDITCONF,$GMXMDP,$GMXMDPCA);
+ if($FAILED >0){$FAILSUM++};
+ $tested++;
+}
+
+if(defined $checkthese{"tablegen"} || @ARGV==0){
+ print "\nTesting smog_tablegen\n";
+ ($FAILED,$message)=check_table($EXEC_TABLE,$PDB_DIR);
+ if($FAILED >0){$FAILSUM++};
+ $tested++;
+}
+
 
 if($FAILSUM>0){
  print "\n\nSOME TESTS FAILED.  SEE EARLIER MESSAGES\n\n";	

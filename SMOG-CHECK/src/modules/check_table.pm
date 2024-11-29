@@ -24,7 +24,9 @@ sub check_table
  print "\tChecking default table\n"; 
  `$exec &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $FAIL{"CORRECT VALUES"}=compare_table("table.xvg","share/refs/table_def.xvg");
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $FAIL{"CORRECT VALUES"}=compare_table("table.xvg","share/refs/table_def.xvg");
+ }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
@@ -40,7 +42,9 @@ sub check_table
  print "\tChecking custom table\n"; 
  `$exec -M 10 -n 6 -ic 150 -tl 3 -sd 0.8 -sc 1.2 -table table.2.xvg &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $FAIL{"CORRECT VALUES"}=compare_table("table.2.xvg","share/refs/table.2.xvg");
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $FAIL{"CORRECT VALUES"}=compare_table("table.2.xvg","share/refs/table.2.xvg");
+ } 
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  if($FAILED !=0){
   savefailed(2,("table.2.xvg","output.$tool"));
@@ -56,7 +60,9 @@ sub check_table
  print "\tChecking temperature option\n"; 
  `$exec -temp 300 -table table.$name.xvg &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $FAIL{"CORRECT VALUES"}=compare_table("table.$name.xvg","share/refs/table.$name.xvg");
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $FAIL{"CORRECT VALUES"}=compare_table("table.$name.xvg","share/refs/table.$name.xvg");
+ }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  if($FAILED !=0){
   savefailed(3,("table.$name.xvg","output.$tool"));
@@ -72,7 +78,9 @@ sub check_table
  print "\tChecking unit option\n"; 
  `$exec -unit kJ -table table.$name.xvg &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $FAIL{"CORRECT VALUES"}=compare_table("table.$name.xvg","share/refs/table.$name.xvg");
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $FAIL{"CORRECT VALUES"}=compare_table("table.$name.xvg","share/refs/table.$name.xvg");
+ }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  if($FAILED !=0){
   savefailed(3,("table.$name.xvg","output.$tool"));
@@ -88,7 +96,9 @@ sub check_table
  print "\tChecking unit and temp options\n"; 
  `$exec -temp 100 -unit kJ -table table.$name.xvg &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $FAIL{"CORRECT VALUES"}=compare_table("table.$name.xvg","share/refs/table.$name.xvg");
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $FAIL{"CORRECT VALUES"}=compare_table("table.$name.xvg","share/refs/table.$name.xvg");
+ }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  if($FAILED !=0){
   savefailed(3,("table.$name.xvg","output.$tool"));

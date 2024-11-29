@@ -33,13 +33,14 @@ sub check_modXML
  my $tmpbuffer="";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
- my $indexfile="share/PDB.files/xml.test.ndx";
+ my $indexfile="share/ndxfiles/xml.test.ndx";
  my $settings="share/settings/xmlsettings.1.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
-
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
+ }
  &testsperformed($TESTED,\%FAIL);
 
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
@@ -68,8 +69,9 @@ sub check_modXML
  my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
-
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
+ }
  &testsperformed($TESTED,\%FAIL);
 
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
@@ -106,8 +108,9 @@ sub check_modXML
  my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
-
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
+ }
  &testsperformed($TESTED,\%FAIL);
 
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
@@ -138,15 +141,16 @@ sub check_modXML
  }
 
  my $tmpbuffer="";
- my $indexfile="share/PDB.files/xml.test.small.ndx";
+ my $indexfile="share/ndxfiles/xml.test.small.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/settings/xmlsettings.4.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
-
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
+ }
  &testsperformed($TESTED,\%FAIL);
 
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
@@ -177,15 +181,16 @@ sub check_modXML
  }
 
  my $tmpbuffer="";
- my $indexfile="share/PDB.files/xml.test.small.ndx";
+ my $indexfile="share/ndxfiles/xml.test.small.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/settings/xmlsettings.5.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettings($settings);
  `echo "$settings" | $exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml  &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
-
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
+ }
  &testsperformed($TESTED,\%FAIL);
 
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
@@ -216,15 +221,16 @@ sub check_modXML
  }
 
  my $tmpbuffer="";
- my $indexfile="share/PDB.files/xml.test.ndx";
+ my $indexfile="share/ndxfiles/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/settings/xmlsettings.6.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
-
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
+ }
  &testsperformed($TESTED,\%FAIL);
 
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
@@ -255,15 +261,16 @@ sub check_modXML
  }
 
  my $tmpbuffer="";
- my $indexfile="share/PDB.files/xml.test.ndx";
+ my $indexfile="share/ndxfiles/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/settings/xmlsettings.7.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
-
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
+ }
  &testsperformed($TESTED,\%FAIL);
 
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
@@ -294,15 +301,16 @@ sub check_modXML
  }
 
  my $tmpbuffer="";
- my $indexfile="share/PDB.files/xml.test.ndx";
+ my $indexfile="share/ndxfiles/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/settings/xmlsettings.8.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
-
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
+ }
  &testsperformed($TESTED,\%FAIL);
 
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
@@ -333,15 +341,16 @@ sub check_modXML
  }
 
  my $tmpbuffer="";
- my $indexfile="share/PDB.files/xml.test.ndx";
+ my $indexfile="share/ndxfiles/xml.test.ndx";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  my $settings="share/settings/xmlsettings.9.in";
  my ($settings,$conhash,$dihhash,$tested)=processsettingscl($settings);
  `$exec -OpenSMOG AA.tmp.xml -n $indexfile -OpenSMOGout AA.tmp.out.xml $settings &> output.$tool`;
  $FAIL{"NON-ZERO EXIT"}=$?;
- $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
-
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  $tmpbuffer .= compareXMLsmodify(\%FAIL,"AA.tmp.xml","AA.tmp.out.xml",$indexfile,$conhash,$dihhash,$tested);
+ }
  &testsperformed($TESTED,\%FAIL);
 
  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);

@@ -25,12 +25,12 @@ fi
 
 
 export exec_adjust=`which smog_adjustPDB`
+export exec_editgro=`which smog_editgro`
 export exec_extract=`which smog_extract`
 export exec_ions=`which smog_ions`
+export exec_modXML=`which smog_modifyXML`
 export exec_scale=`which smog_scale-energies`
 export exec_table=`which smog_tablegen`
-export exec_modXML=`which smog_modifyXML`
-export exec_editgro=`which smog_editgro`
 `grep PERL $smog_exec`
 
 CURDIR=`pwd`
@@ -39,14 +39,14 @@ CURDIR=$CURDIR/src
 export PERLLIB=$PERLLIB:$CURDIR/modules
 export PERL5LIB=$PERL5LIB:$CURDIR/modules
 
-echo Will test the following executables
+echo Will use the following executables when testing
 echo $exec_adjust
+echo $exec_editgro
 echo $exec_extract
 echo $exec_ions
 echo $exec_modXML
 echo $exec_scale
 echo $exec_table
-echo $exec_editgro
 
 export perl4smog=`tail -n 1 $smog_exec| awk '{print $1}'`
 
