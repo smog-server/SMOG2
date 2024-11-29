@@ -1,15 +1,27 @@
 -c 
 -pbc
 -c -pbc
+-boxtype cubic  
 -boxtype cubic -c 
--boxtype cubic -c -d 1
--boxtype cubic -c -pbc -d 1 
--boxtype cubic -pbc -d 1 
+-boxtype cubic -pbc 
+-boxtype cubic -c -pbc
+-boxtype cubic -d 1  
+-boxtype cubic -d 1 -c 
+-boxtype cubic -d 1 -pbc 
+-boxtype cubic -d 1 -c -pbc
+-boxtype dodecahedron  
 -boxtype dodecahedron -c 
--boxtype dodecahedron -c -d 1
--boxtype dodecahedron -c -pbc -d 1 
--boxtype dodecahedron -pbc -d 1 
+-boxtype dodecahedron -pbc 
+-boxtype dodecahedron -c -pbc
+-boxtype dodecahedron -d 1  
+-boxtype dodecahedron -d 1 -c 
+-boxtype dodecahedron -d 1 -pbc 
+-boxtype dodecahedron -d 1 -c -pbc
+-boxtype octahedron  
 -boxtype octahedron -c 
--boxtype octahedron -c -d 1
--boxtype octahedron -c -pbc -d 1 
--boxtype octahedron -pbc -d 1 
+-boxtype octahedron -pbc 
+-boxtype octahedron -c -pbc
+-boxtype octahedron -d 1  
+-boxtype octahedron -d 1 -c 
+-boxtype octahedron -d 1 -pbc 
+-boxtype octahedron -d 1 -c -pbc
