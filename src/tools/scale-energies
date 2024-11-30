@@ -50,6 +50,9 @@ $gitver
 	index group.  Similarly, a contact weight is rescaled if the atoms are in the two
 	designated groups.
 
+	Note: If you are using OpenSMOG, then you should use smog_modifyXML to make changes
+	to the OpenSMOG XML file.
+
         For usage information, issue flag -help, or see the SMOG manual.
 
         For questions regarding this script, contact info\@smog-server.org
