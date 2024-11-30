@@ -271,7 +271,7 @@ usage: smog_adjustPDB .. options ..
                                      Necessary if a single chain has more than 
                                      9999 residues or 99999 atoms.
 	-sort                   : reorder atoms in each residue by name
-	-subALA                 : if a residue only has C, CA, N, O, and CB atoms, 
+	-subALA                 : if a residue only has C, CA, N, O and CB atoms, 
                                      then rename it ALA 
 	-warn [0]               : convert first N errors to warnings (-1: convert 
                                      all errors) 

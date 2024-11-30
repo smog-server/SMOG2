@@ -39,8 +39,7 @@ my $gitver=getgitver;
 if($gitver ne ""){
         $gitver="\nTHIS VERSION IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
 }
-print <<EOT;
-********************************************************************************************
+my $tmpstring = <<"EOT";
 
                                       smog_modifyXML
 $gitver
@@ -55,10 +54,12 @@ $gitver
 
         For questions regarding this script, contact info\@smog-server.org
 
-********************************************************************************************
-
 EOT
 
+my $wide=88;
+printdashed($wide);
+printcenter($wide,$tmpstring);
+printdashed($wide);
 
 my $indexFile="smog.ndx";
 my $outputtop="scaled.top";
