@@ -18,7 +18,7 @@ then
 	then
 		echo "
 
-smog_install_dir can not contain spaces. If you really need to use spaces in your path, then we suggest you try using a Docker container of SMOG2 (available at smog-server.org)
+smog_install_dir can not contain spaces. If you really need to use spaces in your path, then we suggest you try using a Docker container of SMOG 2 (available at smog-server.org)
 
 "
 		smog_error
@@ -59,7 +59,7 @@ if [[  $smog2dir =~ " " ]]
 then
 	echo "
 
-SMOG2 can not be installed to a directory that has spaces in the name, or path. If you really need to use spaces, then we suggest you try using a Docker container of SMOG2 (available at smog-server.org)
+SMOG 2 can not be installed to a directory that has spaces in the name, or path. If you really need to use spaces, then we suggest you try using a Docker container of SMOG 2 (available at smog-server.org)
 
 "
 	smog_error
@@ -118,7 +118,7 @@ if [[  $perl4smog =~ " " ]]
 then
 	echo "
 
-The path to perl can not have spaces. If you really need to use spaces in your path, then we suggest you try using a Docker container of SMOG2 (available at smog-server.org)
+The path to perl can not have spaces. If you really need to use spaces in your path, then we suggest you try using a Docker container of SMOG 2 (available at smog-server.org)
 
 "
 	smog_error

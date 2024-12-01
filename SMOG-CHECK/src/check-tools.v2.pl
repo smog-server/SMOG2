@@ -10,7 +10,7 @@ use check_extract;
 use check_modXML;
 use check_editgro;
 
-# This is the main script that runs SMOG2 tools and then checks to see if the generated files are correct.
+# This is the main script that runs SMOG 2 tools and then checks to see if the generated files are correct.
 print <<EOT;
 *****************************************************************************************
                                    smog-tools-check                                   

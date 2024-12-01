@@ -27,7 +27,7 @@ fi
 
 if (( $EC+$EST+$ESCM == 0 ))
 then
-	echo "All SMOG2, SMOG-tool and SCM checks passed!!"
+	echo "All SMOG 2, SMOG-tool and SCM checks passed!!"
 else
 	exit 1
 fi

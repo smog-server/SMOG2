@@ -21,7 +21,7 @@ USER smoguser
 WORKDIR /workdir
 RUN cd /opt/smog2 && perl4smog=/usr/bin/perl smog2dir=/opt/smog2 bash /opt/smog2/configure.smog2
 RUN echo "alias smoginfo=\"more /opt/smog2/docker/README.docker\"" >> ~/.bashrc
-RUN echo "echo \"\n                   Welcome to the SMOG2 Docker Container\"" >> ~/.bashrc
+RUN echo "echo \"\n                   Welcome to the SMOG 2 Docker Container\"" >> ~/.bashrc
 RUN echo "echo \"You may find more information about the container with the command: smoginfo\"" >> ~/.bashrc
 RUN echo "echo \" Please send any questions to the smog-server team at info@smog-server.org\"" >> ~/.bashrc
 RUN echo "echo \"        This container was built on: `date`\n\"" >> ~/.bashrc

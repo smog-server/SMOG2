@@ -18,7 +18,7 @@ RUN apt-get update && \
 	useradd -rm -d /home/smoguser -s /bin/bash -g root -G sudo -u 1001 smoguser -p "$(openssl passwd -1 smoguser)" && \
 	chown -R smoguser /opt/*   
 RUN echo "\n\
-                   Welcome to the SMOG2 Docker Container\n\
+                   Welcome to the SMOG 2 Docker Container\n\
 You may find more information about the container with the command: smoginfo\n\
  Please send any questions to the smog-server team at info@smog-server.org\n\
         This container was built on: `date`\n" >> /opt/containerinfo

@@ -6,7 +6,7 @@ Below is some information about how to use and generate SMOG 2 Singularity conta
 CONTENTS
 	1. DOWNLOAD THE CONTAINER
 	2. WORKING INTERACTIVELY INSIDE THE CONTAINER
-	3. SINGLE-USE CALLS TO SMOG2
+	3. SINGLE-USE CALLS TO SMOG 2
 	4. EXECUTING A SINGLE SCRIPT IN THE CONTAINER
 	5. HOW TO GENERATE A NEW CONTAINER
 	6. TROUBLESHOOTING
@@ -38,9 +38,9 @@ After launching, you should still be able to see all of your files. When you edi
 The SMOG 2 container has smog2 and all smog tools already in the path. You should be able to simply type "smog2", or give any other smog-tool name, and the command will work!  If it is not that simple, see "Troubleshooting" or email us.
 
 
-3. SINGLE-USE CALLS TO SMOG2
+3. SINGLE-USE CALLS TO SMOG 2
 
-It is possible to think of the container as a wrapper for SMOG2. That is, you can "call" the container and launch a single SMOG2 command within it.  For example:
+It is possible to think of the container as a wrapper for SMOG 2. That is, you can "call" the container and launch a single SMOG 2 command within it.  For example:
 
 >singularity exec smog2_stable.sif smog2 -AA -i 2ci2.pdb
 

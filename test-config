@@ -75,7 +75,7 @@ do
 				exit 1
 			elif [ $b -eq 0 ]
 			then
-				echo SMOG2 did not finish running. Check $tmpDir/smog.output for details.
+				echo SMOG 2 did not finish running. Check $tmpDir/smog.output for details.
 			exit 1
 			fi
 		fi

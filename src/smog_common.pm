@@ -44,7 +44,7 @@ our %reverthash;
 our $BaseN;
 our %OSrestrict;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub  validateXML checkPotentialFunction GetCustomParms getgitver selectgroup listgroups getXYZfromLine $VERSION );
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub  validateXML checkPotentialFunction GetCustomParms getgitver selectgroup listgroups getXYZfromLine selectTemplates $VERSION );
 our %supported_directives;
 #####################
 # Error routiness   #
@@ -72,7 +72,7 @@ sub smog_quit
 		print "\n\nEXCEEDED USER-DEFINED MAXIMUM NUMBER OF WARNINGS. QUITTING.\n\n";
 		exit(1);
 	}else{
-		print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error with the -warn flag.\nHowever, it is not recommended that output obtained with this flag be used for an actual simulation.\n";
+		print "\n\nFATAL ERROR:  $LINE\n\nFor more information about specific errors, you can check the FAQ page on smog-server.org,\nthe SMOG 2 manual, or you can email us at info\@smog-server.org. \n\nNOTE: For diagnostic purposes, you can try to ignore the error with the -warn flag.\nHowever, it is not recommended that output obtained with this flag be used for an actual simulation.\n";
 		exit(1);
 	}
 }
@@ -703,4 +703,51 @@ sub selectgroup
 	return $tmp;
 }
 
+sub selectTemplates
+{
+        print "Please select a force field from the list below:\n";
+	print "FF Number - name : description\n";
+	my $SMOGLIST;
+	if(defined $ENV{'SMOG_FFDIR'}){
+		$SMOGLIST=$ENV{'SMOG_FFDIR'} ;
+	}else{
+		$SMOGLIST=$ENV{'SMOG_PATH'} . "/share/templates/";
+	}
+	open(FLIST,"$SMOGLIST/ff.info");
+	my @FLISTA;
+	my $FNUM=0;
+	my $line;
+	while(<FLIST>){
+		$line = $_;
+		chomp($line);
+		$line =~ s/^\s+//g;
+		$line =~ s/\#.*$//g;
+		unless($line =~ m/^#/ || $line eq ""){
+			my @A=split(/:/,$line);
+			$FLISTA[$FNUM]=$A[0];
+			$FLISTA[$FNUM] =~ s/\s+//g;
+			print "$FNUM - $line\n";
+
+			$FNUM++;
+		}
+	}
+	$FNUM--;
+	my $FFN;
+	my $FFv=-1;
+	until($FFv == 1){
+		print "Please select a force field, by FF Number:";
+		$FFN=<STDIN>;
+		chomp($FFN);
+		$FFv=whatAmI($FFN);
+		if($FFv==1){
+			if($FFN<0 || $FFN > $FNUM){
+				print "Invalid force field number. Please provide a value between 0 and $FNUM\n";
+				$FFv=-1;
+			}
+		}else{
+			print "Invalid force field selection. Must provide an integer between 0 and $FNUM.\n";
+		}
+	}
+	return "$SMOGLIST/$FLISTA[$FFN]";
+}
 1;
