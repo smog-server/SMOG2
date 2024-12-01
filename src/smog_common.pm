@@ -44,7 +44,7 @@ our %reverthash;
 our $BaseN;
 our %OSrestrict;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub  validateXML checkPotentialFunction GetCustomParms getgitver selectgroup listgroups getXYZfromLine selectTemplates $VERSION );
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub  validateXML checkPotentialFunction GetCustomParms getgitver selectgroup listgroups getXYZfromLine selectTemplates findIonDefs $VERSION );
 our %supported_directives;
 #####################
 # Error routiness   #
@@ -705,14 +705,17 @@ sub selectgroup
 
 sub selectTemplates
 {
-        print "Please select a force field from the list below:\n";
-	print "FF Number - name : description\n";
+	my ($checkforions)=@_;
+	# if an arg is given, then check if ion defs are provided.  Otherwise, just list all templates
 	my $SMOGLIST;
 	if(defined $ENV{'SMOG_FFDIR'}){
 		$SMOGLIST=$ENV{'SMOG_FFDIR'} ;
 	}else{
 		$SMOGLIST=$ENV{'SMOG_PATH'} . "/share/templates/";
 	}
+	print "Will check for templates located in $SMOGLIST\n";
+        print "Please select a force field from the list below:\n";
+	print "FF Number - name : description\n";
 	open(FLIST,"$SMOGLIST/ff.info");
 	my @FLISTA;
 	my $FNUM=0;
@@ -724,14 +727,31 @@ sub selectTemplates
 		$line =~ s/\#.*$//g;
 		unless($line =~ m/^#/ || $line eq ""){
 			my @A=split(/:/,$line);
-			$FLISTA[$FNUM]=$A[0];
-			$FLISTA[$FNUM] =~ s/\s+//g;
-			print "$FNUM - $line\n";
+			my $dc=1;
+			my $dn;
+			if(defined $checkforions){
+				($dc,$dn)=findIonDefs("$SMOGLIST/$A[0]");
+			}
+			if($dc>1){
+				smog_quit("Issue with template library. Found more than one set of ion definitions in $A[0]");
+			}elsif($dc==1){
+				$FLISTA[$FNUM]=$A[0];
+				$FLISTA[$FNUM] =~ s/^\s+//g;
+				$FLISTA[$FNUM] =~ s/\s+$//g;
+				print "$FNUM - $line\n";
 
-			$FNUM++;
+				$FNUM++;
+			}
 		}
 	}
 	$FNUM--;
+	if($FNUM ==-1){
+		if(defined $checkforions){
+			smog_quit("No templates in the library have ions.def files");
+		}else{
+			smog_quit("No template directories found in the library.");
+		}
+	}
 	my $FFN;
 	my $FFv=-1;
 	until($FFv == 1){
@@ -748,6 +768,29 @@ sub selectTemplates
 			print "Invalid force field selection. Must provide an integer between 0 and $FNUM.\n";
 		}
 	}
-	return "$SMOGLIST/$FLISTA[$FFN]";
+	return ($SMOGLIST,$FLISTA[$FFN]);
 }
+
+sub findIonDefs
+{
+	my ($folderName)=@_;
+	my $defsexists=0;
+	my $defsfile;
+	my @B=split(/\s+/,$folderName);
+	$folderName=$B[0];
+        opendir(my $folder,$folderName);
+	while(my $file = readdir($folder)){
+		if($file =~ m/\.ions\.def$/ || $file =~ m/^ions\.def$/) {
+			$defsexists++;
+			$defsfile = "$folderName/$file";
+			next;
+		}
+	}
+	if($defsexists >1){
+		smog_quit ("Found multiple ion definition files in directory $folderName");
+	}
+	return ($defsexists,$defsfile);
+
+}
+
 1;

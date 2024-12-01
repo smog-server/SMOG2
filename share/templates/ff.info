@@ -3,5 +3,5 @@
 #  name that appears to user : directory name [round 1 model, such as AA before CA] : short description of model
 SBM_AA : Default all-atom model	
 SBM_AA+gaussian : Default all-atom model with Gaussian contacts
-SBM_calpha : Default C-alpha model
+SBM_calpha SBM_AA: Default C-alpha model
 SBM_calpha+gaussian SBM_AA : Default C-alpha model with Gaussian contacts

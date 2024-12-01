@@ -444,7 +444,14 @@ sub parse_args {
 	my $numdefaults=$CAdefault+$AAdefault+$AAGdefault+$CAGdefault;
 	if($inputFolder eq "" && $numdefaults==0){
 		print "\nNo model was specified. Select force field interactively\n\n";
-		$inputFolder=selectTemplates();
+		my $path;
+		($path,$inputFolder)=selectTemplates();
+		my @B=split(/\s+/,$inputFolder);
+		$inputFolder="$path/$B[0]";
+		if($#B==1){
+			$coarseFolder=$inputFolder;
+			$inputFolder="$path/$B[1]";
+		}
 		$interactivecomment="Force field was interactively selected. The following templates were selected: $inputFolder\n";
 	}
 	

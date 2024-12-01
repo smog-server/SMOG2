@@ -138,7 +138,14 @@ if(!defined $addname){
 	smog_quit("Please indicate which ion species to add with the -ionnm option"); 
 }
 if($addnum <1){
-	smog_quit("At least one ion must be added.");
+	smog_quit("At least one ion must be added. Specify the number with -ionn");
+}
+
+if(!defined $template && !defined $addmass && !defined $addcharge && !defined $addC12 && !defined $addC6){
+	print "No ion parameters, nor template directories were specified. Will check for available templates in your local library.\n";
+	my $path;
+	($path,$template)=selectTemplates(1);
+	$template="$path/$template";
 }
 
 if(defined $template){
@@ -168,7 +175,12 @@ if(defined $template){
 	}
 
 	# read the definitions for ions from ions.def
-	my $ionfile=finddefs($template);
+	my ($iondefcount,$ionfile)=findIonDefs($template);
+
+	if($iondefcount ==0){
+		smog_quit ("No ion definition file found in directory $template");
+	}
+
 	print "\nWill read definitions of ion parameters in $ionfile\n";
 	open(IONFILE,"$ionfile") or smog_quit("Can\'t open $ionfile");
 	my $ionmatch=0;
@@ -776,29 +788,6 @@ sub getcellcenter
 	$Zcenter+=$UNIT2[2]*($N2+0.5)*$width2;
 
 	return ($Xcenter,$Ycenter,$Zcenter);
-
-}
-
-sub finddefs
-{
-	my ($folderName)=@_;
-	my $defsexists=0;
-	my $defsfile;
-        opendir(my $folder,$folderName);
-	while(my $file = readdir($folder)){
-		if($file =~ m/\.ions\.def$/ || $file =~ m/^ions\.def$/) {
-			$defsexists++;
-			$defsfile = "$folderName/$file";
-			next;
-		}
-	}
-	if($defsexists ==0){
-		smog_quit ("No ion definition file found in directory $folderName");
-	}
-	if($defsexists >1){
-		smog_quit ("Found multiple ion definition files in directory $folderName");
-	}
-	return $defsfile;
 
 }
 
