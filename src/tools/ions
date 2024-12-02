@@ -37,6 +37,8 @@ our @EXPORT = qw(%supported_directives);
 my $inputArguments=join(' ',@ARGV);
 my $xml = new XML::Simple;
 my $gitver=getgitver;
+my $interactivecomment;
+
 if($gitver ne ""){
         $gitver="\nTHIS VERSION IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
 }
@@ -122,8 +124,11 @@ if(defined $OpenSMOG && !defined $OpenSMOGout){
 if(!defined $template && !defined $addmass && !defined $addcharge && !defined $addC12 && !defined $addC6){
 	print "No ion parameters, nor template directories were specified. Will check for available templates in your local library.\n";
 	my $path;
-	($path,$template)=selectTemplates(1);
+	my $tfle;
+	($path,$template,$tfle)=selectTemplates("ions");
 	$template="$path/$template";
+        $interactivecomment="Templates were interactively selected. The following templates were selected: $template";
+
 }
 
 if(defined $OpenSMOG && !defined $template){
@@ -165,7 +170,7 @@ if(defined $template){
 	# be added to the top (i.e. standard gromacs-formatted interactions) or
 	# if they should be added to the OpenSMOG XML file.
 	if(defined $OpenSMOG){
-		my $siffile=findsif($template);
+		my $siffile=findSif($template);
 	        my $data = $xml->XMLin($siffile,KeyAttr => ['name'],ForceArray=>1);
 		my ($found,$parmarr)=GetCustomParms($data);
 		if($found!=0){
@@ -523,6 +528,9 @@ my $alreadypresent=0;
 
 print TOPOUT "; This is a top file generated with smog_ions (version $VERSION), using the command:\n;";
 print TOPOUT "   smog_ions $inputArguments\n";
+if(defined $interactivecomment){
+	print TOPOUT ";   $interactivecomment\n";
+}
 $gitver=getgitver; 
 if($gitver ne ""){
         print TOPOUT "; THIS VERSION OF SMOG_IONS IS FROM A GIT REPO. COMMIT NUMBER\n";
@@ -585,7 +593,8 @@ while (<FILE>){
 		my $extrafile = "";
 		my $extrasexists=0;
 		if(defined $template){
-        		opendir(my $folder,$template);
+        		opendir(my $folder,$template) or smog_quit("Unable to open template directory : $template");
+;
         		while(my $file = readdir($folder)){
         		        if($file =~ m/\.extras$/ || $file =~ m/^extras$/) {
         		                $extrasexists++;
@@ -792,31 +801,6 @@ sub getcellcenter
 
 }
 
-sub findsif
-{
-	my ($folderName)=@_;
-	my $sifexists=0;
-	my $siffile;
-        opendir(my $folder,$folderName);
-	while(my $file = readdir($folder)){
-		if($file =~ m/\.sif$/) {
-			$sifexists++;
-			$siffile = "$folderName/$file";
-			next;
-		}
-	}
-	if($sifexists ==0){
-		smog_quit ("No sif file found in directory $folderName");
-	}
-	if($sifexists >1){
-		smog_quit ("Found multiple sif files in directory $folderName");
-	}
-	return $siffile;
-
-}
-
-
-
 sub usage
 {
   print <<EOT;
@@ -842,7 +826,7 @@ usage: smog_ions ... options
 	-of [smog.ions.top]     : output SMOG force field file for smog-ions system
 	-og [smog.ions.gro]     : output SMOG configuration file for smog-ions system
 	-OpenSMOG <xml file>    : also process an OpenSMOG xml file. This file is generated 
-                                    by smog2 if the -OpenSMOG option was used.
+                                    by SMOG 2 if the -OpenSMOG option was used.
 	-OpenSMOGout <xml file> : output file name for processed OpenSMOG xml file
 
    Optional settings 

@@ -576,7 +576,7 @@ sub rescaleXML{
 			}
 			modifyXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash,$remove);
 		}else{
-			internal_error("rescale XML selection issue.");
+			smog_quit("internal error: rescale XML selection issue.");
 		}
 
 		print "Modify/remove additional $type parameters? (Y/N)\n";
@@ -612,7 +612,7 @@ sub rescaleXMLsettings{
 		$groupC1=$grpnms[$groupC1];
 		$groupC2=$grpnms[$groupC2];
 	}else{
-		internal_error("XML group selection error.");
+		smog_quit("internal error: XML group selection error.");
 	}
 
 	my @scalevals;

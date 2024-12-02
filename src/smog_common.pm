@@ -44,7 +44,7 @@ our %reverthash;
 our $BaseN;
 our %OSrestrict;
 our @ISA = 'Exporter';
-our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub  validateXML checkPotentialFunction GetCustomParms getgitver selectgroup listgroups getXYZfromLine selectTemplates findIonDefs $VERSION );
+our @EXPORT = qw($allwarncount $warncount $maxwarn note_init smog_note quit_init smog_quit warnsummary warninfo checkForModules checkcomment hascontent loadfile checkdirectives %supported_directives checkforinclude readindexfile printdashed printcenter checksuffix checkalreadyexists InitLargeBase BaseTentoLarge BaseLargetoTen printhostdate whatAmI trim evalsub  validateXML checkPotentialFunction GetCustomParms getgitver selectgroup listgroups getXYZfromLine selectTemplates findIonDefs findMapFile findSif $VERSION );
 our %supported_directives;
 #####################
 # Error routiness   #
@@ -705,7 +705,8 @@ sub selectgroup
 
 sub selectTemplates
 {
-	my ($checkforions)=@_;
+	my ($checkforfiles)=@_;
+	my $filename;
 	# if an arg is given, then check if ion defs are provided.  Otherwise, just list all templates
 	my $SMOGLIST;
 	if(defined $ENV{'SMOG_FFDIR'}){
@@ -716,10 +717,11 @@ sub selectTemplates
 	print "Will check for templates located in $SMOGLIST\n";
         print "Please select a force field from the list below:\n";
 	print "FF Number - name : description\n";
-	open(FLIST,"$SMOGLIST/ff.info");
+	open(FLIST,"$SMOGLIST/ff.info") or smog_quit("Unable to open force field library file $SMOGLIST/ff.info");
 	my @FLISTA;
 	my $FNUM=0;
 	my $line;
+	my @filenames;
 	while(<FLIST>){
 		$line = $_;
 		chomp($line);
@@ -729,8 +731,15 @@ sub selectTemplates
 			my @A=split(/:/,$line);
 			my $dc=1;
 			my $dn;
-			if(defined $checkforions){
-				($dc,$dn)=findIonDefs("$SMOGLIST/$A[0]");
+			if(defined $checkforfiles){
+				if($checkforfiles eq "ions"){
+					($dc,$dn)=findIonDefs("$SMOGLIST/$A[0]");
+				}elsif($checkforfiles eq "adjustPDB"){
+					($dc,$dn)=findMapFile("$SMOGLIST/$A[0]");
+					$filenames[$FNUM]=$dn;
+				}else{
+					smog_quit("Internal Error: filefile");
+				}
 			}
 			if($dc>1){
 				smog_quit("Issue with template library. Found more than one set of ion definitions in $A[0]");
@@ -746,8 +755,12 @@ sub selectTemplates
 	}
 	$FNUM--;
 	if($FNUM ==-1){
-		if(defined $checkforions){
-			smog_quit("No templates in the library have ions.def files");
+		if(defined $checkforfiles){
+			if($checkforfiles eq "ions"){
+				smog_quit("No templates in the library have ions.def files");
+			}elsif($checkforfiles eq "adjustPDB"){
+				smog_quit("No templates in the library have a mapping file");
+			}	
 		}else{
 			smog_quit("No template directories found in the library.");
 		}
@@ -768,7 +781,7 @@ sub selectTemplates
 			print "Invalid force field selection. Must provide an integer between 0 and $FNUM.\n";
 		}
 	}
-	return ($SMOGLIST,$FLISTA[$FFN]);
+	return ($SMOGLIST,$FLISTA[$FFN],$filenames[$FFN]);
 }
 
 sub findIonDefs
@@ -778,7 +791,7 @@ sub findIonDefs
 	my $defsfile;
 	my @B=split(/\s+/,$folderName);
 	$folderName=$B[0];
-        opendir(my $folder,$folderName);
+        opendir(my $folder,$folderName) or smog_quit("Unable to open template directory listed in ff.info: $folderName");
 	while(my $file = readdir($folder)){
 		if($file =~ m/\.ions\.def$/ || $file =~ m/^ions\.def$/) {
 			$defsexists++;
@@ -792,5 +805,53 @@ sub findIonDefs
 	return ($defsexists,$defsfile);
 
 }
+
+sub findMapFile
+{
+	my ($folderName)=@_;
+	my $defsexists=0;
+	my $defsfile;
+	my @B=split(/\s+/,$folderName);
+	$folderName=$B[0];
+        opendir(my $folder,$folderName) or smog_quit("Unable to open template directory listed in ff.info: $folderName");
+	while(my $file = readdir($folder)){
+		if($file =~ m/\.map$/) {
+			$defsexists++;
+			$defsfile = "$folderName/$file";
+			next;
+		}
+	}
+	if($defsexists >1){
+		smog_quit ("Found multiple mapping file in directory $folderName");
+	}
+	return ($defsexists,$defsfile);
+
+}
+
+sub findSif
+{
+	my ($folderName)=@_;
+	my $sifexists=0;
+	my $siffile;
+        opendir(my $folder,$folderName) or smog_quit("Unable to open template directory : $folderName");
+	while(my $file = readdir($folder)){
+		if($file =~ m/\.sif$/) {
+			$sifexists++;
+			$siffile = "$folderName/$file";
+			next;
+		}
+	}
+	if($sifexists ==0){
+		smog_quit ("No sif file found in directory $folderName");
+	}
+	if($sifexists >1){
+		smog_quit ("Found multiple sif files in directory $folderName");
+	}
+	return $siffile;
+
+}
+
+
+
 
 1;
