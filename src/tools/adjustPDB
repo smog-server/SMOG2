@@ -102,10 +102,12 @@ my $deletewater;
 my $noautorename;
 my $treatAltLocs;
 my $freecoor;
+my $usedefault;
 usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help, 
 	'o=s' => \$outputPDB, 
 	'i=s' => \$inputPDB, 
 	'map=s' => \$mapFile, 
+	'default' => \$usedefault,
 	'warn=i' => \$maxwarn,
 	'legacy' => \$legacymatch,
 	'renumber' => \$renumber,
@@ -196,8 +198,24 @@ if (defined $large){
 	&InitLargeBase;
 }
 
+if (defined $mapFile and defined $usedefault){
+	smog_quit("Can not use -map and -default options at the same time");
+}
+
+if(!exists $ENV{"SMOG_PATH"}){
+	smog_quit("Environmental Variable SMOG_PATH not set. You may need to run the configure.smog2 script.\n");
+}
+my $dmap;
+if (defined $legacymatch) {
+	$dmap = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";
+} else {
+	$dmap = "$ENV{SMOG_PATH}/share/mapfiles/sbmMapExact";
+}
+
 if (defined $mapFile){
-		$mapOption = $mapFile;
+	$mapOption = $mapFile;
+}elsif(defined $usedefault){
+	$mapOption = $dmap;
 }else{
 	print "No mapping file provided.\nWould you like to interactively select a force field or use the default mapping file (I or D)?\n";
 	my $F=<STDIN>;
@@ -206,14 +224,8 @@ if (defined $mapFile){
 	if($F =~ /^D$/i){
 		$default=0;
 		print "Will use the default map file for list of residue names.\nThis should work for the default force fields in smog2.\n";
-		if(!exists $ENV{"SMOG_PATH"}){
-        	smog_quit("Environmental Variable SMOG_PATH not set. You may need to run the configure.smog2 script.\n");
-		}
-		if (defined $legacymatch) {
-			$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMap";
-		} else {
-			$mapOption = "$ENV{SMOG_PATH}/share/mapfiles/sbmMapExact";
-		}	
+		$mapOption = $dmap;
+	
 	}elsif($F =~ /^I$/i){
 		print "Will interactively select what mapping to use.\n";
         	my $path;

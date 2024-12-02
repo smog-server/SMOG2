@@ -45,7 +45,7 @@ sub check_adjust
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("adjusted.pdb");
- `$exec -legacy -i $origpdb &> output.$tool`;
+ `$exec -default -legacy -i $origpdb &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("adjusted.pdb");
 
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -80,7 +80,7 @@ sub check_adjust
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("$newpdb");
- `$exec -legacy -i $origpdb -o $newpdb &> output.$tool`;
+ `$exec -default -legacy -i $origpdb -o $newpdb &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
 
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -113,7 +113,7 @@ sub check_adjust
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("$newpdb");
- `$exec -i $origpdb -o $newpdb &> output.$tool`;
+ `$exec -default -i $origpdb -o $newpdb &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
 
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -146,7 +146,7 @@ sub check_adjust
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("$newpdb");
- `$exec -i $origpdb -o $newpdb -altloc &> output.$tool`;
+ `$exec -default -i $origpdb -o $newpdb -altloc &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
 
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -290,7 +290,7 @@ sub check_adjust
  $FAIL{'LARGE'}=-1;
  $FAIL{"FILE LENGTH"}=-1;
  removeifexists("$newpdb");
- `$exec -i $origpdb -o $newpdb -removewater &> output.$tool`;
+ `$exec -default -i $origpdb -o $newpdb -removewater &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
 
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -321,7 +321,7 @@ sub check_adjust
  $FAIL{'LARGE'}=-1;
  $FAIL{"FILE LENGTH"}=-1;
  removeifexists("$newpdb");
- `$exec -i $origpdb -o $newpdb -removewater -PDBresnum &> output.$tool`;
+ `$exec -default -i $origpdb -o $newpdb -removewater -PDBresnum &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
 
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -352,7 +352,7 @@ sub check_adjust
  $FAIL{'LARGE'}=-1;
  $FAIL{"FILE LENGTH"}=-1;
  removeifexists("$newpdb");
- `$exec -i $origpdb -o $newpdb -removeH -PDBresnum &> output.$tool`;
+ `$exec -default -i $origpdb -o $newpdb -removeH -PDBresnum &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
 
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -383,7 +383,7 @@ sub check_adjust
  $FAIL{'LARGE'}=-1;
  $FAIL{"FILE LENGTH"}=-1;
  removeifexists("$newpdb");
- `$exec -i $origpdb -o $newpdb  &> output.$tool`;
+ `$exec -default -i $origpdb -o $newpdb  &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
 
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -414,7 +414,7 @@ sub check_adjust
  $FAIL{'LARGE'}=-1;
  $FAIL{"FILE LENGTH"}=-1;
  removeifexists("$newpdb");
- `$exec -i $origpdb -o $newpdb -sort &> output.$tool`;
+ `$exec -default -i $origpdb -o $newpdb -sort &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
 
  $FAIL{"NON-ZERO EXIT"}=$?;
