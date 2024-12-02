@@ -1,6 +1,8 @@
-# defines the force fields that can be selected interactively.
-# format
-#  name that appears to user : directory name [round 1 model, such as AA before CA] : short description of model
+# This file defines the force fields that can be selected interactively.
+# Each line must be formatted in one of two ways:
+#  <template directory name> : <short description of model>
+# or
+#  <coarse-grained directory name> <all-atom directory name used for contact map calculation> : <short description of the model>
 SBM_AA : Default all-atom model	
 SBM_AA+gaussian : Default all-atom model with Gaussian contacts
 SBM_calpha SBM_AA: Default C-alpha model
