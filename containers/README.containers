@@ -1,0 +1,19 @@
+This directory contains information about how to make Docker and Singularity containers. If possible, this is probably the easiest way to use SMOG 2.  We provide a range of containers in the SMOG SERVER Docker Hub and Sylab repos. But, if you would like to make your own containers, then these directories contain all of the information you may need.
+
+There is one use case that doesn't fit nicely into the category of Docker or Singularity. That is, it is possible to create Singularity containers directly from Docker images. It may take an hour, or two, to generate. But, the process below will work. The benefit of this strategy is that Docker images are generally easier to create. You just create a Docker image, push it to Docker Hub and then pull it using Singularity. Below are the details.
+
+HOW TO CREATE A SINGULARITY CONTAINER FROM A DOCKER IMAGE
+
+Assuming the Docker image is available on Docker Hub, you can convert to a Singularity sif file with a single command.
+        >singularity pull <Singularity sif file name> docker://<docker account name>/<image name>:<image tag>
+
+Here is a specific example that would pull the recent stable SMOG 2 image and create a new sif file called my_smog2.sif:
+        >singularity pull my_smog2.sif docker://smogserver/smog2:latest
+
+        If everything works, then you will have the file myctbpimage.sif in your current directory.  
+
+        Sometimes there are issues with tmp and/or cache in singularity.  If you encounter a "no space on device errors" then try the following:
+        make a directory for singularity caching: $SINGCACHE
+        make a directory for tmp image generation: $SINGTMP
+        export SINGULARITY_TMPDIR=$SINGTMP
+        export SINGULARITY_CACHEDIR=$SINGCACHE

@@ -54,9 +54,9 @@ information on how to use use the SMOG 2 images for
 Docker and Singularity.
 
 Note: Instructions for building your own container can be
-found in the /docker and /singualarity directories in
-this repo. This can be helpful if you are trying to add
-your own features to SMOG 2.
+found in the containers/docker and containers/singualarity
+directories in this repo. This can be helpful if you are
+trying to add your own features to SMOG 2.
 
 
 OPTION 2 - Using apt-get (Ubuntu)
