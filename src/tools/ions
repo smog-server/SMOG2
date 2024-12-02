@@ -119,8 +119,15 @@ if(defined $OpenSMOG && !defined $OpenSMOGout){
 	smog_quit("When using -OpenSMOG, you must specify an output file name with -OpenSMOGout"); 
 }
 
+if(!defined $template && !defined $addmass && !defined $addcharge && !defined $addC12 && !defined $addC6){
+	print "No ion parameters, nor template directories were specified. Will check for available templates in your local library.\n";
+	my $path;
+	($path,$template)=selectTemplates(1);
+	$template="$path/$template";
+}
+
 if(defined $OpenSMOG && !defined $template){
-	smog_quit("When using -OpenSMOG, ion parameters must be provided through an ion.def file in the template directory.  The template directory must be specified with -t."); 
+	smog_quit("When using -OpenSMOG, ion parameters must be provided through an ion.def file in the template directory.  The template directory must be specified with -t, or it can be selected interactively."); 
 }
 
 if(!defined $OpenSMOG && defined $OpenSMOGout){
@@ -141,12 +148,6 @@ if($addnum <1){
 	smog_quit("At least one ion must be added. Specify the number with -ionn");
 }
 
-if(!defined $template && !defined $addmass && !defined $addcharge && !defined $addC12 && !defined $addC6){
-	print "No ion parameters, nor template directories were specified. Will check for available templates in your local library.\n";
-	my $path;
-	($path,$template)=selectTemplates(1);
-	$template="$path/$template";
-}
 
 if(defined $template){
 	if(defined $addmass || defined $addcharge || defined $addC12 || defined $addC6){
