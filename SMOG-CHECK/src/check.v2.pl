@@ -88,7 +88,7 @@ our $free;
 our @FILETYPES=("top","gro","ndx","settings","contacts","output","contacts.SCM", "contacts.CG","grompp","editconf","out.mdp","contacts.ShadowOutput","box.gro","gro4SCM.gro","top4SCM.top","xml");
 
 # bunch of global vars.  A bit sloppy.  Many could be local.
-our ($AMINO_PRESENT,$angleEps,@atombondedtype,%atombondedtypes,%atombondedtypes2,@ATOMNAME,@ATOMTYPE,$BBRAD,%BBTYPE,$bondEps,$bondMG,$bondtype6,%C12NB,%C6NB,$chargeAT,%chargeNB,%CHECKED,@CID,$CONTD,$STACKSCALE,$dihedralcounting,$CONTENERGY,$CONTR,$CONTTYPE,$default,%defcharge,$defname,$DENERGY,$dihmatch,$DIH_MAX,$DIH_MIN,$DISP_MAX,@EDrig_T,@EDrig_Tc,@ED_T,@ED_Tc,$epsilon,$epsilonCAC,$epsilonCAD,%FAIL,$FAILED,$fail_log,@FIELDS,$gaussian,@GRODATA,$impEps,$improper_gen_N,$ION_PRESENT,$LIGAND_DIH,$LIGAND_PRESENT,%massNB,%matchangle_val,%matchangle_weight,%matchbond_val,%matchbond_weight,%matchdihedral_val,%matchdihedral_weight,$model,@MOLTYPE,%MOLTYPEBYRES,$NA_DIH,$NCONTACTS,$NUCLEIC_PRESENT,$NUMATOMS,$NUMATOMS_LIGAND,$omegaEps,$PDB,$phi_gen_N,$PRO_DIH,$R_CD,$rep_s12,@RESNUM,%restypecount,$ringEps,$R_N_SC_BB,$R_P_BB_SC,$sigma,$sigmaCA,$theta_gen_N,%TYPE,$type6count,$usermap,@XT,@YT,@ZT,%bond_array,$DihDefType);
+our ($AMINO_PRESENT,$angleEps,@atombondedtype,%atombondedtypes,%atombondedtypes2,@ATOMNAME,@ATOMTYPE,$BBRAD,%BBTYPE,$bondEps,$bondMG,$bondtype6,%C12NB,%C6NB,$chargeAT,%chargeNB,%CHECKED,@CID,$CONTD,$STACKSCALE,$dihedralcounting,$CONTENERGY,$CONTR,$CONTTYPE,$default,%defcharge,$defname,$DENERGY,$dihmatch,$DIH_MAX,$DIH_MIN,$DISP_MAX,@EDrig_T,@EDrig_Tc,@ED_T,@ED_Tc,$epsilon,$epsilonCAC,$epsilonCAD,%FAIL,$FAILED,$fail_log,@FIELDS,$gaussian,@GRODATA,$impEps,$improper_gen_N,$ION_PRESENT,$LIGAND_DIH,$LIGAND_PRESENT,%massNB,%matchangle_val,%matchangle_weight,%matchbond_val,%matchbond_weight,%matchdihedral_val,%matchdihedral_weight,$model,@MOLTYPE,%MOLTYPEBYRES,$NA_DIH,$NCONTACTS,$NUCLEIC_PRESENT,$NUMATOMS,$NUMATOMS_LIGAND,$omegaEps,$PDB,$phi_gen_N,$PRO_DIH,$R_CD,$rep_s12,@RESNUM,%restypecount,$ringEps,$R_N_SC_BB,$R_P_BB_SC,$sigma,$sigmaCA,$theta_gen_N,%TYPE,$type6count,$usermap,@XT,@YT,@ZT,%bond_array,$DihDefType,$interactive);
 my %supported_directives = ( 'defaults' => '1','atomtypes' => '1','moleculetype' => '1','nonbond_params' => '0','bondtypes' => '0','angletypes' => '0','dihedraltypes' => '0','atoms' => '1','bonds' => '1','angles' => '1','dihedrals' => '1','pairs' => '1','exclusions' => '1','system' => '1','molecules' => '1');
 
 # list the bonds that are free in the free-templates
@@ -273,7 +273,7 @@ sub addOpenSMOG
 # things to check
 # make sure only and all expected parameters are present in each interaction
 # make sure the functional form is correct
- my ($topdata,$openXML,$model,$gaussian)=@_;
+ my ($topdata,$openXML,$gaussian)=@_;
 
  my $functionform=1;
  my $functionformN=0;
@@ -824,7 +824,7 @@ sub runalltests{
   $model=$A[1];
   $contactmodel=$A[2];
  
-  ($default,$gaussian,$usermap,$free)=setmodelflags($model,$contactmodel,\%numfield,\@A);
+  ($default,$gaussian,$usermap,$free)=setmodelflags($contactmodel,\%numfield,\@A);
 
   &smogchecker($gaussian,$g96,$OpenSMOG,$freecoor);
  
@@ -890,6 +890,7 @@ EOT
 
 sub resetvars
 {
+ undef  $interactive;
  undef  $CONTTYPE;
  undef  $CONTD;
  undef  $STACKSCALE;
@@ -974,7 +975,9 @@ sub runsmog
   }elsif($model eq "CA" && $gaussian eq "yes"){
    $ARGS .= " -CAgaussian";
   }elsif($model eq "AA" &&  $gaussian eq "no"){
-   $ARGS .= " -AA";
+   if(! defined $interactive){
+    $ARGS .= " -AA";
+   }
   }elsif($model eq "AA" &&  $gaussian eq "yes"){
    $ARGS .= " -AAgaussian";
   }elsif($model eq "AA-2cg"){
@@ -1009,11 +1012,15 @@ sub runsmog
    $ARGS .= " -c $PDB_DIR/$PDB.contacts ";
  }
 # run smog2
- `$EXEC_NAME $ARGS &> $PDB.output`;
+ if(defined $interactive){
+  `echo $interactive | $EXEC_NAME $ARGS &> $PDB.output`;
+ }else{
+  `$EXEC_NAME $ARGS &> $PDB.output`;
+ }
 }
 
 sub setmodelflags{
- my ($model,$contactmodel,$numfield,$A)=@_;
+ my ($contactmodel,$numfield,$A)=@_;
  my @A=@{$A};
  my %numfield=%{$numfield};
  my $NA=$#A;
@@ -1110,6 +1117,10 @@ sub setmodelflags{
   }elsif($model =~ m/^AA-nb-cr2$/){
    print "Testing nb type 2 functions\n";
    $combrule=2;
+  }elsif($model =~ m/^AA-interactive$/){
+   print "Testing interactive force field selection\n";
+   $interactive=0;
+   $model="AA";
   }
  }else{
   smogcheck_error("Model name \"$model\" not understood.");
@@ -1444,7 +1455,7 @@ sub smogchecker
   }
   &checkgro4SCM; 
   &checkndx;
-  &checktop($OpenSMOG,$model,$gaussian);
+  &checktop($OpenSMOG,$gaussian);
   &finalchecks;
   # if GMX tests are turned on, then run them
   $FAIL{'GMX COMPATIBLE'}=runGMX($model,$CHECKGMX,$CHECKGMXGAUSSIAN,$GMXEDITCONF,$GMXPATH,$GMXPATHGAUSSIAN,$GMXEXEC,$GMXMDP,$GMXMDPCA,$gaussian,$PDB,$OpenSMOG,$PDB,$g96,"no");
@@ -1971,7 +1982,7 @@ sub checkndx
 
 sub checktop
 {
- my ($OpenSMOG,$model,$gaussian)=@_;
+ my ($OpenSMOG,$gaussian)=@_;
 # this routine will be cleaned up later.  It's functional, but not very organized.
  my (@topdata,%seen,%FOUND,@theta_gen,@PAIRS,$finalres,%revData,@resindex,%theta_gen_as,%phi_gen_as,@phi_gen,%improper_gen_as,@improper_gen,@A);
  undef %MOLTYPEBYRES;
@@ -2043,7 +2054,7 @@ sub checktop
    my $openPARAMS=1;
    my $openINTER=1;
    my $foundlist;
-   ($topdata,$openEXPR,$openPARAMS,$openINTER,$foundlist)=addOpenSMOG($topdata,$openXML,$model,$gaussian);
+   ($topdata,$openEXPR,$openPARAMS,$openINTER,$foundlist)=addOpenSMOG($topdata,$openXML,$gaussian);
    $FAIL{'OPENSMOG: EXPRESSION'}=$openEXPR;
    $FAIL{'OPENSMOG: PARAMETERS'}=$openPARAMS;
    $FAIL{'OPENSMOG: INTERACTIONS'}=$openINTER;
@@ -3983,7 +3994,7 @@ sub checkpairs
    }else{
     $fail_log .= failed_message("A contact appears to be the wrong distance.  From the .gro (or .contact) file, we found r=$CALCD, and from the .xml, calculated based on sigma2, r=$Cdist.\n\t$LINE");
    }
-  }elsif((checkAAlist($model) || $model eq "AA-match") && $model ne "AA-nb-cr2"){
+  }elsif((checkAAlist() || $model eq "AA-match") && $model ne "AA-nb-cr2"){
    $W=($A[3]*$A[3])/(4*$A[4]);
    $Cdist=(2.0*$A[4]/($A[3]))**(1.0/6.0);
    $CALCD=getpairdist(\*CMAP,$A[0],$A[1]);
@@ -4013,7 +4024,7 @@ sub checkpairs
    }else{
     $fail_log .= failed_message("EpsilonC values\n\tValue: Target\n\t$W $epsilonCAC\n\tline:\n\t$LINE");
    }
-  }elsif(checkAAlist($model) || $model eq "AA-match"){
+  }elsif(checkAAlist() || $model eq "AA-match"){
    $Cdist = int(($Cdist * $PRECISION)/10.0)/($PRECISION*10.0);
    if($Cdist <= $CONTD/10.0){
     $LONGCONT++;
@@ -4097,7 +4108,7 @@ sub checkpairs
    $FAIL{'GAUSSIAN CONTACT EXCLUDED VOLUME'}=-1;
    $FAIL{'GAUSSIAN CONTACT WIDTHS'}=-1;
  }
- if(checkAAlist($model) || $model eq "AA-match"){
+ if(checkAAlist() || $model eq "AA-match"){
   if($LONGCONT == $NCONTACTS){
    $FAIL{'LONG CONTACTS'}=0;
   }
@@ -4269,7 +4280,7 @@ sub finalchecks
   }else{
    smogcheck_error("Unable to generate angles ($theta_gen_N), or dihedrals ($phi_gen_N)...");
   }
- }elsif(checkAAlist($model) || $model eq "AA-match"){
+ }elsif(checkAAlist() || $model eq "AA-match"){
   if($theta_gen_N > 0 and $phi_gen_N > 0 and $improper_gen_N > 0){
    $FAIL{'GENERATION OF ANGLES/DIHEDRALS'}=0;
 
@@ -4604,7 +4615,6 @@ EOT
 
 sub checkAAlist
 {
- my ($model)=@_;
  my @AAlist=("AA","AA-2cg","AA-nb-cr2","AA-BOND","AA-DIHE","AA-DIHE4","AA-CC1","AA-CCD");
  foreach my $i (@AAlist){
   if($i eq $model){

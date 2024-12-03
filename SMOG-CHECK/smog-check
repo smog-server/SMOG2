@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# unset, in case shared libraries are being used. if we don't do this, then custom libraries would probably lead to smog-check failures
+unset SMOG_FFDIR
+
 echo Collecting information and cleaning up directory before launching smog-check
 echo Detecting configured version of SMOG 2
 # grab all of the environment settings used when running smog2
@@ -53,4 +56,4 @@ mkdir FAILED
 echo "preparation steps completed.  Will now launch smog-check"
 echo
 
-echo share/PDB.files/all.pdbs | $perl4smog src/check.v2.pl "$@"
+echo share/settings/smog2.testlist | $perl4smog src/check.v2.pl "$@"

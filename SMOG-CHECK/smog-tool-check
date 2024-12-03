@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# unset, in case shared libraries are being used. if we don't do this, then custom libraries would probably lead to smog-check failures
+unset SMOG_FFDIR
+
 echo Detecting configured version of SMOG 2
 # grab all of the environment settings used when running smog2
 export smog_exec=`which smog2`
