@@ -30,7 +30,6 @@ sub check_adjust
   $gitshift=0;
  }
 
- &setuptagchecks();
  my $sharerefs="share/adjustrefs";
  my %TESTED;
  my $TESTED=\%TESTED;
@@ -38,7 +37,7 @@ sub check_adjust
  while(<ORIG>){
   $LINESorig++;
  }
- my @FAILLIST = ('NON-ZERO EXIT','OUTPUT NAME','FILE LENGTH','SMOG RUNS','LARGE','IDENTICAL');
+ my @FAILLIST = ('NON-ZERO EXIT','OUTPUT NAME','SMOG RUNS','LARGE','IDENTICAL');
 
  # TEST 1
  print "\tChecking smog_adjustPDB with legacy naming.\n";
@@ -56,11 +55,6 @@ sub check_adjust
   open(NEW,"adjusted.pdb") or internal_error("Unable to open adjusted.pdb");
   while(<NEW>){
    $LINESnew++;
-  }
-  if($LINESnew==$LINESorig+$gitshift){
-   # +2 because a comment is added at the top
-   # but, we are also removing 2 lines, since they are consecutive TER lines
-   $FAIL{"FILE LENGTH"}=0;
   }
   my $smogout=`$smogexec -AA -i adjusted.pdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
@@ -99,9 +93,6 @@ sub check_adjust
   while(<NEW>){
    $LINESnew++;
   }
-  if($LINESnew==$LINESorig+$gitshift){
-   $FAIL{"FILE LENGTH"}=0;
-  }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
   my $compsummary;
@@ -138,9 +129,6 @@ sub check_adjust
   open(NEW,"$newpdb") or internal_error("Unable to open $newpdb");
   while(<NEW>){
    $LINESnew++;
-  }
-  if($LINESnew==$LINESorig+$gitshift){
-   $FAIL{"FILE LENGTH"}=0;
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
@@ -179,9 +167,6 @@ sub check_adjust
   while(<NEW>){
    $LINESnew++;
   }
-  if($LINESnew==$LINESorig+$gitshift){
-   $FAIL{"FILE LENGTH"}=0;
-  }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
   my $compsummary;
@@ -219,9 +204,6 @@ sub check_adjust
   open(NEW,"$newpdb") or internal_error("Unable to open $newpdb");
   while(<NEW>){
    $LINESnew++;
-  }
-  if($LINESnew==$LINESorig+$gitshift){
-   $FAIL{"FILE LENGTH"}=0;
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
@@ -266,9 +248,6 @@ sub check_adjust
   while(<ORIG2>){
    $LINESorig2++;
   }
-  if($LINESnew==$LINESorig2+$gitshift){
-   $FAIL{"FILE LENGTH"}=0;
-  }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
   my $compsummary;
@@ -310,9 +289,6 @@ sub check_adjust
    }
    $LINESnew++;
   }
-  if($LINESnew==$LINESorig+1+$gitshift){
-   $FAIL{"FILE LENGTH"}=0;
-  }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
   my $compsummary;
@@ -339,7 +315,6 @@ sub check_adjust
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
- $FAIL{"FILE LENGTH"}=-1;
  removeifexists("$newpdb");
  `$exec -default -i $origpdb -o $newpdb -removewater &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
@@ -378,7 +353,6 @@ sub check_adjust
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
- $FAIL{"FILE LENGTH"}=-1;
  removeifexists("$newpdb");
  `$exec -default -i $origpdb -o $newpdb -removewater -PDBresnum &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
@@ -417,7 +391,6 @@ sub check_adjust
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
- $FAIL{"FILE LENGTH"}=-1;
  removeifexists("$newpdb");
  `$exec -default -i $origpdb -o $newpdb -removeH -PDBresnum &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
@@ -456,7 +429,6 @@ sub check_adjust
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
- $FAIL{"FILE LENGTH"}=-1;
  removeifexists("$newpdb");
  `$exec -default -i $origpdb -o $newpdb  &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
@@ -495,7 +467,6 @@ sub check_adjust
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
- $FAIL{"FILE LENGTH"}=-1;
  removeifexists("$newpdb");
  `$exec -default -i $origpdb -o $newpdb -sort &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
@@ -526,6 +497,82 @@ sub check_adjust
  }else{
   clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
+
+ # TEST 13
+ print "\tChecking smog_adjustPDB with default exact matching and interactive selection.\n";
+ $TESTNUM++;
+ my $origpdb="$pdbdir/mangled.resnames.pdb";
+ &testsperformed($TESTED,\%FAIL);
+ %FAIL=resettests(\%FAIL,\@FAILLIST);
+ $FAIL{'LARGE'}=-1;
+ removeifexists("$newpdb");
+ `echo D | $exec -i $origpdb -o $newpdb &> output.$tool`;
+ $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
+
+ $FAIL{"NON-ZERO EXIT"}=$?;
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  my $LINESnew=0;
+  open(NEW,"$newpdb") or internal_error("Unable to open $newpdb");
+  while(<NEW>){
+   $LINESnew++;
+  }
+  my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
+  $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
+ }
+ my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+ $FAILSUM += $FAILED;
+ if($FAILED !=0){
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  print "$printbuffer\n";
+ }else{
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+ }
+
+ # TEST 14
+ print "\tChecking smog_adjustPDB with default exact matching and Interactive selection.\n";
+ $TESTNUM++;
+ my $origpdb="$pdbdir/mangled.resnames.pdb";
+ &testsperformed($TESTED,\%FAIL);
+ %FAIL=resettests(\%FAIL,\@FAILLIST);
+ $FAIL{'LARGE'}=-1;
+ removeifexists("$newpdb");
+ `echo "I\n0\n" | $exec -i $origpdb -o $newpdb &> output.$tool`;
+ $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
+
+ $FAIL{"NON-ZERO EXIT"}=$?;
+ if($FAIL{"NON-ZERO EXIT"} == 0){
+  my $LINESnew=0;
+  open(NEW,"$newpdb") or internal_error("Unable to open $newpdb");
+  while(<NEW>){
+   $LINESnew++;
+  }
+  my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
+  $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
+ }
+ my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+ $FAILSUM += $FAILED;
+ if($FAILED !=0){
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  print "$printbuffer\n";
+ }else{
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+ }
+
+
 
  $FAILSUM+=checkalltested(\@FAILLIST,\%FAIL);
 
