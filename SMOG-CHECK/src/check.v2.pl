@@ -971,7 +971,9 @@ sub runsmog
 # prepare the flags
  if($default eq "yes"){
   if($model eq "CA" && $gaussian eq "no"){
-   $ARGS .= " -CA";
+   if(! defined $interactive){
+    $ARGS .= " -CA";
+   }
   }elsif($model eq "CA" && $gaussian eq "yes"){
    $ARGS .= " -CAgaussian";
   }elsif($model eq "AA" &&  $gaussian eq "no"){
@@ -1098,6 +1100,11 @@ sub setmodelflags{
  }
  if($model =~ m/CA/){
   print "Testing CA model\n";
+  if($model =~ m/^CA-interactive$/){
+   print "Testing interactive force field selection\n";
+   $interactive=2;
+   $model="CA";
+  }
  }elsif($model =~ m/^AA/){
   print "Testing AA model\n";
   if($model =~ m/^AA-2cg$/){
