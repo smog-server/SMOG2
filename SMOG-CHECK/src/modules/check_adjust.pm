@@ -30,13 +30,15 @@ sub check_adjust
   $gitshift=0;
  }
 
+ &setuptagchecks();
+ my $sharerefs="share/adjustrefs";
  my %TESTED;
  my $TESTED=\%TESTED;
  open(ORIG,"$origpdb") or internal_error("Unable to open $origpdb");
  while(<ORIG>){
   $LINESorig++;
  }
- my @FAILLIST = ('NON-ZERO EXIT','OUTPUT NAME','FILE LENGTH','SMOG RUNS','LARGE');
+ my @FAILLIST = ('NON-ZERO EXIT','OUTPUT NAME','FILE LENGTH','SMOG RUNS','LARGE','IDENTICAL');
 
  # TEST 1
  print "\tChecking smog_adjustPDB with legacy naming.\n";
@@ -62,15 +64,22 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i adjusted.pdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","adjusted.pdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
  }
 
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts","smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts","smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  # TEST 2 
@@ -95,14 +104,21 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
  }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  # TEST 3
@@ -128,14 +144,21 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
  }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  # TEST 4
@@ -161,14 +184,21 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
  }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  # TEST 5
@@ -195,14 +225,21 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
  }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  # TEST 6
@@ -234,14 +271,21 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
  }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  # TEST 7
@@ -271,14 +315,21 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
  }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  # TEST 8
@@ -302,14 +353,22 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
  }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  # TEST 9 
@@ -333,14 +392,22 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
+
  }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  # TEST 10
@@ -364,14 +431,22 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
+
  }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  # TEST 11
@@ -395,14 +470,22 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
+
  }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  # TEST 12
@@ -426,14 +509,22 @@ sub check_adjust
   }
   my $smogout=`$smogexec -AA -i $newpdb -dname adjusted &> smog.output`;
   $FAIL{'SMOG RUNS'}=$?;
+  my $compsummary;
+  ($FAIL{'IDENTICAL'},$compsummary)=compareFiles("$sharerefs/adjusted.ref.$TESTNUM.pdb","$newpdb");
+  if($FAIL{'IDENTICAL'} != 0){
+   open(TMP,">output.check.$tool") or internal_error("Unable to open output file output.$tool");
+   print TMP "$compsummary\n";
+   close(TMP);
+  }
+
  }
  my ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
  $FAILSUM += $FAILED;
  if($FAILED !=0){
-  savefailed($TESTNUM,("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  savefailed($TESTNUM,("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
   print "$printbuffer\n";
  }else{
-  clearfiles(("adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
+  clearfiles(("output.check.$tool","adjusted.pdb","$newpdb","output.$tool","adjusted.gro","adjusted.top","adjusted.ndx","adjusted.contacts" ,"smog.output"));
  }
 
  $FAILSUM+=checkalltested(\@FAILLIST,\%FAIL);
@@ -449,6 +540,56 @@ sub trueifexists
   return 0;
  }else{
   return 1;
+ }
+}
+
+
+sub compareFiles
+{
+ my ($reffile,$newfile)=@_;
+ open(REF,"$reffile") or internal_error("Unable to open reference file $reffile.");
+ open(NEW,"$newfile") or return (1,"Failed to generate the output file: $newfile");
+
+ my @REFDATA;
+ while(<REF>){
+  my $LINE=$_;
+  chomp($LINE);
+  if($LINE !~ m/^REMARK/){
+   push(@REFDATA,$LINE);
+  }
+ }
+
+ my @NEWDATA;
+ while(<NEW>){
+  my $LINE=$_;
+  chomp($LINE);
+  if($LINE !~ m/^REMARK/){
+   push(@NEWDATA,$LINE);
+  }
+ }
+
+ my $length=$#REFDATA;
+ if($#NEWDATA == 0 or $length == 0){
+  return (1,"Generated file has no content: $newfile.");
+ }
+
+ if($length != $#NEWDATA){
+  return (1,"Wrong number of lines in $newfile.");
+ }
+
+ my $match=-1;
+ my $mismatchdata="";
+ for(my $I=0;$I<=$length;$I++){
+  if($REFDATA[$I] eq $NEWDATA[$I] and $REFDATA[$I] ne ""){
+   $match++;
+  }else{
+   $mismatchdata .= "\nInconsistent data in ref and generated file:\nRef:$REFDATA[$I]\nGen:$NEWDATA[$I]\n";
+  }
+ }
+ if($length == $match){
+  return(0,"");
+ }else{
+  return(1,"$mismatchdata");
  }
 }
 
