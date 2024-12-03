@@ -2650,6 +2650,7 @@ sub parseInputFolder
 	my $sifexists=0;
 	my $nbexists=0;
 	my $bexists=0;
+	my $mapexists=0;
 	my $extrasexists=0;
 	my $iondefexists=0;
 	while(my $file = readdir($folder)){
@@ -2687,6 +2688,11 @@ sub parseInputFolder
 			$iondefexists++;
 			$iondeffile = "$folderName/$file";
 			print "Found ions.def file $iondeffile\n";
+			next;
+		}elsif($file =~ m/\.map$/) {
+			$mapexists++;
+			my $mapfile = "$folderName/$file";
+			print "Found .map file $mapfile\n";
 			next;
 		}elsif($file !~ m/^[Rr][Ee][Aa][Dd][Mm][Ee]$/ && $file !~ m/^\./) {
 			# note that READMEs are ignored
