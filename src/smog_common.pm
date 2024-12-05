@@ -715,6 +715,16 @@ sub selectTemplates
 		$SMOGLIST=$ENV{'SMOG_PATH'} . "/share/templates/";
 	}
 	print "Will check for templates located in $SMOGLIST\n";
+	if(defined $checkforfiles){
+		my $FFT;
+		if($checkforfiles eq "ions"){
+			$FFT=".ions.def";
+		}
+		if($checkforfiles eq "adjustPDB"){
+			$FFT=".map";
+		}
+		print "Note: Only force fields that have a $FFT file are listed.\n";
+	}
         print "Please select a force field from the list below:\n";
 	print "FF Number - name : description\n";
 	open(FLIST,"$SMOGLIST/ff.info") or smog_quit("Unable to open force field library file $SMOGLIST/ff.info");
@@ -727,7 +737,7 @@ sub selectTemplates
 		chomp($line);
 		$line =~ s/^\s+//g;
 		$line =~ s/\#.*$//g;
-		unless($line =~ m/^#/ || $line eq ""){
+		unless($line eq ""){
 			my @A=split(/:/,$line);
 			my $dc=1;
 			my $dn;
@@ -744,10 +754,23 @@ sub selectTemplates
 			if($dc>1){
 				smog_quit("Issue with template library. Found more than one set of ion definitions in $A[0]");
 			}elsif($dc==1){
+				$A[0] =~ s/^\s+//g;
+				$A[0] =~ s/\s+$//g;
+				my @B=split(/\s+/,$A[0]);
+				if($#A > 1 or $#B > 1){
+					smog_quit("ff.info file is incorrectly formatted.  Should be one of the following:\n\t<template directory> : < optional description >\n\t<CG templates> <templates for contact map calculation> : < optional description >\n\nFound: \"$line\";")
+				}
 				$FLISTA[$FNUM]=$A[0];
 				$FLISTA[$FNUM] =~ s/^\s+//g;
 				$FLISTA[$FNUM] =~ s/\s+$//g;
-				print "$FNUM - $line\n";
+				print "$FNUM - $B[0]";
+				if($#A == 1){
+					print " : $A[1]";
+				}
+				if($#B==1){
+					print " - Contact map will be calculated using $B[1]"
+				}
+				print "\n";
 
 				$FNUM++;
 			}
