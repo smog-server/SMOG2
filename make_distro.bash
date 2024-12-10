@@ -17,7 +17,6 @@ else
 			cp --parent $name distro
 		fi
 	done
-	cp configure.smog2  distro/configure.smog2
 	chmod u-w share/templates/*
 	echo done making distro
 
