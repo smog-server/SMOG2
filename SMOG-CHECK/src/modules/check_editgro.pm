@@ -58,7 +58,7 @@ sub check_editgro
   `$exec $command -g AA.tmp.gro -og AA.tmp.eg.gro  &> output.$tool`;
   $FAIL{"NON-ZERO EXIT"}=$?;
   if($FAIL{"NON-ZERO EXIT"} == 0){
-   $FAIL{"IDENTICAL OUTPUT"}=filediff("AA.tmp.eg.gro","$pdbdir/../editgrorefs/eg.$ind.gro");
+   $FAIL{"IDENTICAL OUTPUT"}=filediff("AA.tmp.eg.gro","$pdbdir/../editgrorefs/eg.$ind.gro",1);
   }
   ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
   $FAILSUM += $FAILED;

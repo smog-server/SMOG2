@@ -168,7 +168,7 @@ sub load_file
 
 sub filediff
 {
- my ($file1,$file2)=@_;
+ my ($file1,$file2,$startat)=@_;
  my @info1;
  my @info2;
  my $I2=0;
@@ -192,7 +192,11 @@ sub filediff
   return 1;
  }
  my $ndiff=0;
- for(my $I=0;$I<=$I1;$I++){
+ my $start=0;
+ if(defined $startat){
+  $start=$startat;
+ }
+ for(my $I=$start;$I<=$I1;$I++){
   if("$info1[$I]" ne "$info2[$I]"){
    $ndiff++;
   }
