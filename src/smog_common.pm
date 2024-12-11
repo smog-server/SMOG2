@@ -34,7 +34,7 @@ use SMOGglobals;
 #####################
 # Init error vars   #
 #####################
-our $VERSION="2.6-beta";
+our $VERSION="2.5";
 our $maxwarn;
 our $warncount;
 our $allwarncount;
