@@ -1417,7 +1417,7 @@ sub connWildcardMatchDihes
 		}
 	
 		if($Nd ==0){
-			smog_quit ("energy group\"$eG\" is used in .bif file, or a BOND line, but it is not defined in .sif file.");
+			smog_quit ("energy group \"$eG\" is used in .bif file, or a BOND line, but it is not defined in .sif file.");
 		}
 		
 		my $sym=0;
