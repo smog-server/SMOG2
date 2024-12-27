@@ -73,26 +73,36 @@ my $modifygroup2;
 my $modifyparameter;
 my $modifyparameterby;
 my $remove;
+my $renumfile;
 
 quit_init();
 note_init();
 checkForModules();
-usage() if (!GetOptions('help|?' => \$help,  'n=s' => \$indexFile, 'OpenSMOG=s' => \$inputXML, 'OpenSMOGout=s' => \$outputXML,  'warn=i' => \$maxwarn, '<>' => \&usage,'inter=s' => \$modifyinteraction, 'type=s' => \$modifytype,'grp1=s'=>\$modifygroup1,'grp2=s'=>\$modifygroup2,'param=s'=>\$modifyparameter,'modby=s'=>\$modifyparameterby,'remove'=>\$remove)
-        or defined $help); 
+usage() if (!GetOptions('help|?' => \$help,  'n=s' => \$indexFile, 'OpenSMOG=s' => \$inputXML, 'OpenSMOGout=s' => \$outputXML,  'warn=i' => \$maxwarn, '<>' => \&usage,'inter=s' => \$modifyinteraction, 'type=s' => \$modifytype,'grp1=s'=>\$modifygroup1,'grp2=s'=>\$modifygroup2,'param=s'=>\$modifyparameter,'modby=s'=>\$modifyparameterby,'remove'=>\$remove,'renumber=s' =>\$renumfile)
+        or defined $help);
 
 #add a flag to indicate which atom group name to scale
 # add checks for consistent parameter assignment
 
-if(defined $modifyinteraction || defined $modifytype || defined $modifygroup1 || defined $modifygroup2 ||  defined $modifyparameter || defined $modifyparameterby || defined $remove){
+if(defined $modifyinteraction || defined $modifytype || defined $modifygroup1 || defined $modifygroup2 ||  defined $modifyparameter || defined $modifyparameterby || defined $remove || defined $renumfile){
+# add more checks so that renum can only be used by itself.
+	
+	if (defined $renumfile){
+		if (defined $remove || defined $modifyinteraction ||  defined $modifytype ||  defined $modifygroup1 || defined $modifygroup2 || defined $modifyparameterby || defined $modifyparameter){
+			smog_quit("Can not use -renumber in combination with the following flags: -remove, -modtype, -modset, -modgrp1,  -modgrp2, -modby, -modparam");
+		}
 
-	if (! defined $modifyinteraction || ! defined $modifytype || ! defined $modifygroup1){
-		smog_quit("When specifying modifications from the command line, one must specify -modtype, -modset, -modgrp1, and -modgrp2 (for modtype contacts, only).")
-	}elsif(!defined $modifyparameterby && !defined $remove){
-		smog_quit("When specifying modifications from the command line, one must specify -modby or -remove.")
-	}elsif(defined $modifyparameterby && defined $remove){
-		smog_quit("When specifying modifications from the command line, one must specify either -modby or -remove.")
-	}elsif(defined $modifyparameter && defined $remove){
-		smog_quit("When specifying modifications from the command line, one must specify either -modparam or -remove.")
+	}else{
+
+		if (! defined $modifyinteraction || ! defined $modifytype || ! defined $modifygroup1){
+			smog_quit("When specifying modifications from the command line, one must specify -modtype, -modset, -modgrp1, and -modgrp2 (for modtype contacts, only).")
+		}elsif(!defined $modifyparameterby && !defined $remove){
+			smog_quit("When specifying modifications from the command line, one must specify -modby or -remove.")
+		}elsif(defined $modifyparameterby && defined $remove){
+			smog_quit("When specifying modifications from the command line, one must specify either -modby or -remove.")
+		}elsif(defined $modifyparameter && defined $remove){
+			smog_quit("When specifying modifications from the command line, one must specify either -modparam or -remove.")
+		}
 	}
 }
 
@@ -126,7 +136,13 @@ my $extgrp;
 
 my ($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
 
-if($Ngrps==0){
+
+my $renummapping;
+if (defined $renumfile){
+	 $renummapping = readmap($renumfile);
+}
+
+if($Ngrps==0 && ! defined $renummapping){
 	smog_quit("No atom groups found in ndx file.");
 }
 
@@ -145,9 +161,9 @@ if($gitver ne ""){
 		
 my $comment="; This is an XML file generated with smog_modifyXML (version $VERSION), using the command:\n; smog_modifyXML $inputArguments\n$date$gitmess";
 
-if (defined $modifyinteraction){
+if (defined $modifyinteraction || defined $renummapping){
 	# must have used the command line
-	OpenSMOGscaleXMLcl($xmldata, $atomgroup, $outputXML, $comment, $modifyinteraction, $modifytype, $modifygroup1, $modifygroup2, $modifyparameter,$modifyparameterby,$remove);
+	OpenSMOGscaleXMLcl($xmldata, $atomgroup, $outputXML, $comment, $modifyinteraction, $modifytype, $modifygroup1, $modifygroup2, $modifyparameter,$modifyparameterby,$remove,$renummapping);
 }else{
 	OpenSMOGscaleXML($xmldata,$Ngrps,$grpnms,$groupnames,$atomgroup,$outputXML,$comment);
 }
@@ -156,6 +172,28 @@ warnsummary();
 print "\n\tDone modifying OpenSMOG parameters.\n\n";
 exit(0);
 
+sub readmap
+{
+	my ($f)=@_;
+	open(FILE,"$f") or smog_quit("can not open $f\n");
+	my %map;
+	my %targetlist;
+	while(<FILE>){
+		my $LINE=$_;
+		chomp($LINE);
+		$LINE =~ s/^\s+//g;
+		my @MAPLINE=split(/\s+/,$LINE);
+		if(defined $map{$MAPLINE[0]}){
+			smog_quit("When reading $f, found duplicate entry for original index $MAPLINE[0]\n");
+		}
+		if(defined $targetlist{$MAPLINE[1]}){
+			smog_quit("When reading $f, found duplicate entry for new index $MAPLINE[1]\n");
+		}
+		$map{$MAPLINE[0]}=$MAPLINE[1];
+		$targetlist{$MAPLINE[1]}=1;
+	}
+	return \%map;
+}
 
 ##############SUBROUTINES##########################3
 sub usage
@@ -190,6 +228,8 @@ usage: smog_modifyXML  .. options ..
         -modby  <string>                : expression for modifying parameter. Format: [+-*/]<number>
                                             Note: to avoid shell issues, you may want to put the 
                                             expression in double quotes, or escape the first character
+        -renumber <string>              : read a file that lists index mapping. This can be useful if you need to
+                                            merge the XML files of two systems. (experimental!) 
         -remove                         : remove the matching interactions, instead of adjusting them
 	-warn [0]		        : convert the first N errors into warnings
 	-help			        : show options

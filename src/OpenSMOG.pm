@@ -422,7 +422,6 @@ sub OpenSMOGscaleXML{
 			my $reply=getreply();
 			if($reply == 0){
 				&rescaleXML($OSref,$I,$Ngrps,$grpnms,$groupnames,$atomgroup);
-
 			}
 		}
 	}
@@ -430,58 +429,70 @@ sub OpenSMOGscaleXML{
 }
 
 sub OpenSMOGscaleXMLcl{
-	my ($OSref, $atomgroup, $outputXML, $header, $modifytype, $modifyset, $modifygroup1, $modifygroup2, $modifyparameter,$modifyparameterby,$remove)=@_;
+	my ($OSref, $atomgroup, $outputXML, $header, $modifytype, $modifyset, $modifygroup1, $modifygroup2, $modifyparameter,$modifyparameterby,$remove,$mapping)=@_;
         # Same as OpenSMOGscaleXML, but for command-line invocation
         # $outputXML is the output file name
-	my $lhandle;
-	if (! defined $OSref->{$modifytype}->{"$modifytype\_type"}->{$modifyset}){
-		smog_quit("Can not find \"$modifytype\" set called \"$modifyset\" in the XML file.");
-	}else{
-		$lhandle=$OSref->{$modifytype}->{"$modifytype\_type"}->{$modifyset};
-	}
-
 	my %chghash;
-	if (!defined $remove){
-		my $found=0;
-		foreach my $param(@{$lhandle->{"parameter"}}){
-			if($param eq $modifyparameter){
-				$found++;
-			}
-		}
-		if($found == 0){
-			smog_quit("Parameter \"$modifyparameter\" not found in \"$modifytype\" set called \"$modifyset\" in the XML file.")
+	if(defined $mapping){
+		my $lhandle=$OSref->{"contacts"}->{"contacts_type"};
+		foreach my $key(keys %{$lhandle}){
+			modifyXMLcontacts($lhandle->{$key},$atomgroup,$modifygroup1,$modifygroup2,\%chghash,$remove,$mapping);
 		}
 
-
-		my $cont=checkXMLfactor($modifyparameterby);
-		if($cont==1){
-		        smog_quit("\"$modifyparameterby\" does not appear to comply with the required format:[+-*/]<number>\nTry again\n");
-		}elsif($cont==2){
-		        smog_quit("Incorrect format of \"$modifyparameterby\".  Must begin with a +, -, / or *.\n");
+		$lhandle=$OSref->{"dihedrals"}->{"dihedrals_type"};
+		foreach my $key(keys %{$lhandle}){
+			modifyXMLdihedrals($lhandle->{$key},$atomgroup,$modifygroup1,\%chghash,$remove,$mapping);
 		}
-
-
-		# prepare chghash
-		$chghash{$modifyparameter}=$modifyparameterby;
-	}
-
-	print "Will adjust the following parameters:\n";
-	print "interactions : $modifytype\n";
-	print "type         : $modifyset\n";
-	if($modifytype eq "contacts"){
-		print "atom groups  : $modifygroup1 and $modifygroup2\n";
 	}else{
-		print "atom groups  : $modifygroup1\n";
-	}
-	if(!defined $remove){
-		print "parameter, modification factor:\n";
-		print "	$modifyparameter, $modifyparameterby\n";
-	}
+		my $lhandle;
+		if (! defined $OSref->{$modifytype}->{"$modifytype\_type"}->{$modifyset}){
+			smog_quit("Can not find \"$modifytype\" set called \"$modifyset\" in the XML file.");
+		}else{
+			$lhandle=$OSref->{$modifytype}->{"$modifytype\_type"}->{$modifyset};
+		}
 
-	if($modifytype eq "contacts"){
-		modifyXMLcontacts($lhandle,$atomgroup,$modifygroup1,$modifygroup2,\%chghash,$remove);
-	}elsif($modifytype eq "dihedrals"){
-		modifyXMLdihedrals($lhandle,$atomgroup,$modifygroup1,\%chghash,$remove);
+		if (!defined $remove){
+			my $found=0;
+			foreach my $param(@{$lhandle->{"parameter"}}){
+				if($param eq $modifyparameter){
+					$found++;
+				}
+			}
+			if($found == 0){
+				smog_quit("Parameter \"$modifyparameter\" not found in \"$modifytype\" set called \"$modifyset\" in the XML file.")
+			}
+
+
+			my $cont=checkXMLfactor($modifyparameterby);
+			if($cont==1){
+			        smog_quit("\"$modifyparameterby\" does not appear to comply with the required format:[+-*/]<number>\nTry again\n");
+			}elsif($cont==2){
+			        smog_quit("Incorrect format of \"$modifyparameterby\".  Must begin with a +, -, / or *.\n");
+			}
+
+
+			# prepare chghash
+			$chghash{$modifyparameter}=$modifyparameterby;
+		}
+
+		print "Will adjust the following parameters:\n";
+		print "interactions : $modifytype\n";
+		print "type         : $modifyset\n";
+		if($modifytype eq "contacts"){
+			print "atom groups  : $modifygroup1 and $modifygroup2\n";
+		}else{
+			print "atom groups  : $modifygroup1\n";
+		}
+		if(!defined $remove){
+			print "parameter, modification factor:\n";
+			print "	$modifyparameter, $modifyparameterby\n";
+		}
+
+		if($modifytype eq "contacts"){
+			modifyXMLcontacts($lhandle,$atomgroup,$modifygroup1,$modifygroup2,\%chghash,$remove,$mapping);
+		}elsif($modifytype eq "dihedrals"){
+			modifyXMLdihedrals($lhandle,$atomgroup,$modifygroup1,\%chghash,$remove,$mapping);
+		}
 	}
 	OpenSMOGwriteXML($OSref,$outputXML,$header,);
 
@@ -512,6 +523,7 @@ sub rescaleXML{
 	# atomgroup is the hash of hash of atoms in each index group
 	# groupnms and groupnames...
 	my $remove;
+	my $mapping;
 	my $cont=0;
 	until($cont == 1){
 		my $grp="";
@@ -559,7 +571,7 @@ sub rescaleXML{
 			}else{
 				print "change       : remove\n"
 			}
-			modifyXMLcontacts($lhandle->{$grp},$atomgroup,$groupC1,$groupC2,$chghash,$remove);
+			modifyXMLcontacts($lhandle->{$grp},$atomgroup,$groupC1,$groupC2,$chghash,$remove,$mapping);
 			print "Contact modification completed\n\n";
 		}elsif($type eq "dihedrals"){
 			print "Will adjust the following parameters:\n";
@@ -574,7 +586,7 @@ sub rescaleXML{
 			}else{
 				print "change       : remove\n"
 			}
-			modifyXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash,$remove);
+			modifyXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash,$remove,$mapping);
 		}else{
 			smog_quit("internal error: rescale XML selection issue.");
 		}
@@ -693,54 +705,103 @@ sub rescaleXMLsettings{
 }
 
 sub modifyXMLcontacts{
-	my($XMLhandle,$atomgroup,$groupC1,$groupC2,$chghash,$remove)=@_;
-	my %atomhash1=%{$atomgroup->{$groupC1}};
-	my %atomhash2=%{$atomgroup->{$groupC2}};
-	
-	my $elcount=0;
-	foreach my $interaction(@{$XMLhandle->{"interaction"}}){
-		if(!defined $interaction){
-			next;
-		}
-		my $i=$interaction->{"i"};
-		my $j=$interaction->{"j"};
-		if((defined $atomhash1{$i} && defined $atomhash2{$j}) || (defined $atomhash2{$i} && defined $atomhash1{$j})){
-			if(defined $remove){
-				delete(@{$XMLhandle->{"interaction"}}[$elcount]);
+	my($XMLhandle,$atomgroup,$groupC1,$groupC2,$chghash,$remove,$mapping)=@_;
+	if(defined $mapping){
+		my %mapping=%{$mapping};
+		foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+			my $i=$interaction->{"i"};
+			my $j=$interaction->{"j"};
+			if(defined $mapping{$i}){
+				$interaction->{"i"}=$mapping{$i};
 			}else{
-				foreach my $param(sort keys %{$chghash}){
-					my $curval=$interaction->{$param};
-					$interaction->{$param}=eval("($curval)$chghash->{$param}");
-				}
+				smog_note("No mapping value given for index $i\n");
+			}
+			if(defined $mapping{$j}){
+				$interaction->{"j"}=$mapping{$j};
+			}else{
+				smog_note("No mapping value given for index $j\n");
 			}
 		}
-		$elcount++;
-	}
-}
-
-sub modifyXMLdihedrals{
-	my($XMLhandle,$atomgroup,$groupD,$chghash,$remove)=@_;
-	my %atomhash=%{$atomgroup->{$groupD}};
-	my $elcount=0;
-	foreach my $interaction(@{$XMLhandle->{"interaction"}}){
-		if(!defined $interaction){
-			next;
-		}
-		my $j=$interaction->{"j"};
-		if(defined $atomhash{$j}){
-			my $k=$interaction->{"k"};
-			if(defined $atomhash{$k}){
+	}else{
+		my %atomhash1=%{$atomgroup->{$groupC1}};
+		my %atomhash2=%{$atomgroup->{$groupC2}};
+		my $elcount=0;
+		foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+			if(!defined $interaction){
+				next;
+			}
+			my $i=$interaction->{"i"};
+			my $j=$interaction->{"j"};
+			if((defined $atomhash1{$i} && defined $atomhash2{$j}) || (defined $atomhash2{$i} && defined $atomhash1{$j})){
 				if(defined $remove){
 					delete(@{$XMLhandle->{"interaction"}}[$elcount]);
 				}else{
-					foreach my $param(keys %{$chghash}){
+					foreach my $param(sort keys %{$chghash}){
 						my $curval=$interaction->{$param};
 						$interaction->{$param}=eval("($curval)$chghash->{$param}");
 					}
 				}
 			}
+			$elcount++;
 		}
-		$elcount++;
+	}
+}
+
+sub modifyXMLdihedrals{
+	my($XMLhandle,$atomgroup,$groupD,$chghash,$remove,$mapping)=@_;
+
+	if(defined $mapping){
+		my %mapping=%{$mapping};
+		foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+			my $i=$interaction->{"i"};
+			my $j=$interaction->{"j"};
+			my $k=$interaction->{"k"};
+			my $l=$interaction->{"l"};
+			if(defined $mapping{$i}){
+				$interaction->{"i"}=$mapping{$i};
+			}else{
+				smog_note("No mapping value given for index $i\n");
+			}
+			if(defined $mapping{$j}){
+				$interaction->{"j"}=$mapping{$j};
+			}else{
+				smog_note("No mapping value given for index $j\n");
+			}
+			if(defined $mapping{$k}){
+				$interaction->{"k"}=$mapping{$k};
+			}else{
+				smog_note("No mapping value given for index $k\n");
+			}
+			if(defined $mapping{$l}){
+				$interaction->{"l"}=$mapping{$l};
+			}else{
+				smog_note("No mapping value given for index $l\n");
+			}
+		}
+	}else{
+		my %atomhash=%{$atomgroup->{$groupD}};
+		my $elcount=0;
+
+		foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+			if(!defined $interaction){
+				next;
+			}
+			my $j=$interaction->{"j"};
+			if(defined $atomhash{$j}){
+				my $k=$interaction->{"k"};
+				if(defined $atomhash{$k}){
+					if(defined $remove){
+						delete(@{$XMLhandle->{"interaction"}}[$elcount]);
+					}else{
+						foreach my $param(keys %{$chghash}){
+							my $curval=$interaction->{$param};
+							$interaction->{$param}=eval("($curval)$chghash->{$param}");
+						}
+					}
+				}
+			}
+			$elcount++;
+		}
 	}
 }
 
