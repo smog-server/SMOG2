@@ -725,8 +725,9 @@ sub modifyXMLcontacts{
 	}else{
 		my %atomhash1=%{$atomgroup->{$groupC1}};
 		my %atomhash2=%{$atomgroup->{$groupC2}};
-		my $elcount=0;
+		my $elcount=-1;
 		foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+			$elcount++;
 			if(!defined $interaction){
 				next;
 			}
@@ -734,6 +735,9 @@ sub modifyXMLcontacts{
 			my $j=$interaction->{"j"};
 			if((defined $atomhash1{$i} && defined $atomhash2{$j}) || (defined $atomhash2{$i} && defined $atomhash1{$j})){
 				if(defined $remove){
+					if(! defined @{$XMLhandle->{"interaction"}}[$elcount]){
+						smog_quit("internal error: Attempt to delete deleted contact.  Please report to SMOG developers.");
+					}
 					delete(@{$XMLhandle->{"interaction"}}[$elcount]);
 				}else{
 					foreach my $param(sort keys %{$chghash}){
@@ -742,7 +746,6 @@ sub modifyXMLcontacts{
 					}
 				}
 			}
-			$elcount++;
 		}
 	}
 }
@@ -780,9 +783,10 @@ sub modifyXMLdihedrals{
 		}
 	}else{
 		my %atomhash=%{$atomgroup->{$groupD}};
-		my $elcount=0;
+		my $elcount=-1;
 
 		foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+			$elcount++;
 			if(!defined $interaction){
 				next;
 			}
@@ -791,6 +795,9 @@ sub modifyXMLdihedrals{
 				my $k=$interaction->{"k"};
 				if(defined $atomhash{$k}){
 					if(defined $remove){
+						if(! defined @{$XMLhandle->{"interaction"}}[$elcount]){
+							smog_quit("internal error: Attempt to delete deleted dihedral.  Please report to SMOG developers.");
+						}
 						delete(@{$XMLhandle->{"interaction"}}[$elcount]);
 					}else{
 						foreach my $param(keys %{$chghash}){
@@ -800,7 +807,6 @@ sub modifyXMLdihedrals{
 					}
 				}
 			}
-			$elcount++;
 		}
 	}
 }
