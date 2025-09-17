@@ -1505,7 +1505,7 @@ sub GenAnglesDihedrals
 				$connHandle = $connections{$residues{$connect->[0]}->{"residueType"}}->{$residues{$connect->[1]}->{"residueType"}};
 	  			$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
 				if(! defined $bondMapHashRev{"$leftAtom-$i"}){
-					smog_quit("Unable to connect residues 0 and 1.  It appears that the connecting atom in residue 0 is missing. Connection expects there to be a $leftAtom atom.");
+					smog_quit("Unable to connect the first two residues in chain $chid ($connect->[0],$connect->[1]).  It appears that the definition of a $connect->[0] residue (in .bif file) does not contain a $leftAtom atom.");
 				}
 	  			$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
 	 			$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});		
@@ -1520,7 +1520,7 @@ sub GenAnglesDihedrals
 			$rightAtom = $connHandle->{"bond"}->[0]->{"atom"}->[1];
 			if(! defined $bondMapHashRev{"$rightAtom-$i"}){
 				my $j=$i-1;
-				smog_quit("Unable to connect residues $j and $i.  It appears that the connecting atom in residue $i is missing. Connection expects there to be a $rightAtom atom.");
+				smog_quit("Unable to connect residues $j and $i in chain $chid ($connect->[0],$connect->[1]).  It appears that the definition of a $connect->[$i] residue (in the .bif file) does not include a $rightAtom atom.");
 			}
 	    		$rightAtom = $bondMapHashRev{"$rightAtom-$i"};
 			push(@connectList,$leftAtom);
@@ -1535,7 +1535,12 @@ sub GenAnglesDihedrals
 		if(exists $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}}){
         		$connHandle = $connections{$residues{$connect->[$i]}->{"residueType"}}->{$residues{$connect->[$i+1]}->{"residueType"}};
     			$leftAtom = $connHandle->{"bond"}->[0]->{"atom"}->[0];
-    			$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
+ 			if(! defined $bondMapHashRev{"$leftAtom-$i"}){
+				my $j=$i+1;
+				smog_quit("Unable to connect residues $i and $j in chain $chid ($connect->[0],$connect->[1]).  It appears that the definition of a $connect->[$i] residue (in the .bif file) does not include a $leftAtom atom.");
+			}
+  
+ 			$leftAtom = $bondMapHashRev{"$leftAtom-$i"};
     			$prevSize = $prevSize+scalar(keys %{$residues{$connect->[$i]}->{"atoms"}});
 		}
    	}
