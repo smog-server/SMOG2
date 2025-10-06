@@ -261,7 +261,10 @@ sub OpenSMOGwriteXMLinteractions{
 	   	     	$localxmlout .= "$twos<$subtype name=\"$name\">\n";
 			my $expr=$handle3->{expression}->{"expr"};
 	   	     	$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
-			my @paramlist=@{$handle3->{parameter}};
+			my @paramlist;
+			if(defined $handle3->{parameter}){
+				@paramlist=@{$handle3->{parameter}};
+			}
 	   	     	foreach my $param(@paramlist){
 	   	     		$localxmlout .= "$threes<parameter>$param</parameter>\n";
 	   	     	}
