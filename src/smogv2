@@ -2089,12 +2089,12 @@ sub contactParseNM1
 	if(defined $OpenSMOG){
 		if(OpenSMOGfunctionExists($OSref,"contacts","contact_1-$M-$N") == 0){
 			my $potential = $OpenSMOGpothash->{contact_1}->{expression};
-			my $exclusions = $OpenSMOGpothash->{contact_1}->{exclusions};
+			my ($fType,$directive,$addExclusions) = returnFunction("contact_1");
 			$potential =~ s/N/$N/g;
 			$potential =~ s/M/$M/g;
 			
 			my $parhandle=\@{$OpenSMOGpothash->{contact_1}->{parameters}};
-			OShashAddFunction($OSref,"contacts","contact_1-$M-$N","$potential",$parhandle,$exclusions);
+			OShashAddFunction($OSref,"contacts","contact_1-$M-$N","$potential",$parhandle,$addExclusions);
 		}
 		# switch order for OpenSMOG, so that the first parameter is the 12 term
 		($paramArr->[2],$paramArr->[3])=($paramArr->[3],$paramArr->[2]);
@@ -2178,8 +2178,8 @@ sub contactParseGaussian
                 if(OpenSMOGfunctionExists($OSref,"contacts","contact_gaussian") == 0){
                         my $potential = $OpenSMOGpothash->{contact_gaussian}->{expression};
                         my $parhandle=\@{$OpenSMOGpothash->{contact_gaussian}->{parameters}};
-			my $exclusions = $OpenSMOGpothash->{contact_gaussian}->{exclusions};
-                        OShashAddFunction($OSref,"contacts","contact_gaussian","$potential",$parhandle,$exclusions);
+			my ($fType,$directive,$addExclusions) = returnFunction("contact_gaussian");
+                        OShashAddFunction($OSref,"contacts","contact_gaussian","$potential",$parhandle,$addExclusions);
                 }
                 # switch order for OpenSMOG, so that the first parameter is k
                 ($paramArr->[0],$paramArr->[1],$paramArr->[2],$paramArr->[3])=($paramArr->[0],$paramArr->[3],$paramArr->[2],$paramArr->[1]);
@@ -2212,8 +2212,8 @@ sub contactParseBond6
                         my $potential = $OpenSMOGpothash->{bond_type6}->{expression};
 
                         my $parhandle=\@{$OpenSMOGpothash->{bond_type6}->{parameters}};
-			my $exclusions = $OpenSMOGpothash->{bond_type6}->{exclusions};
-                        OShashAddFunction($OSref,"contacts","bond_type6","$potential",$parhandle,$exclusions);
+			my ($fType,$directive,$addExclusions) = returnFunction("bond_type6");
+                        OShashAddFunction($OSref,"contacts","bond_type6","$potential",$parhandle,$addExclusions);
                 }
                 # switch order for OpenSMOG, so that the first parameter is k
                 ($paramArr->[0],$paramArr->[1])=($paramArr->[1],$paramArr->[0]);
@@ -2265,8 +2265,8 @@ sub contactParseOpenSMOG
         if(OpenSMOGfunctionExists($OSref,"contacts","$fname") == 0){
                 my $potential = $OpenSMOGpothash->{$fname}->{expression};
                 my $parhandle=\@{$OpenSMOGpothash->{$fname}->{parameters}};
-		my $exclusions = $OpenSMOGpothash->{$fname}->{exclusions};
-                OShashAddFunction($OSref,"contacts","$fname","$potential",$parhandle,$exclusions);
+		my ($fType,$directive,$addExclusions) = returnFunction("fname");
+                OShashAddFunction($OSref,"contacts","$fname","$potential",$parhandle,$addExclusions);
         }
 
 	return;

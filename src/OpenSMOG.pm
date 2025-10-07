@@ -54,7 +54,7 @@ sub OShashAddFunction{
 	}
 	my $ref=\%{$OSref->{$type}->{$type . "_type"}->{$name}};
 	$ref->{expression}->{"expr"}=$expr;
-	$ref->{expression}->{"exclusions"}=$exclusions;
+	$ref->{exclusions}->{"generate"}=$exclusions;
 
 	my @params=@{$params};
 	foreach my $en(@params){
@@ -262,6 +262,12 @@ sub OpenSMOGwriteXMLinteractions{
 	   	     	$localxmlout .= "$twos<$subtype name=\"$name\">\n";
 			my $expr=$handle3->{expression}->{"expr"};
 	   	     	$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
+			my $genExcl=$handle3->{exclusions}->{"generate"};
+			if($genExcl ==1 ){
+	   	     		$localxmlout .= "$threes<exclusions generate=\"1\"/>\n";
+			}elsif($genExcl !=0 ){
+				smog_quit("internal error: OS exclusions-generate.");
+			}
 			my @paramlist;
 			if(defined $handle3->{parameter}){
 				@paramlist=@{$handle3->{parameter}};
