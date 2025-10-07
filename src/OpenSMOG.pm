@@ -48,12 +48,13 @@ my $minOSversion="1.1.2";
 ########## OpenSMOG routines
 
 sub OShashAddFunction{
-	my ($OSref,$type,$name,$expr,$params)=@_;
+	my ($OSref,$type,$name,$expr,$params,$exclusions)=@_;
 	if($type ne "contacts" and $type ne "dihedrals"){
 		smog_quit("OpenSMOG currently only supports modified contact and dihedral potentials through \"functions\" declarations. Nonbonded custom potentials may be defined in the .nb file. Issue processing $name");
 	}
 	my $ref=\%{$OSref->{$type}->{$type . "_type"}->{$name}};
 	$ref->{expression}->{"expr"}=$expr;
+	$ref->{expression}->{"exclusions"}=$exclusions;
 
 	my @params=@{$params};
 	foreach my $en(@params){
