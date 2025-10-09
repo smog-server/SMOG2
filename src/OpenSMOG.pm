@@ -263,10 +263,12 @@ sub OpenSMOGwriteXMLinteractions{
 			my $expr=$handle3->{expression}->{"expr"};
 	   	     	$localxmlout .= "$threes<expression expr=\"$expr\"/>\n";
 			my $genExcl=$handle3->{exclusions}->{"generate"};
-			if($genExcl ==1 ){
-	   	     		$localxmlout .= "$threes<exclusions generate=\"1\"/>\n";
-			}elsif($genExcl !=0 ){
-				smog_quit("internal error: OS exclusions-generate.");
+			if(defined $genExcl){
+				if($genExcl ==1 ){
+	   	     			$localxmlout .= "$threes<exclusions generate=\"1\"/>\n";
+				}elsif($genExcl !=0 ){
+					smog_quit("internal error: OS exclusions-generate.");
+				}
 			}
 			my @paramlist;
 			if(defined $handle3->{parameter}){

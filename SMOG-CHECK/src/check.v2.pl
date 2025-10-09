@@ -73,7 +73,7 @@ quit_init();
 
 # FAILLIST is a list of all the tests.
 # If you are developing and testing your own forcefield, which may not need to conform to certain checks, then you may want to disable some tests by  removing the test name from this list. However, do so at your own risk.
-our @FAILLIST = ('NAME','DEFAULTS, num entries','DEFAULTS, nbfunc','DEFAULTS, comb-rule','DEFAULTS, gen-pairs','DEFAULTS, fudgeLJ','DEFAULTS, fudgeQQ','1 MOLECULE','ATOMTYPES UNIQUE','ALPHANUMERIC ATOMTYPES','TOP FIELDS FOUND','TOP FIELDS RECOGNIZED','MASS', 'CHARGE','moleculetype=Macromolecule','nrexcl=3', 'PARTICLE', 'C6 VALUES', 'C12 VALUES','ATOMTYPES, SIGMA','ATOMTYPES, EPSILON', 'SUPPORTED BOND TYPES', 'OPEN GRO','GRO-TOP CONSISTENCY', 'BOND STRENGTHS', 'BOND LENGTHS','ANGLE TYPES', 'ANGLE WEIGHTS', 'ANGLE VALUES','DUPLICATE BONDS', 'DUPLICATE ANGLES', 'GENERATED ANGLE COUNT','GENERATED ANGLE IN TOP','ANGLES IN TOP GENERATED', 'IMPROPER WEIGHTS', 'CA IMPROPERS EXIST','OMEGA IMPROPERS EXIST','SIDECHAIN IMPROPERS EXIST','MATCH DIH WEIGHTS','DIHEDRAL ANGLES','ALL POSSIBLE MATCHED DIHEDRALS PRESENT','CA DIHEDRAL WEIGHTS', 'DUPLICATE TYPE 1 DIHEDRALS','DUPLICATE TYPE 2 DIHEDRALS','DUPLICATE TYPE 3 DIHEDRALS','1-3 DIHEDRAL PAIRS','3-1 DIHEDRAL PAIRS','1-3 ORDERING OF DIHEDRALS','1-3 DIHEDRAL RELATIVE WEIGHTS','STRENGTHS OF RIGID DIHEDRALS','STRENGTHS OF OMEGA DIHEDRALS','STRENGTHS OF PROTEIN BB DIHEDRALS','STRENGTHS OF PROTEIN SC DIHEDRALS','STRENGTHS OF NUCLEIC BB DIHEDRALS','STRENGTHS OF NUCLEIC SC DIHEDRALS','STRENGTHS OF LIGAND DIHEDRALS','STACK-NONSTACK RATIO','PROTEIN BB/SC RATIO','NUCLEIC SC/BB RATIO','AMINO/NUCLEIC DIHEDRAL RATIO','AMINO/LIGAND DIHEDRAL RATIO','NUCLEIC/LIGAND DIHEDRAL RATIO','NONZERO DIHEDRAL ENERGY','CONTACT/DIHEDRAL RATIO','1-3 DIHEDRAL ANGLE VALUES','DIHEDRAL IN TOP GENERATED','GENERATED DIHEDRAL IN TOP','STACKING CONTACT WEIGHTS','NON-STACKING CONTACT WEIGHTS','NON-STACKING 2CG CONTACT WEIGHTS','NON-STACKING CG RATIO','LONG CONTACTS', 'CA CONTACT WEIGHTS', 'CONTACT DISTANCES','GAUSSIAN CONTACT WIDTHS','GAUSSIAN CONTACT EXCLUDED VOLUME','CONTACTS NUCLEIC i-j=1','CONTACTS PROTEIN i-j=4','CONTACTS PROTEIN i-j!>4','SCM CONTACT COMPARISON','STATIC CONTACT COMPARISON','NUMBER OF EXCLUSIONS', 'BOX DIMENSIONS','GENERATION OF ANGLES/DIHEDRALS','OPEN CONTACT FILE','NCONTACTS','TOTAL ENERGY','TYPE6 ATOMS','CLASSIFYING DIHEDRALS','NON-ZERO EXIT','ATOM FIELDS','ATOM CHARGES','FREE PAIRS APPEAR IN CONTACTS','EXTRAS: ATOMTYPES','EXTRAS: BONDTYPES','EXTRAS: ANGLETYPES','EXTRAS: DIHEDRALTYPES','EXTRAS: NB_PARAMS','NONZERO LIGAND DIHEDRAL VALUE','BONDS: EXPECTED FOUND','BONDS: FOUND EXPECTED','GMX COMPATIBLE','DIHEDRAL COUNTING: OFF','DIHEDRAL COUNTING: ON','OPENSMOG: EXPRESSION','OPENSMOG: PARAMETERS','OPENSMOG: INTERACTIONS','OPENSMOG: XML EXISTS','OPENSMOG: CUSTOM CONTACT PARAMETER VALUES','OPENSMOG: CUSTOM DIHEDRAL PARAMETER VALUES','USER-DEFINED BONDS PRESENT',);
+our @FAILLIST = ('NAME','DEFAULTS, num entries','DEFAULTS, nbfunc','DEFAULTS, comb-rule','DEFAULTS, gen-pairs','DEFAULTS, fudgeLJ','DEFAULTS, fudgeQQ','1 MOLECULE','ATOMTYPES UNIQUE','ALPHANUMERIC ATOMTYPES','TOP FIELDS FOUND','TOP FIELDS RECOGNIZED','MASS', 'CHARGE','moleculetype=Macromolecule','nrexcl=3', 'PARTICLE', 'C6 VALUES', 'C12 VALUES','ATOMTYPES, SIGMA','ATOMTYPES, EPSILON', 'SUPPORTED BOND TYPES', 'OPEN GRO','GRO-TOP CONSISTENCY', 'BOND STRENGTHS', 'BOND LENGTHS','ANGLE TYPES', 'ANGLE WEIGHTS', 'ANGLE VALUES','DUPLICATE BONDS', 'DUPLICATE ANGLES', 'GENERATED ANGLE COUNT','GENERATED ANGLE IN TOP','ANGLES IN TOP GENERATED', 'IMPROPER WEIGHTS', 'CA IMPROPERS EXIST','OMEGA IMPROPERS EXIST','SIDECHAIN IMPROPERS EXIST','MATCH DIH WEIGHTS','DIHEDRAL ANGLES','ALL POSSIBLE MATCHED DIHEDRALS PRESENT','CA DIHEDRAL WEIGHTS', 'DUPLICATE TYPE 1 DIHEDRALS','DUPLICATE TYPE 2 DIHEDRALS','DUPLICATE TYPE 3 DIHEDRALS','1-3 DIHEDRAL PAIRS','3-1 DIHEDRAL PAIRS','1-3 ORDERING OF DIHEDRALS','1-3 DIHEDRAL RELATIVE WEIGHTS','STRENGTHS OF RIGID DIHEDRALS','STRENGTHS OF OMEGA DIHEDRALS','STRENGTHS OF PROTEIN BB DIHEDRALS','STRENGTHS OF PROTEIN SC DIHEDRALS','STRENGTHS OF NUCLEIC BB DIHEDRALS','STRENGTHS OF NUCLEIC SC DIHEDRALS','STRENGTHS OF LIGAND DIHEDRALS','STACK-NONSTACK RATIO','PROTEIN BB/SC RATIO','NUCLEIC SC/BB RATIO','AMINO/NUCLEIC DIHEDRAL RATIO','AMINO/LIGAND DIHEDRAL RATIO','NUCLEIC/LIGAND DIHEDRAL RATIO','NONZERO DIHEDRAL ENERGY','CONTACT/DIHEDRAL RATIO','1-3 DIHEDRAL ANGLE VALUES','DIHEDRAL IN TOP GENERATED','GENERATED DIHEDRAL IN TOP','STACKING CONTACT WEIGHTS','NON-STACKING CONTACT WEIGHTS','NON-STACKING 2CG CONTACT WEIGHTS','NON-STACKING CG RATIO','LONG CONTACTS', 'CA CONTACT WEIGHTS', 'CONTACT DISTANCES','GAUSSIAN CONTACT WIDTHS','GAUSSIAN CONTACT EXCLUDED VOLUME','CONTACTS NUCLEIC i-j=1','CONTACTS PROTEIN i-j=4','CONTACTS PROTEIN i-j!>4','SCM CONTACT COMPARISON','STATIC CONTACT COMPARISON','NUMBER OF EXCLUSIONS', 'BOX DIMENSIONS','GENERATION OF ANGLES/DIHEDRALS','OPEN CONTACT FILE','NCONTACTS','TOTAL ENERGY','TYPE6 ATOMS','CLASSIFYING DIHEDRALS','NON-ZERO EXIT','ATOM FIELDS','ATOM CHARGES','FREE PAIRS APPEAR IN CONTACTS','EXTRAS: ATOMTYPES','EXTRAS: BONDTYPES','EXTRAS: ANGLETYPES','EXTRAS: DIHEDRALTYPES','EXTRAS: NB_PARAMS','NONZERO LIGAND DIHEDRAL VALUE','BONDS: EXPECTED FOUND','BONDS: FOUND EXPECTED','GMX COMPATIBLE','DIHEDRAL COUNTING: OFF','DIHEDRAL COUNTING: ON','OPENSMOG: EXPRESSION','OPENSMOG: PARAMETERS','OPENSMOG: INTERACTIONS','OPENSMOG: XML EXISTS','OPENSMOG: CUSTOM CONTACT PARAMETER VALUES','OPENSMOG: CUSTOM DIHEDRAL PARAMETER VALUES','OPENSMOG: EXCLUSIONS','USER-DEFINED BONDS PRESENT',);
 #removed tests: 'OPEN G96','G96 FIELDS',
 # default location of test PDBs
 our $PDB_DIR="share/PDB.files";
@@ -284,9 +284,13 @@ sub addOpenSMOG
 
  my $paramlist=1;
  my $expectedfunction;
+ my $exclusionsGeneration=0;
+ my $exclusionsGenerationP=0;
+ my $exclusionsGenerationN=0;
  my @expectedparams;
  my @expectedattributes;
  my $interactionpass=1;
+ my $exclpass=1;
  my $addstuff;
  my $ftype;
  my %foundlist; 
@@ -318,6 +322,7 @@ sub addOpenSMOG
    }elsif($funcs eq "contact_1-6-12"){
     $directive="pairs";
     $ftype=1;
+    $exclusionsGeneration=1;
     if(($model eq "AA" || $model eq "AA-DIHE" || $model eq "AA-DIHE4") && $gaussian eq "no"){
      $expectedfunction="A/r^12-B/r^6";
      @expectedparams=("A","B");
@@ -328,6 +333,7 @@ sub addOpenSMOG
    }elsif($funcs eq "contact_1-10-12"){
     $directive="pairs";
     $ftype=1;
+    $exclusionsGeneration=1;
     if($model eq "CA" && $gaussian eq "no"){
      $expectedfunction="A/r^12-B/r^10";
      @expectedparams=("A","B");
@@ -338,12 +344,14 @@ sub addOpenSMOG
    }elsif($funcs eq "contact_custom1"){
     $directive="pairs";
     $ftype=1;
+    $exclusionsGeneration=1;
     $expectedfunction="weight*((sigma1/r)^16+0.5* (tanh(B*(r-sigma2))-1))";
     @expectedparams=("weight","B","sigma1","sigma2");
     @expectedattributes=("i","j","weight","B","sigma1","sigma2");
    }elsif($funcs eq "contact_gaussian"){
     $directive="pairs";
     $ftype=6;
+    $exclusionsGeneration=1;
     if($gaussian eq "yes"){
      $expectedfunction="A*((1+a/(A*r^12))*(1-exp(-(r-r0)^2/(2*sigmaG^2)))-1)";
      @expectedparams=("A","r0","sigmaG","a");
@@ -430,6 +438,18 @@ sub addOpenSMOG
     $fail_log.="OS expr did not match for $funcs.  Expected \"$expr\" and found \"$expectedfunction\".\n"; 
    }
 
+   my $generate=$xmlhandle->{$funcs}->{'exclusions'}->{'generate'};
+   if(! defined $generate){ 
+    # not defined -> should not generate
+    $generate=0;
+   }
+   $exclusionsGenerationP++;
+   if($generate eq $exclusionsGeneration){
+    $exclusionsGenerationN++;
+   }else{
+    $fail_log.="OS exclusions generate value did not match for $funcs.  Expected \"$exclusionsGeneration\" and found \"$generate\".\n"; 
+   }
+
    # If the expected parameters and found parameters are identical, then we will have 1+2N true hits 
    my $paramhandle=$xmlhandle->{$funcs}->{'parameter'};
    my $cc=arraycomp(\@expectedparams,$paramhandle);
@@ -459,7 +479,10 @@ sub addOpenSMOG
  if($parampassP==$parampassN){
   $parampass=0;
  }
- return ($topdata,$functionform,$parampass,$interactionpass,\%foundlist);
+ if($exclusionsGenerationP == $exclusionsGenerationN){
+  $exclpass=0;
+ }
+ return ($topdata,$functionform,$parampass,$interactionpass,$exclpass,\%foundlist);
 }
 
 sub arraycomp
@@ -1401,6 +1424,7 @@ sub smogchecker
   $FAIL{'OPENSMOG: PARAMETERS'}=-1;
   $FAIL{'OPENSMOG: INTERACTIONS'}=-1;
   $FAIL{'OPENSMOG: XML EXISTS'}=-1;
+  $FAIL{'OPENSMOG: EXCLUSIONS'}=-1;
  }
 
  if($model eq "AA-CC1" || $model eq "AA-CCD"){
@@ -2054,17 +2078,20 @@ sub checktop
  my @nbuff=@buffer;
  $topdata{$dir}=\@nbuff;
  if($OpenSMOG eq "yes"){
+  $FAIL{'NUMBER OF EXCLUSIONS'}=-1;
   my $openXML=readOpenSMOGxml("$PDB.xml");
   if($openXML !=1){
    $FAIL{'OPENSMOG: XML EXISTS'}=0;
    my $openEXPR=1;
    my $openPARAMS=1;
    my $openINTER=1;
+   my $openEXCL=1;
    my $foundlist;
-   ($topdata,$openEXPR,$openPARAMS,$openINTER,$foundlist)=addOpenSMOG($topdata,$openXML,$gaussian);
+   ($topdata,$openEXPR,$openPARAMS,$openINTER,$openEXCL,$foundlist)=addOpenSMOG($topdata,$openXML,$gaussian);
    $FAIL{'OPENSMOG: EXPRESSION'}=$openEXPR;
    $FAIL{'OPENSMOG: PARAMETERS'}=$openPARAMS;
    $FAIL{'OPENSMOG: INTERACTIONS'}=$openINTER;
+   $FAIL{'OPENSMOG: EXCLUSIONS'}=$openINTER;
    foreach my $key(keys %{$foundlist}){
     $FOUND{$key}=1;
    }
@@ -2102,7 +2129,9 @@ sub checktop
 
  &checkpairs($topdata{'pairs'},\@resindex,\@PAIRS,\$stackingE,\$NonstackingE,\$NonstackingE2);
  
- &checkexclusions($topdata{'exclusions'},\@PAIRS);
+ if($OpenSMOG eq "no"){
+  &checkexclusions($topdata{'exclusions'},\@PAIRS);
+ }
 
  &checksystem($topdata{'system'});
 
@@ -2439,6 +2468,10 @@ sub checktop
   }else{
    smogcheck_error("Serious problem understanding .top file.  A directive may be duplicated.");
   }
+ }
+ if($OpenSMOG eq "yes"){
+  # if using OS, exclusions will be absent from the top file.  So, add one, as if it were there
+  $NFIELDC++;
  }
  if(scalar keys %supported_directives == $NFIELDC){
   $FAIL{'TOP FIELDS FOUND'}=0;
