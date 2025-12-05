@@ -6,6 +6,12 @@
     <xs:attribute name="j" type="xs:integer" use="required"/>
     <xs:anyAttribute processContents="skip"/>
   </xs:complexType>
+  <xs:complexType name="AngleInteractionType">
+    <xs:attribute name="i" type="xs:integer" use="required"/>
+    <xs:attribute name="j" type="xs:integer" use="required"/>
+    <xs:attribute name="k" type="xs:integer" use="required"/>
+    <xs:anyAttribute processContents="skip"/>
+  </xs:complexType>
   <xs:complexType name="dihedralInteractionType">
     <xs:attribute name="i" type="xs:integer" use="required"/>
     <xs:attribute name="j" type="xs:integer" use="required"/>
@@ -49,10 +55,20 @@
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required"/>
   </xs:complexType>
+  <!-- ANGLE POTENTIAL TYPE -->
+  <xs:complexType name="anglepotType">
+    <xs:sequence>
+      <xs:element name="expression" type="expressionType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="parameter" type="parameterType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="interaction" type="angleInteractionType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+  <!-- CONTACTS TYPE -->
   <!-- DIHEDRAL POTENTIAL TYPE -->
   <xs:complexType name="dihedralpotType">
     <xs:sequence>
-      <xs:element name="expression" type="expressionType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="expression" type="expressionType" minOccurs="1" maxOccurs="1"/>
       <xs:element name="parameter" type="parameterType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="interaction" type="dihedralInteractionType" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
@@ -73,6 +89,12 @@
   <xs:complexType name="constantsType">
     <xs:sequence>
       <xs:element name="constant" type="constantType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <!-- ANGLES TYPE -->
+  <xs:complexType name="anglesType">
+    <xs:sequence>
+      <xs:element name="angles_type" type="anglepotType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
   <!-- DIHEDRALS TYPE -->
@@ -100,6 +122,7 @@
   <xs:complexType name="OpenSMOGType">
     <xs:all>
       <xs:element name="contacts" type="contactsType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="angles" type="anglesType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="dihedrals" type="dihedralsType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="constants" type="constantsType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="nonbond" type="nonbondType" minOccurs="0" maxOccurs="1"/>
