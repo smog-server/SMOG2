@@ -1527,6 +1527,7 @@ sub angleOutput
 		}else{
 			if ($fType == -2){
 				# is an OpenSMOG interaction
+				$value= mathFunctions::deg_to_rad($value); 
 				for(my $in=0;$in<=$#paramArr;$in++){
 					# replace ? on all terms, even weight
 					# note: ? cannot be used for weight with dihedrals, since it turns on/off normalization. But, this does not apply to angles, so there is no issue.
