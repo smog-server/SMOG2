@@ -49,8 +49,8 @@ my $minOSversion="1.1.2";
 
 sub OShashAddFunction{
 	my ($OSref,$type,$name,$expr,$params,$exclusions)=@_;
-	if($type ne "contacts" and $type ne "dihedrals"){
-		smog_quit("OpenSMOG currently only supports modified contact and dihedral potentials through \"functions\" declarations. Nonbonded custom potentials may be defined in the .nb file. Issue processing $name");
+	if($type ne "contacts" and $type ne "dihedrals" and $type ne "angles"){
+		smog_quit("OpenSMOG currently only supports modified contact, dihedral and angle potentials through \"functions\" declarations. Nonbonded custom potentials may be defined in the .nb file. Issue processing $name");
 	}
 	my $ref=\%{$OSref->{$type}->{$type . "_type"}->{$name}};
 	$ref->{expression}->{"expr"}=$expr;
@@ -91,6 +91,8 @@ sub AddInteractionOShash{
 	my $nameindex;
 	if($inttype eq "contact"){
 		$nameindex=2;
+	}elsif ($inttype eq "angle"){
+		$nameindex=3;
 	}elsif ($inttype eq "dihedral"){
 		$nameindex=4;
 	}else{
@@ -102,6 +104,9 @@ sub AddInteractionOShash{
 	my %tmphash;
 	$tmphash{"i"}=$stuff[0];
 	$tmphash{"j"}=$stuff[1];
+	if ($inttype eq "angle"){
+		$tmphash{"k"}=$stuff[2];
+	}
 	if ($inttype eq "dihedral"){
 		$tmphash{"k"}=$stuff[2];
 		$tmphash{"l"}=$stuff[3];
@@ -176,7 +181,7 @@ sub OpenSMOGwriteXML{
 		my $handle0=$OSref;
 
 		foreach my $type(sort keys %{$handle0}){
-			if($type eq "contacts" or $type eq "dihedrals"){
+			if($type eq "contacts" or $type eq "dihedrals" or $type eq "angles"){
 				$xmlout .= OpenSMOGwriteXMLinteractions($type,$handle0,$type,$space);
 			}elsif($type eq "constants"){
 				$xmlout .= OpenSMOGwriteXMLconstants($handle0,$type,$space);
@@ -236,6 +241,8 @@ sub OpenSMOGwriteXMLinteractions{
 	my @interactingindices;
 	if($inttype eq "contacts"){
 		@interactingindices=("i","j");
+	}elsif($inttype eq "angles"){
+		@interactingindices=("i","j","k");
 	}elsif($inttype eq "dihedrals"){
 		@interactingindices=("i","j","k","l");
 	}else{
@@ -998,6 +1005,10 @@ sub newOpenSMOGfunction{
 		$fh->{$fN}->{"IsCustom"}=1;
 	}elsif($fh->{$fN}->{"OpenSMOGtype"} eq "dihedral"){
 		$fh->{$fN}->{"directive"}="dihedrals";
+		# creating this element to keep track of the fact that it was a custom term.
+		$fh->{$fN}->{"IsCustom"}=1;
+	}elsif($fh->{$fN}->{"OpenSMOGtype"} eq "angle"){
+		$fh->{$fN}->{"directive"}="angles";
 		# creating this element to keep track of the fact that it was a custom term.
 		$fh->{$fN}->{"IsCustom"}=1;
 	}else{

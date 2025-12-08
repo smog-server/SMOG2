@@ -56,7 +56,7 @@
   </xs:simpleType>
   <xs:simpleType name="OpenSMOGType">
     <xs:restriction base="xs:string">
-      <xs:pattern value="^contact$|^dihedral$"/>
+      <xs:pattern value="^contact$|^angle$|^dihedral$"/>
     </xs:restriction>
   </xs:simpleType>
   <!--FUNCTION TYPE -->
@@ -132,7 +132,7 @@
     <xs:element name="function" type="functionType" maxOccurs="unbounded"/>
   </xs:complexType>
   <!--CustomPotential TYPE -->
-  <xs:complexType name="customPotType">
+  <xs:complexType name="customNBpotType">
     <xs:attribute name="OpenSMOGpotential" type="xs:string" use="optional"/>
     <xs:attribute name="OpenSMOGcombrule" type="xs:string" use="optional"/>
     <xs:attribute name="parameters" type="xs:string" use="optional"/>
@@ -144,7 +144,7 @@
     <xs:all>
       <xs:element name="version" type="versionType" minOccurs="0"/>
       <xs:element name="functions" type="functionsType" minOccurs="1"/>
-      <xs:element name="CustomNonBonded" type="customPotType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="CustomNonBonded" type="customNBpotType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="settings" type="settingsType" minOccurs="1"/>
       <xs:element name="OpenSMOGsettings" type="OPENsettingsType" minOccurs="0"/>
     </xs:all>

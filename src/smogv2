@@ -289,6 +289,13 @@ sub setglobals {
 
 	$OpenSMOGpothash->{contact_free}->{expression}="";
 
+	# angles OpenSMOG potentials
+	$OpenSMOGpothash->{angle_harmonic}->{expression}="0.5*weight*(theta-theta0)^2";
+	push(@{$OpenSMOGpothash->{angle_harmonic}->{parameters}},"theta0");
+	push(@{$OpenSMOGpothash->{angle_harmonic}->{parameters}},"weight");
+	$OpenSMOGpothash->{angle_harmonic}->{theta0}=0;
+	$OpenSMOGpothash->{angle_harmonic}->{weight}=1;
+	push(@OSswitchlist,"angle_harmonic");
 
 	# dihedrals OpenSMOG potentials
 	$OpenSMOGpothash->{dihedral_cosine}->{expression}="weight*(1-cos(multiplicity*(theta-theta0)))";
@@ -802,7 +809,7 @@ sub addToTop {
 		# if $directive is OpenSMOG, then $stuff is the address of the array that contains the following information: i, j, [k, j,] interaction type, function name, @parameters (in the order found in $OSref->{$type}->[0]->{$name}->[0]->{parameters} array)
 		if(! defined $OSdir){
 			smog_quit("internal error: OS 1");
-		}elsif( $OSdir eq "contact" or $OSdir eq "dihedral"){
+		}elsif( $OSdir eq "contact" or $OSdir eq "dihedral" or $OSdir eq "angle"){
 			AddInteractionOShash($OSdir,$OSref,$stuff);
 		}else{
 			smog_quit("internal error: OS 2");
@@ -1406,11 +1413,16 @@ sub printOrderedAngles
 	my %blist;
 	## Print our sorted bonds ##
   	foreach my $p(@angleCache){
-  		addToTop("angles",$p->{"v"});
                 my $i=$p->{"i"};
                 my $k=$p->{"k"};
                 $blist{"$i $k"}=0;
                 $blist{"$k $i"}=0;
+		if($p->{"f"} == -2){
+  		        addToTop("angles",$p->{"v"},"angle");
+		}else{
+  		        addToTop("angles",$p->{"v"});
+		}
+
 	}
         if(defined $OpenSMOG && $interactions->{"nrexcl"} >=2){
                 %excludebonded=(%excludebonded,%blist);
@@ -1458,17 +1470,19 @@ sub CalculateAnglesHelper
 		if($atomi1 > $atomi3) { 
 			($atomi1,$atomi2,$atomi3)=($atomi3,$atomi2,$atomi1);
 		}
-		my $val=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos,$indexhandle,$allatoms);
-		if(!$val) {next;}
-			# i,j,k are meta data
-	 	push @{$angleCache}, {'i' => $atomi1,'j' => $atomi2,'k' =>$atomi3, 'v' => $val};
+		my ($valArray,$fTypeArray)=angleOutput(intToFunc("angles",$func,""),$atomi1,$atomi2,$atomi3,$acos,$indexhandle,$allatoms);
+		my @arr=@{$valArray};
+		my @Farr=@{$fTypeArray};
+		for(my $I=0;$I<=$#arr;$I++){
+			push @{$angleCache}, {'i'=> $atomi1,'j' => $atomi2,'k' =>$atomi3, 'f' => $Farr[$I], 'v' => $arr[$I]};
+		}
 	}
 }
 
 # Convert internal angle function format to gromacs function format
 sub angleOutput
 {
- 	my($inputFunc,$i,$j,$k,$values,$indexhandle,$allatoms) = @_;
+ 	my($inputFunc,$i,$j,$k,$value,$indexhandle,$allatoms) = @_;
  	$inputFunc = trim($inputFunc);
  ## If $input contains a + ##
 	my @funcs = split(/\+/,$inputFunc);
@@ -1476,9 +1490,13 @@ sub angleOutput
 	my $kd="";
 	my $fType="";my @paramArr;
 	my $formattedString="";
+	my $funcName;
+ 	my @OSarray=();
+ 	my @fTypeArray=();
 	foreach my $fun(@funcs)
 	{
-		($fType,@paramArr) = angleFuncParser($fun);
+		($fType,$funcName,@paramArr) = angleFuncParser($fun);
+		push(@fTypeArray,$fType);
 
 		if($fType ==-1){
 			 ## don't write angle and constant. Make gromacs use angletype
@@ -1494,54 +1512,85 @@ sub angleOutput
                                 $outputString .= "\n";
                         }
 
-			if(abs($tmtype[1]-$values)/$tmtype[1] > 0.1){
-				my $THETA=int($values*100)/100.0;
+			if(abs($tmtype[1]-$value)/$tmtype[1] > 0.1){
+				my $THETA=int($value*100)/100.0;
 				my $i1=$indexhandle->{$i};
 				my $j1=$indexhandle->{$j};
 				my $k1=$indexhandle->{$k};
 				smog_note("Angle of $THETA degrees calculated for atom pair $i $j $k (gro indices.  Or, lines $i1 $j1 $k1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates/extras ($tmtype[1]). This may mean there is something strange with your structure.");
 			}
+			push(@OSarray,"$outputString");
 	 		
 		}elsif($fType != 0){
-			my $dosub=0;
-			if($paramArr[0] !~ m/\?/){
-				# nothing to sub.  Just use the value given in the .b file
-				$dosub=1;
-			}
-			$paramArr[0]=evalsub($paramArr[0],$values);
-			if($dosub==1){
-			        ## non-native option used
-				if(abs($paramArr[0]-$values)/$paramArr[0] > 0.1){
+
+			# If there is a ?, then substitute the angle value and apply the multiplicity.  If there is no wild card, then simply use the angle provided
+			if ($fType == -2){
+				for(my $in=0;$in<=$#paramArr;$in++){
+					# replace ? on all terms, even weight
+					# note: ? cannot be used for weight with dihedrals, since it turns on/off normalization. But, this does not apply to angles, so there is no issue.
+					$paramArr[$in]=evalsub($paramArr[$in],$value);
+				}
+
+				my @array;
+				## organize the array of info
+				$array[0]=$i;
+				$array[1]=$j;
+				$array[2]=$k;
+				$array[3]="angles";
+				$array[4]= $funcName;
+				foreach my $en(@paramArr){
+					push(@array,$en);
+				}
+				#add parameters
+				if(OpenSMOGfunctionExists($OSref,"angles","$funcName") == 0){
+				        my $potential = $OpenSMOGpothash->{$funcName}->{expression};
+
+				        my $parhandle=\@{$OpenSMOGpothash->{$funcName}->{parameters}};
+				        OShashAddFunction($OSref,"angles","$funcName","$potential",$parhandle,0);
+				}
+				push(@OSarray,\@array);
+
+			}else{	
+				my $dosub=0;
+				if($paramArr[0] !~ m/\?/){
+					# nothing to sub.  Just use the value given in the .b file
+					$dosub=1;
+				}
+				$paramArr[0]=evalsub($paramArr[0],$value);
+				if($dosub==1){
+				        ## non-native option used
+					if(abs($paramArr[0]-$value)/$paramArr[0] > 0.1){
+						my $i1=$indexhandle->{$i};
+						my $j1=$indexhandle->{$j};
+						my $k1=$indexhandle->{$k};
+						my $ANGLE=int($value*10000)/10000.0;
+						smog_note("Angle of $ANGLE calculated for atom set $i $j $k (gro indices.  Or, lines $i1, $j1 and $k1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates ($paramArr[0]). This may mean there is something strange with your structure.");
+					}
+	 			}elsif($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
+				## Check angles threshold ##
+					my $THETA=int($paramArr[0]*100)/100.0;
 					my $i1=$indexhandle->{$i};
 					my $j1=$indexhandle->{$j};
 					my $k1=$indexhandle->{$k};
-					my $ANGLE=int($values*10000)/10000.0;
-					smog_note("Angle of $ANGLE calculated for atom set $i $j $k (gro indices.  Or, lines $i1, $j1 and $k1 of PDB file). This differs by more than 10 percent from the value explicitly given in the templates ($paramArr[0]). This may mean there is something strange with your structure.");
+					smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilities.",1);
+				}elsif($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
+					my $THETA=int($paramArr[0]*100)/100.0;
+					my $i1=$indexhandle->{$i};
+					my $j1=$indexhandle->{$j};
+					my $k1=$indexhandle->{$k};
+					smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
 				}
-	 		}elsif($paramArr[0] < $interactionThreshold->{"angles"}->{"smallAngles"}){ 
-			## Check angles threshold ##
-				my $THETA=int($paramArr[0]*100)/100.0;
-				my $i1=$indexhandle->{$i};
-				my $j1=$indexhandle->{$j};
-				my $k1=$indexhandle->{$k};
-				smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) smaller than smallAngles (see .sif): theta=$THETA degrees\n\tBe careful! Depending on the angles adopted during the simulation, this may lead to numerical instabilities.",1);
-			}elsif($paramArr[0] > $interactionThreshold->{"angles"}->{"largeAngles"}){
-				my $THETA=int($paramArr[0]*100)/100.0;
-				my $i1=$indexhandle->{$i};
-				my $j1=$indexhandle->{$j};
-				my $k1=$indexhandle->{$k};
-				smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
+				## Format output <i j k function p1 p2 ... pn>
+				my $paramFormat=formatvalues($#paramArr);
+				$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
+				push(@OSarray,"$formattedString");
+			}else{
+				$freeangles{"$i-$j-$k"}=1;
+				$freeangles{"$k-$j-$i"}=1;
 			}
-		## Format output <i j k function p1 p2 ... pn>
-			my $paramFormat=formatvalues($#paramArr);
-			$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
-			$outputString = "$outputString$formattedString";
-		}else{
-			$freeangles{"$i-$j-$k"}=1;
-			$freeangles{"$k-$j-$i"}=1;
 		}
 	}
-	return $outputString; 
+	return (\@OSarray,\@fTypeArray);
 }
 
 # Given a user defined angle function parse values
@@ -1553,7 +1602,7 @@ sub angleFuncParser
 
 	if(exists $angleParseSeen{$angFunc}{"fType"}){
 		# if we have parsed this before, just write it.  Don't mess with everything else.
-		return ($angleParseSeen{$angFunc}{"fType"},@{$angleParseSeen{$angFunc}{"paramArr"}});
+		return ($angleParseSeen{$angFunc}{"fType"},$angleParseSeen{$angFunc}{"funcName"},@{$angleParseSeen{$angFunc}{"paramArr"}});
 	}
  	($angFunc =~ /^([^(]+)\((.*)\)$/);
 	$funcName = $1;
@@ -1562,8 +1611,9 @@ sub angleFuncParser
 	($fType,$directive) = returnFunction($funcName); ## Obtain Gromacs function type
  	@paramArr = split(",",$params); ## Parse all parameters
 	$angleParseSeen{$angFunc}{"fType"}=$fType;
+	$angleParseSeen{$angFunc}{"funcName"}=$funcName;
 	$angleParseSeen{$angFunc}{"paramArr"}=\@paramArr;
-	return ($fType,@paramArr);
+	return ($fType,$funcName,@paramArr);
 }
 
 # Combined dihedral calculation,sorting, and printing
@@ -1591,7 +1641,7 @@ sub printOrderedDihedrals
 			addToTop("OpenSMOG",$p->{"v"},"dihedral");
 			addToSCMbufferArr("dihedrals",$p->{"v"});
 		}else{
-			addToTop("dihedrals",$p->{"v"},"dihedral");
+			addToTop("dihedrals",$p->{"v"});
 			addToSCMbuffer("dihedrals",$p->{"v"});
 		}
 	}
@@ -1627,53 +1677,53 @@ sub CalculateDihedralsHelper
 	        if(!defined $eG){
                        	next; 
                        	# This has to do with the functional array being used for the same purpose as the listing array. Some old sloppiness that should be cleaned up.
-	        }else{
-			# global atom indices. 
-			my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
-			my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
-			my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
-			my $atomi4 = sclr(slice($inputPDL,"3:3,$atom4,:"));
+	        }
 
-			if($eG >= 0)
-			{
-				## $eG >=0 dihedral is proper dihedral of any functional form
-				# these can all be calculated based on saved bonded vectors.
+		# global atom indices. 
+		my $atomi1 = sclr(slice($inputPDL,"3:3,$atom1,:"));
+		my $atomi2 = sclr(slice($inputPDL,"3:3,$atom2,:"));
+		my $atomi3 = sclr(slice($inputPDL,"3:3,$atom3,:"));
+		my $atomi4 = sclr(slice($inputPDL,"3:3,$atom4,:"));
 
-				my $b1=$bondvectors->{"$atomi2-$atomi1"};
-				my $b2=$bondvectors->{"$atomi3-$atomi2"};
-				my $b3=$bondvectors->{"$atomi4-$atomi3"};
+		if($eG >= 0)
+		{
+			## $eG >=0 dihedral is proper dihedral of any functional form
+			# these can all be calculated based on saved bonded vectors.
+
+			my $b1=$bondvectors->{"$atomi2-$atomi1"};
+			my $b2=$bondvectors->{"$atomi3-$atomi2"};
+			my $b3=$bondvectors->{"$atomi4-$atomi3"};
 	
-				my $acos=dihfrombonds($b1,$b2,$b3);
+			my $acos=dihfrombonds($b1,$b2,$b3);
 
-				if($atomi2 > $atomi3) { #then reverse order
-					($atomi1,$atomi2,$atomi3,$atomi4)=($atomi4,$atomi3,$atomi2,$atomi1);
-				}
-				my ($valArray,$fTypeArray) = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
-				my @arr=@{$valArray};
-				my @Farr=@{$fTypeArray};
-				for(my $I=0;$I<=$#arr;$I++){
-					push @{$diheCache}, {'i'=> $atomi1,'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4, 'f' => $Farr[$I], 'v' => $arr[$I]};
-				}
-				# j,k,f are meta data
-			}else{
-				## Improper dihedral. must calculate everything
+			if($atomi2 > $atomi3) { #then reverse order
+				($atomi1,$atomi2,$atomi3,$atomi4)=($atomi4,$atomi3,$atomi2,$atomi1);
+			}
+			my ($valArray,$fTypeArray) = dihedralOutput(intToFunc("dihedrals",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,$eG,$allatoms);
+			my @arr=@{$valArray};
+			my @Farr=@{$fTypeArray};
+			for(my $I=0;$I<=$#arr;$I++){
+				push @{$diheCache}, {'i'=> $atomi1,'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4, 'f' => $Farr[$I], 'v' => $arr[$I]};
+			}
+			# j,k,f are meta data
+		}else{
+			## Improper dihedral. must calculate everything
 
-		  		my $A1=slice($inputPDL,"0:2,$atom1,:");
-		  		my $A2=slice($inputPDL,"0:2,$atom2,:"); 
-		  		my $A3=slice($inputPDL,"0:2,$atom3,:"); 
-		  		my $A4=slice($inputPDL,"0:2,$atom4,:"); 
+			my $A1=slice($inputPDL,"0:2,$atom1,:");
+			my $A2=slice($inputPDL,"0:2,$atom2,:"); 
+			my $A3=slice($inputPDL,"0:2,$atom3,:"); 
+			my $A4=slice($inputPDL,"0:2,$atom4,:"); 
 
-				my $b1=$A2-$A1;
-				my $b2=norm($A3-$A2);
-				my $b3=$A4-$A3;
-				my $acos=dihfrombonds($b1,$b2,$b3);
+			my $b1=$A2-$A1;
+			my $b2=norm($A3-$A2);
+			my $b3=$A4-$A3;
+			my $acos=dihfrombonds($b1,$b2,$b3);
 
-				my ($valArray,$fTypeArray)=dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1);
-				my @arr=@{$valArray};
-				my @Farr=@{$fTypeArray};
-				for(my $I=0;$I<=$#arr;$I++){
-					push @{$diheCache}, {'i'=> $atomi1,'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4, 'f' => $Farr[$I], 'v' => $arr[$I]};
-				}
+			my ($valArray,$fTypeArray)=dihedralOutput(intToFunc("impropers",$func,$eG),$atomi1,$atomi2,$atomi3,$atomi4,$acos,$cD,-1);
+			my @arr=@{$valArray};
+			my @Farr=@{$fTypeArray};
+			for(my $I=0;$I<=$#arr;$I++){
+				push @{$diheCache}, {'i'=> $atomi1,'j' => $atomi2,'k' =>$atomi3,'l' =>$atomi4, 'f' => $Farr[$I], 'v' => $arr[$I]};
 			}
 		}
 	}
@@ -1824,7 +1874,6 @@ sub dihedralOutput
                                 	       if($paramArr[0]>180){$paramArr[0]-=360;}elsif($paramArr[0]<-180){$paramArr[0]+=360;}
 					}
 					$formattedString = sprintf("%d\t%d\t%d\t%d\t%d\t$paramFormat",$ai,$aj,$ak,$al,$fType,@paramArr);
-					$outputString = "$outputString$formattedString";
 					push(@OSarray,"$formattedString");
 				}
 			}

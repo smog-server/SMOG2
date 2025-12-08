@@ -329,10 +329,10 @@ sub checkAngleFunctionDef
 	if($nargs_exp != $nargs){
 		smog_quit("Wrong number of arguments for function type $funcname.\n\tExpected $nargs_exp\n\tFound $nargs\n\tSee following definition in .b file:\n\t$funcString\n")
 	}
-	if($nargs > 0 && $vars[0] =~ m/\?\?/){
-		smog_quit("Double question marks not allowed in angle definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
+	if($nargs > 0 && ($vars[0] =~ m/\?\?/ || $vars[1] =~ m/\?\?/)){
+		smog_quit("Double question marks not allowed in angle function call.\nSee the following function defined in the .b file:\n\t$funcString\n");
 	}
-	if($#vars>0 && $vars[1] =~ m/\?/){
+	if($#vars>0 && $vars[1] =~ m/\?/ && ! exists $functions->{$funcname}->{"IsCustom"}){
 		smog_quit("Question marks not allowed in angle weight definition.\nSee the following function defined in the .b file:\n\t$funcString\n");
 	}
 }
