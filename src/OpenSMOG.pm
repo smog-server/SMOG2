@@ -154,7 +154,7 @@ sub readOpenSMOGxml {
 	my ($XMLin)=@_;
 	if(-f $XMLin){
 		my $xml = new XML::Simple;
-		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name",dihedrals_type=>"name",constant=>"name"},ForceArray=>["contacts_type","dihedrals_type","constant","parameter","interaction","nonbond_param"]);
+		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name",dihedrals_type=>"name",angles_type=>"name",constant=>"name"},ForceArray=>["contacts_type","dihedrals_type","angles_type","constant","parameter","interaction","nonbond_param"]);
 		return $data;
 	}else{
 		return 1;
