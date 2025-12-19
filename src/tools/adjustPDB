@@ -59,7 +59,7 @@ my $default;
 my $large;
 my $sort;
 my $renumber;
-my $PDBresnum;
+my $PDBnums;
 my $removeH;
 my $mapOption;
 my $legacymatch;
@@ -111,7 +111,7 @@ usage() if (@ARGV < 1 || !GetOptions('help|?' => \$help,
 	'warn=i' => \$maxwarn,
 	'legacy' => \$legacymatch,
 	'renumber' => \$renumber,
-	'PDBresnum' => \$PDBresnum,
+	'PDBnums' => \$PDBnums,
 	'insertTER' => \$insertTER,
 	'subALA' => \$subALA,
 	'removeH' => \$removeH,
@@ -159,12 +159,12 @@ if(defined $renumber && defined $insertTER){
 	smog_quit("Simultaneous use of -renumber and -insertTER not supported");
 }
 
-if(defined $renumber && defined $PDBresnum){
-	smog_quit("Simultaneous use of -renumber and -PDBresnum not supported");
+if(defined $renumber && defined $PDBnums){
+	smog_quit("Simultaneous use of -renumber and -PDBnums not supported");
 }
 
-if(defined $large && defined $PDBresnum){
-	smog_quit("Simultaneous use of -large and -PDBresnum not supported");
+if(defined $large && defined $PDBnums){
+	smog_quit("Simultaneous use of -large and -PDBnums not supported");
 }
 
 if (defined $renumber){
@@ -179,8 +179,8 @@ if (defined $removeH){
 	smog_note("The flag -removeH was selected. Will remove all H atoms.");
 }
 
-if (defined $PDBresnum){
-	smog_note("The flag -PDBresnum. Will preserve original residue numbers from PDB.\nOutput file will probably not be useful for simulations, but may be helpful for analysis.");
+if (defined $PDBnums){
+	smog_note("The flag -PDBnums. Will preserve original residue numbers from PDB.\nOutput file will probably not be useful for simulations, but may be helpful for analysis.");
 }
 
 if (defined $insertTER){
@@ -287,7 +287,7 @@ usage: smog_adjustPDB .. options ..
                                      you are certain that all numbering inconsistencies 
                                      should be ignored 
         -noautorename           : do not automatically replace * and ' characters in atom names
-	-PDBresnum              : don't renumber residues. Keep original PDB numbering.
+	-PDBnums                : don't renumber residues and atoms. Keep original PDB numbering.
                                      can be useful for analysis
                                      Note: output PDBs that are generated with this option
                                      may lead to unpredictable results if used with smog2
@@ -521,7 +521,7 @@ sub adjustInputFile{
 			if(trim($resNum) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/ && trim($lastresidue) =~ /^\d+([A-Z])?$|^-\d+([A-Z])?$/){
 				my $d=trim(substr($resNum,0,4))-trim(substr($lastresidue,0,4));
 				unless($d == 1  || $firstresidue ==1 || ($d==0 && trim(substr($resNum,4,1)) ne trim(substr($lastresidue,4,1))) ){
-					if(!$renumber && !$insertTER && !$PDBresnum){
+					if(!$renumber && !$insertTER && !$PDBnums){
 						smog_quit("Non-sequential residue numbering detected at:\n$pArr[$k-1]\n$pArr[$k]\n");
 					}elsif($insertTER){
 						if(defined $insertTERall){
@@ -607,6 +607,9 @@ sub adjustInputFile{
 					my $atomCountBaseN;
 					if(defined $large){
 						$atomCountBaseN=BaseTentoLarge($atomCount,5);
+					}elsif(defined $PDBnums){
+						$atomCountBaseN=substr($pArr[$k],6,6);
+
 					}else{
 						if($atomCount == 100000){
 							smog_quit("Too many atoms in a single chain (max of 99999).  Try -large option.");
@@ -656,7 +659,7 @@ sub adjustInputFile{
 			my $printresidue;
 			my $writeResNum;
 
-			if(defined $PDBresnum){
+			if(defined $PDBnums){
 				# write original PDB residue number
 				$writeResNum=trim($resNum);
 			}elsif(defined $large){
