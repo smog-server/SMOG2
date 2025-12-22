@@ -294,8 +294,8 @@ sub addOpenSMOG
  my $addstuff;
  my $ftype;
  my %foundlist; 
- foreach my $key("contacts", "dihedrals"){
- # for now, only checking contacts. will need to add constants and nb params
+ foreach my $key("contacts", "dihedrals","angles"){
+ # for now, only checking contacts, dihedrals and angles. will need to add constants and nb params
  #keys %{$openXML}){
   my $xmlhandle=$openXML->{"$key"}->{$key . "_type"};
   if(defined $xmlhandle){
@@ -426,6 +426,13 @@ sub addOpenSMOG
     @expectedparams=("theta0","weight","multiplicity");
     @expectedattributes=("i","j","k","l","theta0","weight","multiplicity");
     $convertvalue{theta0}="(180/$PI*(theta0))"
+   }elsif($funcs eq "angle_harmonic"){
+    $directive="angles";
+    $ftype=1;
+    $expectedfunction="0.5*weight*(theta-theta0)^2";
+    @expectedparams=("theta0","weight");
+    @expectedattributes=("i","j","k","theta0","weight");
+    $convertvalue{theta0}="(180/$PI*(theta0))"
    }else{
     internal_error("OpenSMOG: Unknown Custom Potential $funcs found in XML file");
    }
@@ -464,6 +471,8 @@ sub addOpenSMOG
     $fieldcount=2;
    }elsif($directive eq "dihedrals"){
     $fieldcount=4;
+   }elsif($directive eq "angles"){
+    $fieldcount=3;
    }
    ($interactionpass,$addstuff)=collectinteractions(\@expectedattributes,$openXML->{"$key"}->{$key . "_type"}->{$funcs}->{'interaction'},$ftype,$fieldcount,\%convertvalue);
    # add content  
