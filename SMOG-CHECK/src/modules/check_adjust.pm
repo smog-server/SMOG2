@@ -347,14 +347,14 @@ sub check_adjust
  }
 
  # TEST 9 
- print "\tChecking smog_adjustPDB with default exact matching, removewater, official/dirty PDB and PDBresnum.\n";
+ print "\tChecking smog_adjustPDB with default exact matching, removewater, official/dirty PDB and PDBnums.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/2ci2.official.pdb";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("$newpdb");
- `$exec -default -i $origpdb -o $newpdb -removewater -PDBresnum &> output.$tool`;
+ `$exec -default -i $origpdb -o $newpdb -removewater -PDBnums &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
 
  $FAIL{"NON-ZERO EXIT"}=$?;
@@ -385,14 +385,14 @@ sub check_adjust
  }
 
  # TEST 10
- print "\tChecking smog_adjustPDB with default exact matching, removeH, PDBresnum, near-official/dirty PDB.\n";
+ print "\tChecking smog_adjustPDB with default exact matching, removeH, PDBnums, near-official/dirty PDB.\n";
  $TESTNUM++;
  my $origpdb="$pdbdir/1cis.nearofficial.pdb";
  &testsperformed($TESTED,\%FAIL);
  %FAIL=resettests(\%FAIL,\@FAILLIST);
  $FAIL{'LARGE'}=-1;
  removeifexists("$newpdb");
- `$exec -default -i $origpdb -o $newpdb -removeH -PDBresnum &> output.$tool`;
+ `$exec -default -i $origpdb -o $newpdb -removeH -PDBnums &> output.$tool`;
  $FAIL{"OUTPUT NAME"}=trueifexists("$newpdb");
 
  $FAIL{"NON-ZERO EXIT"}=$?;

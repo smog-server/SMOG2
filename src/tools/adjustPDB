@@ -608,7 +608,7 @@ sub adjustInputFile{
 					if(defined $large){
 						$atomCountBaseN=BaseTentoLarge($atomCount,5);
 					}elsif(defined $PDBnums){
-						$atomCountBaseN=substr($pArr[$k],6,6);
+						$atomCountBaseN=substr($pArr[$k],6,5);
 
 					}else{
 						if($atomCount == 100000){
