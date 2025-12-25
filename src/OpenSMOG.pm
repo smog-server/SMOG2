@@ -464,6 +464,15 @@ sub OpenSMOGscaleXMLcl{
 		foreach my $key(keys %{$lhandle}){
 			modifyXMLdihedrals($lhandle->{$key},$atomgroup,$modifygroup1,\%chghash,$remove,$mapping);
 		}
+		$lhandle=$OSref->{"angles"}->{"angles_type"};
+		foreach my $key(keys %{$lhandle}){
+			modifyXMLangles($lhandle->{$key},$atomgroup,$modifygroup1,\%chghash,$remove,$mapping);
+		}
+		$lhandle=$OSref->{"externals"}->{"externals_type"};
+		foreach my $key(keys %{$lhandle}){
+			modifyXMLexternals($lhandle->{$key},$atomgroup,$modifygroup1,\%chghash,$remove,$mapping);
+		}
+
 	}else{
 		my $lhandle;
 		if (! defined $OSref->{$modifytype}->{"$modifytype\_type"}->{$modifyset}){
@@ -497,8 +506,8 @@ sub OpenSMOGscaleXMLcl{
 		}
 
 		print "Will adjust the following parameters:\n";
-		print "interactions : $modifytype\n";
-		print "type         : $modifyset\n";
+		print "type         : $modifytype\n";
+		print "set         : $modifyset\n";
 		if($modifytype eq "contacts"){
 			print "atom groups  : $modifygroup1 and $modifygroup2\n";
 		}else{
@@ -513,6 +522,10 @@ sub OpenSMOGscaleXMLcl{
 			modifyXMLcontacts($lhandle,$atomgroup,$modifygroup1,$modifygroup2,\%chghash,$remove,$mapping);
 		}elsif($modifytype eq "dihedrals"){
 			modifyXMLdihedrals($lhandle,$atomgroup,$modifygroup1,\%chghash,$remove,$mapping);
+		}elsif($modifytype eq "angles"){
+			modifyXMLangles($lhandle,$atomgroup,$modifygroup1,\%chghash,$remove,$mapping);
+		}elsif($modifytype eq "externals"){
+			modifyXMLexternals($lhandle,$atomgroup,$modifygroup1,\%chghash,$remove,$mapping);
 		}
 	}
 	OpenSMOGwriteXML($OSref,$outputXML,$header,);
