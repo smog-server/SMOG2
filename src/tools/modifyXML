@@ -111,28 +111,21 @@ if (defined $modifyinteraction ){
 		if(! defined $modifygroup2){
 			smog_quit("When modifying contacts, one must also give a value with the -modgrp2 flag.");
 		}
-	}elsif($modifyinteraction eq "dihedrals"){
+	}elsif($modifyinteraction eq "dihedrals" || $modifyinteraction eq "angles" || $modifyinteraction eq "externals"){
 		if(defined $modifygroup2){
-			smog_quit("When modifying dihedrals, one can not specify a value with the -modgrp2 flag.");
+			smog_quit("When modifying angles, dihedrals, or externals, one can not specify a value with the -modgrp2 flag.");
 		}
 	}else{
-		smog_quit("-modtype must be \"contacts\" or \"dihedrals\".  Found \"$modifyinteraction\"\n");
+		smog_quit("-modtype must be \"contacts\", \"angles\", \"dihedrals\" or \"externals\".  Found \"$modifyinteraction\"\n");
 	}
 }
 
-### read in the list of atoms that we want to keep
-my %keepatoms;
-my $KEEPN=0;
-my @keepatoms2;
 
 #check and add file name extensions, if missing
 $indexFile=checksuffix($indexFile,".ndx");
 $outputXML=checksuffix($outputXML,".xml");
 checkalreadyexists($outputXML);
 
-### read in the list of atoms that we want to keep
-my $groupname;
-my $extgrp;
 
 my ($Ngrps,$grpnms,$groupnames,$atomgroup) = readindexfile($indexFile);
 
@@ -220,7 +213,7 @@ usage: smog_modifyXML  .. options ..
 	-n [smog.ndx]		        : index file to define groups for rescaling
 
    Command-line invocation flags:
-        -inter <string>                 : kind of interactions to modify (contacts, dihedrals)
+        -inter <string>                 : kind of interactions to modify (contacts, angles, dihedrals, externals)
         -type <string>                  : which group of interactions should be modified (name of type in XML file)
         -grp1 <string>                  : name of first group of atoms (as named in .ndx file)
         -grp2 <string>                  : name of second group of atoms (only for use with contacts)

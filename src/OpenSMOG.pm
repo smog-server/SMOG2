@@ -154,7 +154,7 @@ sub readOpenSMOGxml {
 	my ($XMLin)=@_;
 	if(-f $XMLin){
 		my $xml = new XML::Simple;
-		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name",dihedrals_type=>"name",angles_type=>"name",constant=>"name"},ForceArray=>["contacts_type","dihedrals_type","angles_type","constant","parameter","interaction","nonbond_param"]);
+		my $data = $xml->XMLin($XMLin,KeyAttr=>{contacts_type=>"name",dihedrals_type=>"name",angles_type=>"name",externals_type=>"name",constant=>"name"},ForceArray=>["contacts_type","dihedrals_type","angles_type","externals_type","constant","parameter","interaction","nonbond_param"]);
 		return $data;
 	}else{
 		return 1;
@@ -181,7 +181,7 @@ sub OpenSMOGwriteXML{
 		my $handle0=$OSref;
 
 		foreach my $type(sort keys %{$handle0}){
-			if($type eq "contacts" or $type eq "dihedrals" or $type eq "angles"){
+			if($type eq "contacts" or $type eq "dihedrals" or $type eq "angles" or $type eq "externals"){
 				$xmlout .= OpenSMOGwriteXMLinteractions($type,$handle0,$type,$space);
 			}elsif($type eq "constants"){
 				$xmlout .= OpenSMOGwriteXMLconstants($handle0,$type,$space);
@@ -245,6 +245,8 @@ sub OpenSMOGwriteXMLinteractions{
 		@interactingindices=("i","j","k");
 	}elsif($inttype eq "dihedrals"){
 		@interactingindices=("i","j","k","l");
+	}elsif($inttype eq "externals"){
+		@interactingindices=("i");
 	}else{
 		smog_quit("Internal error: XML writing error 1");
 	}
@@ -436,7 +438,7 @@ sub OpenSMOGscaleXML{
         # OSref is a handle to the hash holding all information to be written.
         # $outputXML is the output file name
 	foreach my $I(sort keys %{$OSref}){
-		if($I eq "contacts" or $I eq "dihedrals"){
+		if($I eq "contacts" or $I eq "angles" or $I eq "dihedrals" or $I eq "externals"){
 			print("Modify $I parameters in the XML file (Y/N)?\n");
 			my $reply=getreply();
 			if($reply == 0){
@@ -577,38 +579,37 @@ sub rescaleXML{
 		print "\n";
 		# get the list of parameters, groups and factors for rescaling
 		my ($groupD,$groupC1,$groupC2,$chghash,$remove)=rescaleXMLsettings($lhandle,$type,$grp,$Ngrps,$grpnms,$groupnames,$atomgroup);
+
+		print "Will adjust the following parameters:\n";
+		print "type        : $type\n";
+		print "set         : $grp\n";
+		if(defined $remove){
+			print "change      : remove\n"
+		}
 		if($type eq "contacts"){
-			print "Will adjust the following parameters:\n";
-			print "interactions : $type\n";
-			print "type         : $grp\n";
-			print "atom groups  : $groupC1 and $groupC2\n";
-			if(!defined $remove){
-				print "parameter(s), modification factor(s):\n";
-				foreach my $param(sort keys %{$chghash}){
-					print "$param, $chghash->{$param}\n";
-				}
-			}else{
-				print "change       : remove\n"
-			}
-			modifyXMLcontacts($lhandle->{$grp},$atomgroup,$groupC1,$groupC2,$chghash,$remove,$mapping);
-			print "Contact modification completed\n\n";
-		}elsif($type eq "dihedrals"){
-			print "Will adjust the following parameters:\n";
-			print "type: $type\n";
-			print "set: $grp\n";
-			print "atom group: $groupD\n";
-			if(!defined $remove){
-				print "parameter(s), modification factor(s):\n";
-				foreach my $param(sort keys %{$chghash}){
-					print "$param, $chghash->{$param}\n";
-				}
-			}else{
-				print "change       : remove\n"
-			}
-			modifyXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash,$remove,$mapping);
+			print "atom groups : $groupC1 and $groupC2\n";
+		}elsif($type eq "angles" or $type eq "dihedrals" or $type eq "externals"){
+			print "atom group  : $groupD\n";
 		}else{
 			smog_quit("internal error: rescale XML selection issue.");
 		}
+
+		if(!defined $remove){
+			print "parameter(s), modification factor(s):\n";
+			foreach my $param(sort keys %{$chghash}){
+				print "$param, $chghash->{$param}\n";
+			}
+		}
+
+		if($type eq "contacts"){
+			modifyXMLcontacts($lhandle->{$grp},$atomgroup,$groupC1,$groupC2,$chghash,$remove,$mapping);
+		}elsif($type eq "dihedrals"){
+			modifyXMLdihedrals($lhandle->{$grp},$atomgroup,$groupD,$chghash,$remove,$mapping);
+		}elsif($type eq "angles"){
+			modifyXMLangles($lhandle->{$grp},$atomgroup,$groupD,$chghash,$remove,$mapping);
+		}elsif($type eq "externals"){
+			modifyXMLexternals($lhandle->{$grp},$atomgroup,$groupD,$chghash,$remove,$mapping);
+		} 
 
 		print "Modify/remove additional $type parameters? (Y/N)\n";
 		$cont=getreply()		
@@ -623,7 +624,7 @@ sub rescaleXMLsettings{
 	my $groupD="";
 	my $groupC1="";
 	my $groupC2="";
-	if($type eq "dihedrals"){
+	if($type eq "dihedrals" or $type eq "angles" or $type eq "externals"){
 		print "Select the index of the atom group for which you want to change parameters.\n";
 		listgroups($Ngrps,$grpnms);
 		print "selection:";
@@ -769,6 +770,64 @@ sub modifyXMLcontacts{
 	}
 }
 
+sub modifyXMLangles{
+	my($XMLhandle,$atomgroup,$groupD,$chghash,$remove,$mapping)=@_;
+
+	if(defined $mapping){
+		my %mapping=%{$mapping};
+		foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+			my $i=$interaction->{"i"};
+			my $j=$interaction->{"j"};
+			my $k=$interaction->{"k"};
+			if(defined $mapping{$i}){
+				$interaction->{"i"}=$mapping{$i};
+			}else{
+				smog_note("No mapping value given for index $i\n");
+			}
+			if(defined $mapping{$j}){
+				$interaction->{"j"}=$mapping{$j};
+			}else{
+				smog_note("No mapping value given for index $j\n");
+			}
+			if(defined $mapping{$k}){
+				$interaction->{"k"}=$mapping{$k};
+			}else{
+				smog_note("No mapping value given for index $k\n");
+			}
+		}
+	}else{
+		my %atomhash=%{$atomgroup->{$groupD}};
+		my $elcount=-1;
+
+		foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+			$elcount++;
+			if(!defined $interaction){
+				next;
+			}
+			my $i=$interaction->{"i"};
+			if(defined $atomhash{$i}){
+				my $j=$interaction->{"j"};
+				if(defined $atomhash{$j}){
+					my $k=$interaction->{"k"};
+					if(defined $atomhash{$k}){
+						if(defined $remove){
+							if(! defined @{$XMLhandle->{"interaction"}}[$elcount]){
+								smog_quit("internal error: Attempt to delete deleted angle.  Please report to SMOG developers.");
+							}
+							delete(@{$XMLhandle->{"interaction"}}[$elcount]);
+						}else{
+							foreach my $param(keys %{$chghash}){
+								my $curval=$interaction->{$param};
+								$interaction->{$param}=eval("($curval)$chghash->{$param}");
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 sub modifyXMLdihedrals{
 	my($XMLhandle,$atomgroup,$groupD,$chghash,$remove,$mapping)=@_;
 
@@ -823,6 +882,46 @@ sub modifyXMLdihedrals{
 							my $curval=$interaction->{$param};
 							$interaction->{$param}=eval("($curval)$chghash->{$param}");
 						}
+					}
+				}
+			}
+		}
+	}
+}
+
+sub modifyXMLexternals{
+	my($XMLhandle,$atomgroup,$groupD,$chghash,$remove,$mapping)=@_;
+
+	if(defined $mapping){
+		my %mapping=%{$mapping};
+		foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+			my $i=$interaction->{"i"};
+			if(defined $mapping{$i}){
+				$interaction->{"i"}=$mapping{$i};
+			}else{
+				smog_note("No mapping value given for index $i\n");
+			}
+		}
+	}else{
+		my %atomhash=%{$atomgroup->{$groupD}};
+		my $elcount=-1;
+
+		foreach my $interaction(@{$XMLhandle->{"interaction"}}){
+			$elcount++;
+			if(!defined $interaction){
+				next;
+			}
+			my $i=$interaction->{"i"};
+			if(defined $atomhash{$i}){
+				if(defined $remove){
+					if(! defined @{$XMLhandle->{"interaction"}}[$elcount]){
+						smog_quit("internal error: Attempt to delete deleted angle.  Please report to SMOG developers.");
+					}
+					delete(@{$XMLhandle->{"interaction"}}[$elcount]);
+				}else{
+					foreach my $param(keys %{$chghash}){
+						my $curval=$interaction->{$param};
+						$interaction->{$param}=eval("($curval)$chghash->{$param}");
 					}
 				}
 			}

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <!-- INTERACTION TYPE -->
+  <xs:complexType name="externalInteractionType">
+    <xs:attribute name="i" type="xs:integer" use="required"/>
+    <xs:anyAttribute processContents="skip"/>
+  </xs:complexType>
   <xs:complexType name="contactInteractionType">
     <xs:attribute name="i" type="xs:integer" use="required"/>
     <xs:attribute name="j" type="xs:integer" use="required"/>
@@ -45,6 +49,15 @@
   <xs:complexType name="exclusionsType">
     <xs:attribute name="generate" type="xs:integer" use="required"/>
   </xs:complexType>
+  <!-- EXTERNAL POTENTIAL TYPE -->
+  <xs:complexType name="externalType">
+    <xs:sequence>
+      <xs:element name="expression" type="expressionType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="parameter" type="parameterType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="interaction" type="externalInteractionType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
   <!-- CONTACT POTENTIAL TYPE -->
   <xs:complexType name="contpotType">
     <xs:sequence>
@@ -74,6 +87,13 @@
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required"/>
   </xs:complexType>
+  <!-- EXTERNAL TYPE -->
+  <xs:complexType name="externalsType">
+    <xs:sequence>
+      <xs:element name="externals_type" type="externalType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <!-- CONTACTS TYPE -->
   <xs:complexType name="contactsType">
     <xs:sequence>
@@ -126,6 +146,7 @@
       <xs:element name="dihedrals" type="dihedralsType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="constants" type="constantsType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="nonbond" type="nonbondType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="externals" type="externalsType" minOccurs="0" maxOccurs="1"/>
     </xs:all>
     <xs:attribute name="OpenSMOGversion" type="xs:string" use="optional"/>
   </xs:complexType>
