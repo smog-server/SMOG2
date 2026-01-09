@@ -150,7 +150,7 @@ my $date=printhostdate();
 $gitver=getgitver; 
 my $gitmess="";
 if($gitver ne ""){
-        $gitmess="; THIS VERSION OF SMOG_IONS IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
+        $gitmess="; THIS VERSION OF SMOG_MODIFYXML IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
 		}
 		
 my $comment="; This is an XML file generated with smog_modifyXML (version $VERSION), using the command:\n; smog_modifyXML $inputArguments\n$date$gitmess";
