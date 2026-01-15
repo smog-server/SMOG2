@@ -1529,10 +1529,19 @@ sub angleOutput
 			if ($fType == -2){
 				# is an OpenSMOG interaction
 				$value= mathFunctions::deg_to_rad($value); 
+
+
 				for(my $in=0;$in<=$#paramArr;$in++){
 					# replace ? on all terms, even weight
 					# note: ? cannot be used for weight with dihedrals, since it turns on/off normalization. But, this does not apply to angles, so there is no issue.
 					$paramArr[$in]=evalsub($paramArr[$in],$value);
+					if(exists $fTypesdefault{$funcName}){
+						# this is one of the default dihedral functions.  So, convert back to radians
+						if($OpenSMOGpothash->{$funcName}->{theta0} == $in){
+							
+							$paramArr[$in]= mathFunctions::deg_to_rad($paramArr[$in]); 
+						}
+					}
 				}
 
 				my @array;
@@ -1585,6 +1594,8 @@ sub angleOutput
 					smog_quit("Angle assigned to atoms $i $j $k (PDB lines $i1 $j1 $k1) greater than largeAngles (see .sif): theta=$THETA degrees\n\tBe careful!  This can lead to numerical instability of your simulations.",1);
 				}
 				## Format output <i j k function p1 p2 ... pn>
+				
+
 				my $paramFormat=formatvalues($#paramArr);
 				$formattedString = sprintf("%d\t%d\t%d\t%d\t$paramFormat",$i,$j,$k,$fType,@paramArr);
 				push(@OSarray,"$formattedString");
