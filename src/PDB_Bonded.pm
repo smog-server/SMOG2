@@ -689,9 +689,12 @@ sub returnFunction
 {
 	my($funcString) = @_;
 	my $addExclusions;
-	#Sometimes exclusions are not defined for contacts that go under other directives. Need to set it to zero.
-	if(!exists $functions->{$funcString}->{"exclusions"}){ $addExclusions = 0; }
-	else { $addExclusions = $functions->{$funcString}->{"exclusions"}; }
+	#Sometimes exclusions are not defined for contacts that go under other directives. Need to set it to zero. Only relevant for gromacs.
+	if(!exists $functions->{$funcString}->{"exclusions"}){
+		$addExclusions = 0; 
+	}else{ 
+		$addExclusions = $functions->{$funcString}->{"exclusions"}; 
+	}
 	return ($fTypes{"$funcString"},$functions->{$funcString}->{"directive"},$addExclusions);
 }
 

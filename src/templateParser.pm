@@ -1905,16 +1905,17 @@ sub sifFunctions{
 	
 		if($functions->{$funcName}->{"directive"} eq "pairs"){
 			if(!exists $functions->{$funcName}->{"exclusions"}){
-				smog_quit( "Since $funcName is of directive \"pairs\", boolean (0, 1) element \"exclusions\" must be included in the function declaration in the .sif file.\n");
+				if(exists $functions->{$funcName}->{"IsCustom"}){
+					smog_quit( "Since $funcName is a custom potential for contacts, boolean (0, 1) element \"exclusions\" must be included in the function declaration in the .sif file.\n");
+				}else{
+					smog_quit( "Since $funcName is of directive \"pairs\", boolean (0, 1) element \"exclusions\" must be included in the function declaration in the .sif file.\n");
+				}
 			}
 			my $t=$functions->{$funcName}->{"exclusions"};
 			if($t ==1){
 				smog_note("Contact pairs that use function $funcName will also be added to the exclusions list.");
 			}elsif($t==0){
 				smog_note("Contact pairs that use function $funcName will NOT be added to the exclusions list.");
-			}else{
-				smog_quit( "Since $funcName is of directive \"pairs\", boolean (0, 1) element \"exclusions\" must be included in the function declaration in the .sif file. Found \"$t\"\n");
-
 			}
 		}elsif($functions->{$funcName}->{"directive"} ne "pairs"
 	                && exists $functions->{$funcName}->{"exclusions"}){

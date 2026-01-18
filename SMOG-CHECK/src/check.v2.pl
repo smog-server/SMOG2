@@ -284,7 +284,6 @@ sub addOpenSMOG
 
  my $paramlist=1;
  my $expectedfunction;
- my $exclusionsGeneration=0;
  my $exclusionsGenerationP=0;
  my $exclusionsGenerationN=0;
  my @expectedparams;
@@ -308,6 +307,7 @@ sub addOpenSMOG
   foreach my $funcs(keys %{$xmlhandle}){
    my $directive;
    my %convertvalue;
+   my $exclusionsGeneration=0;
    # determine what is expected in this OS term
    # expectedfunction is the OpenMM custom potential form
    # expectedparams is the list of parameters that should be found in the xml
@@ -2100,7 +2100,7 @@ sub checktop
    $FAIL{'OPENSMOG: EXPRESSION'}=$openEXPR;
    $FAIL{'OPENSMOG: PARAMETERS'}=$openPARAMS;
    $FAIL{'OPENSMOG: INTERACTIONS'}=$openINTER;
-   $FAIL{'OPENSMOG: EXCLUSIONS'}=$openINTER;
+   $FAIL{'OPENSMOG: EXCLUSIONS'}=$openEXCL;
    foreach my $key(keys %{$foundlist}){
     $FOUND{$key}=1;
    }

@@ -1528,8 +1528,12 @@ sub angleOutput
 		}else{
 			if ($fType == -2){
 				# is an OpenSMOG interaction
-				$value= mathFunctions::deg_to_rad($value); 
-
+				#$value= mathFunctions::deg_to_rad($value); 
+				# don't convert the angle to radians, yet. Instead,
+				# perform any expression subs using degrees. Then, 
+				# convert "theta0" to radians.  theta0 is a special
+				# parameter. It is always interpreted as an angle
+				# and therefore needs to be expressed in radians.
 
 				for(my $in=0;$in<=$#paramArr;$in++){
 					# replace ? on all terms, even weight
@@ -1537,9 +1541,11 @@ sub angleOutput
 					$paramArr[$in]=evalsub($paramArr[$in],$value);
 					if(exists $fTypesdefault{$funcName}){
 						# this is one of the default dihedral functions.  So, convert back to radians
-						if($OpenSMOGpothash->{$funcName}->{theta0} == $in){
+						if(defined $OpenSMOGpothash->{$funcName}->{theta0}){
+							if($OpenSMOGpothash->{$funcName}->{theta0} == $in){
 							
-							$paramArr[$in]= mathFunctions::deg_to_rad($paramArr[$in]); 
+								$paramArr[$in]= mathFunctions::deg_to_rad($paramArr[$in]); 
+							}
 						}
 					}
 				}
@@ -1817,8 +1823,8 @@ sub dihedralOutput
 							# replace ? on all terms, except for weight
 							$paramArr[$in]=evalsub($paramArr[$in],$value_local);
 							
-							if(exists $fTypesdefault{$funcName}){
-								# this is one of the default dihedral functions.  So, convert back to radians
+							if(defined $OpenSMOGpothash->{$funcName}->{theta0}){
+								# this has a theta0 parameter, which we always assume must be expressed as radians.
 								if($OpenSMOGpothash->{$funcName}->{theta0} == $in){
 									
 									$paramArr[$in]= mathFunctions::deg_to_rad($paramArr[$in]); 
@@ -2326,7 +2332,7 @@ sub contactParseOpenSMOG
         if(OpenSMOGfunctionExists($OSref,"contacts","$fname") == 0){
                 my $potential = $OpenSMOGpothash->{$fname}->{expression};
                 my $parhandle=\@{$OpenSMOGpothash->{$fname}->{parameters}};
-		my ($fType,$directive,$addExclusions) = returnFunction("fname");
+		my ($fType,$directive,$addExclusions) = returnFunction("$fname");
                 OShashAddFunction($OSref,"contacts","$fname","$potential",$parhandle,$addExclusions);
         }
 
