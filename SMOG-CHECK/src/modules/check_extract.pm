@@ -146,6 +146,58 @@ sub check_extract
     clearfiles(("output.$tool","extracted.top","extracted.gro","atomindex.map","restrained.map","topol.tpr","extracted.box.gro","extracted.editconf","extracted.grompp","extracted.out.mdp"));
    }
   } 
+
+  print "\tChecking smog_extract with -distval/distfrom: restraints\n";
+  &testsperformed($TESTED,\%FAIL);
+  %FAIL=resettests(\%FAIL,\@FAILLIST);
+  `$exec -f $pdbdir/large.top -g $pdbdir/large.gro -nondx -distfrom 100 -distval 1 -restraints 100 &> output.$tool`;
+  $FAIL{"NON-ZERO EXIT"}=$?;
+  if($FAIL{"NON-ZERO EXIT"} == 0){
+   $FAIL{"GMX COMPATIBLE"}=runGMX("AA",$CHECKGMX,"no",$GMXEDITCONF,$GMXPATH,"",$GMXEXEC,$GMXMDP,$GMXMDPCA,"no","extracted","no","extracted","noG96","yes");
+   $FAIL{"EXTRA MAP FILE GENERATED"} = checkrestraintfile(0,"restrained.map");
+   my $string=loadfile("extracted.top");
+   my ($DATA,$DIRLIST)=checkdirectives($string);
+  }
+  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+  $FAILSUM += $FAILED;
+  if($FAILED !=0){
+   savefailed("AA.OpenSMOG.distsel",("output.$tool","extracted.top","extracted.xml","extracted.gro","atomindex.map","restrained.map","topol.tpr","extracted.box.gro","extracted.editconf","extracted.grompp","extracted.out.mdp"));
+   print "$printbuffer\n";
+  }else{
+   clearfiles(("output.$tool","extracted.xml","extracted.top","extracted.gro","atomindex.map","restrained.map","topol.tpr","extracted.box.gro","extracted.editconf","extracted.grompp","extracted.out.mdp"));
+  } 
+
+ # do some checks for OpenSMOG
+
+ `smog2 -i $pdbdir/tRNA.pdb -AA -dname AA.tmp -opensmog > output.smog`;
+ unless($? == 0){
+  internal_error("SMOG 2 crashed when trying to generate OpenSMOG files.  Fix SMOG 2 before testing smog_extract.");
+ }else{
+  clearfiles("output.smog");
+ }
+
+  print "\tChecking smog_extract with -distval/distfrom: restraints: OpenSMOG\n";
+  &testsperformed($TESTED,\%FAIL);
+  %FAIL=resettests(\%FAIL,\@FAILLIST);
+  `$exec -f AA.tmp.top -g AA.tmp.gro -opensmog AA.tmp.xml -nondx -distfrom 100 -distval 1 -restraints 100 &> output.$tool`;
+  $FAIL{"NON-ZERO EXIT"}=$?;
+  if($FAIL{"NON-ZERO EXIT"} == 0){
+   $FAIL{"GMX COMPATIBLE"}=-1;
+   $FAIL{"EXTRA MAP FILE GENERATED"} = checkrestraintfile(0,"restrained.map");
+   my $string=loadfile("extracted.top");
+   my ($DATA,$DIRLIST)=checkdirectives($string,0);
+  }
+  ($FAILED,$printbuffer)=failsum(\%FAIL,\@FAILLIST);
+  $FAILSUM += $FAILED;
+  if($FAILED !=0){
+   savefailed("AA.OpenSMOG.distsel",("output.$tool","extracted.top","extracted.xml","extracted.gro","atomindex.map","restrained.map","topol.tpr","extracted.box.gro","extracted.editconf","extracted.grompp","extracted.out.mdp"));
+   print "$printbuffer\n";
+  }else{
+   clearfiles(("output.$tool","extracted.xml","extracted.top","extracted.gro","atomindex.map","restrained.map","topol.tpr","extracted.box.gro","extracted.editconf","extracted.grompp","extracted.out.mdp"));
+  } 
+
+  clearfiles(("AA.tmp.top","AA.tmp.gro","AA.tmp.ndx","AA.tmp.contacts","AA.tmp.xml"));
+
  $FAILSUM+=checkalltested(\@FAILLIST,\%FAIL);
 
  return ($FAILSUM, $printbuffer);

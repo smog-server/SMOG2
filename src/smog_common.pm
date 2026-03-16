@@ -231,10 +231,16 @@ sub loadfile
 
 sub checkdirectives
 {
-	my ($string) = @_;
+	my ($string,$OpenSMOG) = @_;
 # split the top file and check that only supported directives are included.
 	my %DIRLIST;
 	my @DATA=split(/\n\s+\[|\n\[|^\s+\[|^\[/,$string);
+	my %ignore;
+	if(defined $OpenSMOG){
+		foreach my $J("exclusions","pairs","angles","dihedrals"){
+			$ignore{$J}=1;
+		}
+	}
 	for (my $I=1;$I<=$#DATA;$I++){
 		# add the \n since we just stripped them using split
 		$DATA[$I] .="\n";
@@ -266,7 +272,7 @@ sub checkdirectives
 	}
 
 	for my $keys(keys %supported_directives){
-		if($supported_directives{$keys} == 1 && !exists $DIRLIST{$keys}){
+		if($supported_directives{$keys} == 1 && !exists $DIRLIST{$keys} && !exists $ignore{$keys}){
 			smog_note("Directive \"$keys\" not found in input .top file. If you plan to use OpenSMOG, then it is possible that this info is in the XML file. Otherwise, these types of terms will simply not be present in your model.");
 		}
 		if($supported_directives{$keys} == 0 && exists $DIRLIST{$keys}){
