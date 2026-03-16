@@ -788,6 +788,10 @@ for(my $II=1;$II<=$#C;$II++){
 print TOPOUT "\n";
 close(MAPPING);
 close(TOPOUT);
+if(defined $OpenSMOG){
+       OpenSMOGwriteXML($xmldata,$OpenSMOGout,$comment,);
+}
+
 warnsummary();
 
 print "\n\tSUCCESS: Extracted $KEEPN-atom subsystem.\n\n";
