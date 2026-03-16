@@ -127,6 +127,10 @@ if($inputGRO eq $outputgro){
         smog_quit("Input and output gro files can not have the same name: $outputgro");
 }
 
+if(defined $nogro && defined $OpenSMOG && defined $gen_restraints){
+        smog_quit("When generating restraints for the OpenSMOG force field, must supply a gro file");
+}
+
 if($inputTOP eq $outputtop){
         smog_quit("Input and output top files can not have the same name: $outputtop");
 }
@@ -736,9 +740,12 @@ if(exists $DIRLIST{"exclusions"}){
 }
 
 # information about any OpenSMOG terms 
+my $xmldata;
+my $comment;
+
 if(defined $OpenSMOG){
 	print "\nExtracting parameters from OpenSMOG XML file\n";
-	my $xmldata=readOpenSMOGxml($OpenSMOG);
+	$xmldata=readOpenSMOGxml($OpenSMOG);
 	if($xmldata == 1){
 		smog_quit("File $OpenSMOG can not be opened.");
 	}
@@ -749,7 +756,7 @@ if(defined $OpenSMOG){
 	        $gitmess="; THIS VERSION OF SMOG_EXTRACT IS FROM A GIT REPO. COMMIT NUMBER\n$gitver\n";
 			}
 			
-	my $comment="; This is an XML file generated with smog_extract (version $VERSION), using the command:\n; smog_extract $inputArguments\n$date$gitmess";
+	$comment="; This is an XML file generated with smog_extract (version $VERSION), using the command:\n; smog_extract $inputArguments\n$date$gitmess";
 
 	my $OpenSMOGatoms2restrain=OpenSMOGextractXML($xmldata,\%keepatoms,\%typesinsystem);
 	my %OpenSMOGatoms2restrain=%{$OpenSMOGatoms2restrain};
@@ -764,10 +771,30 @@ if($gen_restraints ne "null"){
  	open(RESMAPPING,">$restrainedmap") or smog_quit("Can\'t open $restrainedmap.");
 	print "Generating restraints of strength $gen_restraints for atoms that have had interactions removed.\n";
 	print RESMAPPING "The following atoms are restrained (new and old numbering)\n";
-	print TOPOUT "[ position_restraints ]\n";
-	foreach my $res(sort {$a<=>$b} keys %atoms2restrain){
-		print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";
-		print RESMAPPING "$res $keepatoms2[$res-1]\n";
+
+        if(defined $OpenSMOG){
+                # create force in xml
+                my $restraintName=OShashAddRestraintFunction($xmldata,$gen_restraints);
+ 
+                foreach my $res(sort {$a<=>$b} keys %atoms2restrain){
+                        # add interaction
+                        my $line=$GRODATA[$res];
+                        my $x0=substr($line,20,8);
+                        $x0 =~ s/ //g;
+                        my $y0=substr($line,28,8);
+                        $y0 =~ s/ //g;
+                        my $z0=substr($line,36,8);
+                        $z0 =~ s/ //g;
+                        my @stuff=($res,"externals",$restraintName,($x0,$y0,$z0));
+                        AddInteractionOShash("external",$xmldata,\@stuff);
+                        print RESMAPPING "$res $keepatoms2[$res-1]\n";
+                }
+        }else{
+                print TOPOUT "[ position_restraints ]\n";
+                foreach my $res(sort {$a<=>$b} keys %atoms2restrain){
+                        print TOPOUT "$res 1 $gen_restraints $gen_restraints $gen_restraints\n";
+                        print RESMAPPING "$res $keepatoms2[$res-1]\n";
+                }
 	}
 	close(RESMAPPING);
 }
