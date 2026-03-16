@@ -751,7 +751,7 @@ if(defined $OpenSMOG){
 			
 	my $comment="; This is an XML file generated with smog_extract (version $VERSION), using the command:\n; smog_extract $inputArguments\n$date$gitmess";
 
-	my $OpenSMOGatoms2restrain=OpenSMOGextractXML($xmldata,$OpenSMOGout,\%keepatoms,\%typesinsystem,$comment);
+	my $OpenSMOGatoms2restrain=OpenSMOGextractXML($xmldata,\%keepatoms,\%typesinsystem);
 	my %OpenSMOGatoms2restrain=%{$OpenSMOGatoms2restrain};
 	foreach my $I (keys %OpenSMOGatoms2restrain){
 		$atoms2restrain{$I}=1;
