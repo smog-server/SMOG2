@@ -418,6 +418,7 @@ sub parsePDBATOMS
 	my $residueType; 
 	my $pairType;
 	my $atomCounter=0;
+	my $atomCounterPDL=0;
 	my $chainNumber = 0;
 	my $residueIndex=1;
 	my $interiorPdbResidueIndex=0;
@@ -497,14 +498,18 @@ sub parsePDBATOMS
 					$residFragHash{$II}=1;
 				}
 			}
-			delete($residFragHash{$resAIdx});
-			$fragment=$tempPDLB{$resAIdx};
 			# create the fragment and all bond lists 
 			# format [x y z globalnumber]
-			my @bTypesFragment=@{$tempPDLbType{$resAIdx}};
-			foreach my $kk(keys %residFragHash){
+			my $tv=-1;
+			my @bTypesFragment=();#=@{$tempPDLbType{$resAIdx}};
+			foreach my $kk(sort keys %residFragHash){
 				if(exists $tempPDLB{$kk}){
-					$fragment=($fragment)->glue(1,$tempPDLB{$kk});
+					if($tv !=-1){
+						$fragment=($fragment)->glue(1,$tempPDLB{$kk});
+					}else{
+						$fragment=$tempPDLB{$kk};
+						$tv=0;
+					}
 					push(@bTypesFragment,@{$tempPDLbType{$kk}});
 				}
 			}
@@ -537,7 +542,7 @@ sub parsePDBATOMS
 			# bondlistFragment and energygroupsFragment are for storing the bonds and energy groups of bonds associated with the fragment that is being used for the BOND.  
 			my %bondlistFragment;
 			my %energygroupsFragment;
-			for my $JK(keys %bondlists){
+			for my $JK(sort keys %bondlists){
 				if(exists $keep{$JK}){
 					my $newkey=$keep{$JK};
 					my @eGa=@{$bondlistsEG{$JK}};
@@ -659,7 +664,8 @@ sub parsePDBATOMS
 			$K--;
 			# this is added so that we know the PDL index, as well as the global gro index
 			for (my $I=0;$I<=$#temp;$I++){
-				push(@{$temp[$I]},$I+1+$totalAtoms);
+				$atomCounterPDL++;
+				push(@{$temp[$I]},$atomCounterPDL);
 			}
 			if($residues{$residue}->{"atomCount"} == -1){
 				$totalAtoms+=$#temp+1;
