@@ -778,7 +778,7 @@ if($gen_restraints ne "null"){
  
                 foreach my $res(sort {$a<=>$b} keys %atoms2restrain){
                         # add interaction
-                        my $line=$GRODATA[$res];
+                        my $line=$GRODATA[$keepatoms2[$res-1]];
                         my $x0=substr($line,20,8);
                         $x0 =~ s/ //g;
                         my $y0=substr($line,28,8);
